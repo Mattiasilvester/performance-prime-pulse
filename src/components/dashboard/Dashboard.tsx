@@ -1,0 +1,26 @@
+
+import { StatsOverview } from './StatsOverview';
+import { QuickActions } from './QuickActions';
+import { RecentActivity } from './RecentActivity';
+import { WeeklyProgress } from './WeeklyProgress';
+
+export const Dashboard = () => {
+  return (
+    <div className="space-y-6 pb-20 lg:pb-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">Ciao, Marco!</h2>
+          <p className="text-slate-600">Pronto per superare i tuoi limiti oggi?</p>
+        </div>
+      </div>
+
+      <StatsOverview />
+      <QuickActions />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <WeeklyProgress />
+        <RecentActivity />
+      </div>
+    </div>
+  );
+};
