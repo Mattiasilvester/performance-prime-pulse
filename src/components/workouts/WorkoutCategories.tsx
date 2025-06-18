@@ -60,7 +60,15 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
               key={category.id}
               className="rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105 flex flex-col"
             >
-              {/* Top half with gradient and content */}
+              {/* Top half with solid color and icon */}
+              <div 
+                className="h-1/2 flex items-center justify-center"
+                style={{ backgroundColor: category.rightBgColor }}
+              >
+                <Icon className="h-16 w-16 text-white" />
+              </div>
+              
+              {/* Bottom half with gradient and content */}
               <div className="h-1/2 bg-gradient-to-r from-black to-[#C89116] p-6 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-4">
@@ -80,14 +88,6 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                     Inizia
                   </Button>
                 </div>
-              </div>
-              
-              {/* Bottom half with solid color and icon */}
-              <div 
-                className="h-1/2 flex items-center justify-center"
-                style={{ backgroundColor: category.rightBgColor }}
-              >
-                <Icon className="h-16 w-16 text-white" />
               </div>
             </div>
           );
