@@ -207,26 +207,29 @@
   }
 
   /* ---------------------------------------------------------
-     2. Professionisti Cards - Updated to match Prossimi Appuntamenti
+     2. Professionisti Cards - Adjusted to match reference screenshot
      --------------------------------------------------------- */
   .prof-card {
-    /* Black background with gold border to match Prossimi Appuntamenti */
+    /* Card container sizing to match reference */
     background-color: #000000;
     border: 1px solid #C89116;
-    border-radius: 1rem;
-    padding: 0.75rem;
+    border-radius: 0.75rem !important;
+    padding: 0.5rem !important;
     display: flex;
     align-items: flex-start;
-    gap: 0.5rem;
-    min-height: 60px;
+    gap: 0.375rem !important;
+    min-height: 50px !important;
+    max-width: 100% !important;
   }
 
   .prof-card__avatar {
+    /* Avatar sizing & positioning to match reference */
     flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 0.375rem;
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+    border-radius: 0.25rem;
     overflow: hidden;
+    margin: 0 !important;
   }
 
   .prof-card__content {
@@ -234,25 +237,27 @@
   }
 
   .prof-card__name {
-    /* Name in white to match Prossimi Appuntamenti */
+    /* Name styling - keeping same font size as reference */
     color: #FFFFFF;
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 600;
+    line-height: 1.2;
   }
 
   .prof-card__role {
-    /* Role subtitle in light gray */
+    /* Role subtitle */
     color: #FFFFFF;
     opacity: 0.7;
-    font-size: 0.875rem;
-    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
   }
 
   .prof-card__rating {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
 
   .prof-card__rating-star {
@@ -264,33 +269,36 @@
     /* Rating number in white */
     color: #FFFFFF;
     font-weight: 500;
+    font-size: 0.75rem;
   }
 
   .prof-card__experience,
   .prof-card__rate {
-    /* Experience & rate in white */
+    /* Experience & rate text */
     color: #FFFFFF;
     opacity: 0.7;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
   }
 
   .prof-card__actions {
     display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
+    gap: 0.375rem;
+    margin-top: 0.75rem;
   }
 
   .prof-card__chat-btn {
-    /* Chat button: black bg with gold border, gold text & icon */
+    /* Chat button sizing to match reference */
     background-color: transparent;
     color: #FFFFFF;
     border: 1px solid #C89116;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem !important;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     transition: all 0.2s ease;
+    height: 2rem !important;
+    font-size: 0.75rem;
   }
 
   .prof-card__chat-btn:hover {
@@ -299,16 +307,18 @@
   }
 
   .prof-card__book-btn {
-    /* Prenota button: gold bg, black text & icon */
+    /* Prenota button sizing to match reference */
     background-color: #C89116;
     color: #000000;
     border: none;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem !important;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     transition: all 0.2s ease;
+    height: 2rem !important;
+    font-size: 0.75rem;
   }
 
   .prof-card__book-btn:hover {
@@ -317,10 +327,11 @@
 
   /* Status indicator dot */
   .prof-card__status-dot {
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 0.5rem;
+    height: 0.5rem;
     border-radius: 50%;
     margin-left: auto;
+    margin-top: 0.25rem;
   }
 
   .prof-card__status-dot.online  { background-color: #10B981; }
