@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -153,7 +152,7 @@ const Auth = () => {
                   onChange={(e) => setLoginEmail(e.target.value)}
                   required
                   disabled={loading}
-                  className="bg-black border-pp-gold border-2 text-pp-gold placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                  className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
                 />
               </div>
               <Button 
@@ -201,7 +200,7 @@ const Auth = () => {
                       onChange={(e) => setLoginEmail(e.target.value)}
                       required
                       disabled={loading}
-                      className="bg-black border-pp-gold border-2 text-pp-gold placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                      className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
                     />
                   </div>
                   <div className="space-y-2">
@@ -214,7 +213,7 @@ const Auth = () => {
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
                       disabled={loading}
-                      className="bg-black border-pp-gold border-2 text-pp-gold placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                      className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
                     />
                   </div>
                   <Button 
@@ -250,7 +249,7 @@ const Auth = () => {
                         onChange={(e) => setRegisterData({...registerData, firstName: e.target.value})}
                         required
                         disabled={loading}
-                        className="bg-black border-pp-gold border-2 text-pp-gold placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                        className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
                       />
                     </div>
                     <div className="space-y-2">
@@ -263,7 +262,7 @@ const Auth = () => {
                         onChange={(e) => setRegisterData({...registerData, lastName: e.target.value})}
                         required
                         disabled={loading}
-                        className="bg-black border-pp-gold border-2 text-pp-gold placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                        className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
                       />
                     </div>
                   </div>
@@ -277,7 +276,7 @@ const Auth = () => {
                       onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
                       required
                       disabled={loading}
-                      className="bg-black border-pp-gold border-2 text-pp-gold placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                      className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
                     />
                   </div>
                   <div className="space-y-2">
@@ -290,7 +289,7 @@ const Auth = () => {
                       onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
                       required
                       disabled={loading}
-                      className="bg-black border-pp-gold border-2 text-pp-gold placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                      className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
                     />
                   </div>
                   <div className="space-y-2">
@@ -303,7 +302,7 @@ const Auth = () => {
                       onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})}
                       required
                       disabled={loading}
-                      className="bg-black border-pp-gold border-2 text-pp-gold placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                      className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
                     />
                   </div>
                   <Button 
