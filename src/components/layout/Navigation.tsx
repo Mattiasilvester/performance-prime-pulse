@@ -21,7 +21,7 @@ export const Navigation = ({ activeSection, onSectionChange }: NavigationProps) 
   return (
     <nav className="lg:w-64">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+      <div className="hidden lg:block bg-black rounded-2xl shadow-lg border-2 border-pp-gold p-4">
         <div className="space-y-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
@@ -32,10 +32,10 @@ export const Navigation = ({ activeSection, onSectionChange }: NavigationProps) 
                 key={item.id}
                 onClick={() => onSectionChange(item.id)}
                 className={cn(
-                  "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200",
+                  "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 font-medium",
                   isActive
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/25"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    ? "bg-pp-gold text-black shadow-lg shadow-pp-gold/25"
+                    : "text-pp-gold hover:bg-pp-gold/10 hover:text-pp-gold"
                 )}
               >
                 <Icon className="h-5 w-5" />
@@ -47,7 +47,7 @@ export const Navigation = ({ activeSection, onSectionChange }: NavigationProps) 
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg z-50">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t-2 border-pp-gold shadow-lg z-50">
         <div className="flex items-center justify-around py-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
@@ -60,8 +60,8 @@ export const Navigation = ({ activeSection, onSectionChange }: NavigationProps) 
                 className={cn(
                   "flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200",
                   isActive
-                    ? "text-blue-600"
-                    : "text-slate-400"
+                    ? "text-pp-gold"
+                    : "text-pp-gold/60 hover:text-pp-gold"
                 )}
               >
                 <Icon className="h-5 w-5" />

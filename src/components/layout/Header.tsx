@@ -27,42 +27,42 @@ export const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-slate-200">
+    <header className="bg-black shadow-lg border-b-2 border-pp-gold">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">PP</span>
+            <div className="w-10 h-10 bg-black border-2 border-pp-gold rounded-xl flex items-center justify-center">
+              <span className="text-pp-gold font-bold text-lg">PP</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">Performance Prime</h1>
-              <p className="text-xs text-slate-500">Oltre ogni limite</p>
+              <h1 className="text-xl font-bold text-pp-gold">Performance Prime</h1>
+              <p className="text-xs text-pp-gold/80">Oltre ogni limite</p>
             </div>
           </div>
 
           {/* User info and actions */}
           <div className="flex items-center space-x-3">
             {user && (
-              <span className="text-sm text-slate-600 hidden sm:block">
+              <span className="text-sm text-pp-gold/80 hidden sm:block">
                 {user.email}
               </span>
             )}
-            <Button variant="ghost" size="sm" className="relative">
+            <Button variant="ghost" size="sm" className="relative text-pp-gold hover:bg-pp-gold hover:text-black">
               <Search className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="relative">
+            <Button variant="ghost" size="sm" className="relative text-pp-gold hover:bg-pp-gold hover:text-black">
               <Bell className="h-5 w-5" />
               {notifications > 0 && (
-                <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-pp-gold text-black text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                   {notifications}
                 </span>
               )}
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-pp-gold hover:bg-pp-gold hover:text-black">
               <LogOut className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="lg:hidden">
+            <Button variant="ghost" size="sm" className="lg:hidden text-pp-gold hover:bg-pp-gold hover:text-black">
               <Menu className="h-5 w-5" />
             </Button>
           </div>

@@ -6,11 +6,11 @@ import { WeeklyProgress } from './WeeklyProgress';
 
 export const Dashboard = () => {
   return (
-    <div className="space-y-6 pb-20 lg:pb-6">
+    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Ciao, Marco!</h2>
-          <p className="text-slate-600">Pronto per superare i tuoi limiti oggi?</p>
+          <h2 className="text-2xl font-bold text-pp-gold">Ciao, Marco!</h2>
+          <p className="text-pp-gold/80">Pronto per superare i tuoi limiti oggi?</p>
         </div>
       </div>
 

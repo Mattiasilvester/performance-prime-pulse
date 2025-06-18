@@ -70,16 +70,16 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-black border-pp-gold border-2 shadow-xl shadow-pp-gold/20">
         <CardHeader className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">PP</span>
+          <div className="w-16 h-16 bg-black border-2 border-pp-gold rounded-xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-pp-gold font-bold text-2xl">PP</span>
           </div>
-          <CardTitle className="text-2xl font-bold text-slate-900">
+          <CardTitle className="text-2xl font-bold text-pp-gold">
             {showResetPassword ? 'Recupera Password' : 'Accedi'}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-pp-gold/80">
             {showResetPassword 
               ? 'Inserisci la tua email per ricevere il link di recupero'
               : 'Entra nel tuo account Performance Prime'
@@ -89,7 +89,7 @@ const Auth = () => {
         <CardContent>
           <form onSubmit={showResetPassword ? handleResetPassword : handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-pp-gold font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -98,12 +98,13 @@ const Auth = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                className="bg-black border-pp-gold border-2 text-pp-gold placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
               />
             </div>
 
             {!showResetPassword && (
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-pp-gold font-medium">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -112,13 +113,14 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={loading}
+                  className="bg-black border-pp-gold border-2 text-pp-gold placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
                 />
               </div>
             )}
 
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-pp-gold text-black hover:bg-black hover:text-pp-gold border-2 border-pp-gold font-bold transition-all duration-200" 
               disabled={loading}
             >
               {loading ? 'Caricamento...' : (showResetPassword ? 'Invia Email' : 'Accedi')}
@@ -130,7 +132,7 @@ const Auth = () => {
               variant="link"
               onClick={() => setShowResetPassword(!showResetPassword)}
               disabled={loading}
-              className="text-sm text-blue-600 hover:text-blue-700"
+              className="text-sm text-pp-gold hover:text-pp-gold/80 font-medium"
             >
               {showResetPassword ? 'Torna al login' : 'Recupera password'}
             </Button>

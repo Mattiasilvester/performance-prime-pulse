@@ -13,28 +13,28 @@ const data = [
 
 export const WeeklyProgress = () => {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+    <div className="bg-black rounded-2xl p-6 shadow-lg border-2 border-pp-gold">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-slate-900">Progressi Settimanali</h3>
-        <span className="text-sm text-slate-500">Questa settimana</span>
+        <h3 className="text-lg font-semibold text-pp-gold">Progressi Settimanali</h3>
+        <span className="text-sm text-pp-gold/70">Questa settimana</span>
       </div>
       
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
             <XAxis 
               dataKey="name" 
-              tick={{ fill: '#64748b', fontSize: 12 }}
-              axisLine={false}
+              tick={{ fill: '#333333', fontSize: 12 }}
+              axisLine={{ stroke: '#333333' }}
             />
             <YAxis 
-              tick={{ fill: '#64748b', fontSize: 12 }}
-              axisLine={false}
+              tick={{ fill: '#333333', fontSize: 12 }}
+              axisLine={{ stroke: '#333333' }}
             />
             <Bar 
               dataKey="workouts" 
-              fill="#2563eb" 
+              fill="#EEBA2B" 
               radius={[4, 4, 0, 0]}
               className="hover:opacity-80 transition-opacity"
             />
@@ -43,8 +43,8 @@ export const WeeklyProgress = () => {
       </div>
       
       <div className="mt-4 text-center">
-        <p className="text-sm text-slate-600">
-          <span className="font-semibold text-blue-600">11 allenamenti</span> completati questa settimana
+        <p className="text-sm text-pp-gold/80">
+          <span className="font-semibold text-pp-gold">11 allenamenti</span> completati questa settimana
         </p>
       </div>
     </div>

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,6 +20,11 @@ export default {
 		},
 		extend: {
 			colors: {
+				// Performance Prime Brand Colors
+				'pp-black': '#000000',
+				'pp-gold': '#EEBA2B',
+				'pp-gray': '#333333',
+				
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -84,11 +90,20 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'gold-pulse': {
+					'0%, 100%': {
+						boxShadow: '0 0 0 0 rgba(238, 186, 43, 0.4)'
+					},
+					'50%': {
+						boxShadow: '0 0 0 10px rgba(238, 186, 43, 0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'gold-pulse': 'gold-pulse 2s infinite'
 			}
 		}
 	},
