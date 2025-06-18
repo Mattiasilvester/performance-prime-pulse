@@ -16,21 +16,21 @@ export const WeeklyProgress = () => {
     <div className="bg-black rounded-2xl p-6 shadow-lg border-2 border-pp-gold">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-pp-gold">Progressi Settimanali</h3>
-        <span className="text-sm text-pp-gold/70">Questa settimana</span>
+        <span className="text-sm text-white">Questa settimana</span>
       </div>
       
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" />
             <XAxis 
               dataKey="name" 
-              tick={{ fill: '#333333', fontSize: 12 }}
-              axisLine={{ stroke: '#333333' }}
+              tick={{ fill: '#EEBA2B', fontSize: 12 }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
             />
             <YAxis 
-              tick={{ fill: '#333333', fontSize: 12 }}
-              axisLine={{ stroke: '#333333' }}
+              tick={{ fill: '#EEBA2B', fontSize: 12 }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
             />
             <Bar 
               dataKey="workouts" 

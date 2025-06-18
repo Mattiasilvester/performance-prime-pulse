@@ -8,28 +8,28 @@ const actions = [
     description: 'Workout di oggi',
     icon: Play,
     color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
-    textColor: 'text-pp-gold',
+    textColor: 'text-white',
   },
   {
     label: 'Prenota Sessione',
     description: 'Con un professionista',
     icon: Calendar,
     color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
-    textColor: 'text-pp-gold',
+    textColor: 'text-white',
   },
   {
     label: 'Chat AI Coach',
     description: 'Chiedi consiglio',
     icon: MessageSquare,
     color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
-    textColor: 'text-pp-gold',
+    textColor: 'text-white',
   },
   {
     label: 'Nuovo Obiettivo',
     description: 'Sfida te stesso',
     icon: Plus,
     color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
-    textColor: 'text-pp-gold',
+    textColor: 'text-white',
   },
 ];
 

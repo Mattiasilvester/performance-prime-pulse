@@ -54,7 +54,7 @@ export const StatsOverview = () => {
             </div>
             <div className="space-y-1">
               <p className="text-2xl font-bold text-pp-gold">{stat.value}</p>
-              <p className="text-sm text-pp-gold/80">{stat.label}</p>
+              <p className="text-sm text-white">{stat.label}</p>
             </div>
           </div>
         );

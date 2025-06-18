@@ -59,8 +59,8 @@ export const RecentActivity = () => {
                 <Icon className={`h-4 w-4 ${activity.color}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-pp-gold truncate">{activity.title}</p>
-                <div className="flex items-center space-x-2 text-sm text-pp-gold/70">
+                <p className="font-medium text-white truncate">{activity.title}</p>
+                <div className="flex items-center space-x-2 text-sm text-white/70">
                   <Clock className="h-3 w-3" />
                   <span>{activity.time}</span>
                   <span>•</span>
