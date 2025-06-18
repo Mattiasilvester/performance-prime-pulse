@@ -10,6 +10,7 @@ const categories = [
     duration: '20-45 min',
     icon: Heart,
     iconBgColor: 'bg-[#004AAD]',
+    rightBgColor: '#004AAD',
     workouts: 12,
   },
   {
@@ -19,6 +20,7 @@ const categories = [
     duration: '30-60 min',
     icon: Dumbbell,
     iconBgColor: 'bg-[#EF4136]',
+    rightBgColor: '#EF4136',
     workouts: 18,
   },
   {
@@ -28,6 +30,7 @@ const categories = [
     duration: '15-30 min',
     icon: Zap,
     iconBgColor: 'bg-[#FF5757]',
+    rightBgColor: '#FF5757',
     workouts: 8,
   },
   {
@@ -37,6 +40,7 @@ const categories = [
     duration: '10-20 min',
     icon: Activity,
     iconBgColor: 'bg-[#8C52FF]',
+    rightBgColor: '#8C52FF',
     workouts: 15,
   },
 ];
@@ -54,18 +58,18 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
           return (
             <div
               key={category.id}
-              className="bg-gradient-to-r from-black to-[#C89116] rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105"
+              className="rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105 flex"
             >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`${category.iconBgColor} rounded-xl p-3 flex items-center justify-center`}>
-                    <Icon className="h-8 w-8 text-white" />
+              {/* Left half with gradient and content */}
+              <div className="w-1/2 bg-gradient-to-r from-black to-[#C89116] p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm text-white/80">{category.workouts} workout</span>
                   </div>
-                  <span className="text-sm text-white/80">{category.workouts} workout</span>
-                </div>
-                <div className="mb-4">
-                  <h3 className="text-xl font-bold text-pp-gold mb-2">{category.name}</h3>
-                  <p className="text-white text-sm mb-3">{category.description}</p>
+                  <div className="mb-4">
+                    <h3 className="text-xl font-bold text-pp-gold mb-2">{category.name}</h3>
+                    <p className="text-white text-sm mb-3">{category.description}</p>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-white/80">{category.duration}</span>
@@ -76,6 +80,14 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                     Inizia
                   </Button>
                 </div>
+              </div>
+              
+              {/* Right half with solid color and icon */}
+              <div 
+                className="w-1/2 flex items-center justify-center"
+                style={{ backgroundColor: category.rightBgColor }}
+              >
+                <Icon className="h-16 w-16 text-white" />
               </div>
             </div>
           );
