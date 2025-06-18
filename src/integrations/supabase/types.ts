@@ -9,7 +9,132 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      professionals: {
+        Row: {
+          birth_date: string
+          birth_place: string
+          category: Database["public"]["Enums"]["professional_category"]
+          company_name: string
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          office_phone: string | null
+          password_hash: string
+          password_salt: string
+          payment_method: string | null
+          pec_email: string | null
+          phone: string
+          reset_requested_at: string | null
+          reset_token: string | null
+          sdi_code: string | null
+          updated_at: string
+          vat_address: string
+          vat_city: string
+          vat_number: string
+          vat_postal_code: string
+        }
+        Insert: {
+          birth_date: string
+          birth_place: string
+          category: Database["public"]["Enums"]["professional_category"]
+          company_name: string
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          office_phone?: string | null
+          password_hash: string
+          password_salt: string
+          payment_method?: string | null
+          pec_email?: string | null
+          phone: string
+          reset_requested_at?: string | null
+          reset_token?: string | null
+          sdi_code?: string | null
+          updated_at?: string
+          vat_address: string
+          vat_city: string
+          vat_number: string
+          vat_postal_code: string
+        }
+        Update: {
+          birth_date?: string
+          birth_place?: string
+          category?: Database["public"]["Enums"]["professional_category"]
+          company_name?: string
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          office_phone?: string | null
+          password_hash?: string
+          password_salt?: string
+          payment_method?: string | null
+          pec_email?: string | null
+          phone?: string
+          reset_requested_at?: string | null
+          reset_token?: string | null
+          sdi_code?: string | null
+          updated_at?: string
+          vat_address?: string
+          vat_city?: string
+          vat_number?: string
+          vat_postal_code?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          category: Database["public"]["Enums"]["user_category"]
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          password_hash: string
+          password_salt: string
+          payment_method: string | null
+          phone: string
+          reset_requested_at: string | null
+          reset_token: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["user_category"]
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          password_hash: string
+          password_salt: string
+          payment_method?: string | null
+          phone: string
+          reset_requested_at?: string | null
+          reset_token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["user_category"]
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          password_hash?: string
+          password_salt?: string
+          payment_method?: string | null
+          phone?: string
+          reset_requested_at?: string | null
+          reset_token?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +143,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      professional_category:
+        | "fisioterapista"
+        | "nutrizionista"
+        | "mental_coach"
+        | "osteopata"
+        | "pt"
+      user_category: "amatori" | "atleti" | "agonisti"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +264,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      professional_category: [
+        "fisioterapista",
+        "nutrizionista",
+        "mental_coach",
+        "osteopata",
+        "pt",
+      ],
+      user_category: ["amatori", "atleti", "agonisti"],
+    },
   },
 } as const
