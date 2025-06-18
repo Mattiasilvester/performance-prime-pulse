@@ -47,28 +47,28 @@ export const AppointmentCalendar = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+    <div className="calendar-panel">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-slate-900">
+        <h3 className="calendar-panel__title">
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
         </h3>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
+          <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')} className="bg-black/50 border-white/20 text-white hover:bg-white/10">
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
+          <Button variant="outline" size="sm" onClick={() => navigateMonth('next')} className="bg-black/50 border-white/20 text-white hover:bg-white/10">
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+          <button className="calendar-panel__new-button">
             <Plus className="h-4 w-4 mr-2" />
             Nuovo
-          </Button>
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-7 gap-2 mb-4">
         {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map(day => (
-          <div key={day} className="p-2 text-center text-sm font-medium text-slate-600">
+          <div key={day} className="p-2 text-center text-sm font-medium calendar-panel__weekday">
             {day}
           </div>
         ))}
@@ -81,10 +81,10 @@ export const AppointmentCalendar = () => {
         {days.map(day => (
           <div
             key={day}
-            className={`p-2 text-center text-sm rounded-lg cursor-pointer transition-colors relative ${
+            className={`p-2 text-center text-sm rounded-lg cursor-pointer transition-colors relative calendar-panel__day ${
               hasAppointment(day)
-                ? 'bg-blue-50 text-blue-700 font-semibold hover:bg-blue-100'
-                : 'hover:bg-slate-50 text-slate-700'
+                ? 'bg-white/20 font-semibold hover:bg-white/30'
+                : 'hover:bg-white/10'
             }`}
           >
             {day}
