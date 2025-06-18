@@ -10,6 +10,7 @@ const categories = [
     duration: '20-45 min',
     icon: Heart,
     iconBgColor: 'bg-[#004AAD]',
+    iconColor: '#38B6FF',
     workouts: 12,
   },
   {
@@ -19,6 +20,7 @@ const categories = [
     duration: '30-60 min',
     icon: Dumbbell,
     iconBgColor: 'bg-[#EF4136]',
+    iconColor: '#FF5757',
     workouts: 18,
   },
   {
@@ -28,6 +30,7 @@ const categories = [
     duration: '15-30 min',
     icon: Zap,
     iconBgColor: 'bg-[#FF5757]',
+    iconColor: '#FFD400',
     workouts: 8,
   },
   {
@@ -37,6 +40,7 @@ const categories = [
     duration: '10-20 min',
     icon: Activity,
     iconBgColor: 'bg-[#8C52FF]',
+    iconColor: '#FF66C4',
     workouts: 15,
   },
 ];
@@ -59,7 +63,7 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className={`${category.iconBgColor} rounded-xl p-3 flex items-center justify-center`}>
-                    <Icon className="h-8 w-8 text-white" />
+                    <Icon className="h-8 w-8" style={{ color: category.iconColor }} />
                   </div>
                   <span className="text-sm text-white/80">{category.workouts} workout</span>
                 </div>
