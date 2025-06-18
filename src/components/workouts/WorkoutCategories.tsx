@@ -10,7 +10,7 @@ const categories = [
     duration: '20-45 min',
     icon: Heart,
     iconBgColor: 'bg-[#004AAD]',
-    iconColor: '#38B6FF',
+    iconColor: '#FFFFFF',
     workouts: 12,
   },
   {
@@ -20,7 +20,7 @@ const categories = [
     duration: '30-60 min',
     icon: Dumbbell,
     iconBgColor: 'bg-[#EF4136]',
-    iconColor: '#FF5757',
+    iconColor: '#FFFFFF',
     workouts: 18,
   },
   {
@@ -30,7 +30,7 @@ const categories = [
     duration: '15-30 min',
     icon: Zap,
     iconBgColor: 'bg-[#FF5757]',
-    iconColor: '#FFD400',
+    iconColor: '#FFFFFF',
     workouts: 8,
   },
   {
@@ -40,7 +40,7 @@ const categories = [
     duration: '10-20 min',
     icon: Activity,
     iconBgColor: 'bg-[#8C52FF]',
-    iconColor: '#FF66C4',
+    iconColor: '#FFFFFF',
     workouts: 15,
   },
 ];
