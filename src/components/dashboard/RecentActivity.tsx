@@ -9,7 +9,7 @@ const activities = [
     ago: '2 ore fa',
     status: 'completed',
     icon: CheckCircle,
-    color: 'text-green-600',
+    color: 'text-[#c89116]',
   },
   {
     type: 'appointment',
@@ -18,7 +18,7 @@ const activities = [
     ago: '1 giorno fa',
     status: 'completed',
     icon: Star,
-    color: 'text-orange-600',
+    color: 'text-[#c89116]',
   },
   {
     type: 'workout',
@@ -27,7 +27,7 @@ const activities = [
     ago: '2 giorni fa',
     status: 'completed',
     icon: CheckCircle,
-    color: 'text-green-600',
+    color: 'text-[#c89116]',
   },
   {
     type: 'workout',
@@ -36,16 +36,16 @@ const activities = [
     ago: '3 giorni fa',
     status: 'completed',
     icon: CheckCircle,
-    color: 'text-green-600',
+    color: 'text-[#c89116]',
   },
 ];
 
 export const RecentActivity = () => {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+    <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg border-2 border-[#c89116]">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-slate-900">Attività Recenti</h3>
-        <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+        <h3 className="text-lg font-semibold text-pp-gold">Attività Recenti</h3>
+        <button className="text-sm text-[#c89116] hover:text-pp-gold font-medium transition-colors">
           Vedi tutte
         </button>
       </div>
@@ -54,13 +54,13 @@ export const RecentActivity = () => {
         {activities.map((activity, index) => {
           const Icon = activity.icon;
           return (
-            <div key={index} className="flex items-center space-x-3 p-3 hover:bg-slate-50 rounded-xl transition-colors">
-              <div className={`p-2 rounded-xl bg-slate-100`}>
+            <div key={index} className="flex items-center space-x-3 p-3 hover:bg-[#c89116]/10 rounded-xl transition-colors">
+              <div className={`p-2 rounded-xl bg-[#c89116]/20 border border-[#c89116]`}>
                 <Icon className={`h-4 w-4 ${activity.color}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-slate-900 truncate">{activity.title}</p>
-                <div className="flex items-center space-x-2 text-sm text-slate-500">
+                <p className="font-medium text-pp-gold truncate">{activity.title}</p>
+                <div className="flex items-center space-x-2 text-sm text-pp-gold/70">
                   <Clock className="h-3 w-3" />
                   <span>{activity.time}</span>
                   <span>•</span>

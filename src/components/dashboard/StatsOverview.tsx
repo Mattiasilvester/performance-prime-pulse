@@ -7,32 +7,32 @@ const stats = [
     value: '28',
     change: '+12%',
     icon: TrendingUp,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    color: 'text-pp-gold',
+    bgColor: 'bg-black',
   },
   {
     label: 'Obiettivi raggiunti',
     value: '8/10',
     change: '+2',
     icon: Target,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
+    color: 'text-pp-gold',
+    bgColor: 'bg-black',
   },
   {
     label: 'Tempo totale',
     value: '42h',
     change: '+5h',
     icon: Clock,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100',
+    color: 'text-pp-gold',
+    bgColor: 'bg-black',
   },
   {
     label: 'Medaglie',
     value: '15',
     change: '+3',
     icon: Award,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
+    color: 'text-pp-gold',
+    bgColor: 'bg-black',
   },
 ];
 
@@ -44,17 +44,17 @@ export const StatsOverview = () => {
         return (
           <div
             key={stat.label}
-            className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-200"
+            className="bg-gradient-to-br from-black to-[#c89116]/20 rounded-2xl p-4 shadow-lg border-2 border-[#c89116] hover:shadow-xl hover:shadow-[#c89116]/20 transition-all duration-200"
           >
             <div className="flex items-center justify-between mb-2">
-              <div className={`p-2 rounded-xl ${stat.bgColor}`}>
+              <div className={`p-2 rounded-xl bg-[#c89116]/20 border border-[#c89116]`}>
                 <Icon className={`h-5 w-5 ${stat.color}`} />
               </div>
-              <span className="text-sm font-medium text-green-600">{stat.change}</span>
+              <span className="text-sm font-medium text-[#c89116]">{stat.change}</span>
             </div>
             <div className="space-y-1">
-              <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
-              <p className="text-sm text-slate-600">{stat.label}</p>
+              <p className="text-2xl font-bold text-pp-gold">{stat.value}</p>
+              <p className="text-sm text-pp-gold/80">{stat.label}</p>
             </div>
           </div>
         );
