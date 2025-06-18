@@ -50,7 +50,7 @@ export const StatsOverview = () => {
               <div className={`p-2 rounded-xl bg-[#c89116]/20 border border-[#c89116]`}>
                 <Icon className={`h-5 w-5 ${stat.color}`} />
               </div>
-              <span className="text-sm font-medium text-[#c89116]">{stat.change}</span>
+              <span className="text-sm font-medium text-white">{stat.change}</span>
             </div>
             <div className="space-y-1">
               <p className="text-2xl font-bold text-pp-gold">{stat.value}</p>

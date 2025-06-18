@@ -34,10 +34,10 @@ const appointments = [
 
 export const UpcomingAppointments = () => {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+    <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl shadow-lg border-2 border-[#c89116] p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-slate-900">Prossimi Appuntamenti</h3>
-        <Button variant="ghost" size="sm" className="text-blue-600">
+        <h3 className="text-xl font-semibold text-pp-gold">Prossimi Appuntamenti</h3>
+        <Button variant="ghost" size="sm" className="text-white hover:text-pp-gold">
           Vedi tutti
         </Button>
       </div>
@@ -46,33 +46,33 @@ export const UpcomingAppointments = () => {
         {appointments.map((appointment) => (
           <div
             key={appointment.id}
-            className="p-4 border border-slate-200 rounded-xl hover:shadow-md transition-shadow"
+            className="p-4 border border-[#c89116]/30 bg-black/50 rounded-xl hover:shadow-md hover:shadow-[#c89116]/20 transition-all"
           >
             <div className="flex items-start space-x-3">
               <div className="text-2xl">{appointment.avatar}</div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-slate-900 truncate">
+                <h4 className="font-semibold text-white truncate">
                   {appointment.professional}
                 </h4>
-                <p className="text-sm text-slate-600 mb-2">{appointment.type}</p>
+                <p className="text-sm text-white/70 mb-2">{appointment.type}</p>
                 
                 <div className="space-y-1">
-                  <div className="flex items-center text-sm text-slate-500">
+                  <div className="flex items-center text-sm text-white/70">
                     <Clock className="h-3 w-3 mr-1" />
                     <span>{appointment.date} alle {appointment.time}</span>
                   </div>
-                  <div className="flex items-center text-sm text-slate-500">
+                  <div className="flex items-center text-sm text-white/70">
                     <MapPin className="h-3 w-3 mr-1" />
                     <span>{appointment.location}</span>
                   </div>
                 </div>
                 
                 <div className="flex items-center space-x-2 mt-3">
-                  <Button size="sm" variant="outline" className="flex-1">
+                  <Button size="sm" variant="outline" className="flex-1 border-[#c89116] text-white hover:bg-[#c89116] hover:text-black">
                     <MessageSquare className="h-3 w-3 mr-1" />
                     Chat
                   </Button>
-                  <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  <Button size="sm" className="flex-1 bg-[#c89116] text-black hover:bg-[#c89116]/80">
                     Dettagli
                   </Button>
                 </div>

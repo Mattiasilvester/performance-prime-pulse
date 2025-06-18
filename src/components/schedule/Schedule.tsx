@@ -5,11 +5,11 @@ import { ProfessionalsList } from './ProfessionalsList';
 
 export const Schedule = () => {
   return (
-    <div className="space-y-6 pb-20 lg:pb-6">
+    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Agenda</h2>
-          <p className="text-slate-600">Gestisci i tuoi appuntamenti</p>
+          <h2 className="text-2xl font-bold text-pp-gold">Agenda</h2>
+          <p className="text-white">Gestisci i tuoi appuntamenti</p>
         </div>
       </div>
 

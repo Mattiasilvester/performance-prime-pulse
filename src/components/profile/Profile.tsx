@@ -6,11 +6,11 @@ import { Settings } from './Settings';
 
 export const Profile = () => {
   return (
-    <div className="space-y-6 pb-20 lg:pb-6">
+    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Il Tuo Profilo</h2>
-          <p className="text-slate-600">Monitora i tuoi progressi e risultati</p>
+          <h2 className="text-2xl font-bold text-pp-gold">Il Tuo Profilo</h2>
+          <p className="text-white">Monitora i tuoi progressi e risultati</p>
         </div>
       </div>
 

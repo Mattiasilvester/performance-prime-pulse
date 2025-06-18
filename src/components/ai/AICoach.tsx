@@ -5,11 +5,11 @@ import { PersonalizedPlans } from './PersonalizedPlans';
 
 export const AICoach = () => {
   return (
-    <div className="space-y-6 pb-20 lg:pb-6">
+    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">AI Coach Prime</h2>
-          <p className="text-slate-600">Il tuo assistente personale per l'allenamento</p>
+          <h2 className="text-2xl font-bold text-pp-gold">AI Coach Prime</h2>
+          <p className="text-white">Il tuo assistente personale per l'allenamento</p>
         </div>
       </div>
 

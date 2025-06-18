@@ -45,7 +45,7 @@ export const RecentActivity = () => {
     <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg border-2 border-[#c89116]">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-pp-gold">Attività Recenti</h3>
-        <button className="text-sm text-[#c89116] hover:text-pp-gold font-medium transition-colors">
+        <button className="text-sm text-white hover:text-pp-gold font-medium transition-colors">
           Vedi tutte
         </button>
       </div>
