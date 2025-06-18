@@ -20,7 +20,7 @@ const categories = [
     duration: '30-60 min',
     icon: Dumbbell,
     iconBgColor: 'bg-[#EF4136]',
-    iconColor: '#FF5757',
+    iconColor: '#EF4136',
     workouts: 18,
   },
   {
