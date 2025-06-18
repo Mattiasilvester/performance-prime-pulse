@@ -1,5 +1,5 @@
 
-import { Heart, Dumbbell, Zap, Stretch } from 'lucide-react';
+import { Heart, Dumbbell, Zap, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const categories = [
@@ -38,7 +38,7 @@ const categories = [
     name: 'Mobilità',
     description: 'Stretching e flessibilità',
     duration: '10-20 min',
-    icon: Stretch,
+    icon: Activity,
     color: 'bg-green-500',
     bgGradient: 'from-green-500 to-emerald-500',
     workouts: 15,
