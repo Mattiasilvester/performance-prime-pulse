@@ -15,7 +15,7 @@ const categories = [
   },
   {
     id: 'strength',
-    name: 'Forza',
+    name: 'Forza',  
     description: 'Costruisci massa muscolare',
     duration: '30-60 min',
     icon: Dumbbell,
@@ -60,12 +60,12 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
               key={category.id}
               className="rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105 flex flex-col"
             >
-              {/* Top half with solid color and icon */}
+              {/* Top half with solid color and smaller icon */}
               <div 
                 className="h-1/2 flex items-center justify-center"
                 style={{ backgroundColor: category.rightBgColor }}
               >
-                <Icon className="h-16 w-16 text-white" />
+                <Icon className="h-12 w-12 text-white" />
               </div>
               
               {/* Bottom half with gradient and content */}
