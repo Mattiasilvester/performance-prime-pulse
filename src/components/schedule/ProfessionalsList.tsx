@@ -48,7 +48,7 @@ export const ProfessionalsList = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {professionals.map((professional) => (
           <div key={professional.id} className="prof-card">
             <div className="prof-card__avatar">
