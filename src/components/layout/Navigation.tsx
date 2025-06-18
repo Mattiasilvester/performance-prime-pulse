@@ -1,23 +1,19 @@
 
 import { Home, Dumbbell, Calendar, Bot, User } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
-type ActiveSection = 'dashboard' | 'workouts' | 'schedule' | 'ai-coach' | 'profile';
-
-interface NavigationProps {
-  activeSection: ActiveSection;
-  onSectionChange: (section: ActiveSection) => void;
-}
-
 const navigationItems = [
-  { id: 'dashboard' as const, label: 'Dashboard', icon: Home },
-  { id: 'workouts' as const, label: 'Allenamenti', icon: Dumbbell },
-  { id: 'schedule' as const, label: 'Agenda', icon: Calendar },
-  { id: 'ai-coach' as const, label: 'AI Coach', icon: Bot },
-  { id: 'profile' as const, label: 'Profilo', icon: User },
+  { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
+  { id: 'workouts', label: 'Allenamenti', icon: Dumbbell, path: '/workouts' },
+  { id: 'schedule', label: 'Agenda', icon: Calendar, path: '/schedule' },
+  { id: 'ai-coach', label: 'AI Coach', icon: Bot, path: '/ai-coach' },
+  { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
 ];
 
-export const Navigation = ({ activeSection, onSectionChange }: NavigationProps) => {
+export const Navigation = () => {
+  const location = useLocation();
+
   return (
     <nav className="lg:w-64">
       {/* Desktop Sidebar */}
@@ -25,12 +21,12 @@ export const Navigation = ({ activeSection, onSectionChange }: NavigationProps) 
         <div className="space-y-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeSection === item.id;
+            const isActive = location.pathname === item.path;
             
             return (
-              <button
+              <Link
                 key={item.id}
-                onClick={() => onSectionChange(item.id)}
+                to={item.path}
                 className={cn(
                   "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 font-medium",
                   isActive
@@ -40,7 +36,7 @@ export const Navigation = ({ activeSection, onSectionChange }: NavigationProps) 
               >
                 <Icon className="h-5 w-5" />
                 <span className="font-medium">{item.label}</span>
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -51,12 +47,12 @@ export const Navigation = ({ activeSection, onSectionChange }: NavigationProps) 
         <div className="flex items-center justify-around py-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeSection === item.id;
+            const isActive = location.pathname === item.path;
             
             return (
-              <button
+              <Link
                 key={item.id}
-                onClick={() => onSectionChange(item.id)}
+                to={item.path}
                 className={cn(
                   "flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200",
                   isActive
@@ -66,7 +62,7 @@ export const Navigation = ({ activeSection, onSectionChange }: NavigationProps) 
               >
                 <Icon className="h-5 w-5" />
                 <span className="text-xs font-medium">{item.label}</span>
-              </button>
+              </Link>
             );
           })}
         </div>
