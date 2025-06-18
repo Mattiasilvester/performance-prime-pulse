@@ -10,17 +10,15 @@ const categories = [
     duration: '20-45 min',
     icon: Heart,
     iconBgColor: 'bg-[#004AAD]',
-    rightBgColor: '#004AAD',
     workouts: 12,
   },
   {
     id: 'strength',
-    name: 'Forza',  
+    name: 'Forza',
     description: 'Costruisci massa muscolare',
     duration: '30-60 min',
     icon: Dumbbell,
     iconBgColor: 'bg-[#EF4136]',
-    rightBgColor: '#EF4136',
     workouts: 18,
   },
   {
@@ -30,7 +28,6 @@ const categories = [
     duration: '15-30 min',
     icon: Zap,
     iconBgColor: 'bg-[#FF5757]',
-    rightBgColor: '#FF5757',
     workouts: 8,
   },
   {
@@ -40,7 +37,6 @@ const categories = [
     duration: '10-20 min',
     icon: Activity,
     iconBgColor: 'bg-[#8C52FF]',
-    rightBgColor: '#8C52FF',
     workouts: 15,
   },
 ];
@@ -58,32 +54,24 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
           return (
             <div
               key={category.id}
-              className="rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105 flex flex-col h-48"
+              className="bg-gradient-to-r from-black to-[#C89116] rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105"
             >
-              {/* Top section with solid color and icon - very small like in screenshot */}
-              <div 
-                className="h-1/4 flex items-center justify-center"
-                style={{ backgroundColor: category.rightBgColor }}
-              >
-                <Icon className="h-8 w-8 text-white" />
-              </div>
-              
-              {/* Bottom section with white background and content - matches screenshot */}
-              <div className="h-3/4 bg-white p-4 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">{category.workouts} workout</span>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`${category.iconBgColor} rounded-xl p-3 flex items-center justify-center`}>
+                    <Icon className="h-8 w-8 text-white" />
                   </div>
-                  <div className="mb-3">
-                    <h3 className="text-lg font-bold text-black mb-1">{category.name}</h3>
-                    <p className="text-gray-600 text-sm mb-2">{category.description}</p>
-                  </div>
+                  <span className="text-sm text-white/80">{category.workouts} workout</span>
+                </div>
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-pp-gold mb-2">{category.name}</h3>
+                  <p className="text-white text-sm mb-3">{category.description}</p>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">{category.duration}</span>
+                  <span className="text-sm font-medium text-white/80">{category.duration}</span>
                   <Button 
                     onClick={() => onStartWorkout(category.id)}
-                    className="bg-black hover:bg-gray-800 text-white text-sm px-4 py-2"
+                    className="bg-black hover:bg-gray-900 text-white border border-white/20"
                   >
                     Inizia
                   </Button>
