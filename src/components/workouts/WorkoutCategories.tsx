@@ -9,8 +9,7 @@ const categories = [
     description: 'Brucia calorie e migliora la resistenza',
     duration: '20-45 min',
     icon: Heart,
-    color: 'bg-red-500',
-    bgGradient: 'from-red-500 to-pink-500',
+    iconBgColor: 'bg-[#004AAD]',
     workouts: 12,
   },
   {
@@ -19,8 +18,7 @@ const categories = [
     description: 'Costruisci massa muscolare',
     duration: '30-60 min',
     icon: Dumbbell,
-    color: 'bg-blue-500',
-    bgGradient: 'from-blue-500 to-blue-600',
+    iconBgColor: 'bg-[#EF4136]',
     workouts: 18,
   },
   {
@@ -29,8 +27,7 @@ const categories = [
     description: 'Allenamento ad alta intensità',
     duration: '15-30 min',
     icon: Zap,
-    color: 'bg-orange-500',
-    bgGradient: 'from-orange-500 to-red-500',
+    iconBgColor: 'bg-[#FF5757]',
     workouts: 8,
   },
   {
@@ -39,8 +36,7 @@ const categories = [
     description: 'Stretching e flessibilità',
     duration: '10-20 min',
     icon: Activity,
-    color: 'bg-green-500',
-    bgGradient: 'from-green-500 to-emerald-500',
+    iconBgColor: 'bg-[#8C52FF]',
     workouts: 15,
   },
 ];
@@ -58,19 +54,21 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
           return (
             <div
               key={category.id}
-              className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105"
+              className="bg-gradient-to-br from-black to-[#C89116] rounded-2xl shadow-lg border border-pp-gold/20 overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105"
             >
-              <div className={`h-24 bg-gradient-to-r ${category.bgGradient} flex items-center justify-center`}>
-                <Icon className="h-12 w-12 text-white" />
-              </div>
               <div className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xl font-bold text-slate-900">{category.name}</h3>
-                  <span className="text-sm text-slate-500">{category.workouts} workout</span>
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`${category.iconBgColor} rounded-xl p-3 flex items-center justify-center`}>
+                    <Icon className="h-8 w-8 text-white" />
+                  </div>
+                  <span className="text-sm text-white/80">{category.workouts} workout</span>
                 </div>
-                <p className="text-slate-600 mb-3">{category.description}</p>
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-pp-gold mb-2">{category.name}</h3>
+                  <p className="text-white text-sm mb-3">{category.description}</p>
+                </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-500">{category.duration}</span>
+                  <span className="text-sm font-medium text-white/80">{category.duration}</span>
                   <Button 
                     onClick={() => onStartWorkout(category.id)}
                     className="bg-slate-900 hover:bg-slate-800 text-white"
@@ -85,21 +83,20 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
       </div>
 
       {/* Today's Recommended */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-br from-black to-[#C89116] rounded-2xl p-6 border border-pp-gold/20">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold mb-2">Consigliato per Oggi</h3>
-            <p className="text-blue-100 mb-4">HIIT Total Body - Perfetto per il tuo livello</p>
+            <h3 className="text-xl font-bold mb-2 text-pp-gold">Consigliato per Oggi</h3>
+            <p className="text-white mb-4">HIIT Total Body - Perfetto per il tuo livello</p>
             <Button 
               onClick={() => onStartWorkout('recommended')}
-              variant="secondary" 
-              className="bg-white text-blue-600 hover:bg-blue-50"
+              className="bg-black text-white hover:bg-gray-900"
             >
               Inizia Workout
             </Button>
           </div>
           <div className="hidden md:block">
-            <Zap className="h-16 w-16 text-blue-200" />
+            <Zap className="h-16 w-16 text-white" />
           </div>
         </div>
       </div>
