@@ -50,51 +50,50 @@ export const ProfessionalsList = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {professionals.map((professional) => (
-          <div
-            key={professional.id}
-            className="p-4 border border-slate-200 rounded-xl hover:shadow-md transition-all duration-200 hover:scale-105"
-          >
-            <div className="flex items-start space-x-3 mb-3">
-              <div className="text-2xl">{professional.avatar}</div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-slate-900 truncate">
-                  {professional.name}
-                </h4>
-                <p className="text-sm text-slate-600">{professional.specialty}</p>
-                <div className="flex items-center space-x-2 mt-1">
-                  <div className="flex items-center">
-                    <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium text-slate-700 ml-1">
-                      {professional.rating}
-                    </span>
-                  </div>
-                  <span className="text-sm text-slate-500">
-                    ({professional.reviews} recensioni)
-                  </span>
-                </div>
+          <div key={professional.id} className="prof-card">
+            <div className="prof-card__avatar">
+              <div className="text-2xl flex items-center justify-center w-full h-full">
+                {professional.avatar}
               </div>
-              <div className={`w-3 h-3 rounded-full ${professional.available ? 'bg-green-400' : 'bg-red-400'}`} />
             </div>
             
-            <div className="flex items-center justify-between text-sm text-slate-600 mb-3">
-              <span>{professional.experience} esperienza</span>
-              <span className="font-semibold text-slate-900">{professional.price}</span>
+            <div className="prof-card__content">
+              <h4 className="prof-card__name">
+                {professional.name}
+              </h4>
+              <p className="prof-card__role">{professional.specialty}</p>
+              
+              <div className="prof-card__rating">
+                <Star className="h-3 w-3 prof-card__rating-star fill-current" />
+                <span className="prof-card__rating-value text-sm ml-1">
+                  {professional.rating}
+                </span>
+                <span className="text-sm text-slate-500 ml-1">
+                  ({professional.reviews} recensioni)
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm mb-3">
+                <span className="prof-card__experience">{professional.experience} esperienza</span>
+                <span className="prof-card__rate font-semibold">{professional.price}</span>
+              </div>
+              
+              <div className="prof-card__actions">
+                <button className="prof-card__chat-btn flex-1">
+                  <MessageSquare className="h-3 w-3" />
+                  Chat
+                </button>
+                <button 
+                  className="prof-card__book-btn flex-1"
+                  disabled={!professional.available}
+                >
+                  <Calendar className="h-3 w-3" />
+                  Prenota
+                </button>
+              </div>
             </div>
             
-            <div className="flex items-center space-x-2">
-              <Button size="sm" variant="outline" className="flex-1">
-                <MessageSquare className="h-3 w-3 mr-1" />
-                Chat
-              </Button>
-              <Button 
-                size="sm" 
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
-                disabled={!professional.available}
-              >
-                <Calendar className="h-3 w-3 mr-1" />
-                Prenota
-              </Button>
-            </div>
+            <div className={`prof-card__status-dot ${professional.available ? 'online' : 'offline'}`} />
           </div>
         ))}
       </div>
