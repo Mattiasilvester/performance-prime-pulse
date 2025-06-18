@@ -17,55 +17,59 @@ import { AppLayout } from "./components/layout/AppLayout";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => (
+  <BrowserRouter>
+    <Routes>
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Dashboard />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/workouts" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Workouts />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/schedule" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Schedule />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/ai-coach" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <AICoach />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Profile />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </BrowserRouter>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <AppContent />
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Dashboard />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/workouts" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Workouts />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/schedule" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Schedule />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/ai-coach" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <AICoach />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Profile />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
