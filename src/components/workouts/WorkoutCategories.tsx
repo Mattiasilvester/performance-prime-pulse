@@ -60,16 +60,16 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
               key={category.id}
               className="rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105 flex flex-col"
             >
-              {/* Top section with solid color and smaller icon - reduced height */}
+              {/* Top section with solid color and smaller icon - further reduced height */}
               <div 
-                className="h-2/5 flex items-center justify-center"
+                className="h-1/3 flex items-center justify-center"
                 style={{ backgroundColor: category.rightBgColor }}
               >
-                <Icon className="h-12 w-12 text-white" />
+                <Icon className="h-10 w-10 text-white" />
               </div>
               
-              {/* Bottom section with gradient and content - increased height */}
-              <div className="h-3/5 bg-gradient-to-r from-black to-[#C89116] p-6 flex flex-col justify-between">
+              {/* Bottom section with gradient and content - increased height for better visibility */}
+              <div className="h-2/3 bg-gradient-to-r from-black to-[#C89116] p-6 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm text-white/80">{category.workouts} workout</span>
