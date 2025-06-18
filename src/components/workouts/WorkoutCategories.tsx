@@ -58,10 +58,10 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
           return (
             <div
               key={category.id}
-              className="rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105 flex"
+              className="rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105 flex flex-col"
             >
-              {/* Left half with gradient and content */}
-              <div className="w-1/2 bg-gradient-to-r from-black to-[#C89116] p-6 flex flex-col justify-between">
+              {/* Top half with gradient and content */}
+              <div className="h-1/2 bg-gradient-to-r from-black to-[#C89116] p-6 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm text-white/80">{category.workouts} workout</span>
@@ -82,9 +82,9 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                 </div>
               </div>
               
-              {/* Right half with solid color and icon */}
+              {/* Bottom half with solid color and icon */}
               <div 
-                className="w-1/2 flex items-center justify-center"
+                className="h-1/2 flex items-center justify-center"
                 style={{ backgroundColor: category.rightBgColor }}
               >
                 <Icon className="h-16 w-16 text-white" />
