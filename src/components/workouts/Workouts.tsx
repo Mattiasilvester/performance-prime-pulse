@@ -8,11 +8,11 @@ export const Workouts = () => {
   const [activeWorkout, setActiveWorkout] = useState<string | null>(null);
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen">
+    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen border-2 border-black">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Allenamenti</h2>
-          <p className="text-pp-gold">Scegli il tuo workout perfetto</p>
+          <h2 className="text-2xl font-bold text-pp-gold">Allenamenti</h2>
+          <p className="text-white">Scegli il tuo workout perfetto</p>
         </div>
       </div>
 

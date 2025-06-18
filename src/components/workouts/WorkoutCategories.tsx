@@ -54,7 +54,7 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
           return (
             <div
               key={category.id}
-              className="bg-gradient-to-br from-black to-[#C89116] rounded-2xl shadow-lg border border-pp-gold/20 overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105"
+              className="bg-gradient-to-r from-black to-[#C89116] rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -71,7 +71,7 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                   <span className="text-sm font-medium text-white/80">{category.duration}</span>
                   <Button 
                     onClick={() => onStartWorkout(category.id)}
-                    className="bg-slate-900 hover:bg-slate-800 text-white"
+                    className="bg-black hover:bg-gray-900 text-white border border-white/20"
                   >
                     Inizia
                   </Button>
@@ -83,14 +83,14 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
       </div>
 
       {/* Today's Recommended */}
-      <div className="bg-gradient-to-br from-black to-[#C89116] rounded-2xl p-6 border border-pp-gold/20">
+      <div className="bg-gradient-to-r from-black to-[#C89116] rounded-2xl p-6 border-2 border-black">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold mb-2 text-pp-gold">Consigliato per Oggi</h3>
             <p className="text-white mb-4">HIIT Total Body - Perfetto per il tuo livello</p>
             <Button 
               onClick={() => onStartWorkout('recommended')}
-              className="bg-black text-white hover:bg-gray-900"
+              className="bg-black text-white hover:bg-gray-900 border border-white/20"
             >
               Inizia Workout
             </Button>
