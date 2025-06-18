@@ -207,12 +207,12 @@
   }
 
   /* ---------------------------------------------------------
-     2. Professionisti Cards
+     2. Professionisti Cards - Updated to match Prossimi Appuntamenti
      --------------------------------------------------------- */
   .prof-card {
-    /* White card with light-gray border */
-    background-color: #FFFFFF;
-    border: 1px solid #E5E7EB;
+    /* Black background with gold border to match Prossimi Appuntamenti */
+    background-color: #000000;
+    border: 1px solid #C89116;
     border-radius: 1rem;
     padding: 1.5rem;
     display: flex;
@@ -233,15 +233,16 @@
   }
 
   .prof-card__name {
-    /* Name in dark */
-    color: #111827;
+    /* Name in white to match Prossimi Appuntamenti */
+    color: #FFFFFF;
     font-size: 1.125rem;
     font-weight: 600;
   }
 
   .prof-card__role {
-    /* Role subtitle in medium gray */
-    color: #6B7280;
+    /* Role subtitle in light gray */
+    color: #FFFFFF;
+    opacity: 0.7;
     font-size: 0.875rem;
     margin-bottom: 0.5rem;
   }
@@ -259,15 +260,16 @@
   }
 
   .prof-card__rating-value {
-    /* Rating number in dark */
-    color: #111827;
+    /* Rating number in white */
+    color: #FFFFFF;
     font-weight: 500;
   }
 
   .prof-card__experience,
   .prof-card__rate {
-    /* Experience & rate in dark */
-    color: #111827;
+    /* Experience & rate in white */
+    color: #FFFFFF;
+    opacity: 0.7;
     font-size: 0.875rem;
   }
 
@@ -278,10 +280,10 @@
   }
 
   .prof-card__chat-btn {
-    /* Chat button: black bg, gold text & icon */
-    background-color: #000000;
-    color: #EEBA2B;
-    border: none;
+    /* Chat button: black bg with gold border, gold text & icon */
+    background-color: transparent;
+    color: #FFFFFF;
+    border: 1px solid #C89116;
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
     display: flex;
@@ -291,14 +293,14 @@
   }
 
   .prof-card__chat-btn:hover {
-    background-color: #EEBA2B;
+    background-color: #C89116;
     color: #000000;
   }
 
   .prof-card__book-btn {
-    /* Prenota button: blue bg, white text & icon */
-    background-color: #2563EB;
-    color: #FFFFFF;
+    /* Prenota button: gold bg, black text & icon */
+    background-color: #C89116;
+    color: #000000;
     border: none;
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
@@ -309,7 +311,7 @@
   }
 
   .prof-card__book-btn:hover {
-    background-color: #1D4ED8;
+    background-color: #EEBA2B;
   }
 
   /* Status indicator dot */
