@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -111,13 +112,17 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
       const workoutTitle = selectedType === 'personalizzato' ? customTitle : 
         workoutTypes.find(t => t.id === selectedType)?.name || '';
 
+      // SEMPRE creare l'allenamento per OGGI quando si clicca "Inizia Allenamento"
+      const today = new Date();
+      const todayString = today.toISOString().split('T')[0];
+
       const { data, error } = await supabase
         .from('custom_workouts')
         .insert({
           user_id: user.id,
           title: workoutTitle,
           workout_type: selectedType,
-          scheduled_date: selectedDate.toISOString().split('T')[0],
+          scheduled_date: todayString, // Sempre oggi per "Inizia Allenamento"
           exercises: exercises.filter(ex => ex.name.trim() !== '') as any,
           total_duration: duration ? parseInt(duration) : null,
         })
