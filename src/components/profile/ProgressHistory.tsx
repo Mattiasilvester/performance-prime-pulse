@@ -1,76 +1,90 @@
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { fetchProgressStats, ProgressData } from '@/services/statsService';
+import ProgressChart from '@/components/ProgressChart';
 
-const progressData = [
-  { month: 'Gen', workouts: 12, hours: 18 },
-  { month: 'Feb', workouts: 16, hours: 24 },
-  { month: 'Mar', workouts: 14, hours: 21 },
-  { month: 'Apr', workouts: 18, hours: 28 },
-  { month: 'Mag', workouts: 22, hours: 35 },
-  { month: 'Giu', workouts: 20, hours: 32 },
+const PERIOD_OPTIONS = [
+  { label: 'Ultima settimana', key: 'week' },
+  { label: 'Ultimo mese', key: 'month' },
+  { label: 'Ultimi 6 mesi', key: '6months' },
+  { label: 'Ultimo anno', key: 'year' },
+  { label: 'Sempre', key: 'all' }
 ];
 
 export const ProgressHistory = () => {
+  const [period, setPeriod] = useState('month');
+  const [chartData, setChartData] = useState<ProgressData[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchProgressStats(period);
+        setChartData(data);
+      } catch (error) {
+        console.error('Error loading progress stats:', error);
+        setChartData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStats();
+  }, [period]);
+
+  // Calcola le statistiche totali per il periodo
+  const totalStats = chartData ? {
+    workouts: chartData.reduce((sum, item) => sum + item.workouts, 0),
+    hours: Math.round(chartData.reduce((sum, item) => sum + item.hours, 0) * 10) / 10
+  } : { workouts: 0, hours: 0 };
+
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-[#EEBA2B]">Storico Progressi</h3>
-        <select className="text-sm border border-slate-300 rounded-lg px-3 py-1">
-          <option>Ultimi 6 mesi</option>
-          <option>Ultimo anno</option>
-          <option>Tutto il tempo</option>
-        </select>
+        <div className="flex gap-2">
+          {PERIOD_OPTIONS.map(opt => (
+            <button
+              key={opt.key}
+              className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                period === opt.key 
+                  ? 'bg-[#EEBA2B] text-black font-medium' 
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
+              onClick={() => setPeriod(opt.key)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="h-64 mb-6">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={progressData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis 
-              dataKey="month" 
-              tick={{ fill: '#FFFFFF', fontSize: 12 }}
-              axisLine={false}
-            />
-            <YAxis 
-              tick={{ fill: '#FFFFFF', fontSize: 12 }}
-              axisLine={false}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="workouts" 
-              stroke="#2563eb" 
-              strokeWidth={3}
-              dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, stroke: '#2563eb', strokeWidth: 2 }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="hours" 
-              stroke="#f59e0b" 
-              strokeWidth={3}
-              dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, stroke: '#f59e0b', strokeWidth: 2 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      <div className="mb-6">
+        {loading ? (
+          <div className="h-64 flex items-center justify-center">
+            <div className="text-gray-400">Caricamento dati...</div>
+          </div>
+        ) : (
+          <ProgressChart data={chartData || []} />
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="text-center p-3 bg-blue-50 rounded-xl">
+        <div className="text-center p-3 bg-gradient-to-br from-[#EEBA2B]/20 to-transparent rounded-xl border border-[#EEBA2B]/30">
           <div className="flex items-center justify-center mb-2">
-            <div className="w-3 h-3 bg-blue-600 rounded-full mr-2"></div>
-            <span className="text-sm font-medium text-slate-900">Allenamenti</span>
+            <div className="w-3 h-3 bg-[#EEBA2B] rounded-full mr-2"></div>
+            <span className="text-sm font-medium text-white">Allenamenti</span>
           </div>
-          <div className="text-2xl font-bold text-blue-600">20</div>
-          <div className="text-sm text-slate-600">Questo mese</div>
+          <div className="text-2xl font-bold text-[#EEBA2B]">{totalStats.workouts}</div>
+          <div className="text-sm text-gray-400">Nel periodo</div>
         </div>
-        <div className="text-center p-3 bg-orange-50 rounded-xl">
+        <div className="text-center p-3 bg-gradient-to-br from-orange-500/20 to-transparent rounded-xl border border-orange-500/30">
           <div className="flex items-center justify-center mb-2">
-            <div className="w-3 h-3 bg-orange-600 rounded-full mr-2"></div>
-            <span className="text-sm font-medium text-slate-900">Ore totali</span>
+            <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+            <span className="text-sm font-medium text-white">Ore totali</span>
           </div>
-          <div className="text-2xl font-bold text-orange-600">32h</div>
-          <div className="text-sm text-slate-600">Questo mese</div>
+          <div className="text-2xl font-bold text-orange-500">{totalStats.hours}h</div>
+          <div className="text-sm text-gray-400">Nel periodo</div>
         </div>
       </div>
     </div>
