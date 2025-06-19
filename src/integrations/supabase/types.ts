@@ -159,6 +159,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_objectives: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          description: string
+          id: string
+          progress: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          progress?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          progress?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_workout_stats: {
         Row: {
           created_at: string
