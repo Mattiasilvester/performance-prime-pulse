@@ -1,6 +1,6 @@
-
 import { Heart, Dumbbell, Zap, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { StartTodayButton } from './StartTodayButton';
 
 const categories = [
   {
@@ -52,6 +52,9 @@ interface WorkoutCategoriesProps {
 export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) => {
   return (
     <div className="space-y-6">
+      {/* Pulsante Inizia allenamento di oggi */}
+      <StartTodayButton />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {categories.map((category) => {
           const Icon = category.icon;

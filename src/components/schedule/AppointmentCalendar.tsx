@@ -1,16 +1,16 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 
-const mockAppointments = [
-  { date: 15, type: 'training', professional: 'Dr. Rossi' },
-  { date: 18, type: 'nutrition', professional: 'Dott.ssa Bianchi' },
-  { date: 22, type: 'physio', professional: 'Fisio Verdi' },
-];
+interface AppointmentCalendarProps {
+  onDateSelect: (date: Date) => void;
+}
 
-export const AppointmentCalendar = () => {
+export const AppointmentCalendar = ({ onDateSelect }: AppointmentCalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [workouts, setWorkouts] = useState<any[]>([]);
   
   const monthNames = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -21,23 +21,44 @@ export const AppointmentCalendar = () => {
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
   
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const emptyDays = Array.from({ length: firstDayOfMonth }, (_, i) => null);
+  const emptyDays = Array.from({ length: firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1 }, (_, i) => null);
 
-  const hasAppointment = (day: number) => {
-    return mockAppointments.some(apt => apt.date === day);
+  useEffect(() => {
+    loadWorkouts();
+  }, [currentDate]);
+
+  const loadWorkouts = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+      const { data, error } = await supabase
+        .from('custom_workouts')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('scheduled_date', startDate.toISOString().split('T')[0])
+        .lte('scheduled_date', endDate.toISOString().split('T')[0]);
+
+      if (data && !error) {
+        setWorkouts(data);
+      }
+    } catch (error) {
+      console.error('Error loading workouts:', error);
+    }
   };
 
-  const getAppointmentType = (day: number) => {
-    const apt = mockAppointments.find(apt => apt.date === day);
-    if (!apt) return null;
-    
-    const colors = {
-      training: 'bg-blue-500',
-      nutrition: 'bg-green-500',
-      physio: 'bg-orange-500',
-    };
-    
-    return colors[apt.type as keyof typeof colors] || 'bg-slate-500';
+  const hasWorkout = (day: number) => {
+    const dateStr = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+      .toISOString().split('T')[0];
+    return workouts.some(workout => workout.scheduled_date === dateStr);
+  };
+
+  const handleDayClick = (day: number) => {
+    const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    onDateSelect(selectedDate);
   };
 
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -59,7 +80,10 @@ export const AppointmentCalendar = () => {
           <Button variant="outline" size="sm" onClick={() => navigateMonth('next')} className="bg-black/50 border-white/20 text-white hover:bg-white/10">
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <button className="calendar-panel__new-button">
+          <button 
+            className="calendar-panel__new-button"
+            onClick={() => onDateSelect(new Date())}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nuovo
           </button>
@@ -81,15 +105,16 @@ export const AppointmentCalendar = () => {
         {days.map(day => (
           <div
             key={day}
+            onClick={() => handleDayClick(day)}
             className={`p-2 text-center text-sm rounded-lg cursor-pointer transition-colors relative calendar-panel__day ${
-              hasAppointment(day)
+              hasWorkout(day)
                 ? 'bg-white/20 font-semibold hover:bg-white/30'
                 : 'hover:bg-white/10'
             }`}
           >
             {day}
-            {hasAppointment(day) && (
-              <div className={`absolute bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full ${getAppointmentType(day)}`} />
+            {hasWorkout(day) && (
+              <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full bg-red-500" />
             )}
           </div>
         ))}

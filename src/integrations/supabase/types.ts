@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      custom_workouts: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string
+          exercises: Json
+          id: string
+          scheduled_date: string
+          title: string
+          total_duration: number | null
+          updated_at: string
+          user_id: string
+          workout_type: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          exercises?: Json
+          id?: string
+          scheduled_date: string
+          title: string
+          total_duration?: number | null
+          updated_at?: string
+          user_id: string
+          workout_type: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          exercises?: Json
+          id?: string
+          scheduled_date?: string
+          title?: string
+          total_duration?: number | null
+          updated_at?: string
+          user_id?: string
+          workout_type?: string
+        }
+        Relationships: []
+      }
       professionals: {
         Row: {
           birth_date: string
@@ -114,6 +156,33 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_workout_stats: {
+        Row: {
+          created_at: string
+          id: string
+          total_hours: number | null
+          total_workouts: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          total_hours?: number | null
+          total_workouts?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          total_hours?: number | null
+          total_workouts?: number | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
