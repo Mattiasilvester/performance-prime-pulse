@@ -28,13 +28,13 @@ const settingsSections = [
 
 export const Settings = () => {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <h3 className="text-xl font-semibold text-slate-900 mb-6">Impostazioni</h3>
+    <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
+      <h3 className="text-xl font-semibold text-[#EEBA2B] mb-6">Impostazioni</h3>
 
       <div className="space-y-6">
         {settingsSections.map((section, sectionIndex) => (
           <div key={sectionIndex}>
-            <h4 className="text-sm font-medium text-slate-600 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-medium text-[#EEBA2B] mb-3 uppercase tracking-wide">
               {section.title}
             </h4>
             <div className="space-y-2">
@@ -45,8 +45,8 @@ export const Settings = () => {
                     key={itemIndex}
                     className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-left"
                   >
-                    <Icon className="h-5 w-5 text-slate-500" />
-                    <span className="font-medium text-slate-900">{item.label}</span>
+                    <Icon className="h-5 w-5 text-white" />
+                    <span className="font-medium text-white">{item.label}</span>
                   </button>
                 );
               })}
