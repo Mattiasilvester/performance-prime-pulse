@@ -27,7 +27,7 @@ const insights = [
 
 export const AIInsights = () => {
   return (
-    <div className="bg-black rounded-2xl shadow-sm border border-slate-200 p-6">
+    <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
       <h3 className="text-lg font-semibold text-[#EEBA2B] mb-4">
         Insights AI
       </h3>
@@ -36,16 +36,16 @@ export const AIInsights = () => {
         {insights.map((insight, index) => {
           const Icon = insight.icon;
           return (
-            <div key={index} className="p-3 rounded-xl border border-slate-200" style={{background: 'linear-gradient(135deg, #000000 0%, #C89116 100%)'}}>
+            <div key={index} className="p-3 rounded-xl border border-[#EEBA2B]" style={{background: 'linear-gradient(135deg, #000000 0%, #C89116 100%)'}}>
               <div className="flex items-start space-x-3">
                 <div className={`p-2 rounded-lg ${insight.bgColor}`}>
                   <Icon className={`h-4 w-4 ${insight.color}`} />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-medium text-slate-900 text-sm">
+                  <h4 className="font-medium text-white text-sm">
                     {insight.title}
                   </h4>
-                  <p className="text-xs text-slate-600 mt-1">
+                  <p className="text-xs text-white mt-1">
                     {insight.description}
                   </p>
                 </div>

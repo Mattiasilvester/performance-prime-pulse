@@ -32,7 +32,7 @@ const plans = [
 export const PersonalizedPlans = () => {
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-slate-200 p-6">
-      <h3 className="text-lg font-semibold text-slate-900 mb-4">
+      <h3 className="text-lg font-semibold text-[#EEBA2B] mb-4">
         Piani Personalizzati
       </h3>
       
@@ -46,20 +46,20 @@ export const PersonalizedPlans = () => {
                   <Icon className="h-4 w-4 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-medium text-slate-900 text-sm">
+                  <h4 className="font-medium text-white text-sm">
                     {plan.title}
                   </h4>
-                  <p className="text-xs text-slate-600 mt-1">
+                  <p className="text-xs text-white mt-1">
                     {plan.description}
                   </p>
-                  <div className="flex items-center space-x-2 mt-2 text-xs text-slate-500">
+                  <div className="flex items-center space-x-2 mt-2 text-xs text-white">
                     <span>{plan.duration}</span>
                     <span>•</span>
                     <span>{plan.workouts} workout</span>
                   </div>
                 </div>
               </div>
-              <Button size="sm" className="w-full bg-slate-900 hover:bg-slate-800 text-[#EEBA2B]">
+              <Button size="sm" className="w-full bg-[#EEBA2B] hover:bg-[#EEBA2B] text-black">
                 Inizia Piano
               </Button>
             </div>

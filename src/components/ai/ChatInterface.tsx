@@ -66,9 +66,9 @@ export const ChatInterface = () => {
   };
 
   return (
-    <div className="bg-black rounded-2xl shadow-sm border border-slate-200 h-[600px] flex flex-col">
+    <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] h-[600px] flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-slate-200 rounded-t-2xl" style={{background: 'linear-gradient(135deg, #000000 0%, #C89116 100%)'}}>
+      <div className="p-4 border-b border-[#EEBA2B] rounded-t-2xl" style={{background: 'linear-gradient(135deg, #000000 0%, #C89116 100%)'}}>
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
             <Bot className="h-6 w-6 text-white" />
@@ -98,7 +98,9 @@ export const ChatInterface = () => {
                 {message.sender === 'ai' && (
                   <Bot className="h-4 w-4 text-[#EEBA2B] mt-0.5 flex-shrink-0" />
                 )}
-                <p className="text-sm text-white">{message.text}</p>
+                <p className={`text-sm ${message.sender === 'user' ? 'text-white' : 'text-black'}`}>
+                  {message.text}
+                </p>
                 {message.sender === 'user' && (
                   <User className="h-4 w-4 text-blue-200 mt-0.5 flex-shrink-0" />
                 )}
@@ -109,7 +111,7 @@ export const ChatInterface = () => {
       </div>
 
       {/* Suggested Questions */}
-      <div className="p-4 border-t border-slate-200">
+      <div className="p-4 border-t border-[#EEBA2B]">
         <div className="flex flex-wrap gap-2 mb-3">
           {suggestedQuestions.map((question, index) => (
             <button
@@ -134,7 +136,7 @@ export const ChatInterface = () => {
           />
           <Button 
             onClick={() => sendMessage(inputText)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-[#EEBA2B] hover:bg-[#EEBA2B] text-black"
             disabled={!inputText.trim()}
           >
             <Send className="h-4 w-4" />
