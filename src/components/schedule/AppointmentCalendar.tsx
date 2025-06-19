@@ -64,6 +64,15 @@ export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrig
     return !!getWorkoutForDay(day);
   };
 
+  const isToday = (day: number) => {
+    const today = new Date();
+    return (
+      currentDate.getFullYear() === today.getFullYear() &&
+      currentDate.getMonth() === today.getMonth() &&
+      day === today.getDate()
+    );
+  };
+
   const handleDayClick = (day: number) => {
     const workout = getWorkoutForDay(day);
     if (workout && onWorkoutSelect) {
@@ -122,14 +131,19 @@ export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrig
             key={day}
             onClick={() => handleDayClick(day)}
             className={`p-2 text-center text-sm rounded-lg cursor-pointer transition-colors relative calendar-panel__day ${
-              hasWorkout(day)
+              isToday(day)
+                ? 'bg-[#c89116] text-black font-bold border-2 border-[#c89116] shadow-lg'
+                : hasWorkout(day)
                 ? 'bg-white/20 font-semibold hover:bg-white/30'
                 : 'hover:bg-white/10'
             }`}
           >
             {day}
-            {hasWorkout(day) && (
+            {hasWorkout(day) && !isToday(day) && (
               <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full bg-red-500" />
+            )}
+            {hasWorkout(day) && isToday(day) && (
+              <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full bg-black" />
             )}
           </div>
         ))}
