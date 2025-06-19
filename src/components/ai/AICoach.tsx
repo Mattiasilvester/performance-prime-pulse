@@ -10,9 +10,45 @@ export const AICoach = () => {
   const [isPlanModalOpen, setPlanModal] = useState(false);
 
   const handleSavePlan = (planData: any) => {
-    console.log('Saving plan:', planData);
-    // TODO: Implementare salvataggio del piano tramite API
+    console.log('Generating plan for:', planData);
+    
+    // Genera il messaggio per l'AI
+    const aiMessage = generateAIPlan(planData);
+    
+    // Simula l'invio del messaggio all'AI Coach
+    // In una implementazione reale, questo dovrebbe integrarsi con il ChatInterface
+    console.log('AI Plan Message:', aiMessage);
+    
     setPlanModal(false);
+    
+    // Focus sul ChatInterface per mostrare il piano generato
+    // Qui dovremmo integrare con il ChatInterface per inviare automaticamente il messaggio
+  };
+
+  const generateAIPlan = (planData: any) => {
+    const goalMap = {
+      'forza': 'aumentare la forza',
+      'resistenza': 'migliorare la resistenza cardiovascolare',
+      'perdita-peso': 'perdere peso',
+      'massa-muscolare': 'aumentare la massa muscolare',
+      'tonificazione': 'tonificare il corpo',
+      'flessibilita': 'migliorare la flessibilità',
+      'condizionamento': 'migliorare il condizionamento fisico generale'
+    };
+
+    let message = `Crea un piano di allenamento personalizzato per ${goalMap[planData.goal] || planData.goal}`;
+    
+    if (planData.title) {
+      message += ` con il titolo "${planData.title}"`;
+    }
+    
+    if (planData.details) {
+      message += `. Dettagli aggiuntivi: ${planData.details}`;
+    }
+    
+    message += '. Fornisci un piano dettagliato con esercizi specifici, serie, ripetizioni e consigli.';
+    
+    return message;
   };
 
   return (

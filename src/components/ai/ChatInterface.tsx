@@ -1,7 +1,7 @@
-
 import { useState } from 'react';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot, User, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -29,6 +29,8 @@ const suggestedQuestions = [
 export const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputText, setInputText] = useState('');
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const sendMessage = (text: string) => {
     if (!text.trim()) return;
@@ -52,7 +54,58 @@ export const ChatInterface = () => {
     setInputText('');
   };
 
+  const copyMessage = async (messageId: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedMessageId(messageId);
+      toast({
+        title: "Messaggio copiato!",
+        description: "Il messaggio è stato copiato negli appunti.",
+      });
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (err) {
+      toast({
+        title: "Errore",
+        description: "Impossibile copiare il messaggio.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const generateAIResponse = (userText: string): string => {
+    if (userText.toLowerCase().includes('piano') && userText.toLowerCase().includes('forza')) {
+      return `## Piano Allenamento Forza Personalizzato 💪
+
+**Durata:** 4 settimane
+**Frequenza:** 3 volte a settimana
+
+### Settimana 1-2: Base Building
+**Giorno 1 - Upper Body:**
+- Panca piana: 3x8-10
+- Trazioni: 3x6-8
+- Military press: 3x8-10
+- Rematore: 3x8-10
+
+**Giorno 2 - Lower Body:**
+- Squat: 3x8-10
+- Stacco: 3x6-8
+- Affondi: 3x10 per gamba
+- Polpacci: 3x15
+
+**Giorno 3 - Full Body:**
+- Squat: 2x8
+- Panca: 2x8
+- Trazioni: 2x6
+- Plank: 3x30sec
+
+### Progressione:
+- Aumenta peso del 2.5-5% ogni settimana
+- Riposo 2-3 minuti tra serie
+- Riscaldamento 10 min prima di iniziare
+
+**Note:** Mantieni sempre la forma corretta, è meglio meno peso ma tecnica perfetta!`;
+    }
+    
     if (userText.toLowerCase().includes('resistenza')) {
       return 'Per migliorare la resistenza, ti consiglio di integrare 3-4 sessioni di cardio a settimana, alternando HIIT e steady-state. Vuoi che creo un piano personalizzato?';
     }
@@ -92,15 +145,30 @@ export const ChatInterface = () => {
                 message.sender === 'user'
                   ? 'bg-blue-600'
                   : 'bg-slate-100'
-              }`}
+              } relative group`}
             >
               <div className="flex items-start space-x-2">
                 {message.sender === 'ai' && (
                   <Bot className="h-4 w-4 text-[#EEBA2B] mt-0.5 flex-shrink-0" />
                 )}
-                <p className={`text-sm ${message.sender === 'user' ? 'text-white' : 'text-black'}`}>
-                  {message.text}
-                </p>
+                <div className="flex-1">
+                  <div className={`text-sm ${message.sender === 'user' ? 'text-white' : 'text-black'} whitespace-pre-wrap`}>
+                    {message.text}
+                  </div>
+                  {message.sender === 'ai' && (
+                    <button
+                      onClick={() => copyMessage(message.id, message.text)}
+                      className="mt-2 p-1 rounded hover:bg-gray-200 transition-colors flex items-center gap-1 text-xs text-gray-600"
+                    >
+                      {copiedMessageId === message.id ? (
+                        <Check className="h-3 w-3" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                      {copiedMessageId === message.id ? 'Copiato!' : 'Copia'}
+                    </button>
+                  )}
+                </div>
                 {message.sender === 'user' && (
                   <User className="h-4 w-4 text-blue-200 mt-0.5 flex-shrink-0" />
                 )}

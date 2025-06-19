@@ -11,6 +11,7 @@ import Workouts from "./pages/Workouts";
 import Schedule from "./pages/Schedule";
 import AICoach from "./pages/AICoach";
 import Profile from "./pages/Profile";
+import Notes from "./pages/Notes";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -53,6 +54,13 @@ const AppContent = () => (
         <ProtectedRoute>
           <AppLayout>
             <Profile />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/notes" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Notes />
           </AppLayout>
         </ProtectedRoute>
       } />

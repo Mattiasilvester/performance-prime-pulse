@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ChatInterface } from './ChatInterface';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Target, Calendar } from 'lucide-react';
+import { Sparkles, Target } from 'lucide-react';
 
 interface AICoachPrimeProps {
   onRequestPlan: () => void;
@@ -28,13 +28,6 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan }) => 
               >
                 <Sparkles className="h-4 w-4" />
                 Crea Piano Personalizzato
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full border-[#EEBA2B] text-[#EEBA2B] hover:bg-[#EEBA2B] hover:text-black"
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Pianifica Allenamento
               </Button>
             </div>
           </div>
