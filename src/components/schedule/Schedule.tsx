@@ -5,10 +5,13 @@ import { AppointmentCalendar } from './AppointmentCalendar';
 import { UpcomingAppointments } from './UpcomingAppointments';
 import { ProfessionalsList } from './ProfessionalsList';
 import { WorkoutCreationModal } from './WorkoutCreationModal';
+import { WorkoutViewModal } from './WorkoutViewModal';
 
 export const Schedule = () => {
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
+  const [isWorkoutViewModalOpen, setIsWorkoutViewModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedWorkout, setSelectedWorkout] = useState<any>(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -24,6 +27,11 @@ export const Schedule = () => {
     setIsWorkoutModalOpen(true);
   };
 
+  const handleWorkoutSelect = (workout: any) => {
+    setSelectedWorkout(workout);
+    setIsWorkoutViewModalOpen(true);
+  };
+
   return (
     <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen">
       <div className="flex items-center justify-between">
@@ -35,7 +43,10 @@ export const Schedule = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <AppointmentCalendar onDateSelect={handleDateSelect} />
+          <AppointmentCalendar 
+            onDateSelect={handleDateSelect}
+            onWorkoutSelect={handleWorkoutSelect}
+          />
           <ProfessionalsList />
         </div>
         <div>
@@ -47,6 +58,12 @@ export const Schedule = () => {
         isOpen={isWorkoutModalOpen}
         onClose={() => setIsWorkoutModalOpen(false)}
         selectedDate={selectedDate}
+      />
+
+      <WorkoutViewModal
+        isOpen={isWorkoutViewModalOpen}
+        onClose={() => setIsWorkoutViewModalOpen(false)}
+        workout={selectedWorkout}
       />
     </div>
   );

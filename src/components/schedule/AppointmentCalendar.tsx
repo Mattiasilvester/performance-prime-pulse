@@ -7,9 +7,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface AppointmentCalendarProps {
   onDateSelect: (date: Date) => void;
+  onWorkoutSelect?: (workout: any) => void;
 }
 
-export const AppointmentCalendar = ({ onDateSelect }: AppointmentCalendarProps) => {
+export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect }: AppointmentCalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [workouts, setWorkouts] = useState<any[]>([]);
   const navigate = useNavigate();
@@ -64,9 +65,9 @@ export const AppointmentCalendar = ({ onDateSelect }: AppointmentCalendarProps) 
 
   const handleDayClick = (day: number) => {
     const workout = getWorkoutForDay(day);
-    if (workout) {
-      // Se c'è un allenamento per questo giorno, inizialo subito
-      navigate('/workouts', { state: { startCustomWorkout: workout.id } });
+    if (workout && onWorkoutSelect) {
+      // Se c'è un allenamento per questo giorno, mostra il popup dell'allenamento esistente
+      onWorkoutSelect(workout);
     } else {
       // Altrimenti apri il popup per creare un nuovo allenamento
       const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
