@@ -1,4 +1,5 @@
-import { Play, Calendar, MessageSquare, Plus } from 'lucide-react';
+
+import { Play, Calendar, MessageSquare, Plus, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -131,7 +132,14 @@ const QuickActions = () => {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg border-2 border-[#c89116]">
+      <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg border-2 border-[#c89116] quick-actions">
+        {/* Lock overlay identico a tutte le altre sezioni */}
+        <div className="lock-overlay">
+          <Lock className="h-12 w-12 text-white mx-auto mb-4" />
+          <h3>Funzionalità in arrivo</h3>
+          <p>Le azioni rapide saranno disponibili presto!</p>
+        </div>
+
         <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {actions.map((action) => {

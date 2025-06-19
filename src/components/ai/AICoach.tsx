@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AICoachPrime } from './AICoachPrime';
 import { AIInsights } from './AIInsights';
 import { CustomPlanModal } from './CustomPlanModal';
+import { Lock } from 'lucide-react';
 
 export const AICoach = () => {
   const [activeTab, setActiveTab] = useState('prime');
@@ -51,7 +52,14 @@ export const AICoach = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen">
+    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen ai-coach-prime">
+      {/* Lock overlay identico a tutte le altre sezioni */}
+      <div className="lock-overlay">
+        <Lock className="h-12 w-12 text-white mx-auto mb-4" />
+        <h3>Funzionalità in arrivo</h3>
+        <p>L'AI Coach sarà disponibile presto!</p>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-pp-gold">AI Coach Prime</h2>

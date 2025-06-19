@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ChatInterface } from './ChatInterface';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Target } from 'lucide-react';
+import { Lock } from 'lucide-react';
 
 interface AICoachPrimeProps {
   onRequestPlan: () => void;
@@ -17,7 +18,14 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
           <ChatInterface ref={chatInterfaceRef} />
         </div>
         <div className="space-y-4">
-          <div className="bg-black border border-[#EEBA2B] rounded-2xl p-6">
+          <div className="bg-black border border-[#EEBA2B] rounded-2xl p-6 quick-actions">
+            {/* Lock overlay identico a tutte le altre sezioni */}
+            <div className="lock-overlay">
+              <Lock className="h-12 w-12 text-white mx-auto mb-4" />
+              <h3>Funzionalità in arrivo</h3>
+              <p>Le azioni rapide saranno disponibili presto!</p>
+            </div>
+
             <h3 className="text-lg font-semibold text-[#EEBA2B] mb-4 flex items-center gap-2">
               <Target className="h-5 w-5" />
               Azioni Rapide
@@ -33,7 +41,14 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
             </div>
           </div>
           
-          <div className="bg-black border border-[#EEBA2B] rounded-2xl p-6">
+          <div className="bg-black border border-[#EEBA2B] rounded-2xl p-6 ai-suggestions">
+            {/* Lock overlay identico a tutte le altre sezioni */}
+            <div className="lock-overlay">
+              <Lock className="h-12 w-12 text-white mx-auto mb-4" />
+              <h3>Funzionalità in arrivo</h3>
+              <p>I suggerimenti AI saranno disponibili presto!</p>
+            </div>
+
             <h3 className="text-lg font-semibold text-[#EEBA2B] mb-4">
               Suggerimenti AI
             </h3>

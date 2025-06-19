@@ -436,10 +436,14 @@
      LOCKED SECTIONS - Unified styling exactly like screen 1 (AI Insights)
      ============================================================================= */
 
-  /* Blocca Insights AI, Professionisti, Prossimi Appuntamenti e Achievements */
+  /* Blocca tutte le sezioni con la stessa modalità identica */
   .insights-ai,
   .professionisti,
-  .prossimi-appuntamenti {
+  .prossimi-appuntamenti,
+  .achievement-board,
+  .ai-coach-prime,
+  .quick-actions,
+  .ai-suggestions {
     position: relative;
     pointer-events: none;
   }
@@ -447,14 +451,22 @@
   /* Contenuto leggermente offuscato ma leggibile */
   .insights-ai > *:not(.lock-overlay),
   .professionisti > *:not(.lock-overlay),
-  .prossimi-appuntamenti > *:not(.lock-overlay) {
+  .prossimi-appuntamenti > *:not(.lock-overlay),
+  .achievement-board > *:not(.lock-overlay),
+  .ai-coach-prime > *:not(.lock-overlay),
+  .quick-actions > *:not(.lock-overlay),
+  .ai-suggestions > *:not(.lock-overlay) {
     filter: blur(0.5px);
   }
 
   /* Icona lucchetto in alto a destra per tutte le sezioni */
   .insights-ai::before,
   .professionisti::before,
-  .prossimi-appuntamenti::before {
+  .prossimi-appuntamenti::before,
+  .achievement-board::before,
+  .ai-coach-prime::before,
+  .quick-actions::before,
+  .ai-suggestions::before {
     content: "🔒";
     position: absolute;
     top: 1rem;
@@ -468,7 +480,11 @@
   /* Messaggio "Funzionalità in arrivo" centrato identico per tutte le sezioni */
   .insights-ai .lock-overlay,
   .professionisti .lock-overlay,
-  .prossimi-appuntamenti .lock-overlay {
+  .prossimi-appuntamenti .lock-overlay,
+  .achievement-board .lock-overlay,
+  .ai-coach-prime .lock-overlay,
+  .quick-actions .lock-overlay,
+  .ai-suggestions .lock-overlay {
     position: absolute;
     inset: 0;
     display: flex;
@@ -484,7 +500,11 @@
 
   .insights-ai .lock-overlay h3,
   .professionisti .lock-overlay h3,
-  .prossimi-appuntamenti .lock-overlay h3 {
+  .prossimi-appuntamenti .lock-overlay h3,
+  .achievement-board .lock-overlay h3,
+  .ai-coach-prime .lock-overlay h3,
+  .quick-actions .lock-overlay h3,
+  .ai-suggestions .lock-overlay h3 {
     color: #FFFFFF;
     font-size: 1.25rem;
     font-weight: 600;
@@ -493,55 +513,11 @@
 
   .insights-ai .lock-overlay p,
   .professionisti .lock-overlay p,
-  .prossimi-appuntamenti .lock-overlay p {
-    color: #FFFFFF;
-    font-size: 0.875rem;
-    opacity: 0.9;
-  }
-
-  /* Achievements Board - same exact style */
-  .achievement-board {
-    position: relative;
-    pointer-events: none;
-  }
-
-  .achievement-board > *:not(.lock-overlay) {
-    filter: blur(0.5px);
-  }
-
-  .achievement-board::before {
-    content: "🔒";
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-size: 1.25rem;
-    color: #FFFFFF;
-    z-index: 20;
-    pointer-events: none;
-  }
-
-  .achievement-board .lock-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 15;
-    text-align: center;
-    pointer-events: none;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: inherit;
-  }
-
-  .achievement-board .lock-overlay h3 {
-    color: #FFFFFF;
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-
-  .achievement-board .lock-overlay p {
+  .prossimi-appuntamenti .lock-overlay p,
+  .achievement-board .lock-overlay p,
+  .ai-coach-prime .lock-overlay p,
+  .quick-actions .lock-overlay p,
+  .ai-suggestions .lock-overlay p {
     color: #FFFFFF;
     font-size: 0.875rem;
     opacity: 0.9;
