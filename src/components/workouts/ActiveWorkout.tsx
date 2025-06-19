@@ -74,9 +74,25 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
   // Apply the same styling to all workout types
   const isSpecialWorkout = ['cardio', 'strength', 'hiit', 'mobility', 'recommended'].includes(workoutId);
   
+  // Get the specific header background color for each workout type
+  const getHeaderBackground = () => {
+    switch (workoutId) {
+      case 'cardio':
+        return '#38B6FF';
+      case 'strength':
+        return '#BC1823';
+      case 'hiit':
+        return '#FF5757';
+      case 'mobility':
+        return '#8C52FF';
+      default:
+        return 'linear-gradient(to right, #2563eb, #7c3aed)'; // Default gradient for recommended
+    }
+  };
+  
   return (
     <div className={`${isSpecialWorkout ? 'cardio-fatburn-section' : 'bg-white'} rounded-2xl shadow-sm overflow-hidden`} style={{ border: isSpecialWorkout ? '2px solid #EEBA2B' : '1px solid #e2e8f0' }}>
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+      <div className="p-6 text-white" style={{ background: getHeaderBackground() }}>
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold">{workout.name}</h3>
