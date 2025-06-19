@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface AppointmentCalendarProps {
   onDateSelect: (date: Date) => void;
@@ -11,6 +12,7 @@ interface AppointmentCalendarProps {
 export const AppointmentCalendar = ({ onDateSelect }: AppointmentCalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [workouts, setWorkouts] = useState<any[]>([]);
+  const navigate = useNavigate();
   
   const monthNames = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -50,15 +52,26 @@ export const AppointmentCalendar = ({ onDateSelect }: AppointmentCalendarProps) 
     }
   };
 
-  const hasWorkout = (day: number) => {
+  const getWorkoutForDay = (day: number) => {
     const dateStr = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
       .toISOString().split('T')[0];
-    return workouts.some(workout => workout.scheduled_date === dateStr);
+    return workouts.find(workout => workout.scheduled_date === dateStr);
+  };
+
+  const hasWorkout = (day: number) => {
+    return !!getWorkoutForDay(day);
   };
 
   const handleDayClick = (day: number) => {
-    const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    onDateSelect(selectedDate);
+    const workout = getWorkoutForDay(day);
+    if (workout) {
+      // Se c'è un allenamento per questo giorno, inizialo subito
+      navigate('/workouts', { state: { startCustomWorkout: workout.id } });
+    } else {
+      // Altrimenti apri il popup per creare un nuovo allenamento
+      const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      onDateSelect(selectedDate);
+    }
   };
 
   const navigateMonth = (direction: 'prev' | 'next') => {
