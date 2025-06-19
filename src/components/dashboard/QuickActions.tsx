@@ -12,6 +12,27 @@ const QuickActions = () => {
 
   useEffect(() => {
     checkTodayWorkout();
+
+    // Listener per gli aggiornamenti in tempo reale
+    const channel = supabase
+      .channel('workout-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'custom_workouts'
+        },
+        () => {
+          // Ricontrolla quando ci sono cambiamenti nella tabella
+          checkTodayWorkout();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const checkTodayWorkout = async () => {
@@ -25,13 +46,17 @@ const QuickActions = () => {
         .select('*')
         .eq('user_id', user.id)
         .eq('scheduled_date', today)
+        .eq('completed', false) // Escludi allenamenti completati
         .maybeSingle();
 
       if (data && !error) {
         setTodayWorkout(data);
+      } else {
+        setTodayWorkout(null);
       }
     } catch (error) {
       console.log('No workout found for today');
+      setTodayWorkout(null);
     }
   };
 
