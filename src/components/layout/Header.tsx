@@ -34,7 +34,7 @@ export const Header = () => {
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-black border-2 border-pp-gold rounded-xl flex items-center justify-center overflow-hidden">
               <img 
-                src="/placeholder.svg" 
+                src="/lovable-uploads/d81134b0-7f04-4ce8-8667-ba9f6c0064f5.png" 
                 alt="Performance Prime Logo" 
                 className="w-full h-full object-contain"
               />
