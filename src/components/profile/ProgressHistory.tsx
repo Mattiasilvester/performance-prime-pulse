@@ -12,9 +12,9 @@ const progressData = [
 
 export const ProgressHistory = () => {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+    <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-slate-900">Storico Progressi</h3>
+        <h3 className="text-xl font-semibold text-[#EEBA2B]">Storico Progressi</h3>
         <select className="text-sm border border-slate-300 rounded-lg px-3 py-1">
           <option>Ultimi 6 mesi</option>
           <option>Ultimo anno</option>
@@ -28,11 +28,11 @@ export const ProgressHistory = () => {
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis 
               dataKey="month" 
-              tick={{ fill: '#64748b', fontSize: 12 }}
+              tick={{ fill: '#FFFFFF', fontSize: 12 }}
               axisLine={false}
             />
             <YAxis 
-              tick={{ fill: '#64748b', fontSize: 12 }}
+              tick={{ fill: '#FFFFFF', fontSize: 12 }}
               axisLine={false}
             />
             <Line 
