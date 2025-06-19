@@ -1,6 +1,10 @@
-import { Award, Target, Calendar, Zap, Heart, Dumbbell } from 'lucide-react';
 
-const achievements = [
+import { Award, Target, Calendar, Zap, Heart, Dumbbell } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { NewObjectiveCard } from './NewObjectiveCard';
+
+const defaultAchievements = [
   {
     title: 'Settimana Perfetta',
     description: '7 giorni consecutivi di allenamento',
@@ -51,22 +55,89 @@ const achievements = [
   },
 ];
 
+interface UserObjective {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  progress: number;
+  completed_at?: string;
+  created_at: string;
+}
+
 export const AchievementsBoard = () => {
+  const [userObjectives, setUserObjectives] = useState<UserObjective[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchUserObjectives = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('user_objectives')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUserObjectives(data || []);
+    } catch (error) {
+      console.error('Error fetching user objectives:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserObjectives();
+  }, []);
+
+  const handleObjectiveCreated = () => {
+    fetchUserObjectives();
+  };
+
+  // Combina obiettivi predefiniti e personalizzati
+  const allAchievements = [
+    ...defaultAchievements,
+    ...userObjectives.map(obj => ({
+      title: obj.title,
+      description: obj.description,
+      icon: Target,
+      color: 'bg-[#EEBA2B]',
+      earned: obj.completed,
+      progress: obj.completed ? undefined : obj.progress,
+      date: obj.completed_at ? new Date(obj.completed_at).toLocaleDateString('it-IT', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      }) : undefined,
+      isCustom: true
+    }))
+  ];
+
+  const totalEarned = allAchievements.filter(a => a.earned).length;
+  const totalAchievements = allAchievements.length;
+
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-[#EEBA2B]">Albo delle Medaglie</h3>
         <span className="text-sm text-white">
-          {achievements.filter(a => a.earned).length} di {achievements.length} conquistate
+          {totalEarned} di {totalAchievements} conquistate
         </span>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {achievements.map((achievement, index) => {
+        {/* Card Nuovo Obiettivo */}
+        <NewObjectiveCard onObjectiveCreated={handleObjectiveCreated} />
+        
+        {/* Achievement cards */}
+        {allAchievements.map((achievement, index) => {
           const Icon = achievement.icon;
           return (
             <div
-              key={index}
+              key={`${achievement.title}-${index}`}
               className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                 achievement.earned
                   ? 'border-yellow-300 bg-yellow-50 hover:shadow-lg'
@@ -99,11 +170,11 @@ export const AchievementsBoard = () => {
                     <div className="w-full bg-slate-200 rounded-full h-2">
                       <div
                         className={`h-2 rounded-full ${achievement.color}`}
-                        style={{ width: `${achievement.progress}%` }}
+                        style={{ width: `${achievement.progress || 0}%` }}
                       />
                     </div>
                     <span className="text-xs text-slate-500">
-                      {achievement.progress}%
+                      {achievement.progress || 0}%
                     </span>
                   </div>
                 )}
