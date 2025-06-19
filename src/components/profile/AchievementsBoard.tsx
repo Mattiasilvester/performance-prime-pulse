@@ -1,4 +1,3 @@
-
 import { Award, Target, Calendar, Zap, Heart, Dumbbell } from 'lucide-react';
 
 const achievements = [
@@ -83,7 +82,7 @@ export const AchievementsBoard = () => {
                   <Icon className={`h-6 w-6 ${achievement.earned ? 'text-white' : 'text-slate-500'}`} />
                 </div>
                 
-                <h4 className={`font-semibold text-sm mb-1 text-white`}>
+                <h4 className={`font-semibold text-sm mb-1 text-black`}>
                   {achievement.title}
                 </h4>
                 
