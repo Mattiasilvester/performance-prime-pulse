@@ -6,17 +6,28 @@ import { Button } from '@/components/ui/button';
 export const WorkoutTimer = () => {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [customTime, setCustomTime] = useState('');
+  const [inputMinutes, setInputMinutes] = useState('');
+  const [inputSeconds, setInputSeconds] = useState('');
+  const [isCountdown, setIsCountdown] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isRunning) {
       interval = setInterval(() => {
-        setTime((prevTime) => prevTime + 1);
+        setTime((prevTime) => {
+          if (isCountdown && prevTime > 0) {
+            return prevTime - 1;
+          } else if (isCountdown && prevTime <= 0) {
+            setIsRunning(false);
+            return 0;
+          } else {
+            return prevTime + 1;
+          }
+        });
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isRunning]);
+  }, [isRunning, isCountdown]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -24,19 +35,38 @@ export const WorkoutTimer = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const toggleTimer = () => setIsRunning(!isRunning);
+  const toggleTimer = () => {
+    if (!isRunning && (inputMinutes || inputSeconds)) {
+      const totalSeconds = (parseInt(inputMinutes) || 0) * 60 + (parseInt(inputSeconds) || 0);
+      if (totalSeconds > 0) {
+        setTime(totalSeconds);
+        setIsCountdown(true);
+      }
+    } else if (!isRunning && !inputMinutes && !inputSeconds) {
+      setIsCountdown(false);
+    }
+    setIsRunning(!isRunning);
+  };
+
   const resetTimer = () => {
     setTime(0);
     setIsRunning(false);
+    setIsCountdown(false);
+    setInputMinutes('');
+    setInputSeconds('');
   };
 
-  const handleCustomTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (/^\d*$/.test(value)) {
-      setCustomTime(value);
-      if (value) {
-        setTime(parseInt(value) * 60);
-      }
+    if (/^\d*$/.test(value) && parseInt(value) <= 59) {
+      setInputMinutes(value);
+    }
+  };
+
+  const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d*$/.test(value) && parseInt(value) <= 59) {
+      setInputSeconds(value);
     }
   };
 
@@ -59,13 +89,23 @@ export const WorkoutTimer = () => {
             >
               {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
             </Button>
+            
             <input
               type="text"
-              value={customTime}
-              onChange={handleCustomTimeChange}
+              value={inputMinutes}
+              onChange={handleMinutesChange}
               placeholder="min"
-              className="cardio-card__time-input"
+              className="cardio-card__input-min"
             />
+            
+            <input
+              type="text"
+              value={inputSeconds}
+              onChange={handleSecondsChange}
+              placeholder="sec"
+              className="cardio-card__input-sec"
+            />
+            
             <Button 
               onClick={resetTimer} 
               variant="outline" 

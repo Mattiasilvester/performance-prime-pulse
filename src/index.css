@@ -342,9 +342,10 @@
      styles, sizes, layouts, or content outside of this snippet.
      ============================================================================= */
 
-  /* 1. Cardio workout card container border */
+  /* 1. Cardio workout card container */
   .cardio-card {
     border-color: #EEBA2B !important;
+    background: linear-gradient(135deg, #000000 0%, #EEBA2B 100%) !important;
   }
 
   /* 2. Timer container background gradient + text in white */
@@ -357,14 +358,13 @@
     color: #FFFFFF !important;
   }
 
-  /* 3. Custom time input pill (inserted next to Play) */
-  .cardio-card__time-input {
-    /* pill shape, inherit height from Play button */
+  /* 3. Input pill styles for minutes and seconds */
+  .cardio-card__input-min,
+  .cardio-card__input-sec {
     display: inline-block;
-    width: 4rem;         /* adjust as needed */
-    height: 2.5rem;      /* match button height */
+    width: 4rem;
+    height: 2.75rem;
     padding: 0 0.75rem;
-    margin-left: 0.5rem;
     border-radius: 9999px;
     border: 1px solid #CCCCCC;
     background-color: #FFFFFF;
@@ -373,40 +373,49 @@
     text-align: center;
   }
 
-  /* 4. Play button remains unchanged */
+  /* 4. Play button remains green */
   .cardio-card__play-btn {
-    /* no overrides */
+    background-color: #22C55E !important;
+    color: #000000 !important;
+  }
+  .cardio-card__play-btn:hover {
+    background-color: #16A34A !important;
   }
 
   /* 5. Reset button styling */
   .cardio-card__reset-btn {
     background-color: #EEBA2B !important;
     color: #000000 !important;
+    border: 1px solid #EEBA2B !important;
+  }
+  .cardio-card__reset-btn:hover {
+    background-color: #D4A017 !important;
   }
   .cardio-card__reset-btn svg {
-    fill: #000000 !important;
+    color: #000000 !important;
   }
 
   /* ----------------------------------------------------------------------------- 
      "Cardio Brucia Grassi" section 
      ----------------------------------------------------------------------------- */
 
-  /* 7. Section background color */
+  /* 6. Section background color for header */
   .cardio-fatburn-section {
     background-color: #38B6FF !important;
   }
 
-  /* 8. Exercise sub-cards container border (big) */
+  /* 7. Container background under header is black */
   .cardio-fatburn-section__container {
+    background-color: #000000 !important;
     border-color: #EEBA2B !important;
   }
 
-  /* 9. Individual exercise card borders */
+  /* 8. Individual exercise card borders */
   .cardio-fatburn-card {
     border-color: #EEBA2B !important;
   }
 
-  /* 10. Sub-card title & subtitle colors */
+  /* 9. Sub-card title & subtitle colors */
   .cardio-fatburn-card__title {
     color: #FFFFFF !important;
   }
@@ -414,13 +423,12 @@
     color: #9CA3AF !important; /* medium gray */
   }
 
-  /* 11. Highlight current exercise */
+  /* 10. Highlight current exercise */
   .cardio-fatburn-card--active,
   .cardio-fatburn-card--active .cardio-fatburn-card__bullet {
     border-color: #38B6FF !important;
     background-color: #38B6FF !important;
   }
 
-  /* End of "Allenamenti" overrides:
-     DO NOT MODIFY ANYTHING ELSE, INCLUDING SIZES OR LAYOUTS. */
+  /* End of "Allenamenti" overrides */
 }
