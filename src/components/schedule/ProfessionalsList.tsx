@@ -1,4 +1,3 @@
-
 import { Star, MessageSquare, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -40,7 +39,7 @@ const professionals = [
 
 export const ProfessionalsList = () => {
   return (
-    <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl shadow-lg border-2 border-[#c89116] p-6">
+    <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl shadow-lg border-2 border-[#c89116] p-6 professionisti">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-pp-gold">Professionisti</h3>
         <Button variant="ghost" size="sm" className="text-white hover:text-pp-gold">
