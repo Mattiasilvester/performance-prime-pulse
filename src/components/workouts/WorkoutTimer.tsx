@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -77,7 +78,7 @@ export const WorkoutTimer = ({ workoutType }: WorkoutTimerProps) => {
   const getCardStyle = () => {
     if (workoutType === 'cardio' || workoutType === 'hiit') {
       return {
-        background: 'linear-gradient(135deg, #EEBA2B 0%, #000000 100%)'
+        background: 'radial-gradient(circle at 50% 50%, #000000, #bf8b16)'
       };
     }
     return {};
