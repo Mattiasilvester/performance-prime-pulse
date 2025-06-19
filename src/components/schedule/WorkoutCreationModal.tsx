@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,6 +15,7 @@ interface WorkoutCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDate: Date;
+  onWorkoutCreated?: () => void;
 }
 
 const workoutTypes = [
@@ -26,7 +26,7 @@ const workoutTypes = [
   { id: 'personalizzato', name: 'Il tuo allenamento', color: '#c89116' },
 ];
 
-export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate }: WorkoutCreationModalProps) => {
+export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutCreated }: WorkoutCreationModalProps) => {
   const [selectedType, setSelectedType] = useState('');
   const [customTitle, setCustomTitle] = useState('');
   const [exercises, setExercises] = useState<Exercise[]>([
@@ -80,8 +80,9 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate }: WorkoutC
       if (error) throw error;
 
       onClose();
-      // Reload the page to show the updated calendar
-      window.location.reload();
+      if (onWorkoutCreated) {
+        onWorkoutCreated();
+      }
     } catch (error) {
       console.error('Error saving workout:', error);
     } finally {
@@ -116,6 +117,9 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate }: WorkoutC
       if (error) throw error;
 
       onClose();
+      if (onWorkoutCreated) {
+        onWorkoutCreated();
+      }
       navigate('/workouts', { state: { startCustomWorkout: data.id } });
     } catch (error) {
       console.error('Error creating workout:', error);
