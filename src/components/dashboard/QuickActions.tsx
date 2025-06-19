@@ -2,12 +2,51 @@
 import { Play, Calendar, MessageSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const QuickActions = () => {
   const navigate = useNavigate();
+  const [todayWorkout, setTodayWorkout] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleStartWorkout = () => {
-    navigate('/schedule', { state: { openWorkoutModal: true } });
+  useEffect(() => {
+    checkTodayWorkout();
+  }, []);
+
+  const checkTodayWorkout = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('custom_workouts')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('scheduled_date', today)
+        .maybeSingle();
+
+      if (data && !error) {
+        setTodayWorkout(data);
+      }
+    } catch (error) {
+      console.log('No workout found for today');
+    }
+  };
+
+  const handleStartWorkout = async () => {
+    setIsLoading(true);
+    
+    if (todayWorkout) {
+      // Se esiste un allenamento per oggi, vai direttamente alla schermata di esecuzione
+      navigate('/workouts', { state: { startCustomWorkout: todayWorkout.id } });
+    } else {
+      // Altrimenti vai al calendario con il popup aperto
+      navigate('/schedule', { state: { openWorkoutModal: true } });
+    }
+    
+    setIsLoading(false);
   };
 
   const actions = [
@@ -18,6 +57,7 @@ const QuickActions = () => {
       color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
       textColor: 'text-white',
       onClick: handleStartWorkout,
+      disabled: isLoading,
     },
     {
       label: 'Prenota Sessione',
@@ -52,6 +92,7 @@ const QuickActions = () => {
             <Button
               key={action.label}
               onClick={action.onClick}
+              disabled={action.disabled}
               className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 hover:scale-105 transition-all duration-200`}
             >
               <Icon className="h-6 w-6" />
