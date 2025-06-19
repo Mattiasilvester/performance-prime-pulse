@@ -39,16 +39,24 @@ const QuickActions = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Ottieni solo la data di oggi nel formato YYYY-MM-DD
-      const today = new Date().toISOString().split('T')[0];
+      // Ottieni la data di oggi in formato locale YYYY-MM-DD
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayString = `${year}-${month}-${day}`;
+      
+      console.log('Checking for workout on date:', todayString);
       
       const { data, error } = await supabase
         .from('custom_workouts')
         .select('*')
         .eq('user_id', user.id)
-        .eq('scheduled_date', today) // Controlla SOLO oggi
+        .eq('scheduled_date', todayString) // Controlla SOLO la data odierna
         .eq('completed', false) // Escludi allenamenti completati
         .maybeSingle();
+
+      console.log('Workout found for today:', data);
 
       if (data && !error) {
         setTodayWorkout(data);
@@ -56,7 +64,7 @@ const QuickActions = () => {
         setTodayWorkout(null);
       }
     } catch (error) {
-      console.log('No workout found for today');
+      console.log('No workout found for today:', error);
       setTodayWorkout(null);
     }
   };
@@ -66,9 +74,11 @@ const QuickActions = () => {
     
     if (todayWorkout) {
       // Se esiste un allenamento per oggi, vai direttamente alla schermata di esecuzione
+      console.log('Starting today workout:', todayWorkout);
       navigate('/workouts', { state: { startCustomWorkout: todayWorkout.id } });
     } else {
       // Se non c'è un allenamento per oggi, vai al calendario con il popup aperto per oggi
+      console.log('No workout for today, opening calendar');
       navigate('/schedule', { state: { openWorkoutModal: true } });
     }
     
@@ -78,7 +88,7 @@ const QuickActions = () => {
   const actions = [
     {
       label: 'Inizia Allenamento',
-      description: 'Workout di oggi',
+      description: todayWorkout ? 'Workout di oggi' : 'Crea nuovo workout',
       icon: Play,
       color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
       textColor: 'text-white',
