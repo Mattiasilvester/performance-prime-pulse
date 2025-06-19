@@ -3,6 +3,7 @@ import { StatsOverview } from './StatsOverview';
 import { QuickActions } from './QuickActions';
 import { RecentActivity } from './RecentActivity';
 import { WeeklyProgress } from './WeeklyProgress';
+import { NewObjectiveCard } from '../profile/NewObjectiveCard';
 
 export const Dashboard = () => {
   return (
@@ -16,6 +17,12 @@ export const Dashboard = () => {
 
       <StatsOverview />
       <QuickActions />
+      
+      {/* New Objective Card */}
+      <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg border-2 border-[#c89116]">
+        <h3 className="text-lg font-semibold text-pp-gold mb-4">Crea il tuo Obiettivo</h3>
+        <NewObjectiveCard />
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <WeeklyProgress />
