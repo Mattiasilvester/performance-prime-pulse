@@ -6,14 +6,15 @@ import { Sparkles, Target } from 'lucide-react';
 
 interface AICoachPrimeProps {
   onRequestPlan: () => void;
+  chatInterfaceRef?: React.RefObject<any>;
 }
 
-export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan }) => {
+export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatInterfaceRef }) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <ChatInterface />
+          <ChatInterface ref={chatInterfaceRef} />
         </div>
         <div className="space-y-4">
           <div className="bg-black border border-[#EEBA2B] rounded-2xl p-6">

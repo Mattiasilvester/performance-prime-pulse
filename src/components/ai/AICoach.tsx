@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AICoachPrime } from './AICoachPrime';
 import { AIInsights } from './AIInsights';
@@ -8,6 +8,7 @@ import { CustomPlanModal } from './CustomPlanModal';
 export const AICoach = () => {
   const [activeTab, setActiveTab] = useState('prime');
   const [isPlanModalOpen, setPlanModal] = useState(false);
+  const chatInterfaceRef = useRef<any>(null);
 
   const handleSavePlan = (planData: any) => {
     console.log('Generating plan for:', planData);
@@ -15,14 +16,12 @@ export const AICoach = () => {
     // Genera il messaggio per l'AI
     const aiMessage = generateAIPlan(planData);
     
-    // Simula l'invio del messaggio all'AI Coach
-    // In una implementazione reale, questo dovrebbe integrarsi con il ChatInterface
-    console.log('AI Plan Message:', aiMessage);
+    // Invia il messaggio automaticamente alla chat
+    if (chatInterfaceRef.current) {
+      chatInterfaceRef.current.sendMessage(aiMessage);
+    }
     
     setPlanModal(false);
-    
-    // Focus sul ChatInterface per mostrare il piano generato
-    // Qui dovremmo integrare con il ChatInterface per inviare automaticamente il messaggio
   };
 
   const generateAIPlan = (planData: any) => {
@@ -78,7 +77,10 @@ export const AICoach = () => {
         </TabsList>
 
         <TabsContent value="prime">
-          <AICoachPrime onRequestPlan={() => setPlanModal(true)} />
+          <AICoachPrime 
+            onRequestPlan={() => setPlanModal(true)} 
+            chatInterfaceRef={chatInterfaceRef}
+          />
         </TabsContent>
 
         <TabsContent value="insights">

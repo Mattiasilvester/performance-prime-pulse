@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import { Send, Bot, User, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +27,7 @@ const suggestedQuestions = [
   'Come posso raggiungere i miei obiettivi?',
 ];
 
-export const ChatInterface = () => {
+export const ChatInterface = forwardRef((props, ref) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputText, setInputText] = useState('');
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
@@ -53,6 +54,11 @@ export const ChatInterface = () => {
     setMessages(prev => [...prev, userMessage, aiResponse]);
     setInputText('');
   };
+
+  // Espone il metodo sendMessage al componente padre
+  useImperativeHandle(ref, () => ({
+    sendMessage
+  }));
 
   const copyMessage = async (messageId: string, text: string) => {
     try {
@@ -213,4 +219,6 @@ export const ChatInterface = () => {
       </div>
     </div>
   );
-};
+});
+
+ChatInterface.displayName = 'ChatInterface';

@@ -1,5 +1,5 @@
 
-import { Home, Dumbbell, Calendar, Bot, User } from 'lucide-react';
+import { Home, Dumbbell, Calendar, Bot, User, FileText } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -8,6 +8,7 @@ const navigationItems = [
   { id: 'workouts', label: 'Allenamenti', icon: Dumbbell, path: '/workouts' },
   { id: 'schedule', label: 'Agenda', icon: Calendar, path: '/schedule' },
   { id: 'ai-coach', label: 'AI Coach', icon: Bot, path: '/ai-coach' },
+  { id: 'notes', label: 'Note', icon: FileText, path: '/notes' },
   { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
 ];
 
@@ -54,13 +55,13 @@ export const Navigation = () => {
                 key={item.id}
                 to={item.path}
                 className={cn(
-                  "flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200",
+                  "flex flex-col items-center space-y-1 px-2 py-2 rounded-lg transition-all duration-200",
                   isActive
                     ? "text-pp-gold"
                     : "text-pp-gold/60 hover:text-pp-gold"
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-4 w-4" />
                 <span className="text-xs font-medium">{item.label}</span>
               </Link>
             );
