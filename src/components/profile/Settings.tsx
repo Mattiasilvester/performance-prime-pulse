@@ -43,7 +43,7 @@ export const Settings = () => {
                 return (
                   <button
                     key={itemIndex}
-                    className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-left"
+                    className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-[#CCCCCC] hover:bg-opacity-20 focus:bg-[#CCCCCC] focus:bg-opacity-20 focus:outline-none transition-colors text-left"
                   >
                     <Icon className="h-5 w-5 text-white" />
                     <span className="font-medium text-white">{item.label}</span>
