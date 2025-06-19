@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,6 +35,16 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
   const [duration, setDuration] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Reset form when modal opens or date changes
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedType('');
+      setCustomTitle('');
+      setExercises([{ name: '', sets: '', reps: '', rest: '' }]);
+      setDuration('');
+    }
+  }, [isOpen, selectedDate]);
 
   const addExercise = () => {
     setExercises([...exercises, { name: '', sets: '', reps: '', rest: '' }]);
