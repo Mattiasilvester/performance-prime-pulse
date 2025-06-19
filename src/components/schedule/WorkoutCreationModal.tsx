@@ -71,7 +71,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate }: WorkoutC
           title: workoutTitle,
           workout_type: selectedType,
           scheduled_date: selectedDate.toISOString().split('T')[0],
-          exercises: exercises.filter(ex => ex.name.trim() !== ''),
+          exercises: exercises.filter(ex => ex.name.trim() !== '') as any,
           total_duration: duration ? parseInt(duration) : null,
         })
         .select()
@@ -107,7 +107,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate }: WorkoutC
           title: workoutTitle,
           workout_type: selectedType,
           scheduled_date: selectedDate.toISOString().split('T')[0],
-          exercises: exercises.filter(ex => ex.name.trim() !== ''),
+          exercises: exercises.filter(ex => ex.name.trim() !== '') as any,
           total_duration: duration ? parseInt(duration) : null,
         })
         .select()
