@@ -5,16 +5,14 @@ export const AchievementsBoard = () => {
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-gray-600 p-6 relative">
       {/* Overlay per indicare che è disabilitato */}
-      <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center z-10">
-        <div className="text-center">
-          <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-400 mb-2">Funzionalità in arrivo</h3>
-          <p className="text-gray-500">Le medaglie e gli obiettivi saranno disponibili presto!</p>
-        </div>
+      <div className="lock-overlay">
+        <Lock className="h-12 w-12 text-white mx-auto mb-4" />
+        <h3>Funzionalità in arrivo</h3>
+        <p>Le medaglie e gli obiettivi saranno disponibili presto!</p>
       </div>
 
       {/* Contenuto offuscato */}
-      <div className="filter blur-sm">
+      <div>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-[#EEBA2B]">Albo delle Medaglie</h3>
           <span className="text-sm text-white">0 di 6 conquistate</span>

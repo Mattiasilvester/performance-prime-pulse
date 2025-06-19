@@ -1,5 +1,5 @@
 
-import { TrendingUp, Target, Lightbulb } from 'lucide-react';
+import { TrendingUp, Target, Lightbulb, Lock } from 'lucide-react';
 
 const insights = [
   {
@@ -28,6 +28,13 @@ const insights = [
 export const AIInsights = () => {
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6 insights-ai">
+      {/* Lock overlay */}
+      <div className="lock-overlay">
+        <Lock className="h-12 w-12 text-white mx-auto mb-4" />
+        <h3>Funzionalità in arrivo</h3>
+        <p>Gli insights AI saranno disponibili presto!</p>
+      </div>
+
       <h3 className="text-lg font-semibold text-[#EEBA2B] mb-4">
         Insights AI
       </h3>
