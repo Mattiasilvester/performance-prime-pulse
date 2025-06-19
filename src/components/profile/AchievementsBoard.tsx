@@ -3,7 +3,7 @@ import { Award, Target, Calendar, Zap, Heart, Dumbbell, Lock } from 'lucide-reac
 
 export const AchievementsBoard = () => {
   return (
-    <div className="bg-black rounded-2xl shadow-sm border border-gray-600 p-6 relative">
+    <div className="bg-black rounded-2xl shadow-sm border border-gray-600 p-6 relative achievement-board">
       {/* Overlay per indicare che è disabilitato */}
       <div className="lock-overlay">
         <Lock className="h-12 w-12 text-white mx-auto mb-4" />

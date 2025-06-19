@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -432,7 +433,7 @@
   /* End of "Allenamenti" overrides */
 
   /* =============================================================================
-     LOCKED SECTIONS - Unified styling for all blocked functionality
+     LOCKED SECTIONS - Unified styling exactly like screen 1 (AI Insights)
      ============================================================================= */
 
   /* Blocca Insights AI, Professionisti, Prossimi Appuntamenti e Achievements */
@@ -440,23 +441,17 @@
   .professionisti,
   .prossimi-appuntamenti {
     position: relative;
-    pointer-events: none;               /* disabilita interazioni */
+    pointer-events: none;
   }
 
-  /* Overlay semi-trasparente molto leggero per leggibilità */
-  .insights-ai::after,
-  .professionisti::after,
-  .prossimi-appuntamenti::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.15);    /* Molto più trasparente per leggibilità */
-    border-radius: inherit;
-    z-index: 10;
-    cursor: not-allowed;
+  /* Contenuto leggermente offuscato ma leggibile */
+  .insights-ai > *:not(.lock-overlay),
+  .professionisti > *:not(.lock-overlay),
+  .prossimi-appuntamenti > *:not(.lock-overlay) {
+    filter: blur(0.5px);
   }
 
-  /* Icona lucchetto in alto a destra */
+  /* Icona lucchetto in alto a destra per tutte le sezioni */
   .insights-ai::before,
   .professionisti::before,
   .prossimi-appuntamenti::before {
@@ -470,14 +465,7 @@
     pointer-events: none;
   }
 
-  /* Contenuto leggermente offuscato ma leggibile */
-  .insights-ai > *:not(.lock-overlay),
-  .professionisti > *:not(.lock-overlay),
-  .prossimi-appuntamenti > *:not(.lock-overlay) {
-    filter: blur(0.5px);                /* Blur minimo per mantenere leggibilità */
-  }
-
-  /* Messaggio "Funzionalità in arrivo" centrato per tutte le sezioni bloccate */
+  /* Messaggio "Funzionalità in arrivo" centrato identico per tutte le sezioni */
   .insights-ai .lock-overlay,
   .professionisti .lock-overlay,
   .prossimi-appuntamenti .lock-overlay {
@@ -485,17 +473,19 @@
     inset: 0;
     display: flex;
     flex-direction: column;
-    items-center: center;
+    align-items: center;
     justify-content: center;
     z-index: 15;
     text-align: center;
     pointer-events: none;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: inherit;
   }
 
   .insights-ai .lock-overlay h3,
   .professionisti .lock-overlay h3,
   .prossimi-appuntamenti .lock-overlay h3 {
-    color: #FFFFFF;                     /* Bianco per titolo "Funzionalità in arrivo" */
+    color: #FFFFFF;
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
@@ -504,9 +494,57 @@
   .insights-ai .lock-overlay p,
   .professionisti .lock-overlay p,
   .prossimi-appuntamenti .lock-overlay p {
-    color: #FFFFFF;                     /* Stesso colore bianco per il sottotitolo */
+    color: #FFFFFF;
     font-size: 0.875rem;
-    opacity: 0.8;
+    opacity: 0.9;
+  }
+
+  /* Achievements Board - same exact style */
+  .achievement-board {
+    position: relative;
+    pointer-events: none;
+  }
+
+  .achievement-board > *:not(.lock-overlay) {
+    filter: blur(0.5px);
+  }
+
+  .achievement-board::before {
+    content: "🔒";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.25rem;
+    color: #FFFFFF;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .achievement-board .lock-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 15;
+    text-align: center;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: inherit;
+  }
+
+  .achievement-board .lock-overlay h3 {
+    color: #FFFFFF;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .achievement-board .lock-overlay p {
+    color: #FFFFFF;
+    font-size: 0.875rem;
+    opacity: 0.9;
   }
 
   /* End of locked sections styling */
