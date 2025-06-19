@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { ObjectiveModal } from '@/components/profile/ObjectiveModal';
 
 const QuickActions = () => {
   const navigate = useNavigate();
   const [todayWorkout, setTodayWorkout] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isObjectiveModalOpen, setIsObjectiveModalOpen] = useState(false);
 
   useEffect(() => {
     checkTodayWorkout();
@@ -85,6 +87,14 @@ const QuickActions = () => {
     setIsLoading(false);
   };
 
+  const handleNewObjectiveClick = () => {
+    setIsObjectiveModalOpen(true);
+  };
+
+  const handleObjectiveModalClose = () => {
+    setIsObjectiveModalOpen(false);
+  };
+
   const actions = [
     {
       label: 'Inizia Allenamento',
@@ -115,32 +125,41 @@ const QuickActions = () => {
       icon: Plus,
       color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
       textColor: 'text-white',
+      onClick: handleNewObjectiveClick,
     },
   ];
 
   return (
-    <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg border-2 border-[#c89116]">
-      <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {actions.map((action) => {
-          const Icon = action.icon;
-          return (
-            <Button
-              key={action.label}
-              onClick={action.onClick}
-              disabled={action.disabled}
-              className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 hover:scale-105 transition-all duration-200`}
-            >
-              <Icon className="h-6 w-6" />
-              <div className="text-center">
-                <p className="font-medium text-sm">{action.label}</p>
-                <p className="text-xs opacity-90">{action.description}</p>
-              </div>
-            </Button>
-          );
-        })}
+    <>
+      <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg border-2 border-[#c89116]">
+        <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {actions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <Button
+                key={action.label}
+                onClick={action.onClick}
+                disabled={action.disabled}
+                className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 hover:scale-105 transition-all duration-200`}
+              >
+                <Icon className="h-6 w-6" />
+                <div className="text-center">
+                  <p className="font-medium text-sm">{action.label}</p>
+                  <p className="text-xs opacity-90">{action.description}</p>
+                </div>
+              </Button>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      <ObjectiveModal
+        isOpen={isObjectiveModalOpen}
+        onClose={handleObjectiveModalClose}
+        onObjectiveCreated={handleObjectiveModalClose}
+      />
+    </>
   );
 };
 
