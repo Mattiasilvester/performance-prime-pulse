@@ -3,7 +3,11 @@ import { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export const WorkoutTimer = () => {
+interface WorkoutTimerProps {
+  workoutType?: string;
+}
+
+export const WorkoutTimer = ({ workoutType }: WorkoutTimerProps) => {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [inputMinutes, setInputMinutes] = useState('');
@@ -70,8 +74,18 @@ export const WorkoutTimer = () => {
     }
   };
 
+  // Get the inverted gradient for cardio and hiit sections
+  const getCardStyle = () => {
+    if (workoutType === 'cardio' || workoutType === 'hiit') {
+      return {
+        background: 'linear-gradient(135deg, #EEBA2B 0%, #000000 100%)'
+      };
+    }
+    return {};
+  };
+
   return (
-    <div className="cardio-card rounded-2xl p-6 shadow-sm border-2">
+    <div className="cardio-card rounded-2xl p-6 shadow-sm border-2" style={getCardStyle()}>
       <div className="cardio-card__timer rounded-2xl p-6 border-2">
         <div className="text-center">
           <div className="mb-4">

@@ -18,7 +18,7 @@ export const Workouts = () => {
 
       {activeWorkout ? (
         <div className="space-y-6">
-          <WorkoutTimer />
+          <WorkoutTimer workoutType={activeWorkout} />
           <ActiveWorkout workoutId={activeWorkout} onClose={() => setActiveWorkout(null)} />
         </div>
       ) : (
