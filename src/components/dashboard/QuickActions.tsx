@@ -1,4 +1,3 @@
-
 import { Play, Calendar, MessageSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -40,12 +39,14 @@ const QuickActions = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Ottieni solo la data di oggi nel formato YYYY-MM-DD
       const today = new Date().toISOString().split('T')[0];
+      
       const { data, error } = await supabase
         .from('custom_workouts')
         .select('*')
         .eq('user_id', user.id)
-        .eq('scheduled_date', today)
+        .eq('scheduled_date', today) // Controlla SOLO oggi
         .eq('completed', false) // Escludi allenamenti completati
         .maybeSingle();
 
@@ -67,7 +68,7 @@ const QuickActions = () => {
       // Se esiste un allenamento per oggi, vai direttamente alla schermata di esecuzione
       navigate('/workouts', { state: { startCustomWorkout: todayWorkout.id } });
     } else {
-      // Altrimenti vai al calendario con il popup aperto
+      // Se non c'è un allenamento per oggi, vai al calendario con il popup aperto per oggi
       navigate('/schedule', { state: { openWorkoutModal: true } });
     }
     
