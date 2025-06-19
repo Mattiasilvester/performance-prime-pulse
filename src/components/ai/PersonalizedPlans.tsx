@@ -30,7 +30,7 @@ const plans = [
 
 export const PersonalizedPlans = () => {
   return (
-    <div className="bg-black rounded-2xl shadow-sm border border-slate-200 p-6">
+    <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
       <h3 className="text-lg font-semibold text-[#EEBA2B] mb-4">
         Piani Personalizzati
       </h3>
