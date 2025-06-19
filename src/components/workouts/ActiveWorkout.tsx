@@ -53,8 +53,10 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
 
   const isCompleted = (index: number) => completedExercises.includes(index);
   
+  const isCardioWorkout = workoutId === 'cardio';
+  
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className={`${isCardioWorkout ? 'cardio-fatburn-section' : 'bg-white'} rounded-2xl shadow-sm border border-slate-200 overflow-hidden`}>
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
@@ -82,12 +84,14 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
         </div>
       </div>
 
-      <div className="p-6 space-y-4">
+      <div className={`${isCardioWorkout ? 'cardio-fatburn-section__container' : ''} p-6 space-y-4 border-2`}>
         {workout.exercises.map((exercise, index) => (
           <div
             key={index}
-            className={`p-4 rounded-xl border-2 transition-all duration-300 ${
-              index === currentExercise
+            className={`cardio-fatburn-card p-4 rounded-xl border-2 transition-all duration-300 ${
+              index === currentExercise && isCardioWorkout
+                ? 'cardio-fatburn-card--active'
+                : index === currentExercise
                 ? 'border-blue-500 bg-blue-50'
                 : isCompleted(index)
                 ? 'border-green-500 bg-green-50'
@@ -97,9 +101,11 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  className={`cardio-fatburn-card__bullet w-10 h-10 rounded-full flex items-center justify-center border-2 ${
                     isCompleted(index)
                       ? 'bg-green-500 text-white'
+                      : index === currentExercise && isCardioWorkout
+                      ? 'cardio-fatburn-card--active'
                       : index === currentExercise
                       ? 'bg-blue-500 text-white'
                       : 'bg-slate-300 text-slate-600'
@@ -112,8 +118,10 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
                   )}
                 </div>
                 <div>
-                  <h4 className="font-semibold text-slate-900">{exercise.name}</h4>
-                  <p className="text-sm text-slate-600">
+                  <h4 className={`cardio-fatburn-card__title font-semibold ${isCardioWorkout ? '' : 'text-slate-900'}`}>
+                    {exercise.name}
+                  </h4>
+                  <p className={`cardio-fatburn-card__subtitle text-sm ${isCardioWorkout ? '' : 'text-slate-600'}`}>
                     {exercise.duration} • Riposo: {exercise.rest}
                   </p>
                 </div>
