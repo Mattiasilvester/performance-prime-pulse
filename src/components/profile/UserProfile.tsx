@@ -1,13 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { Edit, MapPin, Calendar, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { fetchUserProfile, updateUserProfile, UserProfile } from '@/services/userService';
+import { fetchUserProfile, updateUserProfile, type UserProfile as UserProfileType } from '@/services/userService';
 import { fetchWorkoutStats, WorkoutStats } from '@/services/workoutStatsService';
 
 export const UserProfile = () => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfileType | null>(null);
   const [stats, setStats] = useState<WorkoutStats>({ total_workouts: 0, total_hours: 0 });
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', surname: '', birthPlace: '' });
