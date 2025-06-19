@@ -432,61 +432,33 @@
 
   /* End of "Allenamenti" overrides */
 
-  /* 6. Blocca Insights AI come Professionisti/Appuntamenti */
+  /* =============================================================================
+     LOCKED SECTIONS - Unified styling for all blocked functionality
+     ============================================================================= */
 
-  /* Contenitore principale di Insights AI */
-  .insights-ai {
+  /* Blocca Insights AI, Professionisti, Prossimi Appuntamenti e Achievements */
+  .insights-ai,
+  .professionisti,
+  .prossimi-appuntamenti {
     position: relative;
     pointer-events: none;               /* disabilita interazioni */
   }
 
-  /* Overlay grigio semi-trasparente */
-  .insights-ai::after {
+  /* Overlay semi-trasparente meno intenso */
+  .insights-ai::after,
+  .professionisti::after,
+  .prossimi-appuntamenti::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.3);     /* Ridotto da 0.5 a 0.3 per meno opacità */
     border-radius: inherit;
     z-index: 10;
     cursor: not-allowed;
   }
 
   /* Icona lucchetto in alto a destra */
-  .insights-ai::before {
-    content: "🔒";
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-size: 1.25rem;
-    color: #FFFFFF;
-    z-index: 20;
-    pointer-events: none;
-  }
-
-  /* End of "Insights AI" locking styles */
-
-  /* Blocca Professionisti e Prossimi Appuntamenti */
-
-  /* Sezione Professionisti */
-  .professionisti,
-  .prossimi-appuntamenti {
-    position: relative;
-    pointer-events: none;   /* disabilita qualsiasi click */
-  }
-
-  /* Overlay grigio semi-trasparente */
-  .professionisti::after,
-  .prossimi-appuntamenti::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: inherit;
-    z-index: 10;
-    cursor: not-allowed;
-  }
-
-  /* Icona lucchetto in alto a destra di ciascuna sezione */
+  .insights-ai::before,
   .professionisti::before,
   .prossimi-appuntamenti::before {
     content: "🔒";
@@ -499,5 +471,13 @@
     pointer-events: none;
   }
 
-  /* End of "Professionisti e Prossimi Appuntamenti" locking styles */
+  /* Contenuto offuscato con blur ridotto */
+  .insights-ai > *:not(.lock-overlay),
+  .professionisti > *:not(.lock-overlay),
+  .prossimi-appuntamenti > *:not(.lock-overlay) {
+    filter: blur(1px);                  /* Ridotto da blur(2px) a blur(1px) per meno sfocatura */
+  }
+
+  /* End of locked sections styling */
 }
+
