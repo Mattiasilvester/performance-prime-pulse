@@ -32,7 +32,7 @@ export const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-black border-2 border-pp-gold rounded-xl flex items-center justify-center overflow-hidden">
+            <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center overflow-hidden">
               <img 
                 src="/lovable-uploads/689d57c4-e221-4d98-91fb-b40567d2e305.png" 
                 alt="Performance Prime Logo" 
