@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -431,4 +430,37 @@
   }
 
   /* End of "Allenamenti" overrides */
+
+  /* 6. Blocca Insights AI come Professionisti/Appuntamenti */
+
+  /* Contenitore principale di Insights AI */
+  .insights-ai {
+    position: relative;
+    pointer-events: none;               /* disabilita interazioni */
+  }
+
+  /* Overlay grigio semi-trasparente */
+  .insights-ai::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: inherit;
+    z-index: 10;
+    cursor: not-allowed;
+  }
+
+  /* Icona lucchetto in alto a destra */
+  .insights-ai::before {
+    content: "🔒";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.25rem;
+    color: #FFFFFF;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  /* End of "Insights AI" locking styles */
 }

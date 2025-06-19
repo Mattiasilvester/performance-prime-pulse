@@ -27,7 +27,7 @@ const insights = [
 
 export const AIInsights = () => {
   return (
-    <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
+    <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6 insights-ai">
       <h3 className="text-lg font-semibold text-[#EEBA2B] mb-4">
         Insights AI
       </h3>
