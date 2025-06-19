@@ -54,10 +54,10 @@ const achievements = [
 
 export const AchievementsBoard = () => {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+    <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-slate-900">Albo delle Medaglie</h3>
-        <span className="text-sm text-slate-500">
+        <h3 className="text-xl font-semibold text-[#EEBA2B]">Albo delle Medaglie</h3>
+        <span className="text-sm text-white">
           {achievements.filter(a => a.earned).length} di {achievements.length} conquistate
         </span>
       </div>
@@ -83,9 +83,7 @@ export const AchievementsBoard = () => {
                   <Icon className={`h-6 w-6 ${achievement.earned ? 'text-white' : 'text-slate-500'}`} />
                 </div>
                 
-                <h4 className={`font-semibold text-sm mb-1 ${
-                  achievement.earned ? 'text-slate-900' : 'text-slate-600'
-                }`}>
+                <h4 className={`font-semibold text-sm mb-1 text-white`}>
                   {achievement.title}
                 </h4>
                 
