@@ -1,5 +1,5 @@
 
-import { Home, Dumbbell, Calendar, Bot, User, FileText } from 'lucide-react';
+import { Home, Dumbbell, Calendar, Bot, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -8,7 +8,6 @@ const navigationItems = [
   { id: 'workouts', label: 'Allenamenti', icon: Dumbbell, path: '/workouts' },
   { id: 'schedule', label: 'Agenda', icon: Calendar, path: '/schedule' },
   { id: 'ai-coach', label: 'AI Coach', icon: Bot, path: '/ai-coach' },
-  { id: 'notes', label: 'Note', icon: FileText, path: '/notes' },
   { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
 ];
 

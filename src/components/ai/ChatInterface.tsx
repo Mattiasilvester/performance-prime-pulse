@@ -79,49 +79,169 @@ export const ChatInterface = forwardRef((props, ref) => {
   };
 
   const generateAIResponse = (userText: string): string => {
-    if (userText.toLowerCase().includes('piano') && userText.toLowerCase().includes('forza')) {
-      return `## Piano Allenamento Forza Personalizzato 💪
+    const lowerText = userText.toLowerCase();
+    
+    // Se il messaggio contiene "piano" e obiettivi specifici, crea un piano direttamente
+    if (lowerText.includes('piano') || lowerText.includes('allenamento')) {
+      if (lowerText.includes('perdere peso') || lowerText.includes('perdita') || lowerText.includes('dimagrire')) {
+        return `## 🔥 Piano Personalizzato per Perdita Peso
 
-**Durata:** 4 settimane
-**Frequenza:** 3 volte a settimana
+**Obiettivo:** Perdita di peso efficace e sostenibile
+**Durata:** 6 settimane
+**Frequenza:** 4-5 volte a settimana
 
-### Settimana 1-2: Base Building
-**Giorno 1 - Upper Body:**
-- Panca piana: 3x8-10
-- Trazioni: 3x6-8
+### 📋 Struttura Settimanale
+
+**Lunedì - HIIT Cardio (30 min)**
+- Riscaldamento: 5 min camminata veloce
+- 20 min HIIT: 30 sec alta intensità + 30 sec recupero
+- Defaticamento: 5 min stretching
+
+**Martedì - Forza Upper Body (40 min)**
+- Push-up: 3x8-12
+- Trazioni assistite: 3x6-10
+- Shoulder press: 3x10-12
+- Plank: 3x30-45 sec
+
+**Mercoledì - Riposo Attivo**
+- Camminata 30-45 min oppure yoga leggero
+
+**Giovedì - Circuito Full Body (35 min)**
+- Squat: 3x12-15
+- Burpees: 3x8-10
+- Mountain climbers: 3x20
+- Jumping jacks: 3x30 sec
+
+**Venerdì - Cardio Steady State (40 min)**
+- Corsa leggera, bici o ellittica
+- Zona frequenza cardiaca: 65-75% FCmax
+
+**Weekend - Attività ricreativa**
+- Escursioni, sport, nuoto, danza
+
+### 🍎 Linee Guida Nutrizionali
+- Deficit calorico di 300-500 cal/giorno
+- Proteine: 1.6-2g per kg peso corporeo
+- Idratazione: 2-3 litri acqua/giorno
+- 5 pasti piccoli invece di 3 grandi
+
+### 📈 Progressione
+- Settimana 1-2: Adattamento
+- Settimana 3-4: Aumento intensità 10%
+- Settimana 5-6: Picco di intensità
+
+**Monitoraggio:** Pesati 1 volta a settimana, stesso giorno e orario.
+
+Hai domande specifiche su questo piano? Vuoi che modifichi qualche esercizio?`;
+      }
+      
+      if (lowerText.includes('forza') || lowerText.includes('massa')) {
+        return `## 💪 Piano Forza e Massa Muscolare
+
+**Obiettivo:** Aumento forza e massa muscolare
+**Durata:** 8 settimane
+**Frequenza:** 4 volte a settimana
+
+### 📋 Split di Allenamento
+
+**Giorno A - Upper Push (Petto, Spalle, Tricipiti)**
+- Panca piana: 4x6-8
 - Military press: 3x8-10
+- Dips: 3x8-12
+- Alzate laterali: 3x12-15
+
+**Giorno B - Lower Body (Gambe, Glutei)**
+- Squat: 4x6-8
+- Stacco rumeno: 3x8-10
+- Affondi bulgari: 3x10 per gamba
+- Polpacci: 4x15-20
+
+**Giorno C - Upper Pull (Schiena, Bicipiti)**
+- Trazioni: 4x6-8
 - Rematore: 3x8-10
+- Curl bilanciere: 3x10-12
+- Face pull: 3x12-15
 
-**Giorno 2 - Lower Body:**
-- Squat: 3x8-10
-- Stacco: 3x6-8
-- Affondi: 3x10 per gamba
-- Polpacci: 3x15
+**Giorno D - Full Body Power**
+- Squat jump: 4x5
+- Push-up esplosivi: 4x5
+- Kettlebell swing: 4x15
+- Plank dinamico: 3x30 sec
 
-**Giorno 3 - Full Body:**
-- Squat: 2x8
-- Panca: 2x8
-- Trazioni: 2x6
-- Plank: 3x30sec
+### ⚖️ Principi di Progressione
+- Aumenta peso del 2.5-5% quando completi tutte le serie
+- Riposo 2-3 minuti tra serie pesanti
+- Focus su forma perfetta
 
-### Progressione:
-- Aumenta peso del 2.5-5% ogni settimana
-- Riposo 2-3 minuti tra serie
-- Riscaldamento 10 min prima di iniziare
+### 🥗 Supporto Nutrizionale
+- Surplus calorico di 200-400 cal/giorno
+- Proteine: 2-2.5g per kg peso corporeo
+- Carboidrati pre/post workout
+- Creatina: 3-5g giornalieri
 
-**Note:** Mantieni sempre la forma corretta, è meglio meno peso ma tecnica perfetta!`;
+Quale parte vorresti approfondire? Hai attrezzature specifiche a disposizione?`;
+      }
     }
     
-    if (userText.toLowerCase().includes('resistenza')) {
-      return 'Per migliorare la resistenza, ti consiglio di integrare 3-4 sessioni di cardio a settimana, alternando HIIT e steady-state. Vuoi che creo un piano personalizzato?';
+    if (lowerText.includes('resistenza') || lowerText.includes('cardio')) {
+      return `## 🏃‍♂️ Piano Resistenza Cardiovascolare
+
+**Obiettivo:** Miglioramento resistenza e capacità aerobica
+**Durata:** 6 settimane
+**Frequenza:** 5 volte a settimana
+
+### 📋 Programma Settimanale
+
+**Lunedì - Base Aerobica (45 min)**
+- Zona 2: 65-75% FCmax
+- Corsa/bici ritmo conversazione
+
+**Martedì - Intervalli Medi (35 min)**
+- Riscaldamento: 10 min
+- 6x3 min al 85% FCmax (rec 90 sec)
+- Defaticamento: 10 min
+
+**Mercoledì - Cross-training (40 min)**
+- Nuoto, ellittica, rowing
+- Intensità moderata
+
+**Giovedì - HIIT Brevi (25 min)**
+- Riscaldamento: 8 min
+- 8x30 sec max + 90 sec recupero
+- Defaticamento: 7 min
+
+**Venerdì - Long Slow Distance (60+ min)**
+- Ritmo comodo e sostenibile
+- Zona 1-2: 60-70% FCmax
+
+### 📈 Test di Controllo
+- Settimana 2: Test 5km
+- Settimana 4: Test 10km
+- Settimana 6: Test finale
+
+### 💡 Consigli Pratici
+- Monitora frequenza cardiaca
+- Idratazione costante
+- Recovery attivo nei giorni off
+
+Su quale aspetto della resistenza vuoi concentrarti di più?`;
     }
-    if (userText.toLowerCase().includes('workout')) {
-      return 'Basandomi sui tuoi progressi recenti, oggi sarebbe perfetto un allenamento di forza per la parte superiore. Hai circa 45 minuti disponibili?';
+    
+    // Risposte più generiche ma comunque utili
+    if (lowerText.includes('workout') || lowerText.includes('oggi')) {
+      return 'Perfetto! Basandomi sui tuoi progressi, oggi ti consiglio un allenamento che combini forza e cardio. Hai preferenze per la parte del corpo da allenare? E quanto tempo hai a disposizione?';
     }
-    if (userText.toLowerCase().includes('nutrizione')) {
-      return 'Per l\'allenamento pre-workout, ti consiglio carboidrati semplici 30-60 minuti prima (banana o avena) e molta idratazione. Evita grassi e fibre eccessive.';
+    
+    if (lowerText.includes('nutrizione') || lowerText.includes('alimentazione')) {
+      return 'Ottima domanda! Per l\'alimentazione pre-workout ti consiglio:\n\n🍌 **30-60 min prima:**\n- Banana + un po\' di miele\n- Avena con frutta\n- Toast integrale con marmellata\n\n💧 **Idratazione:**\n- 400-500ml acqua 2 ore prima\n- 200ml 15 min prima\n\n❌ **Evita:**\n- Grassi e fibre eccessive\n- Pasti troppo abbondanti\n\nHai qualche intolleranza o preferenza alimentare?';
     }
-    return 'Ottima domanda! Basandomi sui tuoi dati e obiettivi, posso aiutarti a ottimizzare il tuo percorso. Dimmi di più su cosa ti preoccupa o su cosa vorresti migliorare.';
+    
+    if (lowerText.includes('obiettivi') || lowerText.includes('raggiungere')) {
+      return 'Eccellente approccio! Per raggiungere i tuoi obiettivi è fondamentale:\n\n🎯 **Definire obiettivi SMART:**\n- Specifici e misurabili\n- Realistici e temporizzati\n\n📊 **Monitoraggio costante:**\n- Progresso settimanale\n- Adattamenti del piano\n\n🔄 **Consistenza:**\n- Routine sostenibile\n- Recovery adeguato\n\nQual è il tuo obiettivo principale in questo momento? Posso creare un piano specifico per te.';
+    }
+    
+    // Risposta di default più interattiva
+    return 'Interessante! Dimmi di più su cosa ti preoccupa o cosa vorresti migliorare. Posso aiutarti con:\n\n💪 Piani di allenamento personalizzati\n🏃‍♂️ Programmi cardio e resistenza\n🍎 Consigli nutrizionali\n📈 Strategie di progressione\n\nChe tipo di supporto ti serve oggi?';
   };
 
   return (
