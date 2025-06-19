@@ -1,4 +1,3 @@
-
 import { Calendar, Clock, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -40,7 +39,7 @@ export const PersonalizedPlans = () => {
         {plans.map((plan, index) => {
           const Icon = plan.icon;
           return (
-            <div key={index} className="p-4 border border-slate-200 rounded-xl hover:shadow-md transition-shadow" style={{background: 'linear-gradient(135deg, #000000 0%, #C89116 100%)'}}>
+            <div key={index} className="p-4 border border-[#EEBA2B] rounded-xl hover:shadow-md transition-shadow" style={{background: 'linear-gradient(135deg, #000000 0%, #C89116 100%)'}}>
               <div className="flex items-start space-x-3 mb-3">
                 <div className={`p-2 rounded-lg ${plan.color}`}>
                   <Icon className="h-4 w-4 text-white" />
