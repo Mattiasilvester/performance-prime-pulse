@@ -66,9 +66,9 @@ export const ChatInterface = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 h-[600px] flex flex-col">
+    <div className="bg-black rounded-2xl shadow-sm border border-slate-200 h-[600px] flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-purple-600 to-blue-600 rounded-t-2xl">
+      <div className="p-4 border-b border-slate-200 rounded-t-2xl" style={{background: 'linear-gradient(135deg, #000000 0%, #C89116 100%)'}}>
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
             <Bot className="h-6 w-6 text-white" />
@@ -90,15 +90,15 @@ export const ChatInterface = () => {
             <div
               className={`max-w-[80%] p-3 rounded-2xl ${
                 message.sender === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 text-slate-900'
+                  ? 'bg-blue-600'
+                  : 'bg-slate-100'
               }`}
             >
               <div className="flex items-start space-x-2">
                 {message.sender === 'ai' && (
-                  <Bot className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <Bot className="h-4 w-4 text-[#EEBA2B] mt-0.5 flex-shrink-0" />
                 )}
-                <p className="text-sm">{message.text}</p>
+                <p className="text-sm text-white">{message.text}</p>
                 {message.sender === 'user' && (
                   <User className="h-4 w-4 text-blue-200 mt-0.5 flex-shrink-0" />
                 )}
@@ -115,7 +115,7 @@ export const ChatInterface = () => {
             <button
               key={index}
               onClick={() => sendMessage(question)}
-              className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-full transition-colors"
+              className="text-xs bg-slate-100 hover:bg-slate-200 text-white px-3 py-2 rounded-full transition-colors"
             >
               {question}
             </button>

@@ -31,7 +31,7 @@ const plans = [
 
 export const PersonalizedPlans = () => {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+    <div className="bg-black rounded-2xl shadow-sm border border-slate-200 p-6">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">
         Piani Personalizzati
       </h3>
@@ -40,7 +40,7 @@ export const PersonalizedPlans = () => {
         {plans.map((plan, index) => {
           const Icon = plan.icon;
           return (
-            <div key={index} className="p-4 border border-slate-200 rounded-xl hover:shadow-md transition-shadow">
+            <div key={index} className="p-4 border border-slate-200 rounded-xl hover:shadow-md transition-shadow" style={{background: 'linear-gradient(135deg, #000000 0%, #C89116 100%)'}}>
               <div className="flex items-start space-x-3 mb-3">
                 <div className={`p-2 rounded-lg ${plan.color}`}>
                   <Icon className="h-4 w-4 text-white" />
@@ -59,7 +59,7 @@ export const PersonalizedPlans = () => {
                   </div>
                 </div>
               </div>
-              <Button size="sm" className="w-full bg-slate-900 hover:bg-slate-800">
+              <Button size="sm" className="w-full bg-slate-900 hover:bg-slate-800 text-[#EEBA2B]">
                 Inizia Piano
               </Button>
             </div>
