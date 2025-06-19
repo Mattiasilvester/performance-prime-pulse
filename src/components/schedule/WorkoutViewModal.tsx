@@ -1,12 +1,15 @@
 
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface WorkoutViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   workout: any;
+  onWorkoutDeleted?: () => void;
 }
 
 const workoutTypes = [
@@ -17,8 +20,9 @@ const workoutTypes = [
   { id: 'personalizzato', name: 'Il tuo allenamento', color: '#c89116' },
 ];
 
-export const WorkoutViewModal = ({ isOpen, onClose, workout }: WorkoutViewModalProps) => {
+export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }: WorkoutViewModalProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   if (!isOpen || !workout) return null;
 
@@ -27,6 +31,36 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout }: WorkoutViewModalP
   const handleStartWorkout = () => {
     onClose();
     navigate('/workouts', { state: { startCustomWorkout: workout.id } });
+  };
+
+  const handleDeleteWorkout = async () => {
+    try {
+      const { error } = await supabase
+        .from('custom_workouts')
+        .delete()
+        .eq('id', workout.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Allenamento eliminato",
+        description: "L'allenamento è stato eliminato con successo.",
+      });
+
+      onClose();
+      if (onWorkoutDeleted) {
+        onWorkoutDeleted();
+      }
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante l'eliminazione dell'allenamento.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -86,11 +120,11 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout }: WorkoutViewModalP
         {/* Bottoni */}
         <div className="flex space-x-3">
           <Button
-            onClick={onClose}
-            variant="outline"
-            className="flex-1 border-white/20 text-white hover:bg-white/10"
+            onClick={handleDeleteWorkout}
+            className="flex-1 bg-red-600 hover:bg-red-700 text-black font-medium"
           >
-            Chiudi
+            <Trash2 className="h-4 w-4 mr-2" />
+            Elimina
           </Button>
           <Button
             onClick={handleStartWorkout}

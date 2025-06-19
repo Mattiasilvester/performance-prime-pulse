@@ -12,6 +12,7 @@ export const Schedule = () => {
   const [isWorkoutViewModalOpen, setIsWorkoutViewModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedWorkout, setSelectedWorkout] = useState<any>(null);
+  const [refreshCalendar, setRefreshCalendar] = useState(0);
   const location = useLocation();
 
   useEffect(() => {
@@ -32,6 +33,14 @@ export const Schedule = () => {
     setIsWorkoutViewModalOpen(true);
   };
 
+  const handleWorkoutDeleted = () => {
+    setRefreshCalendar(prev => prev + 1);
+  };
+
+  const handleWorkoutCreated = () => {
+    setRefreshCalendar(prev => prev + 1);
+  };
+
   return (
     <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen">
       <div className="flex items-center justify-between">
@@ -46,6 +55,7 @@ export const Schedule = () => {
           <AppointmentCalendar 
             onDateSelect={handleDateSelect}
             onWorkoutSelect={handleWorkoutSelect}
+            refreshTrigger={refreshCalendar}
           />
           <ProfessionalsList />
         </div>
@@ -58,12 +68,14 @@ export const Schedule = () => {
         isOpen={isWorkoutModalOpen}
         onClose={() => setIsWorkoutModalOpen(false)}
         selectedDate={selectedDate}
+        onWorkoutCreated={handleWorkoutCreated}
       />
 
       <WorkoutViewModal
         isOpen={isWorkoutViewModalOpen}
         onClose={() => setIsWorkoutViewModalOpen(false)}
         workout={selectedWorkout}
+        onWorkoutDeleted={handleWorkoutDeleted}
       />
     </div>
   );

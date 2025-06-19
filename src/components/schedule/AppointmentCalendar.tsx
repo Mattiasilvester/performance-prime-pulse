@@ -8,9 +8,10 @@ import { useNavigate } from 'react-router-dom';
 interface AppointmentCalendarProps {
   onDateSelect: (date: Date) => void;
   onWorkoutSelect?: (workout: any) => void;
+  refreshTrigger?: number;
 }
 
-export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect }: AppointmentCalendarProps) => {
+export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrigger }: AppointmentCalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [workouts, setWorkouts] = useState<any[]>([]);
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect }: Appointme
 
   useEffect(() => {
     loadWorkouts();
-  }, [currentDate]);
+  }, [currentDate, refreshTrigger]);
 
   const loadWorkouts = async () => {
     try {
