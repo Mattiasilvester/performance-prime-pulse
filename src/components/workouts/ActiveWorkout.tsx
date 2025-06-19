@@ -31,6 +31,24 @@ const workoutData = {
       { name: 'Lunge Jumps', duration: '45s', rest: '15s' },
     ],
   },
+  hiit: {
+    name: 'HIIT Intenso',
+    exercises: [
+      { name: 'Sprint sul posto', duration: '30s', rest: '10s' },
+      { name: 'Jump Squats', duration: '30s', rest: '10s' },
+      { name: 'Burpees esplosivi', duration: '30s', rest: '15s' },
+      { name: 'High Knees', duration: '30s', rest: '10s' },
+    ],
+  },
+  mobility: {
+    name: 'Mobilità e Stretching',
+    exercises: [
+      { name: 'Cat-Cow Stretch', duration: '60s', rest: '10s' },
+      { name: 'Hip Circles', duration: '45s', rest: '10s' },
+      { name: 'Shoulder Rolls', duration: '45s', rest: '10s' },
+      { name: 'Leg Swings', duration: '60s', rest: '15s' },
+    ],
+  },
 };
 
 interface ActiveWorkoutProps {
@@ -53,10 +71,11 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
 
   const isCompleted = (index: number) => completedExercises.includes(index);
   
-  const isCardioWorkout = workoutId === 'cardio';
+  // Apply the same styling to all workout types
+  const isSpecialWorkout = ['cardio', 'strength', 'hiit', 'mobility', 'recommended'].includes(workoutId);
   
   return (
-    <div className={`${isCardioWorkout ? 'cardio-fatburn-section' : 'bg-white'} rounded-2xl shadow-sm overflow-hidden`} style={{ border: isCardioWorkout ? '2px solid #EEBA2B' : '1px solid #e2e8f0' }}>
+    <div className={`${isSpecialWorkout ? 'cardio-fatburn-section' : 'bg-white'} rounded-2xl shadow-sm overflow-hidden`} style={{ border: isSpecialWorkout ? '2px solid #EEBA2B' : '1px solid #e2e8f0' }}>
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
@@ -84,40 +103,27 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
         </div>
       </div>
 
-      <div className={`${isCardioWorkout ? 'cardio-fatburn-section__container' : ''} p-6 space-y-4`} style={{ backgroundColor: isCardioWorkout ? '#000000' : 'white', border: isCardioWorkout ? '2px solid #EEBA2B' : 'none' }}>
+      <div className={`${isSpecialWorkout ? 'cardio-fatburn-section__container' : ''} p-6 space-y-4`} style={{ backgroundColor: isSpecialWorkout ? '#000000' : 'white', border: isSpecialWorkout ? '2px solid #EEBA2B' : 'none' }}>
         {workout.exercises.map((exercise, index) => (
           <div
             key={index}
             className={`cardio-fatburn-card p-4 rounded-xl transition-all duration-300 ${
-              index === currentExercise && !isCompleted(index) && !isCardioWorkout
+              index === currentExercise && !isCompleted(index) && !isSpecialWorkout
                 ? 'border-blue-500 bg-blue-50'
-                : isCompleted(index) && !isCardioWorkout
+                : isCompleted(index) && !isSpecialWorkout
                 ? 'border-green-500 bg-green-50'
-                : !isCardioWorkout
+                : !isSpecialWorkout
                 ? 'border-slate-200 bg-slate-50'
                 : ''
             }`}
             style={{
-              backgroundColor: isCardioWorkout ? '#000000' : undefined,
-              border: isCardioWorkout ? '2px solid #EEBA2B' : undefined,
+              backgroundColor: isSpecialWorkout ? '#000000' : undefined,
+              border: isSpecialWorkout ? '2px solid #EEBA2B' : undefined,
               position: 'relative',
-              ...(index === currentExercise && !isCompleted(index) && isCardioWorkout && {
-                '::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(56, 182, 255, 0.3)',
-                  borderRadius: '0.75rem',
-                  pointerEvents: 'none'
-                }
-              })
             }}
           >
             {/* Active exercise overlay */}
-            {index === currentExercise && !isCompleted(index) && isCardioWorkout && (
+            {index === currentExercise && !isCompleted(index) && isSpecialWorkout && (
               <div 
                 className="absolute inset-0 rounded-xl pointer-events-none"
                 style={{ backgroundColor: 'rgba(56, 182, 255, 0.3)' }}
@@ -130,9 +136,9 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
                   className={`cardio-fatburn-card__bullet w-10 h-10 rounded-full flex items-center justify-center border-2 ${
                     isCompleted(index)
                       ? 'bg-green-500 text-white border-green-500'
-                      : index === currentExercise && !isCardioWorkout
+                      : index === currentExercise && !isSpecialWorkout
                       ? 'bg-blue-500 text-white border-blue-500'
-                      : isCardioWorkout
+                      : isSpecialWorkout
                       ? 'bg-slate-300 text-slate-600 border-slate-300'
                       : 'bg-slate-300 text-slate-600 border-slate-300'
                   }`}
@@ -144,10 +150,10 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
                   )}
                 </div>
                 <div>
-                  <h4 className={`cardio-fatburn-card__title font-semibold ${isCardioWorkout ? 'text-white' : 'text-slate-900'}`}>
+                  <h4 className={`cardio-fatburn-card__title font-semibold ${isSpecialWorkout ? 'text-white' : 'text-slate-900'}`}>
                     {exercise.name}
                   </h4>
-                  <p className={`cardio-fatburn-card__subtitle text-sm ${isCardioWorkout ? 'text-gray-400' : 'text-slate-600'}`} style={{ color: isCardioWorkout ? '#9CA3AF' : undefined }}>
+                  <p className={`cardio-fatburn-card__subtitle text-sm ${isSpecialWorkout ? 'text-gray-400' : 'text-slate-600'}`} style={{ color: isSpecialWorkout ? '#9CA3AF' : undefined }}>
                     {exercise.duration} • Riposo: {exercise.rest}
                   </p>
                 </div>
@@ -156,8 +162,8 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
               {index === currentExercise && !isCompleted(index) && (
                 <Button
                   onClick={() => completeExercise(index)}
-                  className={isCardioWorkout ? "text-black" : "bg-blue-600 hover:bg-blue-700"}
-                  style={isCardioWorkout ? { backgroundColor: '#EEBA2B', color: '#000000' } : undefined}
+                  className={isSpecialWorkout ? "text-black" : "bg-blue-600 hover:bg-blue-700"}
+                  style={isSpecialWorkout ? { backgroundColor: '#EEBA2B', color: '#000000' } : undefined}
                 >
                   Completa
                   <ArrowRight className="h-4 w-4 ml-2" />
