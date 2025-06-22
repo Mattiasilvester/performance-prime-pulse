@@ -1,7 +1,7 @@
 
-import { Bell, Search, Menu, LogOut, ChevronDown } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -23,13 +23,66 @@ const navigationItems = [
   { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
 ];
 
+const searchableItems = [
+  { label: 'Dashboard', path: '/' },
+  { label: 'Allenamenti', path: '/workouts' },
+  { label: 'Calendario', path: '/schedule' },
+  { label: 'AI Coach', path: '/ai-coach' },
+  { label: 'Note', path: '/notes' },
+  { label: 'Profilo', path: '/profile' },
+  { label: 'Impostazioni', path: '/profile' },
+  { label: 'Cardio', path: '/workouts' },
+  { label: 'Forza', path: '/workouts' },
+  { label: 'HIIT', path: '/workouts' },
+  { label: 'Mobilità', path: '/workouts' },
+];
+
 export const Header = () => {
   const [notifications] = useState(3);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filteredItems, setFilteredItems] = useState(searchableItems);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const filtered = searchableItems.filter(item =>
+        item.label.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredItems(filtered);
+    } else {
+      setFilteredItems(searchableItems);
+    }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSearch(false);
+        setSearchQuery('');
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowSearch(false);
+        setSearchQuery('');
+      }
+    };
+
+    if (showSearch) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showSearch]);
 
   const handleLogout = async () => {
     try {
@@ -57,16 +110,14 @@ export const Header = () => {
     }
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      toast.info(`Ricerca per: ${searchQuery}`);
-      // Qui implementare la logica di ricerca
-    }
+  const handleSearchItemClick = (path: string) => {
+    navigate(path);
+    setShowSearch(false);
+    setSearchQuery('');
   };
 
   return (
-    <header className="bg-black shadow-lg border-b-2 border-pp-gold">
+    <header className="bg-black shadow-lg border-b-2 border-pp-gold relative">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -79,29 +130,10 @@ export const Header = () => {
               />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-lg lg:text-xl font-bold text-pp-gold leading-tight">Performance Prime</h1>
+              <h1 className="text-base lg:text-xl font-bold text-pp-gold leading-tight">Performance Prime</h1>
               <p className="text-xs text-pp-gold/80 leading-tight">Oltre ogni limite</p>
             </div>
           </div>
-
-          {/* Search Bar */}
-          {showSearch && (
-            <div className="absolute top-16 left-0 right-0 bg-black border-b-2 border-pp-gold p-4 z-50">
-              <form onSubmit={handleSearchSubmit} className="max-w-md mx-auto">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pp-gold" />
-                  <input
-                    id="search-input"
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Cerca allenamenti, esercizi..."
-                    className="w-full pl-10 pr-4 py-2 bg-black border border-pp-gold rounded-lg text-pp-gold placeholder-pp-gold/50 focus:outline-none focus:ring-2 focus:ring-pp-gold"
-                  />
-                </div>
-              </form>
-            </div>
-          )}
 
           {/* User info and actions */}
           <div className="flex items-center space-x-3">
@@ -127,7 +159,6 @@ export const Header = () => {
               )}
             </Button>
 
-            {/* Menu a tendina per navigazione */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-pp-gold hover:bg-pp-gold hover:text-black">
@@ -167,6 +198,52 @@ export const Header = () => {
           </div>
         </div>
       </div>
+
+      {/* Search Overlay */}
+      {showSearch && (
+        <div className="absolute top-16 left-0 right-0 bg-black border-b-2 border-pp-gold shadow-lg z-50" ref={searchRef}>
+          <div className="container mx-auto px-4 py-4">
+            <div className="relative max-w-md mx-auto">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pp-gold" />
+              <input
+                id="search-input"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cerca allenamenti, esercizi…"
+                className="w-full pl-10 pr-10 py-2 bg-black border border-pp-gold rounded-lg text-pp-gold placeholder-pp-gold/50 focus:outline-none focus:ring-2 focus:ring-pp-gold"
+              />
+              <Button
+                onClick={() => setShowSearch(false)}
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-pp-gold hover:bg-pp-gold hover:text-black"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Search Results */}
+            {searchQuery && (
+              <div className="max-w-md mx-auto mt-2 bg-black border border-pp-gold rounded-lg shadow-lg">
+                {filteredItems.length > 0 ? (
+                  filteredItems.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSearchItemClick(item.path)}
+                      className="w-full px-4 py-2 text-left text-pp-gold hover:bg-pp-gold hover:text-black transition-colors border-b border-pp-gold/20 last:border-b-0"
+                    >
+                      {item.label}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-pp-gold/60">Nessun risultato trovato</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 };

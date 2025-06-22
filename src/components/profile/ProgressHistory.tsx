@@ -32,7 +32,6 @@ export const ProgressHistory = () => {
     loadStats();
   }, [period]);
 
-  // Calcola le statistiche totali per il periodo
   const totalStats = chartData ? {
     workouts: chartData.reduce((sum, item) => sum + item.workouts, 0),
     hours: Math.round(chartData.reduce((sum, item) => sum + item.hours, 0) * 10) / 10
@@ -62,6 +61,7 @@ export const ProgressHistory = () => {
 
         {/* Mobile dropdown */}
         <div className="lg:hidden">
+          <label className="block text-sm font-medium text-[#EEBA2B] mb-1">Periodo</label>
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}

@@ -1,96 +1,73 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
-@tailwind components;
+@tailwind components;  
 @tailwind utilities;
-
-/* Performance Prime Design System - Black & Gold */
 
 @layer base {
   :root {
-    /* Brand Colors */
-    --color-bg-primary: #000000;
-    --color-accent-primary: #EEBA2B;
-    --color-text-primary: #EEBA2B;
-    --color-text-secondary: #333333;
-    --color-border: #333333;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-    /* Shadcn UI Variables - Updated for Black & Gold Theme */
-    --background: 0 0% 0%;
-    --foreground: 48 89% 56%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --card: 0 0% 0%;
-    --card-foreground: 48 89% 56%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --popover: 0 0% 0%;
-    --popover-foreground: 48 89% 56%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
 
-    --primary: 48 89% 56%;
-    --primary-foreground: 0 0% 0%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 48 89% 56%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 60%;
-
-    --accent: 48 89% 56%;
-    --accent-foreground: 0 0% 0%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 48 89% 56%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 48 89% 56%;
-    --sidebar-primary: 48 89% 56%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 20%;
-    --sidebar-accent-foreground: 48 89% 56%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 48 89% 56%;
+    /* Custom colors */
+    --pp-gold: 45 85% 55%;
   }
 
   .dark {
-    --background: 0 0% 0%;
-    --foreground: 48 89% 56%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 0%;
-    --card-foreground: 48 89% 56%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 0%;
-    --popover-foreground: 48 89% 56%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 48 89% 56%;
-    --primary-foreground: 0 0% 0%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 48 89% 56%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 48 89% 56%;
-    --accent-foreground: 0 0% 0%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 48 89% 56%;
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 48 89% 56%;
-    --sidebar-primary: 48 89%56%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 20%;
-    --sidebar-accent-foreground: 48 89% 56%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 48 89% 56%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
   }
 }
 
@@ -98,449 +75,31 @@
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-black text-[#EEBA2B] font-medium;
-  }
-
-  /* Brand Typography */
-  h1, h2, h3, h4, h5, h6 {
-    @apply text-[#EEBA2B] font-bold;
-  }
-
-  /* Performance Prime Brand Text */
-  .brand-text {
-    @apply text-[#EEBA2B] font-bold;
-  }
-
-  /* Chart and Graph Styles */
-  .recharts-wrapper {
-    @apply bg-black;
-  }
-
-  .recharts-cartesian-grid line {
-    stroke: #333333 !important;
-  }
-
-  .recharts-xaxis text,
-  .recharts-yaxis text {
-    fill: #333333 !important;
-  }
-
-  .recharts-bar,
-  .recharts-line {
-    fill: #EEBA2B !important;
-    stroke: #EEBA2B !important;
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
   }
 }
 
-@layer components {
-  /* Button Variants */
-  .btn-primary {
-    @apply bg-[#EEBA2B] text-black hover:bg-black hover:text-[#EEBA2B] border-2 border-[#EEBA2B] transition-all duration-200;
+/* Custom classes for better responsive design */
+@media (max-width: 640px) {
+  .notes-preview-card {
+    max-width: calc(100vw - 140px);
   }
-
-  .btn-secondary {
-    @apply bg-black text-[#EEBA2B] border-2 border-[#EEBA2B] hover:bg-[#EEBA2B] hover:text-black transition-all duration-200;
-  }
-
-  /* Card Styles */
-  .card-branded {
-    @apply bg-black border-[#EEBA2B] border shadow-lg shadow-[#EEBA2B]/10;
-  }
-
-  /* Focus Indicators */
-  .focus-gold {
-    @apply focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:ring-opacity-50;
-  }
-
-  /* =========================================================
-     Performance Prime – Unified Style Overrides
-     Applies to Calendar and Professionisti sections
-     ========================================================= */
-
-  /* ---------------------------------------------------------
-     1. Calendar ("Giugno 2025")
-     --------------------------------------------------------- */
-  .calendar-panel {
-    /* Full black↔gold gradient background */
-    background: linear-gradient(135deg, #000000 0%, #C89116 100%);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    border: 2px solid #000000;
-    box-shadow: 0 10px 25px rgba(238, 186, 43, 0.1);
-  }
-
-  .calendar-panel__title {
-    /* "Giugno 2025" in gold */
-    color: #EEBA2B;
-    font-size: 1.5rem;
-    font-weight: 600;
-  }
-
-  .calendar-panel__weekday,
-  .calendar-panel__day {
-    /* All weekdays and dates in white */
-    color: #FFFFFF;
-  }
-
-  .calendar-panel__new-button {
-    /* "+ Nuovo" button: same size as navigation arrows */
-    background-color: #000000;
-    color: #EEBA2B;
-    border: none;
-    border-radius: 0.375rem;
-    padding: 0.5rem;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-    height: 2.25rem;
-    min-width: fit-content;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .calendar-panel__new-button:hover {
-    background-color: #EEBA2B;
-    color: #000000;
-  }
-
-  /* ---------------------------------------------------------
-     2. Professionisti Cards - Adjusted to match reference screenshot
-     --------------------------------------------------------- */
-  .prof-card {
-    /* Card container sizing to match reference */
-    background-color: #000000;
-    border: 1px solid #C89116;
-    border-radius: 0.75rem !important;
-    padding: 0.5rem !important;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.375rem !important;
-    min-height: 50px !important;
-    max-width: 100% !important;
-  }
-
-  .prof-card__avatar {
-    /* Avatar sizing & positioning to match reference */
-    flex-shrink: 0;
-    width: 1.75rem !important;
-    height: 1.75rem !important;
-    border-radius: 0.25rem;
-    overflow: hidden;
-    margin: 0 !important;
-  }
-
-  .prof-card__content {
-    flex: 1;
-  }
-
-  .prof-card__name {
-    /* Name styling - keeping same font size as reference */
-    color: #FFFFFF;
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.2;
-  }
-
-  .prof-card__role {
-    /* Role subtitle */
-    color: #FFFFFF;
-    opacity: 0.7;
-    font-size: 0.75rem;
-    margin-bottom: 0.25rem;
-    line-height: 1.2;
-  }
-
-  .prof-card__rating {
-    display: flex;
-    align-items: center;
+  
+  .mobile-timer-controls {
     gap: 0.25rem;
-    margin-bottom: 0.5rem;
   }
-
-  .prof-card__rating-star {
-    /* Star icon in gold */
-    color: #EEBA2B;
-  }
-
-  .prof-card__rating-value {
-    /* Rating number in white */
-    color: #FFFFFF;
-    font-weight: 500;
+  
+  .mobile-timer-controls input {
+    width: 2.5rem;
+    height: 2rem;
     font-size: 0.75rem;
   }
-
-  .prof-card__experience,
-  .prof-card__rate {
-    /* Experience & rate text */
-    color: #FFFFFF;
-    opacity: 0.7;
-    font-size: 0.75rem;
+  
+  .mobile-timer-controls button {
+    height: 2rem;
+    width: 2.5rem;
+    padding: 0;
   }
-
-  .prof-card__actions {
-    display: flex;
-    gap: 0.375rem;
-    margin-top: 0.75rem;
-  }
-
-  .prof-card__chat-btn {
-    /* Chat button sizing to match reference */
-    background-color: transparent;
-    color: #FFFFFF;
-    border: 1px solid #C89116;
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem !important;
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    transition: all 0.2s ease;
-    height: 2rem !important;
-    font-size: 0.75rem;
-  }
-
-  .prof-card__chat-btn:hover {
-    background-color: #C89116;
-    color: #000000;
-  }
-
-  .prof-card__book-btn {
-    /* Prenota button sizing to match reference */
-    background-color: #C89116;
-    color: #000000;
-    border: none;
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem !important;
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    transition: all 0.2s ease;
-    height: 2rem !important;
-    font-size: 0.75rem;
-  }
-
-  .prof-card__book-btn:hover {
-    background-color: #EEBA2B;
-  }
-
-  /* Status indicator dot */
-  .prof-card__status-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    margin-left: auto;
-    margin-top: 0.25rem;
-  }
-
-  .prof-card__status-dot.online  { background-color: #10B981; }
-  .prof-card__status-dot.offline { background-color: #EF4444; }
-
-  /* =============================================================================
-     ONLY these overrides for the "Allenamenti" page. DO NOT modify any other
-     styles, sizes, layouts, or content outside of this snippet.
-     ============================================================================= */
-
-  /* 1. Cardio workout card container */
-  .cardio-card {
-    border-color: #EEBA2B !important;
-    background: linear-gradient(135deg, #000000 0%, #EEBA2B 100%) !important;
-  }
-
-  /* 2. Timer container background gradient + text in white */
-  .cardio-card__timer {
-    background: linear-gradient(135deg, #000000 0%, #EEBA2B 100%) !important;
-    border-color: #EEBA2B !important;
-  }
-  .cardio-card__timer-display,
-  .cardio-card__timer-label {
-    color: #FFFFFF !important;
-  }
-
-  /* 3. Input pill styles for hours, minutes and seconds */
-  .cardio-card__input-hours,
-  .cardio-card__input-min,
-  .cardio-card__input-sec {
-    display: inline-block;
-    padding: 0 0.75rem;
-    border-radius: 9999px;
-    border: 1px solid #CCCCCC;
-    background-color: #FFFFFF;
-    color: #000000;
-    text-align: center;
-  }
-
-  /* Mobile responsive input sizes */
-  @media (max-width: 1024px) {
-    .cardio-card__input-hours,
-    .cardio-card__input-min,
-    .cardio-card__input-sec {
-      width: 3rem;
-      height: 2.25rem;
-      font-size: 0.875rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .cardio-card__input-hours,
-    .cardio-card__input-min,
-    .cardio-card__input-sec {
-      width: 4rem;
-      height: 2.75rem;
-      font-size: 1rem;
-    }
-  }
-
-  /* 4. Play button remains green */
-  .cardio-card__play-btn {
-    background-color: #22C55E !important;
-    color: #000000 !important;
-  }
-  .cardio-card__play-btn:hover {
-    background-color: #16A34A !important;
-  }
-
-  /* 5. Reset button styling */
-  .cardio-card__reset-btn {
-    background-color: #EEBA2B !important;
-    color: #000000 !important;
-    border: 1px solid #EEBA2B !important;
-  }
-  .cardio-card__reset-btn:hover {
-    background-color: #D4A017 !important;
-  }
-  .cardio-card__reset-btn svg {
-    color: #000000 !important;
-  }
-
-  /* ----------------------------------------------------------------------------- 
-     "Cardio Brucia Grassi" section 
-     ----------------------------------------------------------------------------- */
-
-  /* 6. Section background color for header */
-  .cardio-fatburn-section {
-    background-color: #38B6FF !important;
-  }
-
-  /* 7. Container background under header is black */
-  .cardio-fatburn-section__container {
-    background-color: #000000 !important;
-    border-color: #EEBA2B !important;
-  }
-
-  /* 8. Individual exercise card borders */
-  .cardio-fatburn-card {
-    border-color: #EEBA2B !important;
-  }
-
-  /* 9. Sub-card title & subtitle colors */
-  .cardio-fatburn-card__title {
-    color: #FFFFFF !important;
-  }
-  .cardio-fatburn-card__subtitle {
-    color: #9CA3AF !important; /* medium gray */
-  }
-
-  /* 10. Highlight current exercise */
-  .cardio-fatburn-card--active,
-  .cardio-fatburn-card--active .cardio-fatburn-card__bullet {
-    border-color: #38B6FF !important;
-    background-color: #38B6FF !important;
-  }
-
-  /* End of "Allenamenti" overrides */
-
-  /* =============================================================================
-     LOCKED SECTIONS - Unified styling exactly like screen 1 (AI Insights)
-     ============================================================================= */
-
-  /* Blocca tutte le sezioni con la stessa modalità identica */
-  .insights-ai,
-  .professionisti,
-  .prossimi-appuntamenti,
-  .achievement-board,
-  .ai-coach-prime,
-  .quick-actions,
-  .ai-suggestions {
-    position: relative;
-    pointer-events: none;
-  }
-
-  /* Contenuto leggermente offuscato ma leggibile */
-  .insights-ai > *:not(.lock-overlay),
-  .professionisti > *:not(.lock-overlay),
-  .prossimi-appuntamenti > *:not(.lock-overlay),
-  .achievement-board > *:not(.lock-overlay),
-  .ai-coach-prime > *:not(.lock-overlay),
-  .quick-actions > *:not(.lock-overlay),
-  .ai-suggestions > *:not(.lock-overlay) {
-    filter: blur(0.5px);
-  }
-
-  /* Icona lucchetto in alto a destra per tutte le sezioni */
-  .insights-ai::before,
-  .professionisti::before,
-  .prossimi-appuntamenti::before,
-  .achievement-board::before,
-  .ai-coach-prime::before,
-  .quick-actions::before,
-  .ai-suggestions::before {
-    content: "🔒";
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-size: 1.25rem;
-    color: #FFFFFF;
-    z-index: 20;
-    pointer-events: none;
-  }
-
-  /* Messaggio "Funzionalità in arrivo" centrato identico per tutte le sezioni */
-  .insights-ai .lock-overlay,
-  .professionisti .lock-overlay,
-  .prossimi-appuntamenti .lock-overlay,
-  .achievement-board .lock-overlay,
-  .ai-coach-prime .lock-overlay,
-  .quick-actions .lock-overlay,
-  .ai-suggestions .lock-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 15;
-    text-align: center;
-    pointer-events: none;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: inherit;
-  }
-
-  .insights-ai .lock-overlay h3,
-  .professionisti .lock-overlay h3,
-  .prossimi-appuntamenti .lock-overlay h3,
-  .achievement-board .lock-overlay h3,
-  .ai-coach-prime .lock-overlay h3,
-  .quick-actions .lock-overlay h3,
-  .ai-suggestions .lock-overlay h3 {
-    color: #FFFFFF;
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-
-  .insights-ai .lock-overlay p,
-  .professionisti .lock-overlay p,
-  .prossimi-appuntamenti .lock-overlay p,
-  .achievement-board .lock-overlay p,
-  .ai-coach-prime .lock-overlay p,
-  .quick-actions .lock-overlay p,
-  .ai-suggestions .lock-overlay p {
-    color: #FFFFFF;
-    font-size: 0.875rem;
-    opacity: 0.9;
-  }
-
-  /* End of locked sections styling */
 }

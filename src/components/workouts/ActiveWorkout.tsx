@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { CheckCircle, ArrowRight, X } from 'lucide-react';
+import { CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExerciseCard } from './ExerciseCard';
 
@@ -73,10 +73,8 @@ export const ActiveWorkout = ({ workoutId, onClose, onStartExercise }: ActiveWor
 
   const isCompleted = (index: number) => completedExercises.includes(index);
   
-  // Apply the same styling to all workout types
   const isSpecialWorkout = ['cardio', 'strength', 'hiit', 'mobility', 'recommended'].includes(workoutId);
   
-  // Get the specific header background color for each workout type
   const getHeaderBackground = () => {
     switch (workoutId) {
       case 'cardio':
@@ -88,7 +86,7 @@ export const ActiveWorkout = ({ workoutId, onClose, onStartExercise }: ActiveWor
       case 'mobility':
         return '#8C52FF';
       default:
-        return 'linear-gradient(to right, #2563eb, #7c3aed)'; // Default gradient for recommended
+        return 'linear-gradient(to right, #2563eb, #7c3aed)';
     }
   };
   
@@ -112,7 +110,6 @@ export const ActiveWorkout = ({ workoutId, onClose, onStartExercise }: ActiveWor
           </Button>
         </div>
         
-        {/* Progress Bar */}
         <div className="mt-4 bg-white/20 rounded-full h-2">
           <div 
             className="bg-white rounded-full h-2 transition-all duration-300"

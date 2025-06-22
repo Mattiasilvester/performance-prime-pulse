@@ -7,15 +7,18 @@ interface WorkoutTimerProps {
   workoutType?: string;
   onTimerComplete?: () => void;
   autoStartTime?: { hours: number; minutes: number; seconds: number };
+  autoStartRest?: { hours: number; minutes: number; seconds: number };
 }
 
-export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime }: WorkoutTimerProps) => {
+export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, autoStartRest }: WorkoutTimerProps) => {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [inputHours, setInputHours] = useState('');
   const [inputMinutes, setInputMinutes] = useState('');
   const [inputSeconds, setInputSeconds] = useState('');
   const [isCountdown, setIsCountdown] = useState(false);
+  const [isRestPhase, setIsRestPhase] = useState(false);
+  const [restTime, setRestTime] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
 
   useEffect(() => {
     if (autoStartTime) {
@@ -26,8 +29,13 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime }: Wo
       setInputSeconds(autoStartTime.seconds.toString());
       setIsCountdown(true);
       setIsRunning(true);
+      setIsRestPhase(false);
+      
+      if (autoStartRest) {
+        setRestTime(autoStartRest);
+      }
     }
-  }, [autoStartTime]);
+  }, [autoStartTime, autoStartRest]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -37,11 +45,21 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime }: Wo
           if (isCountdown && prevTime > 0) {
             return prevTime - 1;
           } else if (isCountdown && prevTime <= 0) {
-            setIsRunning(false);
-            if (onTimerComplete) {
-              onTimerComplete();
+            // Exercise finished, start rest if available
+            if (!isRestPhase && restTime) {
+              const totalRestSeconds = restTime.hours * 3600 + restTime.minutes * 60 + restTime.seconds;
+              setIsRestPhase(true);
+              return totalRestSeconds;
+            } else {
+              // Rest finished or no rest phase
+              setIsRunning(false);
+              setIsRestPhase(false);
+              setRestTime(null);
+              if (onTimerComplete) {
+                onTimerComplete();
+              }
+              return 0;
             }
-            return 0;
           } else {
             return prevTime + 1;
           }
@@ -49,7 +67,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime }: Wo
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isRunning, isCountdown, onTimerComplete]);
+  }, [isRunning, isCountdown, onTimerComplete, isRestPhase, restTime]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -75,6 +93,8 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime }: Wo
     setTime(0);
     setIsRunning(false);
     setIsCountdown(false);
+    setIsRestPhase(false);
+    setRestTime(null);
     setInputHours('');
     setInputMinutes('');
     setInputSeconds('');
@@ -101,7 +121,6 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime }: Wo
     }
   };
 
-  // Get the inverted gradient for cardio and hiit sections
   const getCardStyle = () => {
     if (workoutType === 'cardio' || workoutType === 'hiit') {
       return {
@@ -119,49 +138,51 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime }: Wo
             <div className="cardio-card__timer-display text-4xl font-mono font-bold mb-2">
               {formatTime(time)}
             </div>
-            <p className="cardio-card__timer-label">Tempo di allenamento</p>
+            <p className="cardio-card__timer-label">
+              {isRestPhase ? 'Tempo di riposo' : 'Tempo di allenamento'}
+            </p>
           </div>
           
-          <div className="flex items-center justify-center space-x-2 lg:space-x-4 flex-wrap lg:flex-nowrap">
+          <div className="flex items-center justify-center space-x-2 lg:space-x-3">
             <Button
               onClick={toggleTimer}
-              size="lg"
-              className={`cardio-card__play-btn ${isRunning ? "bg-orange-500 hover:bg-orange-600" : "bg-green-500 hover:bg-green-600"} lg:h-11 h-9`}
+              size="sm"
+              className={`${isRunning ? "bg-orange-500 hover:bg-orange-600" : "bg-green-500 hover:bg-green-600"} h-9 w-12`}
             >
-              {isRunning ? <Pause className="h-4 w-4 lg:h-5 lg:w-5" /> : <Play className="h-4 w-4 lg:h-5 lg:w-5" />}
+              {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             </Button>
             
             <input
               type="text"
               value={inputHours}
               onChange={handleHoursChange}
-              placeholder="ore"
-              className="cardio-card__input-hours w-12 lg:w-16 h-9 lg:h-11 text-sm lg:text-base"
+              placeholder="h"
+              className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
             />
             
             <input
               type="text"
               value={inputMinutes}
               onChange={handleMinutesChange}
-              placeholder="min"
-              className="cardio-card__input-min w-12 lg:w-16 h-9 lg:h-11 text-sm lg:text-base"
+              placeholder="m"
+              className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
             />
             
             <input
               type="text"
               value={inputSeconds}
               onChange={handleSecondsChange}
-              placeholder="sec"
-              className="cardio-card__input-sec w-12 lg:w-16 h-9 lg:h-11 text-sm lg:text-base"
+              placeholder="s"
+              className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
             />
             
             <Button 
               onClick={resetTimer} 
               variant="outline" 
-              size="lg"
-              className="cardio-card__reset-btn lg:h-11 h-9"
+              size="sm"
+              className="h-9 w-12"
             >
-              <RotateCcw className="h-4 w-4 lg:h-5 lg:w-5" />
+              <RotateCcw className="h-4 w-4" />
             </Button>
           </div>
         </div>

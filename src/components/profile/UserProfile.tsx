@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Edit, MapPin, Calendar, Trophy } from 'lucide-react';
+import { Edit, MapPin, Calendar, Trophy, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { fetchUserProfile, updateUserProfile, type UserProfile as UserProfileType } from '@/services/userService';
@@ -11,12 +12,12 @@ export const UserProfile = () => {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', surname: '', birthPlace: '' });
   const [loading, setLoading] = useState(true);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // Carica dati utente
         const profileData = await fetchUserProfile();
         if (profileData) {
           setProfile(profileData);
@@ -27,7 +28,6 @@ export const UserProfile = () => {
           });
         }
 
-        // Carica statistiche allenamenti
         const statsData = await fetchWorkoutStats();
         setStats(statsData);
       } catch (error) {
@@ -68,6 +68,23 @@ export const UserProfile = () => {
     setEditing(false);
   };
 
+  const handleImageUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setProfileImage(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
+
   if (loading) {
     return (
       <div className="bg-black rounded-2xl shadow-sm border-2 border-[#EEBA2B] p-6">
@@ -86,19 +103,27 @@ export const UserProfile = () => {
 
   return (
     <div className="bg-black rounded-2xl shadow-sm border-2 border-[#EEBA2B] overflow-hidden">
-      {/* Cover */}
       <div className="h-32" style={{ background: 'linear-gradient(135deg, #000000 0%, #C89116 100%)' }}></div>
       
-      {/* Profile Content */}
       <div className="relative px-6 pb-6">
-        {/* Avatar */}
         <div className="absolute -top-12 left-6">
-          <div className="w-24 h-24 bg-white rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-4xl">
-            {profile.avatarUrl}
+          <div className="relative w-24 h-24 bg-white rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-4xl overflow-hidden">
+            {profileImage ? (
+              <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              profile.avatarUrl
+            )}
+            {editing && (
+              <button
+                onClick={handleImageUpload}
+                className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity"
+              >
+                <Camera className="h-6 w-6" />
+              </button>
+            )}
           </div>
         </div>
         
-        {/* Edit Button */}
         <div className="flex justify-end pt-4">
           {editing ? (
             <div className="flex gap-2">
@@ -132,7 +157,6 @@ export const UserProfile = () => {
           )}
         </div>
         
-        {/* Profile Info */}
         <div className="mt-4">
           {editing ? (
             <div className="space-y-4">
