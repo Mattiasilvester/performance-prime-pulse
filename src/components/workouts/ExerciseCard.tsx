@@ -42,6 +42,7 @@ export const ExerciseCard = ({ exercise, onStart, onComplete }: ExerciseCardProp
               onClick={onComplete}
               size="sm"
               className="bg-[#EEBA2B] hover:bg-[#D4A017] text-black px-4 py-2"
+              disabled={!exercise.completed}
             >
               Completa →
             </Button>

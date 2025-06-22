@@ -1,7 +1,7 @@
 
 import { Bell, Search, Menu, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -27,11 +27,9 @@ export const Header = () => {
   const [notifications] = useState(3);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<typeof navigationItems>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const searchRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     try {
@@ -59,69 +57,16 @@ export const Header = () => {
     }
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    
-    if (query.trim()) {
-      const filtered = navigationItems.filter(item => 
-        item.label.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(filtered);
-    } else {
-      setSearchResults([]);
-    }
-  };
-
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim() && searchResults.length > 0) {
-      navigate(searchResults[0].path);
-      setShowSearch(false);
-      setSearchQuery('');
-      setSearchResults([]);
+    if (searchQuery.trim()) {
+      toast.info(`Ricerca per: ${searchQuery}`);
+      // Qui implementare la logica di ricerca
     }
   };
-
-  const handleResultClick = (path: string) => {
-    navigate(path);
-    setShowSearch(false);
-    setSearchQuery('');
-    setSearchResults([]);
-  };
-
-  // Close search when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowSearch(false);
-        setSearchQuery('');
-        setSearchResults([]);
-      }
-    };
-
-    // Close on Escape key
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setShowSearch(false);
-        setSearchQuery('');
-        setSearchResults([]);
-      }
-    };
-
-    if (showSearch) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [showSearch]);
 
   return (
-    <header className="bg-black shadow-lg border-b-2 border-pp-gold relative">
+    <header className="bg-black shadow-lg border-b-2 border-pp-gold">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -134,10 +79,29 @@ export const Header = () => {
               />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-base lg:text-lg font-bold text-pp-gold leading-tight">Performance Prime</h1>
+              <h1 className="text-lg lg:text-xl font-bold text-pp-gold leading-tight">Performance Prime</h1>
               <p className="text-xs text-pp-gold/80 leading-tight">Oltre ogni limite</p>
             </div>
           </div>
+
+          {/* Search Bar */}
+          {showSearch && (
+            <div className="absolute top-16 left-0 right-0 bg-black border-b-2 border-pp-gold p-4 z-50">
+              <form onSubmit={handleSearchSubmit} className="max-w-md mx-auto">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pp-gold" />
+                  <input
+                    id="search-input"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Cerca allenamenti, esercizi..."
+                    className="w-full pl-10 pr-4 py-2 bg-black border border-pp-gold rounded-lg text-pp-gold placeholder-pp-gold/50 focus:outline-none focus:ring-2 focus:ring-pp-gold"
+                  />
+                </div>
+              </form>
+            </div>
+          )}
 
           {/* User info and actions */}
           <div className="flex items-center space-x-3">
@@ -203,44 +167,6 @@ export const Header = () => {
           </div>
         </div>
       </div>
-
-      {/* Search Overlay */}
-      {showSearch && (
-        <div className="absolute top-16 left-0 right-0 bg-black border-b-2 border-pp-gold p-4 z-50" ref={searchRef}>
-          <form onSubmit={handleSearchSubmit} className="max-w-md mx-auto">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pp-gold" />
-              <input
-                id="search-input"
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="Cerca allenamenti, esercizi..."
-                className="w-full pl-10 pr-4 py-2 bg-black border border-pp-gold rounded-lg text-pp-gold placeholder-pp-gold/50 focus:outline-none focus:ring-2 focus:ring-pp-gold"
-              />
-            </div>
-            
-            {/* Search Results Dropdown */}
-            {searchResults.length > 0 && (
-              <div className="mt-2 bg-black border border-pp-gold rounded-lg shadow-lg">
-                {searchResults.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleResultClick(item.path)}
-                      className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-pp-gold/10 text-pp-gold first:rounded-t-lg last:rounded-b-lg"
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </form>
-        </div>
-      )}
     </header>
   );
 };

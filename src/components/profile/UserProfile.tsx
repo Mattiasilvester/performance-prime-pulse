@@ -1,12 +1,9 @@
-
-import React, { useState, useEffect, useRef } from 'react';
-import { Edit, MapPin, Calendar, Trophy, Camera } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Edit, MapPin, Calendar, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { fetchUserProfile, updateUserProfile, type UserProfile as UserProfileType } from '@/services/userService';
 import { fetchWorkoutStats, WorkoutStats } from '@/services/workoutStatsService';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 export const UserProfile = () => {
   const [profile, setProfile] = useState<UserProfileType | null>(null);
@@ -14,13 +11,12 @@ export const UserProfile = () => {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', surname: '', birthPlace: '' });
   const [loading, setLoading] = useState(true);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
+        // Carica dati utente
         const profileData = await fetchUserProfile();
         if (profileData) {
           setProfile(profileData);
@@ -31,6 +27,7 @@ export const UserProfile = () => {
           });
         }
 
+        // Carica statistiche allenamenti
         const statsData = await fetchWorkoutStats();
         setStats(statsData);
       } catch (error) {
@@ -42,41 +39,6 @@ export const UserProfile = () => {
 
     loadData();
   }, []);
-
-  const handlePhotoClick = () => {
-    if (editing && fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      setProfileImage(data.publicUrl);
-      toast.success('Foto profilo aggiornata con successo');
-    } catch (error) {
-      console.error('Error uploading photo:', error);
-      toast.error('Errore nel caricamento della foto');
-    }
-  };
 
   const handleSave = async () => {
     if (!profile) return;
@@ -90,10 +52,8 @@ export const UserProfile = () => {
         surname: form.surname,
         birth_place: form.birthPlace
       });
-      toast.success('Profilo aggiornato con successo');
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Errore nell\'aggiornamento del profilo');
     }
   };
 
@@ -133,28 +93,9 @@ export const UserProfile = () => {
       <div className="relative px-6 pb-6">
         {/* Avatar */}
         <div className="absolute -top-12 left-6">
-          <div 
-            className={`w-24 h-24 bg-white rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-4xl relative ${editing ? 'cursor-pointer hover:opacity-80' : ''}`}
-            onClick={handlePhotoClick}
-          >
-            {profileImage ? (
-              <img src={profileImage} alt="Profile" className="w-full h-full object-cover rounded-xl" />
-            ) : (
-              profile.avatarUrl
-            )}
-            {editing && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center">
-                <Camera className="h-6 w-6 text-white" />
-              </div>
-            )}
+          <div className="w-24 h-24 bg-white rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-4xl">
+            {profile.avatarUrl}
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoChange}
-            className="hidden"
-          />
         </div>
         
         {/* Edit Button */}

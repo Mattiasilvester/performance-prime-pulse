@@ -7,18 +7,15 @@ interface WorkoutTimerProps {
   workoutType?: string;
   onTimerComplete?: () => void;
   autoStartTime?: { hours: number; minutes: number; seconds: number };
-  autoStartRest?: number;
 }
 
-export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, autoStartRest }: WorkoutTimerProps) => {
+export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime }: WorkoutTimerProps) => {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [inputHours, setInputHours] = useState('');
   const [inputMinutes, setInputMinutes] = useState('');
   const [inputSeconds, setInputSeconds] = useState('');
   const [isCountdown, setIsCountdown] = useState(false);
-  const [isRestPhase, setIsRestPhase] = useState(false);
-  const [restTime, setRestTime] = useState(0);
 
   useEffect(() => {
     if (autoStartTime) {
@@ -29,12 +26,8 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
       setInputSeconds(autoStartTime.seconds.toString());
       setIsCountdown(true);
       setIsRunning(true);
-      setIsRestPhase(false);
-      if (autoStartRest) {
-        setRestTime(autoStartRest);
-      }
     }
-  }, [autoStartTime, autoStartRest]);
+  }, [autoStartTime]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -44,19 +37,11 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
           if (isCountdown && prevTime > 0) {
             return prevTime - 1;
           } else if (isCountdown && prevTime <= 0) {
-            // Exercise phase completed, start rest phase if available
-            if (!isRestPhase && restTime > 0) {
-              setIsRestPhase(true);
-              return restTime;
-            } else {
-              // All phases completed
-              setIsRunning(false);
-              setIsRestPhase(false);
-              if (onTimerComplete) {
-                onTimerComplete();
-              }
-              return 0;
+            setIsRunning(false);
+            if (onTimerComplete) {
+              onTimerComplete();
             }
+            return 0;
           } else {
             return prevTime + 1;
           }
@@ -64,7 +49,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isRunning, isCountdown, isRestPhase, restTime, onTimerComplete]);
+  }, [isRunning, isCountdown, onTimerComplete]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -79,11 +64,9 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
       if (totalSeconds > 0) {
         setTime(totalSeconds);
         setIsCountdown(true);
-        setIsRestPhase(false);
       }
     } else if (!isRunning && !inputHours && !inputMinutes && !inputSeconds) {
       setIsCountdown(false);
-      setIsRestPhase(false);
     }
     setIsRunning(!isRunning);
   };
@@ -92,34 +75,33 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
     setTime(0);
     setIsRunning(false);
     setIsCountdown(false);
-    setIsRestPhase(false);
     setInputHours('');
     setInputMinutes('');
     setInputSeconds('');
-    setRestTime(0);
   };
 
   const handleHoursChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (/^\d*$/.test(value) && (value === '' || parseInt(value) <= 23)) {
+    if (/^\d*$/.test(value) && parseInt(value) <= 23) {
       setInputHours(value);
     }
   };
 
   const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (/^\d*$/.test(value) && (value === '' || parseInt(value) <= 59)) {
+    if (/^\d*$/.test(value) && parseInt(value) <= 59) {
       setInputMinutes(value);
     }
   };
 
   const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (/^\d*$/.test(value) && (value === '' || parseInt(value) <= 59)) {
+    if (/^\d*$/.test(value) && parseInt(value) <= 59) {
       setInputSeconds(value);
     }
   };
 
+  // Get the inverted gradient for cardio and hiit sections
   const getCardStyle = () => {
     if (workoutType === 'cardio' || workoutType === 'hiit') {
       return {
@@ -137,12 +119,10 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             <div className="cardio-card__timer-display text-4xl font-mono font-bold mb-2">
               {formatTime(time)}
             </div>
-            <p className="cardio-card__timer-label">
-              {isRestPhase ? 'Tempo di riposo' : 'Tempo di allenamento'}
-            </p>
+            <p className="cardio-card__timer-label">Tempo di allenamento</p>
           </div>
           
-          <div className="flex items-center justify-center space-x-2 lg:space-x-3 flex-wrap lg:flex-nowrap">
+          <div className="flex items-center justify-center space-x-2 lg:space-x-4 flex-wrap lg:flex-nowrap">
             <Button
               onClick={toggleTimer}
               size="lg"
@@ -156,7 +136,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
               value={inputHours}
               onChange={handleHoursChange}
               placeholder="ore"
-              className="cardio-card__input-hours w-10 lg:w-12 h-9 lg:h-11 text-xs lg:text-sm text-center"
+              className="cardio-card__input-hours w-12 lg:w-16 h-9 lg:h-11 text-sm lg:text-base"
             />
             
             <input
@@ -164,7 +144,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
               value={inputMinutes}
               onChange={handleMinutesChange}
               placeholder="min"
-              className="cardio-card__input-min w-10 lg:w-12 h-9 lg:h-11 text-xs lg:text-sm text-center"
+              className="cardio-card__input-min w-12 lg:w-16 h-9 lg:h-11 text-sm lg:text-base"
             />
             
             <input
@@ -172,7 +152,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
               value={inputSeconds}
               onChange={handleSecondsChange}
               placeholder="sec"
-              className="cardio-card__input-sec w-10 lg:w-12 h-9 lg:h-11 text-xs lg:text-sm text-center"
+              className="cardio-card__input-sec w-12 lg:w-16 h-9 lg:h-11 text-sm lg:text-base"
             />
             
             <Button 
