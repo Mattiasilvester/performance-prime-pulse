@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AICoachPrime } from './AICoachPrime';
@@ -52,59 +51,60 @@ export const AICoach = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen relative">
-      {/* Overlay completo di blocco */}
-      <div className="lock-overlay" style={{ position: 'absolute', inset: 0, zIndex: 50 }}>
-        <Lock className="lock-icon" />
-        <h3>Funzionalità in arrivo</h3>
-        <p>L'AI Coach sarà disponibile presto!</p>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-pp-gold">AI Coach Prime</h2>
-          <p className="text-white">Il tuo assistente personale per l'allenamento</p>
+    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen">
+      <div className="locked-container">
+        <div className="lock-overlay">
+          <Lock className="lock-icon" />
+          <h3>Funzionalità in arrivo</h3>
+          <p>L'AI Coach sarà disponibile presto!</p>
         </div>
-      </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-[#333333] mb-6">
-          <TabsTrigger 
-            value="prime" 
-            className="text-white data-[state=active]:bg-[#EEBA2B] data-[state=active]:text-black"
-          >
-            AI Coach Prime
-          </TabsTrigger>
-          <TabsTrigger 
-            value="insights" 
-            className="text-white data-[state=active]:bg-[#EEBA2B] data-[state=active]:text-black relative"
-          >
-            Insights AI
-            <span className="absolute top-1 right-1 text-xs">🔒</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="prime">
-          <AICoachPrime 
-            onRequestPlan={() => setPlanModal(true)} 
-            chatInterfaceRef={chatInterfaceRef}
-          />
-        </TabsContent>
-
-        <TabsContent value="insights">
-          <div className="insights-ai">
-            <AIInsights />
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-pp-gold">AI Coach Prime</h2>
+            <p className="text-white">Il tuo assistente personale per l'allenamento</p>
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
 
-      {/* Modal per Piani Personalizzati */}
-      {isPlanModalOpen && (
-        <CustomPlanModal
-          onClose={() => setPlanModal(false)}
-          onSave={handleSavePlan}
-        />
-      )}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-[#333333] mb-6">
+            <TabsTrigger 
+              value="prime" 
+              className="text-white data-[state=active]:bg-[#EEBA2B] data-[state=active]:text-black"
+            >
+              AI Coach Prime
+            </TabsTrigger>
+            <TabsTrigger 
+              value="insights" 
+              className="text-white data-[state=active]:bg-[#EEBA2B] data-[state=active]:text-black relative"
+            >
+              Insights AI
+              <span className="absolute top-1 right-1 text-xs">🔒</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="prime">
+            <AICoachPrime 
+              onRequestPlan={() => setPlanModal(true)} 
+              chatInterfaceRef={chatInterfaceRef}
+            />
+          </TabsContent>
+
+          <TabsContent value="insights">
+            <div className="insights-ai">
+              <AIInsights />
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Modal per Piani Personalizzati */}
+        {isPlanModalOpen && (
+          <CustomPlanModal
+            onClose={() => setPlanModal(false)}
+            onSave={handleSavePlan}
+          />
+        )}
+      </div>
     </div>
   );
 };

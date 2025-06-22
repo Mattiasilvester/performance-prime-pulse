@@ -49,7 +49,7 @@ export const Schedule = () => {
         />
         
         <div className="space-y-6">
-          <div className="relative">
+          <div className="locked-container">
             <div className="lock-overlay">
               <Lock className="lock-icon" />
               <h3>Funzionalità in arrivo</h3>
@@ -58,7 +58,7 @@ export const Schedule = () => {
             <UpcomingAppointments />
           </div>
           
-          <div className="relative">
+          <div className="locked-container">
             <div className="lock-overlay">
               <Lock className="lock-icon" />
               <h3>Funzionalità in arrivo</h3>
