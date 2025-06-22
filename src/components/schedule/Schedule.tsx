@@ -48,24 +48,16 @@ export const Schedule = () => {
           refreshTrigger={refreshTrigger}
         />
         
-        <div className="space-y-6">
-          <div className="locked-container">
-            <div className="lock-overlay">
-              <Lock className="lock-icon" />
-              <h3>Funzionalità in arrivo</h3>
-              <p>I prossimi appuntamenti saranno disponibili presto!</p>
-            </div>
-            <UpcomingAppointments />
+        <div className="space-y-6 relative">
+          {/* Singolo overlay unificato per entrambe le sezioni */}
+          <div className="absolute inset-0 bg-gray-500/30 backdrop-blur-[1px] rounded-2xl border-2 border-gray-500 z-10 flex flex-col items-center justify-center text-white text-center p-6">
+            <Lock className="h-12 w-12 text-white mb-4" />
+            <h3 className="text-xl font-bold mb-2">Funzionalità in arrivo</h3>
+            <p className="text-sm opacity-90">I prossimi appuntamenti saranno disponibili presto!</p>
           </div>
           
-          <div className="locked-container">
-            <div className="lock-overlay">
-              <Lock className="lock-icon" />
-              <h3>Funzionalità in arrivo</h3>
-              <p>I professionisti saranno disponibili presto!</p>
-            </div>
-            <ProfessionalsList />
-          </div>
+          <UpcomingAppointments />
+          <ProfessionalsList />
         </div>
       </div>
 

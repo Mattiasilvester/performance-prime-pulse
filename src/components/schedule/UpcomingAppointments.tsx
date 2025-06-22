@@ -1,5 +1,5 @@
 
-import { Clock, MapPin, MessageSquare, Lock } from 'lucide-react';
+import { Clock, MapPin, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const appointments = [
@@ -35,13 +35,6 @@ const appointments = [
 export const UpcomingAppointments = () => {
   return (
     <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl shadow-lg border-2 border-[#c89116] p-6 prossimi-appuntamenti">
-      {/* Lock overlay identico a AI Insights */}
-      <div className="lock-overlay">
-        <Lock className="h-12 w-12 text-white mx-auto mb-4" />
-        <h3>Funzionalità in arrivo</h3>
-        <p>I prossimi appuntamenti saranno disponibili presto!</p>
-      </div>
-
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-pp-gold">Prossimi Appuntamenti</h3>
         <Button variant="ghost" size="sm" className="text-white hover:text-pp-gold">
