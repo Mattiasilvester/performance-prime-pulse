@@ -27,7 +27,14 @@ const settingsSections = [
 
 export const Settings = () => {
   return (
-    <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
+    <div className="bg-black rounded-2xl shadow-sm border border-gray-500 p-6 relative">
+      {/* Overlay per le impostazioni */}
+      <div className="absolute inset-0 bg-gray-500/40 backdrop-blur-[1px] rounded-2xl border-2 border-gray-500 z-10 flex flex-col items-center justify-center text-white text-center p-6">
+        <Lock className="h-10 w-10 text-white mb-3" />
+        <h3 className="text-lg font-bold mb-2">Funzionalità in arrivo</h3>
+        <p className="text-sm opacity-90">Le impostazioni saranno disponibili presto!</p>
+      </div>
+
       <h3 className="text-xl font-semibold text-[#EEBA2B] mb-6">Impostazioni</h3>
 
       <div className="space-y-6">

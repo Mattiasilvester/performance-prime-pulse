@@ -14,16 +14,22 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 relative">
           <ChatInterface ref={chatInterfaceRef} />
+          {/* Overlay specifico per la chat */}
+          <div className="absolute inset-0 bg-gray-500/40 backdrop-blur-[1px] rounded-2xl border-2 border-gray-500 z-10 flex flex-col items-center justify-center text-white text-center p-6">
+            <Lock className="h-12 w-12 text-white mb-4" />
+            <h3 className="text-xl font-bold mb-2">Funzionalità in arrivo</h3>
+            <p className="text-sm opacity-90">La chat AI sarà disponibile presto!</p>
+          </div>
         </div>
         <div className="space-y-4">
-          <div className="bg-black border border-[#EEBA2B] rounded-2xl p-6 quick-actions">
-            {/* Lock overlay identico a tutte le altre sezioni */}
-            <div className="lock-overlay">
-              <Lock className="h-12 w-12 text-white mx-auto mb-4" />
-              <h3>Funzionalità in arrivo</h3>
-              <p>Le azioni rapide saranno disponibili presto!</p>
+          <div className="bg-black border border-gray-500 rounded-2xl p-6 quick-actions relative">
+            {/* Overlay specifico per le azioni rapide */}
+            <div className="absolute inset-0 bg-gray-500/40 backdrop-blur-[1px] rounded-2xl border-2 border-gray-500 z-10 flex flex-col items-center justify-center text-white text-center p-6">
+              <Lock className="h-8 w-8 text-white mb-3" />
+              <h3 className="text-lg font-bold mb-1">Funzionalità in arrivo</h3>
+              <p className="text-xs opacity-90">Le azioni rapide saranno disponibili presto!</p>
             </div>
 
             <h3 className="text-lg font-semibold text-[#EEBA2B] mb-4 flex items-center gap-2">
@@ -41,12 +47,12 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
             </div>
           </div>
           
-          <div className="bg-black border border-[#EEBA2B] rounded-2xl p-6 ai-suggestions">
-            {/* Lock overlay identico a tutte le altre sezioni */}
-            <div className="lock-overlay">
-              <Lock className="h-12 w-12 text-white mx-auto mb-4" />
-              <h3>Funzionalità in arrivo</h3>
-              <p>I suggerimenti AI saranno disponibili presto!</p>
+          <div className="bg-black border border-gray-500 rounded-2xl p-6 ai-suggestions relative">
+            {/* Overlay specifico per i suggerimenti AI */}
+            <div className="absolute inset-0 bg-gray-500/40 backdrop-blur-[1px] rounded-2xl border-2 border-gray-500 z-10 flex flex-col items-center justify-center text-white text-center p-6">
+              <Lock className="h-8 w-8 text-white mb-3" />
+              <h3 className="text-lg font-bold mb-1">Funzionalità in arrivo</h3>
+              <p className="text-xs opacity-90">I suggerimenti AI saranno disponibili presto!</p>
             </div>
 
             <h3 className="text-lg font-semibold text-[#EEBA2B] mb-4">
