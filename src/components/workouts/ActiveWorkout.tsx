@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -73,8 +72,6 @@ export const ActiveWorkout = ({ workoutId, onClose, onStartExercise }: ActiveWor
 
   const isCompleted = (index: number) => completedExercises.includes(index);
   
-  const isSpecialWorkout = ['cardio', 'strength', 'hiit', 'mobility', 'recommended'].includes(workoutId);
-  
   const getHeaderBackground = () => {
     switch (workoutId) {
       case 'cardio':
@@ -91,7 +88,7 @@ export const ActiveWorkout = ({ workoutId, onClose, onStartExercise }: ActiveWor
   };
   
   return (
-    <div className={`${isSpecialWorkout ? 'cardio-fatburn-section' : 'bg-white'} rounded-2xl shadow-sm overflow-hidden`} style={{ border: isSpecialWorkout ? '2px solid #EEBA2B' : '1px solid #e2e8f0' }}>
+    <div className="bg-black rounded-2xl shadow-sm overflow-hidden border-2 border-[#EEBA2B]">
       <div className="p-6 text-white" style={{ background: getHeaderBackground() }}>
         <div className="flex items-center justify-between">
           <div>
@@ -118,7 +115,7 @@ export const ActiveWorkout = ({ workoutId, onClose, onStartExercise }: ActiveWor
         </div>
       </div>
 
-      <div className={`${isSpecialWorkout ? 'cardio-fatburn-section__container' : ''} p-6 space-y-4`} style={{ backgroundColor: isSpecialWorkout ? '#000000' : 'white', border: isSpecialWorkout ? '2px solid #EEBA2B' : 'none' }}>
+      <div className="p-6 space-y-4 bg-black">
         {workout.exercises.map((exercise, index) => (
           <ExerciseCard
             key={index}

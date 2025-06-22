@@ -52,12 +52,12 @@ export const AICoach = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen ai-coach-prime">
-      {/* Lock overlay identico a tutte le altre sezioni */}
-      <div className="lock-overlay">
-        <Lock className="h-12 w-12 text-white mx-auto mb-4" />
-        <h3>Funzionalità in arrivo</h3>
-        <p>L'AI Coach sarà disponibile presto!</p>
+    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen relative">
+      {/* Overlay completo di blocco */}
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white">
+        <Lock className="h-16 w-16 text-white mx-auto mb-6" />
+        <h3 className="text-2xl font-bold mb-4">Funzionalità in arrivo</h3>
+        <p className="text-center text-lg">L'AI Coach sarà disponibile presto!</p>
       </div>
 
       <div className="flex items-center justify-between">

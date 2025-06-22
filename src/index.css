@@ -103,3 +103,125 @@
     padding: 0;
   }
 }
+
+/* Overlay di blocco per le funzionalità */
+.lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  border-radius: 1rem;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  padding: 2rem;
+}
+
+.lock-overlay h3 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.lock-overlay p {
+  opacity: 0.9;
+}
+
+/* Calendario panel styling */
+.calendar-panel {
+  background: linear-gradient(135deg, #000000 0%, #C89116 100%);
+  border: 2px solid #EEBA2B;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  color: white;
+}
+
+.calendar-panel__title {
+  color: #EEBA2B;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.calendar-panel__weekday {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.calendar-panel__day {
+  color: white;
+}
+
+.calendar-panel__new-button {
+  background: #EEBA2B;
+  color: black;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.calendar-panel__new-button:hover {
+  background: #d4a61a;
+}
+
+/* Search functionality */
+.search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+}
+
+.search-container {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  max-height: 400px;
+  overflow: hidden;
+}
+
+.search-input {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.search-results {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-result-item:hover {
+  background: #f9fafb;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}

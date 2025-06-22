@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -121,23 +120,16 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
     }
   };
 
-  const getCardStyle = () => {
-    if (workoutType === 'cardio' || workoutType === 'hiit') {
-      return {
-        background: 'radial-gradient(circle at 50% 50%, #000000, #bf8b16)'
-      };
-    }
-    return {};
-  };
-
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border-2 border-gray-200" style={getCardStyle()}>
+    <div className="rounded-2xl p-6 shadow-sm border-2 border-[#EEBA2B]" style={{
+      background: 'radial-gradient(circle at 50% 50%, #000000, #bf8b16)'
+    }}>
       <div className="text-center">
         <div className="mb-4">
-          <div className="text-4xl font-mono font-bold mb-2 text-gray-900">
+          <div className="text-4xl font-mono font-bold mb-2 text-white">
             {formatTime(time)}
           </div>
-          <p className="text-gray-600">
+          <p className="text-white/80">
             {isRestPhase ? 'Tempo di riposo' : 'Tempo di allenamento'}
           </p>
         </div>
@@ -146,7 +138,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
           <Button
             onClick={toggleTimer}
             size="sm"
-            className={`${isRunning ? "bg-orange-500 hover:bg-orange-600" : "bg-green-500 hover:bg-green-600"} h-9 w-12`}
+            className="bg-green-500 hover:bg-green-600 h-9 w-12 text-black"
           >
             {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </Button>
@@ -177,9 +169,8 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
           
           <Button 
             onClick={resetTimer} 
-            variant="outline" 
             size="sm"
-            className="h-9 w-12"
+            className="bg-[#EEBA2B] hover:bg-[#d4a61a] h-9 w-12 text-black"
           >
             <RotateCcw className="h-4 w-4" />
           </Button>

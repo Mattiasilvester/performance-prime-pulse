@@ -15,7 +15,7 @@ interface ExerciseCardProps {
 
 export const ExerciseCard = ({ exercise, onStart, onComplete }: ExerciseCardProps) => {
   return (
-    <Card className="bg-white border border-gray-200">
+    <Card className="bg-black border-2 border-[#EEBA2B]">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -23,8 +23,8 @@ export const ExerciseCard = ({ exercise, onStart, onComplete }: ExerciseCardProp
               1
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900">{exercise.name}</h4>
-              <p className="text-sm text-gray-600">
+              <h4 className="font-semibold text-white">{exercise.name}</h4>
+              <p className="text-sm text-white/70">
                 {exercise.duration} • Riposo: {exercise.rest}
               </p>
             </div>
@@ -41,7 +41,7 @@ export const ExerciseCard = ({ exercise, onStart, onComplete }: ExerciseCardProp
             <Button
               onClick={onComplete}
               size="sm"
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2"
+              className="bg-[#EEBA2B] hover:bg-[#d4a61a] text-black px-4 py-2"
               disabled={exercise.completed}
             >
               Completa →
