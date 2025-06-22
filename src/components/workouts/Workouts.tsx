@@ -3,7 +3,7 @@ import { WorkoutCategories } from './WorkoutCategories';
 import { ActiveWorkout } from './ActiveWorkout';
 import { WorkoutTimer } from './WorkoutTimer';
 import { CustomWorkoutDisplay } from './CustomWorkoutDisplay';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -11,11 +11,10 @@ export const Workouts = () => {
   const [activeWorkout, setActiveWorkout] = useState<string | null>(null);
   const [customWorkout, setCustomWorkout] = useState<any>(null);
   const [timerAutoStart, setTimerAutoStart] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
+  const [timerRestTime, setTimerRestTime] = useState<number>(0);
   const location = useLocation();
-  const timerRef = useRef<any>(null);
 
   useEffect(() => {
-    // Se arrivato dal calendario con un workout personalizzato da iniziare
     if (location.state?.startCustomWorkout) {
       loadCustomWorkout(location.state.startCustomWorkout);
     }
@@ -47,17 +46,27 @@ export const Workouts = () => {
       seconds = parseInt(duration);
     }
     
+    // Parse rest time
+    let restSeconds = 0;
+    if (restTime.includes('min')) {
+      restSeconds = parseInt(restTime) * 60;
+    } else if (restTime.includes('s')) {
+      restSeconds = parseInt(restTime);
+    }
+    
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
     
     setTimerAutoStart({ hours, minutes, seconds: remainingSeconds });
+    setTimerRestTime(restSeconds);
   };
 
   const handleCloseWorkout = () => {
     setActiveWorkout(null);
     setCustomWorkout(null);
     setTimerAutoStart(null);
+    setTimerRestTime(0);
   };
 
   return (
@@ -74,7 +83,11 @@ export const Workouts = () => {
           <WorkoutTimer 
             workoutType={customWorkout.workout_type} 
             autoStartTime={timerAutoStart}
-            onTimerComplete={() => setTimerAutoStart(null)}
+            autoStartRest={timerRestTime}
+            onTimerComplete={() => {
+              setTimerAutoStart(null);
+              setTimerRestTime(0);
+            }}
           />
           <CustomWorkoutDisplay 
             workout={customWorkout} 
@@ -86,7 +99,11 @@ export const Workouts = () => {
           <WorkoutTimer 
             workoutType={activeWorkout} 
             autoStartTime={timerAutoStart}
-            onTimerComplete={() => setTimerAutoStart(null)}
+            autoStartRest={timerRestTime}
+            onTimerComplete={() => {
+              setTimerAutoStart(null);
+              setTimerRestTime(0);
+            }}
           />
           <ActiveWorkout 
             workoutId={activeWorkout} 
