@@ -50,7 +50,7 @@ export const Schedule = () => {
         
         <div className="space-y-6">
           <div className="relative">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl z-10 flex flex-col items-center justify-center text-white">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl z-10 flex flex-col items-center justify-center text-white pointer-events-none">
               <Lock className="h-12 w-12 text-white mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2">Funzionalità in arrivo</h3>
               <p className="text-center">I prossimi appuntamenti saranno disponibili presto!</p>
@@ -59,7 +59,7 @@ export const Schedule = () => {
           </div>
           
           <div className="relative">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl z-10 flex flex-col items-center justify-center text-white">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl z-10 flex flex-col items-center justify-center text-white pointer-events-none">
               <Lock className="h-12 w-12 text-white mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2">Funzionalità in arrivo</h3>
               <p className="text-center">I professionisti saranno disponibili presto!</p>
@@ -71,16 +71,19 @@ export const Schedule = () => {
 
       {selectedDate && (
         <WorkoutCreationModal
+          isOpen={!!selectedDate}
           selectedDate={selectedDate}
           onClose={handleCloseModals}
-          onSave={handleWorkoutSaved}
+          onWorkoutCreated={handleWorkoutSaved}
         />
       )}
 
       {selectedWorkout && (
         <WorkoutViewModal
+          isOpen={!!selectedWorkout}
           workout={selectedWorkout}
           onClose={handleCloseModals}
+          onWorkoutDeleted={handleWorkoutSaved}
         />
       )}
     </div>
