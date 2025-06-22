@@ -132,12 +132,12 @@ const QuickActions = () => {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg border-2 border-[#c89116] quick-actions">
-        {/* Lock overlay identico a tutte le altre sezioni */}
-        <div className="lock-overlay">
+      <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg border-2 border-[#c89116] quick-actions relative">
+        {/* Lock overlay con sfondo grigio semi-trasparente */}
+        <div className="absolute inset-4 bg-gray-500/70 backdrop-blur-sm rounded-xl z-10 flex flex-col items-center justify-center text-white pointer-events-none">
           <Lock className="h-12 w-12 text-white mx-auto mb-4" />
-          <h3>Funzionalità in arrivo</h3>
-          <p>Le azioni rapide saranno disponibili presto!</p>
+          <h3 className="text-xl font-bold mb-2">Funzionalità in arrivo</h3>
+          <p className="text-center">Le azioni rapide saranno disponibili presto!</p>
         </div>
 
         <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
