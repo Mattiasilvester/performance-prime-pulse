@@ -104,17 +104,17 @@
   }
 }
 
-/* Overlay di blocco per le funzionalità - Layout uniforme */
+/* Overlay di blocco per le funzionalità - Layout uniforme e corretto */
 .lock-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(107, 114, 128, 0.4);
-  backdrop-filter: blur(2px);
+  background: rgba(128, 128, 128, 0.6);
+  backdrop-filter: blur(1px);
   border-radius: 1rem;
-  border: 2px solid #6B7280;
+  border: 2px solid #808080;
   z-index: 10;
   display: flex;
   flex-direction: column;
@@ -156,6 +156,28 @@
 }
 
 .locked-container .lock-overlay {
+  pointer-events: all;
+}
+
+/* Per AI Coach - overlay selettivo solo su elementi specifici */
+.ai-coach-locked .lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(128, 128, 128, 0.6);
+  backdrop-filter: blur(1px);
+  border-radius: 1rem;
+  border: 2px solid #808080;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  padding: 2rem;
   pointer-events: all;
 }
 

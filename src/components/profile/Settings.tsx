@@ -1,6 +1,5 @@
 
-import { Bell, Lock, Globe, HelpCircle, LogOut, User, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Bell, Lock, Globe, HelpCircle, User, Shield } from 'lucide-react';
 
 const settingsSections = [
   {
@@ -53,13 +52,6 @@ export const Settings = () => {
             </div>
           </div>
         ))}
-
-        <div className="pt-4 border-t border-slate-200">
-          <Button variant="destructive" className="w-full">
-            <LogOut className="h-4 w-4 mr-2" />
-            Disconnetti
-          </Button>
-        </div>
       </div>
     </div>
   );
