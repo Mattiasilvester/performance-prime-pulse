@@ -1,4 +1,3 @@
-
 import { Bell, Search, Menu, LogOut, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
@@ -189,12 +188,15 @@ export const Header = () => {
                     </DropdownMenuItem>
                   );
                 })}
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-pp-gold hover:bg-pp-gold/10 hover:text-pp-gold"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span className="font-medium">Logout</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-pp-gold hover:bg-pp-gold hover:text-black">
-              <LogOut className="h-5 w-5" />
-            </Button>
           </div>
         </div>
       </div>
