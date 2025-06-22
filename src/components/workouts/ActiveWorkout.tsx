@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { CheckCircle, ArrowRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ExerciseCard } from './ExerciseCard';
 
 const workoutData = {
   cardio: {
@@ -54,9 +55,10 @@ const workoutData = {
 interface ActiveWorkoutProps {
   workoutId: string;
   onClose: () => void;
+  onStartExercise: (duration: string, restTime: string) => void;
 }
 
-export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
+export const ActiveWorkout = ({ workoutId, onClose, onStartExercise }: ActiveWorkoutProps) => {
   const [currentExercise, setCurrentExercise] = useState(0);
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   
@@ -121,72 +123,12 @@ export const ActiveWorkout = ({ workoutId, onClose }: ActiveWorkoutProps) => {
 
       <div className={`${isSpecialWorkout ? 'cardio-fatburn-section__container' : ''} p-6 space-y-4`} style={{ backgroundColor: isSpecialWorkout ? '#000000' : 'white', border: isSpecialWorkout ? '2px solid #EEBA2B' : 'none' }}>
         {workout.exercises.map((exercise, index) => (
-          <div
+          <ExerciseCard
             key={index}
-            className={`cardio-fatburn-card p-4 rounded-xl transition-all duration-300 ${
-              index === currentExercise && !isCompleted(index) && !isSpecialWorkout
-                ? 'border-blue-500 bg-blue-50'
-                : isCompleted(index) && !isSpecialWorkout
-                ? 'border-green-500 bg-green-50'
-                : !isSpecialWorkout
-                ? 'border-slate-200 bg-slate-50'
-                : ''
-            }`}
-            style={{
-              backgroundColor: isSpecialWorkout ? '#000000' : undefined,
-              border: isSpecialWorkout ? '2px solid #EEBA2B' : undefined,
-              position: 'relative',
-            }}
-          >
-            {/* Active exercise overlay */}
-            {index === currentExercise && !isCompleted(index) && isSpecialWorkout && (
-              <div 
-                className="absolute inset-0 rounded-xl pointer-events-none"
-                style={{ backgroundColor: 'rgba(56, 182, 255, 0.3)' }}
-              />
-            )}
-            
-            <div className="flex items-center justify-between relative z-10">
-              <div className="flex items-center space-x-3">
-                <div
-                  className={`cardio-fatburn-card__bullet w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                    isCompleted(index)
-                      ? 'bg-green-500 text-white border-green-500'
-                      : index === currentExercise && !isSpecialWorkout
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : isSpecialWorkout
-                      ? 'bg-slate-300 text-slate-600 border-slate-300'
-                      : 'bg-slate-300 text-slate-600 border-slate-300'
-                  }`}
-                >
-                  {isCompleted(index) ? (
-                    <CheckCircle className="h-5 w-5" />
-                  ) : (
-                    <span className="font-bold">{index + 1}</span>
-                  )}
-                </div>
-                <div>
-                  <h4 className={`cardio-fatburn-card__title font-semibold ${isSpecialWorkout ? 'text-white' : 'text-slate-900'}`}>
-                    {exercise.name}
-                  </h4>
-                  <p className={`cardio-fatburn-card__subtitle text-sm ${isSpecialWorkout ? 'text-gray-400' : 'text-slate-600'}`} style={{ color: isSpecialWorkout ? '#9CA3AF' : undefined }}>
-                    {exercise.duration} • Riposo: {exercise.rest}
-                  </p>
-                </div>
-              </div>
-              
-              {index === currentExercise && !isCompleted(index) && (
-                <Button
-                  onClick={() => completeExercise(index)}
-                  className={isSpecialWorkout ? "text-black" : "bg-blue-600 hover:bg-blue-700"}
-                  style={isSpecialWorkout ? { backgroundColor: '#EEBA2B', color: '#000000' } : undefined}
-                >
-                  Completa
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
-            </div>
-          </div>
+            exercise={{ ...exercise, completed: isCompleted(index) }}
+            onStart={onStartExercise}
+            onComplete={() => completeExercise(index)}
+          />
         ))}
         
         {completedExercises.length === workout.exercises.length && (
