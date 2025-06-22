@@ -85,7 +85,7 @@
     --ring: 48 89% 56%;
     --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 48 89% 56%;
-    --sidebar-primary: 48 89% 56%;
+    --sidebar-primary: 48 89%56%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 0 0% 20%;
     --sidebar-accent-foreground: 48 89% 56%;
@@ -358,19 +358,38 @@
     color: #FFFFFF !important;
   }
 
-  /* 3. Input pill styles for minutes and seconds */
+  /* 3. Input pill styles for hours, minutes and seconds */
+  .cardio-card__input-hours,
   .cardio-card__input-min,
   .cardio-card__input-sec {
     display: inline-block;
-    width: 4rem;
-    height: 2.75rem;
     padding: 0 0.75rem;
     border-radius: 9999px;
     border: 1px solid #CCCCCC;
     background-color: #FFFFFF;
     color: #000000;
-    font-size: 1rem;
     text-align: center;
+  }
+
+  /* Mobile responsive input sizes */
+  @media (max-width: 1024px) {
+    .cardio-card__input-hours,
+    .cardio-card__input-min,
+    .cardio-card__input-sec {
+      width: 3rem;
+      height: 2.25rem;
+      font-size: 0.875rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .cardio-card__input-hours,
+    .cardio-card__input-min,
+    .cardio-card__input-sec {
+      width: 4rem;
+      height: 2.75rem;
+      font-size: 1rem;
+    }
   }
 
   /* 4. Play button remains green */

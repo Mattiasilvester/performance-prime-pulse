@@ -42,7 +42,9 @@ export const ProgressHistory = () => {
     <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-[#EEBA2B]">Storico Progressi</h3>
-        <div className="flex gap-2">
+        
+        {/* Desktop buttons */}
+        <div className="hidden lg:flex gap-2">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.key}
@@ -56,6 +58,21 @@ export const ProgressHistory = () => {
               {opt.label}
             </button>
           ))}
+        </div>
+
+        {/* Mobile dropdown */}
+        <div className="lg:hidden">
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+            className="bg-black border border-[#EEBA2B] text-[#EEBA2B] px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#EEBA2B]"
+          >
+            {PERIOD_OPTIONS.map(opt => (
+              <option key={opt.key} value={opt.key} className="bg-black text-[#EEBA2B]">
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

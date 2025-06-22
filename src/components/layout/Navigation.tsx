@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
   { id: 'workouts', label: 'Allenamenti', icon: Dumbbell, path: '/workouts' },
-  { id: 'schedule', label: 'Agenda', icon: Calendar, path: '/schedule' },
+  { id: 'schedule', label: 'Calendario', icon: Calendar, path: '/schedule' },
   { id: 'ai-coach', label: 'AI Coach', icon: Bot, path: '/ai-coach' },
   { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
 ];

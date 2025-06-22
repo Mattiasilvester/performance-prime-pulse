@@ -17,7 +17,7 @@ import { Home, Dumbbell, Calendar, Bot, User, FileText } from 'lucide-react';
 const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
   { id: 'workouts', label: 'Allenamenti', icon: Dumbbell, path: '/workouts' },
-  { id: 'schedule', label: 'Agenda', icon: Calendar, path: '/schedule' },
+  { id: 'schedule', label: 'Calendario', icon: Calendar, path: '/schedule' },
   { id: 'ai-coach', label: 'AI Coach', icon: Bot, path: '/ai-coach' },
   { id: 'notes', label: 'Note', icon: FileText, path: '/notes' },
   { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
@@ -25,6 +25,8 @@ const navigationItems = [
 
 export const Header = () => {
   const [notifications] = useState(3);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,6 +45,26 @@ export const Header = () => {
     }
   };
 
+  const handleSearch = () => {
+    setShowSearch(!showSearch);
+    if (!showSearch) {
+      setTimeout(() => {
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }, 100);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      toast.info(`Ricerca per: ${searchQuery}`);
+      // Qui implementare la logica di ricerca
+    }
+  };
+
   return (
     <header className="bg-black shadow-lg border-b-2 border-pp-gold">
       <div className="container mx-auto px-4">
@@ -56,11 +78,30 @@ export const Header = () => {
                 className="w-full h-full object-contain"
               />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-pp-gold">Performance Prime</h1>
-              <p className="text-xs text-pp-gold/80">Oltre ogni limite</p>
+            <div className="flex flex-col">
+              <h1 className="text-lg lg:text-xl font-bold text-pp-gold leading-tight">Performance Prime</h1>
+              <p className="text-xs text-pp-gold/80 leading-tight">Oltre ogni limite</p>
             </div>
           </div>
+
+          {/* Search Bar */}
+          {showSearch && (
+            <div className="absolute top-16 left-0 right-0 bg-black border-b-2 border-pp-gold p-4 z-50">
+              <form onSubmit={handleSearchSubmit} className="max-w-md mx-auto">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pp-gold" />
+                  <input
+                    id="search-input"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Cerca allenamenti, esercizi..."
+                    className="w-full pl-10 pr-4 py-2 bg-black border border-pp-gold rounded-lg text-pp-gold placeholder-pp-gold/50 focus:outline-none focus:ring-2 focus:ring-pp-gold"
+                  />
+                </div>
+              </form>
+            </div>
+          )}
 
           {/* User info and actions */}
           <div className="flex items-center space-x-3">
@@ -69,7 +110,12 @@ export const Header = () => {
                 {user.email}
               </span>
             )}
-            <Button variant="ghost" size="sm" className="relative text-pp-gold hover:bg-pp-gold hover:text-black">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-pp-gold hover:bg-pp-gold hover:text-black"
+              onClick={handleSearch}
+            >
               <Search className="h-5 w-5" />
             </Button>
             <Button variant="ghost" size="sm" className="relative text-pp-gold hover:bg-pp-gold hover:text-black">
