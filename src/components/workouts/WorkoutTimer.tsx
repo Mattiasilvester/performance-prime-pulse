@@ -131,60 +131,58 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
   };
 
   return (
-    <div className="cardio-card rounded-2xl p-6 shadow-sm border-2" style={getCardStyle()}>
-      <div className="cardio-card__timer rounded-2xl p-6 border-2">
-        <div className="text-center">
-          <div className="mb-4">
-            <div className="cardio-card__timer-display text-4xl font-mono font-bold mb-2">
-              {formatTime(time)}
-            </div>
-            <p className="cardio-card__timer-label">
-              {isRestPhase ? 'Tempo di riposo' : 'Tempo di allenamento'}
-            </p>
+    <div className="bg-white rounded-2xl p-6 shadow-sm border-2 border-gray-200" style={getCardStyle()}>
+      <div className="text-center">
+        <div className="mb-4">
+          <div className="text-4xl font-mono font-bold mb-2 text-gray-900">
+            {formatTime(time)}
           </div>
+          <p className="text-gray-600">
+            {isRestPhase ? 'Tempo di riposo' : 'Tempo di allenamento'}
+          </p>
+        </div>
+        
+        <div className="flex items-center justify-center space-x-2 lg:space-x-3">
+          <Button
+            onClick={toggleTimer}
+            size="sm"
+            className={`${isRunning ? "bg-orange-500 hover:bg-orange-600" : "bg-green-500 hover:bg-green-600"} h-9 w-12`}
+          >
+            {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </Button>
           
-          <div className="flex items-center justify-center space-x-2 lg:space-x-3">
-            <Button
-              onClick={toggleTimer}
-              size="sm"
-              className={`${isRunning ? "bg-orange-500 hover:bg-orange-600" : "bg-green-500 hover:bg-green-600"} h-9 w-12`}
-            >
-              {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-            
-            <input
-              type="text"
-              value={inputHours}
-              onChange={handleHoursChange}
-              placeholder="h"
-              className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
-            />
-            
-            <input
-              type="text"
-              value={inputMinutes}
-              onChange={handleMinutesChange}
-              placeholder="m"
-              className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
-            />
-            
-            <input
-              type="text"
-              value={inputSeconds}
-              onChange={handleSecondsChange}
-              placeholder="s"
-              className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
-            />
-            
-            <Button 
-              onClick={resetTimer} 
-              variant="outline" 
-              size="sm"
-              className="h-9 w-12"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-          </div>
+          <input
+            type="text"
+            value={inputHours}
+            onChange={handleHoursChange}
+            placeholder="h"
+            className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
+          />
+          
+          <input
+            type="text"
+            value={inputMinutes}
+            onChange={handleMinutesChange}
+            placeholder="m"
+            className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
+          />
+          
+          <input
+            type="text"
+            value={inputSeconds}
+            onChange={handleSecondsChange}
+            placeholder="s"
+            className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
+          />
+          
+          <Button 
+            onClick={resetTimer} 
+            variant="outline" 
+            size="sm"
+            className="h-9 w-12"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>

@@ -15,16 +15,16 @@ interface ExerciseCardProps {
 
 export const ExerciseCard = ({ exercise, onStart, onComplete }: ExerciseCardProps) => {
   return (
-    <Card className="cardio-fatburn-card bg-black border-[#EEBA2B] p-4">
-      <CardContent className="p-0">
+    <Card className="bg-white border border-gray-200">
+      <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-[#38B6FF] flex items-center justify-center text-white font-bold text-sm cardio-fatburn-card__bullet">
+            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
               1
             </div>
             <div>
-              <h4 className="cardio-fatburn-card__title font-semibold">{exercise.name}</h4>
-              <p className="cardio-fatburn-card__subtitle text-sm">
+              <h4 className="font-semibold text-gray-900">{exercise.name}</h4>
+              <p className="text-sm text-gray-600">
                 {exercise.duration} • Riposo: {exercise.rest}
               </p>
             </div>
@@ -34,15 +34,15 @@ export const ExerciseCard = ({ exercise, onStart, onComplete }: ExerciseCardProp
             <Button
               onClick={() => onStart(exercise.duration, exercise.rest)}
               size="sm"
-              className="bg-[#38B6FF] hover:bg-[#2563EB] text-white px-4 py-2"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2"
             >
               Avvia
             </Button>
             <Button
               onClick={onComplete}
               size="sm"
-              className="bg-[#EEBA2B] hover:bg-[#D4A017] text-black px-4 py-2"
-              disabled={!exercise.completed}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2"
+              disabled={exercise.completed}
             >
               Completa →
             </Button>
