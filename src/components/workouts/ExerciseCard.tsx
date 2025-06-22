@@ -34,14 +34,14 @@ export const ExerciseCard = ({ exercise, onStart, onComplete }: ExerciseCardProp
             <Button
               onClick={() => onStart(exercise.duration, exercise.rest)}
               size="sm"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 text-xs"
             >
               Avvia
             </Button>
             <Button
               onClick={onComplete}
               size="sm"
-              className="bg-[#EEBA2B] hover:bg-[#d4a61a] text-black px-4 py-2"
+              className="bg-[#EEBA2B] hover:bg-[#d4a61a] text-black px-3 py-1.5 text-xs"
               disabled={exercise.completed}
             >
               Completa →

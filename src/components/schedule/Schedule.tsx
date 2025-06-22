@@ -50,19 +50,19 @@ export const Schedule = () => {
         
         <div className="space-y-6">
           <div className="relative">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl z-10 flex flex-col items-center justify-center text-white pointer-events-none">
-              <Lock className="h-12 w-12 text-white mx-auto mb-4" />
-              <h3 className="text-xl font-bold mb-2">Funzionalità in arrivo</h3>
-              <p className="text-center">I prossimi appuntamenti saranno disponibili presto!</p>
+            <div className="lock-overlay">
+              <Lock className="lock-icon" />
+              <h3>Funzionalità in arrivo</h3>
+              <p>I prossimi appuntamenti saranno disponibili presto!</p>
             </div>
             <UpcomingAppointments />
           </div>
           
           <div className="relative">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl z-10 flex flex-col items-center justify-center text-white pointer-events-none">
-              <Lock className="h-12 w-12 text-white mx-auto mb-4" />
-              <h3 className="text-xl font-bold mb-2">Funzionalità in arrivo</h3>
-              <p className="text-center">I professionisti saranno disponibili presto!</p>
+            <div className="lock-overlay">
+              <Lock className="lock-icon" />
+              <h3>Funzionalità in arrivo</h3>
+              <p>I professionisti saranno disponibili presto!</p>
             </div>
             <ProfessionalsList />
           </div>
