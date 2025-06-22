@@ -84,7 +84,7 @@
 /* Custom classes for better responsive design */
 @media (max-width: 640px) {
   .notes-preview-card {
-    max-width: calc(100vw - 140px);
+    max-width: calc(100vw - 160px);
   }
   
   .mobile-timer-controls {

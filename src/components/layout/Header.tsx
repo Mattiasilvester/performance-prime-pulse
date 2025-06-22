@@ -130,7 +130,7 @@ export const Header = () => {
               />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-base lg:text-xl font-bold text-pp-gold leading-tight">Performance Prime</h1>
+              <h1 className="text-sm lg:text-xl font-bold text-pp-gold leading-tight">Performance Prime</h1>
               <p className="text-xs text-pp-gold/80 leading-tight">Oltre ogni limite</p>
             </div>
           </div>

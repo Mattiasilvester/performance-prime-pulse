@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Edit, MapPin, Calendar, Trophy, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';

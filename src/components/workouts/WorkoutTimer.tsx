@@ -155,24 +155,24 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             type="text"
             value={inputHours}
             onChange={handleHoursChange}
-            placeholder="h"
-            className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
+            placeholder="ore"
+            className="w-12 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
           />
           
           <input
             type="text"
             value={inputMinutes}
             onChange={handleMinutesChange}
-            placeholder="m"
-            className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
+            placeholder="min"
+            className="w-12 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
           />
           
           <input
             type="text"
             value={inputSeconds}
             onChange={handleSecondsChange}
-            placeholder="s"
-            className="w-10 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
+            placeholder="sec"
+            className="w-12 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
           />
           
           <Button 
