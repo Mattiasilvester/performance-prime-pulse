@@ -13,6 +13,13 @@ import AICoach from "./pages/AICoach";
 import Profile from "./pages/Profile";
 import Notes from "./pages/Notes";
 import Timer from "./pages/Timer";
+import PersonalInfo from "./pages/settings/PersonalInfo";
+import Security from "./pages/settings/Security";
+import Notifications from "./pages/settings/Notifications";
+import Language from "./pages/settings/Language";
+import Privacy from "./pages/settings/Privacy";
+import PrivacyPolicy from "./pages/settings/PrivacyPolicy";
+import Help from "./pages/settings/Help";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -70,6 +77,41 @@ const AppContent = () => (
           <AppLayout>
             <Notes />
           </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/settings/personal-info" element={
+        <ProtectedRoute>
+          <PersonalInfo />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings/security" element={
+        <ProtectedRoute>
+          <Security />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings/notifications" element={
+        <ProtectedRoute>
+          <Notifications />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings/language" element={
+        <ProtectedRoute>
+          <Language />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings/privacy" element={
+        <ProtectedRoute>
+          <Privacy />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings/privacy-policy" element={
+        <ProtectedRoute>
+          <PrivacyPolicy />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings/help" element={
+        <ProtectedRoute>
+          <Help />
         </ProtectedRoute>
       } />
       <Route path="*" element={<NotFound />} />

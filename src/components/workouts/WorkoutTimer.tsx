@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLocation } from 'react-router-dom';
 
 interface WorkoutTimerProps {
   workoutType?: string;
@@ -18,6 +20,24 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
   const [isCountdown, setIsCountdown] = useState(false);
   const [isRestPhase, setIsRestPhase] = useState(false);
   const [restTime, setRestTime] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
+  const location = useLocation();
+
+  // Reset timer when navigating away from workout screens
+  useEffect(() => {
+    const workoutPaths = ['/workouts', '/timer'];
+    const isWorkoutPath = workoutPaths.some(path => location.pathname.startsWith(path));
+    
+    if (!isWorkoutPath) {
+      setTime(0);
+      setIsRunning(false);
+      setInputHours('');
+      setInputMinutes('');
+      setInputSeconds('');
+      setIsCountdown(false);
+      setIsRestPhase(false);
+      setRestTime(null);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     if (autoStartTime) {
