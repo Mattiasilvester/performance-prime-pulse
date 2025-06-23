@@ -122,6 +122,7 @@ export const ActiveWorkout = ({ workoutId, onClose, onStartExercise }: ActiveWor
             exercise={{ ...exercise, completed: isCompleted(index) }}
             onStart={onStartExercise}
             onComplete={() => completeExercise(index)}
+            index={index}
           />
         ))}
         
