@@ -1,3 +1,4 @@
+
 import { Bell, Search, Menu, LogOut, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
@@ -11,12 +12,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Home, Dumbbell, Calendar, Bot, User, FileText } from 'lucide-react';
+import { Home, Dumbbell, Calendar, Bot, User, FileText, Timer } from 'lucide-react';
 
 const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
   { id: 'workouts', label: 'Allenamenti', icon: Dumbbell, path: '/workouts' },
   { id: 'schedule', label: 'Calendario', icon: Calendar, path: '/schedule' },
+  { id: 'timer', label: 'Timer', icon: Timer, path: '/timer' },
   { id: 'ai-coach', label: 'AI Coach', icon: Bot, path: '/ai-coach' },
   { id: 'notes', label: 'Note', icon: FileText, path: '/notes' },
   { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
@@ -26,6 +28,7 @@ const searchableItems = [
   { label: 'Dashboard', path: '/' },
   { label: 'Allenamenti', path: '/workouts' },
   { label: 'Calendario', path: '/schedule' },
+  { label: 'Timer', path: '/timer' },
   { label: 'AI Coach', path: '/ai-coach' },
   { label: 'Note', path: '/notes' },
   { label: 'Profilo', path: '/profile' },

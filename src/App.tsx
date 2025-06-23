@@ -12,6 +12,7 @@ import Schedule from "./pages/Schedule";
 import AICoach from "./pages/AICoach";
 import Profile from "./pages/Profile";
 import Notes from "./pages/Notes";
+import Timer from "./pages/Timer";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -40,6 +41,13 @@ const AppContent = () => (
         <ProtectedRoute>
           <AppLayout>
             <Schedule />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/timer" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Timer />
           </AppLayout>
         </ProtectedRoute>
       } />

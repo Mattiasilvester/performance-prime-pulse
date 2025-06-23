@@ -36,7 +36,7 @@ export const ExerciseCard = ({ exercise, onStart, onComplete, index = 0 }: Exerc
             </div>
           </div>
           
-          <div className="flex items-center space-x-2 flex-shrink-0">
+          <div className="flex flex-col items-center space-y-2 flex-shrink-0">
             <Button
               onClick={() => onStart(exercise.duration, exercise.rest)}
               size="sm"

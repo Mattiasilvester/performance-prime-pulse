@@ -92,7 +92,7 @@ export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrig
   };
 
   return (
-    <div className="calendar-panel">
+    <div className="calendar-panel max-h-[500px]">
       <div className="flex items-center justify-between mb-6">
         <h3 className="calendar-panel__title">
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
