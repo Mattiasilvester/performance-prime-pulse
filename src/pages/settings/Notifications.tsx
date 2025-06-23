@@ -4,11 +4,24 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const Notifications = () => {
   const navigate = useNavigate();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  useEffect(() => {
+    // Load saved notification preference
+    const saved = localStorage.getItem('notificationsEnabled');
+    if (saved !== null) {
+      setNotificationsEnabled(JSON.parse(saved));
+    }
+  }, []);
+
+  const handleToggleChange = (checked: boolean) => {
+    setNotificationsEnabled(checked);
+    localStorage.setItem('notificationsEnabled', JSON.stringify(checked));
+  };
 
   return (
     <div className="min-h-screen bg-black p-6">
@@ -35,7 +48,8 @@ const Notifications = () => {
             <Switch
               id="notifications-toggle"
               checked={notificationsEnabled}
-              onCheckedChange={setNotificationsEnabled}
+              onCheckedChange={handleToggleChange}
+              className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-white"
             />
           </div>
         </div>

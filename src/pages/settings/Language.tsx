@@ -35,8 +35,8 @@ const Language = () => {
                   <SelectValue placeholder="Seleziona lingua" />
                 </SelectTrigger>
                 <SelectContent className="bg-black border-gray-500">
-                  <SelectItem value="it">Italiano</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="it" className="text-white hover:bg-gray-800 focus:bg-gray-800">Italiano</SelectItem>
+                  <SelectItem value="en" className="text-white hover:bg-gray-800 focus:bg-gray-800">English</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -1,6 +1,7 @@
 
 import { Bell, Lock, Globe, HelpCircle, User, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const settingsSections = [
   {
@@ -29,7 +30,20 @@ const settingsSections = [
 export const Settings = () => {
   const navigate = useNavigate();
 
+  // Restore scroll position when returning to settings
+  useEffect(() => {
+    const savedScrollPosition = sessionStorage.getItem('settingsScrollPosition');
+    if (savedScrollPosition) {
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedScrollPosition));
+        sessionStorage.removeItem('settingsScrollPosition');
+      }, 100);
+    }
+  }, []);
+
   const handleSettingClick = (action: string) => {
+    // Save current scroll position before navigating
+    sessionStorage.setItem('settingsScrollPosition', window.scrollY.toString());
     navigate(action);
   };
 

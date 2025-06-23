@@ -4,9 +4,58 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 const Security = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        email: user.email || '',
+        password: '••••••••••'
+      });
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    try {
+      if (formData.email !== user?.email) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: formData.email
+        });
+        if (emailError) throw emailError;
+      }
+
+      if (formData.password !== '••••••••••' && formData.password.length > 0) {
+        const { error: passwordError } = await supabase.auth.updateUser({
+          password: formData.password
+        });
+        if (passwordError) throw passwordError;
+      }
+
+      toast({
+        title: "Credenziali aggiornate con successo.",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Error updating credentials:', error);
+      toast({
+        title: "Errore nell'aggiornamento delle credenziali.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black p-6">
@@ -33,8 +82,8 @@ const Security = () => {
                 id="email"
                 type="email"
                 className="bg-black border-gray-500 text-white"
-                value="user@example.com"
-                readOnly
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
             
@@ -44,12 +93,16 @@ const Security = () => {
                 id="password"
                 type="password"
                 className="bg-black border-gray-500 text-white"
-                value="••••••••••"
-                readOnly
+                placeholder="Inserisci nuova password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
             
-            <Button className="w-full bg-[#EEBA2B] hover:bg-[#d4a61a] text-black">
+            <Button 
+              onClick={handleSave}
+              className="w-full bg-[#EEBA2B] hover:bg-[#d4a61a] text-black"
+            >
               Modifica password
             </Button>
           </div>
