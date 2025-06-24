@@ -2,17 +2,19 @@
 import { Home, Dumbbell, Calendar, Bot, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-
-const navigationItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
-  { id: 'workouts', label: 'Allenamenti', icon: Dumbbell, path: '/workouts' },
-  { id: 'schedule', label: 'Calendario', icon: Calendar, path: '/schedule' },
-  { id: 'ai-coach', label: 'AI Coach', icon: Bot, path: '/ai-coach' },
-  { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const Navigation = () => {
   const location = useLocation();
+  const { t } = useTranslation();
+
+  const navigationItems = [
+    { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
+    { id: 'workouts', label: t('navigation.workouts'), icon: Dumbbell, path: '/workouts' },
+    { id: 'schedule', label: t('navigation.schedule'), icon: Calendar, path: '/schedule' },
+    { id: 'ai-coach', label: t('navigation.aiCoach'), icon: Bot, path: '/ai-coach' },
+    { id: 'profile', label: t('navigation.profile'), icon: User, path: '/profile' },
+  ];
 
   return (
     <nav className="lg:w-64">

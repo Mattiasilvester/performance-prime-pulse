@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface WorkoutTimerProps {
   workoutType?: string;
@@ -12,6 +12,7 @@ interface WorkoutTimerProps {
 }
 
 export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, autoStartRest }: WorkoutTimerProps) => {
+  const { t } = useTranslation();
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [inputHours, setInputHours] = useState('');
@@ -141,26 +142,26 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
   };
 
   return (
-    <div className="rounded-2xl p-6 shadow-sm border-2 border-[#EEBA2B]" style={{
+    <div className="w-full rounded-2xl p-8 shadow-sm border-2 border-[#EEBA2B]" style={{
       background: 'radial-gradient(circle at 50% 50%, #000000, #bf8b16)'
     }}>
-      <div className="text-center">
-        <div className="mb-4">
-          <div className="text-4xl font-mono font-bold mb-2 text-white">
+      <div className="text-center w-full">
+        <div className="mb-6">
+          <div className="text-5xl lg:text-6xl font-mono font-bold mb-4 text-white">
             {formatTime(time)}
           </div>
-          <p className="text-white/80">
-            {isRestPhase ? 'Tempo di riposo' : 'Tempo di allenamento'}
+          <p className="text-white/80 text-lg">
+            {isRestPhase ? t('timer.restTime') : t('timer.workoutTime')}
           </p>
         </div>
         
-        <div className="flex items-center justify-center space-x-2 lg:space-x-3">
+        <div className="flex items-center justify-center space-x-3 lg:space-x-4 flex-wrap gap-2">
           <Button
             onClick={toggleTimer}
-            size="sm"
-            className="bg-green-500 hover:bg-green-600 h-9 w-12 text-black"
+            size="lg"
+            className="bg-green-500 hover:bg-green-600 h-12 w-16 text-black"
           >
-            {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            {isRunning ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
           </Button>
           
           <input
@@ -168,7 +169,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             value={inputHours}
             onChange={handleHoursChange}
             placeholder="ore"
-            className="w-12 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
+            className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
           />
           
           <input
@@ -176,7 +177,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             value={inputMinutes}
             onChange={handleMinutesChange}
             placeholder="min"
-            className="w-12 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
+            className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
           />
           
           <input
@@ -184,15 +185,15 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             value={inputSeconds}
             onChange={handleSecondsChange}
             placeholder="sec"
-            className="w-12 h-9 text-sm text-center border border-gray-300 rounded px-1 bg-white text-black"
+            className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
           />
           
           <Button 
             onClick={resetTimer} 
-            size="sm"
-            className="bg-[#EEBA2B] hover:bg-[#d4a61a] h-9 w-12 text-black"
+            size="lg"
+            className="bg-[#EEBA2B] hover:bg-[#d4a61a] h-12 w-16 text-black"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-6 w-6" />
           </Button>
         </div>
       </div>

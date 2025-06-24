@@ -2,16 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { fetchProgressStats, ProgressData } from '@/services/statsService';
 import ProgressChart from '@/components/ProgressChart';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const PERIOD_OPTIONS = [
-  { label: 'Ultima settimana', key: 'week' },
-  { label: 'Ultimo mese', key: 'month' },
-  { label: 'Ultimi 6 mesi', key: '6months' },
-  { label: 'Ultimo anno', key: 'year' },
-  { label: 'Sempre', key: 'all' }
+  { label: 'progressHistory.lastWeek', key: 'week' },
+  { label: 'progressHistory.lastMonth', key: 'month' }
 ];
 
 export const ProgressHistory = () => {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState('month');
   const [chartData, setChartData] = useState<ProgressData[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,7 +39,7 @@ export const ProgressHistory = () => {
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-[#EEBA2B]">Storico Progressi</h3>
+        <h3 className="text-xl font-semibold text-[#EEBA2B]">{t('progressHistory.title')}</h3>
         
         {/* Desktop buttons */}
         <div className="hidden lg:flex gap-2">
@@ -54,7 +53,7 @@ export const ProgressHistory = () => {
               }`}
               onClick={() => setPeriod(opt.key)}
             >
-              {opt.label}
+              {t(opt.label)}
             </button>
           ))}
         </div>
@@ -69,7 +68,7 @@ export const ProgressHistory = () => {
           >
             {PERIOD_OPTIONS.map(opt => (
               <option key={opt.key} value={opt.key} className="bg-black text-[#EEBA2B]">
-                {opt.label}
+                {t(opt.label)}
               </option>
             ))}
           </select>
@@ -90,18 +89,18 @@ export const ProgressHistory = () => {
         <div className="text-center p-3 bg-gradient-to-br from-[#EEBA2B]/20 to-transparent rounded-xl border border-[#EEBA2B]/30">
           <div className="flex items-center justify-center mb-2">
             <div className="w-3 h-3 bg-[#EEBA2B] rounded-full mr-2"></div>
-            <span className="text-sm font-medium text-white">Allenamenti</span>
+            <span className="text-sm font-medium text-white">{t('progressHistory.workouts')}</span>
           </div>
           <div className="text-2xl font-bold text-[#EEBA2B]">{totalStats.workouts}</div>
-          <div className="text-sm text-gray-400">Nel periodo</div>
+          <div className="text-sm text-gray-400">{t('progressHistory.inPeriod')}</div>
         </div>
         <div className="text-center p-3 bg-gradient-to-br from-orange-500/20 to-transparent rounded-xl border border-orange-500/30">
           <div className="flex items-center justify-center mb-2">
             <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
-            <span className="text-sm font-medium text-white">Ore totali</span>
+            <span className="text-sm font-medium text-white">{t('progressHistory.totalHours')}</span>
           </div>
           <div className="text-2xl font-bold text-orange-500">{totalStats.hours}h</div>
-          <div className="text-sm text-gray-400">Nel periodo</div>
+          <div className="text-sm text-gray-400">{t('progressHistory.inPeriod')}</div>
         </div>
       </div>
     </div>
