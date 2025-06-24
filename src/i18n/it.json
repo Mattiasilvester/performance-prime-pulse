@@ -1,7 +1,7 @@
 
 {
   "navigation": {
-    "dashboard": "Dashboard",
+    "dashboard": "Home",
     "workouts": "Allenamenti", 
     "schedule": "Calendario",
     "timer": "Timer",

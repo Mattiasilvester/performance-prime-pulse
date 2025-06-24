@@ -1,7 +1,5 @@
 
 import { WorkoutTimer } from '@/components/workouts/WorkoutTimer';
-import { Header } from '@/components/layout/Header';
-import { Navigation } from '@/components/layout/Navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -17,8 +15,6 @@ const Timer = () => {
 
   return (
     <div className="min-h-screen bg-black">
-      <Header />
-      
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
           <Button
@@ -45,8 +41,6 @@ const Timer = () => {
           </div>
         </div>
       </div>
-
-      <Navigation />
     </div>
   );
 };
