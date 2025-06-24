@@ -19,7 +19,10 @@
   "timer": {
     "workoutTime": "Workout time",
     "restTime": "Rest time",
-    "motivationalQuote": "Push your limits, one second at a time."
+    "motivationalQuote": "Push your limits, one second at a time.",
+    "hours": "hrs",
+    "minutes": "min",
+    "seconds": "sec"
   },
   "settings": {
     "personalInfo": "Personal information",

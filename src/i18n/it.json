@@ -19,7 +19,10 @@
   "timer": {
     "workoutTime": "Tempo di allenamento",
     "restTime": "Tempo di riposo",
-    "motivationalQuote": "Supera i tuoi limiti, un secondo alla volta."
+    "motivationalQuote": "Supera i tuoi limiti, un secondo alla volta.",
+    "hours": "ore",
+    "minutes": "min",
+    "seconds": "sec"
   },
   "settings": {
     "personalInfo": "Informazioni personali",

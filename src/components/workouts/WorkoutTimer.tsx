@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -155,43 +156,45 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
           </p>
         </div>
         
-        <div className="flex items-center justify-center space-x-3 lg:space-x-4 flex-wrap gap-2">
+        <div className="flex items-center justify-center space-x-4 flex-wrap gap-4">
           <Button
             onClick={toggleTimer}
             size="lg"
-            className="bg-green-500 hover:bg-green-600 h-12 w-16 text-black"
+            className="bg-green-500 hover:bg-green-600 h-12 w-16 text-black order-1"
           >
             {isRunning ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
           </Button>
           
-          <input
-            type="text"
-            value={inputHours}
-            onChange={handleHoursChange}
-            placeholder="ore"
-            className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
-          />
-          
-          <input
-            type="text"
-            value={inputMinutes}
-            onChange={handleMinutesChange}
-            placeholder="min"
-            className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
-          />
-          
-          <input
-            type="text"
-            value={inputSeconds}
-            onChange={handleSecondsChange}
-            placeholder="sec"
-            className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
-          />
+          <div className="flex items-center space-x-3 order-2">
+            <input
+              type="text"
+              value={inputHours}
+              onChange={handleHoursChange}
+              placeholder={t('timer.hours') || 'ore'}
+              className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
+            />
+            
+            <input
+              type="text"
+              value={inputMinutes}
+              onChange={handleMinutesChange}
+              placeholder={t('timer.minutes') || 'min'}
+              className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
+            />
+            
+            <input
+              type="text"
+              value={inputSeconds}
+              onChange={handleSecondsChange}
+              placeholder={t('timer.seconds') || 'sec'}
+              className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
+            />
+          </div>
           
           <Button 
             onClick={resetTimer} 
             size="lg"
-            className="bg-[#EEBA2B] hover:bg-[#d4a61a] h-12 w-16 text-black"
+            className="bg-[#EEBA2B] hover:bg-[#d4a61a] h-12 w-16 text-black order-3"
           >
             <RotateCcw className="h-6 w-6" />
           </Button>

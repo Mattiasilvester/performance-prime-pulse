@@ -1,4 +1,3 @@
-
 import { Bell, Search, Menu, LogOut, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
@@ -13,41 +12,39 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Home, Dumbbell, Calendar, Bot, User, FileText, Timer } from 'lucide-react';
-
-const navigationItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
-  { id: 'workouts', label: 'Allenamenti', icon: Dumbbell, path: '/workouts' },
-  { id: 'schedule', label: 'Calendario', icon: Calendar, path: '/schedule' },
-  { id: 'timer', label: 'Timer', icon: Timer, path: '/timer' },
-  { id: 'ai-coach', label: 'AI Coach', icon: Bot, path: '/ai-coach' },
-  { id: 'notes', label: 'Note', icon: FileText, path: '/notes' },
-  { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
-];
-
-const searchableItems = [
-  { label: 'Dashboard', path: '/' },
-  { label: 'Allenamenti', path: '/workouts' },
-  { label: 'Calendario', path: '/schedule' },
-  { label: 'Timer', path: '/timer' },
-  { label: 'AI Coach', path: '/ai-coach' },
-  { label: 'Note', path: '/notes' },
-  { label: 'Profilo', path: '/profile' },
-  { label: 'Impostazioni', path: '/profile' },
-  { label: 'Cardio', path: '/workouts' },
-  { label: 'Forza', path: '/workouts' },
-  { label: 'HIIT', path: '/workouts' },
-  { label: 'Mobilità', path: '/workouts' },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const Header = () => {
   const [notifications] = useState(3);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredItems, setFilteredItems] = useState(searchableItems);
+  const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
+
+  const navigationItems = [
+    { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
+    { id: 'workouts', label: t('navigation.workouts'), icon: Dumbbell, path: '/workouts' },
+    { id: 'schedule', label: t('navigation.schedule'), icon: Calendar, path: '/schedule' },
+    { id: 'timer', label: t('navigation.timer'), icon: Timer, path: '/timer' },
+    { id: 'ai-coach', label: t('navigation.aiCoach'), icon: Bot, path: '/ai-coach' },
+    { id: 'notes', label: t('navigation.notes'), icon: FileText, path: '/notes' },
+    { id: 'profile', label: t('navigation.profile'), icon: User, path: '/profile' },
+  ];
+
+  const searchableItems = [
+    { label: t('navigation.dashboard'), path: '/' },
+    { label: t('navigation.workouts'), path: '/workouts' },
+    { label: t('navigation.schedule'), path: '/schedule' },
+    { label: t('navigation.timer'), path: '/timer' },
+    { label: t('navigation.aiCoach'), path: '/ai-coach' },
+    { label: t('navigation.notes'), path: '/notes' },
+    { label: t('navigation.profile'), path: '/profile' },
+    { label: t('settings.personalInfo'), path: '/profile' },
+  ];
 
   useEffect(() => {
     if (searchQuery) {
