@@ -13,6 +13,7 @@ interface WorkoutTimerProps {
 
 export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, autoStartRest }: WorkoutTimerProps) => {
   const { t } = useTranslation();
+  
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [inputHours, setInputHours] = useState('');
@@ -23,7 +24,6 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
   const [restTime, setRestTime] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
   const location = useLocation();
 
-  // Reset timer when navigating away from workout screens
   useEffect(() => {
     const workoutPaths = ['/workouts', '/timer'];
     const isWorkoutPath = workoutPaths.some(path => location.pathname.startsWith(path));
@@ -65,13 +65,11 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
           if (isCountdown && prevTime > 0) {
             return prevTime - 1;
           } else if (isCountdown && prevTime <= 0) {
-            // Exercise finished, start rest if available
             if (!isRestPhase && restTime) {
               const totalRestSeconds = restTime.hours * 3600 + restTime.minutes * 60 + restTime.seconds;
               setIsRestPhase(true);
               return totalRestSeconds;
             } else {
-              // Rest finished or no rest phase
               setIsRunning(false);
               setIsRestPhase(false);
               setRestTime(null);
@@ -155,12 +153,12 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
           </p>
         </div>
         
-        {/* New layout: Start | ore | min | sec | Reset */}
-        <div className="flex items-center justify-center space-x-3 flex-wrap">
+        {/* Layout: Start | ore | min | sec | Reset on single horizontal row */}
+        <div className="flex items-center justify-center gap-2 md:gap-4 flex-nowrap">
           <Button
             onClick={toggleTimer}
             size="lg"
-            className="bg-green-500 hover:bg-green-600 h-12 w-16 text-black"
+            className="bg-green-500 hover:bg-green-600 h-12 w-16 text-black flex-shrink-0"
           >
             {isRunning ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
           </Button>
@@ -170,7 +168,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             value={inputHours}
             onChange={handleHoursChange}
             placeholder={t('timer.hours') || 'ore'}
-            className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
+            className="w-12 md:w-16 h-12 text-center border border-gray-300 rounded px-1 md:px-2 bg-white text-black font-medium text-sm md:text-base flex-shrink-0"
           />
           
           <input
@@ -178,7 +176,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             value={inputMinutes}
             onChange={handleMinutesChange}
             placeholder={t('timer.minutes') || 'min'}
-            className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
+            className="w-12 md:w-16 h-12 text-center border border-gray-300 rounded px-1 md:px-2 bg-white text-black font-medium text-sm md:text-base flex-shrink-0"
           />
           
           <input
@@ -186,13 +184,13 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             value={inputSeconds}
             onChange={handleSecondsChange}
             placeholder={t('timer.seconds') || 'sec'}
-            className="w-16 h-12 text-center border border-gray-300 rounded px-2 bg-white text-black font-medium"
+            className="w-12 md:w-16 h-12 text-center border border-gray-300 rounded px-1 md:px-2 bg-white text-black font-medium text-sm md:text-base flex-shrink-0"
           />
           
           <Button 
             onClick={resetTimer} 
             size="lg"
-            className="bg-[#EEBA2B] hover:bg-[#d4a61a] h-12 w-16 text-black"
+            className="bg-[#EEBA2B] hover:bg-[#d4a61a] h-12 w-16 text-black flex-shrink-0"
           >
             <RotateCcw className="h-6 w-6" />
           </Button>
