@@ -10,7 +10,6 @@ interface Translations {
 export const useTranslation = () => {
   const [language, setLanguage] = useState<Language>('it');
   const [translations, setTranslations] = useState<Translations>({});
-  const [forceUpdate, setForceUpdate] = useState(0);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('app-language') as Language;
@@ -26,13 +25,25 @@ export const useTranslation = () => {
           ? await import('../i18n/en.json')
           : await import('../i18n/it.json');
         setTranslations(translationModule.default);
-        setForceUpdate(prev => prev + 1);
       } catch (error) {
         console.error('Error loading translations:', error);
       }
     };
 
     loadTranslations();
+  }, [language]);
+
+  // Listen for language changes from other components
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      const savedLanguage = localStorage.getItem('app-language') as Language;
+      if (savedLanguage && savedLanguage !== language) {
+        setLanguage(savedLanguage);
+      }
+    };
+
+    window.addEventListener('languageChanged', handleLanguageChange);
+    return () => window.removeEventListener('languageChanged', handleLanguageChange);
   }, [language]);
 
   const changeLanguage = (newLanguage: Language) => {
