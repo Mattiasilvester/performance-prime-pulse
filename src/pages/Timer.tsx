@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Navigation } from '@/components/layout/Navigation';
 
 const Timer = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const Timer = () => {
   return (
     <div className="min-h-screen bg-black">
       <div className="container mx-auto px-4 py-6">
-        <div className="mb-6">
+        <div className="mb-6 -mt-2 -ml-2">
           <Button
             variant="ghost"
             size="sm"
@@ -41,6 +42,8 @@ const Timer = () => {
           </div>
         </div>
       </div>
+      
+      <Navigation />
     </div>
   );
 };
