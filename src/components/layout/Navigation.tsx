@@ -1,4 +1,3 @@
-
 import { Home, Dumbbell, Calendar, Bot, User, CreditCard } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
