@@ -32,6 +32,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -113,6 +114,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
 
     if (!confirm('Sei sicuro di voler eliminare questa nota?')) return;
 
+    setIsDeleting(true);
     try {
       const { error } = await supabase
         .from('notes')
@@ -124,7 +126,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
       onDelete(note.id);
       toast({
         title: "Eliminata",
-        description: "La nota è stata eliminata.",
+        description: "La nota è stata eliminata con successo.",
       });
     } catch (error) {
       console.error('Error deleting note:', error);
@@ -133,18 +135,20 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
         description: "Impossibile eliminare la nota.",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-2">
           <Button
             onClick={handleSave}
             disabled={isSaving || !content.trim()}
             size="sm"
-            className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/80 text-black px-3 py-2"
+            className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/80 text-black py-2 px-3"
           >
             <Save className="h-4 w-4 mr-1" />
             {isSaving ? 'Salvando...' : 'Salva'}
@@ -153,16 +157,17 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             onClick={onCancel}
             variant="outline"
             size="sm"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700 px-3 py-2"
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 py-2 px-3"
           >
             Annulla
           </Button>
           {note && (
             <Button
               onClick={handleDelete}
+              disabled={isDeleting}
               variant="outline"
               size="sm"
-              className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white px-3 py-2"
+              className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white py-2 px-2"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
