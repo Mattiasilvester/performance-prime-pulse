@@ -1,5 +1,4 @@
-
-import { Home, Dumbbell, Calendar, Bot, User } from 'lucide-react';
+import { Home, Dumbbell, Calendar, Bot, User, CreditCard } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -10,6 +9,7 @@ export const Navigation = () => {
 
   const navigationItems = [
     { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
+    { id: 'subscriptions', label: 'Abbonamenti', icon: CreditCard, path: '/subscriptions' },
     { id: 'workouts', label: t('navigation.workouts'), icon: Dumbbell, path: '/workouts' },
     { id: 'schedule', label: t('navigation.schedule'), icon: Calendar, path: '/schedule' },
     { id: 'ai-coach', label: t('navigation.aiCoach'), icon: Bot, path: '/ai-coach' },

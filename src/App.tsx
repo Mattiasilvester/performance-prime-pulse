@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,7 @@ import AICoach from "./pages/AICoach";
 import Profile from "./pages/Profile";
 import Notes from "./pages/Notes";
 import Timer from "./pages/Timer";
+import Subscriptions from "./pages/Subscriptions";
 import PersonalInfo from "./pages/settings/PersonalInfo";
 import Security from "./pages/settings/Security";
 import Notifications from "./pages/settings/Notifications";
@@ -34,6 +34,13 @@ const AppContent = () => (
         <ProtectedRoute>
           <AppLayout>
             <Dashboard />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/subscriptions" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Subscriptions />
           </AppLayout>
         </ProtectedRoute>
       } />
