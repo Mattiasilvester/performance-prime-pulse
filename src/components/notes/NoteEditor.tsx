@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -143,16 +144,16 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             onClick={handleSave}
             disabled={isSaving || !content.trim()}
             size="sm"
-            className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/80 text-black py-2 px-4"
+            className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/80 text-black px-3 py-2"
           >
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="h-4 w-4 mr-1" />
             {isSaving ? 'Salvando...' : 'Salva'}
           </Button>
           <Button
             onClick={onCancel}
             variant="outline"
             size="sm"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700 py-2 px-4"
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 px-3 py-2"
           >
             Annulla
           </Button>
@@ -161,7 +162,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               onClick={handleDelete}
               variant="outline"
               size="sm"
-              className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+              className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white px-3 py-2"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
