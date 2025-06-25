@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -139,11 +138,12 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-2 md:gap-3">
           <Button
             onClick={handleSave}
             disabled={isSaving || !content.trim()}
-            className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/80 text-black"
+            size="sm"
+            className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/80 text-black py-2 px-4"
           >
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? 'Salvando...' : 'Salva'}
@@ -151,21 +151,22 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           <Button
             onClick={onCancel}
             variant="outline"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            size="sm"
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 py-2 px-4"
           >
             Annulla
           </Button>
+          {note && (
+            <Button
+              onClick={handleDelete}
+              variant="outline"
+              size="sm"
+              className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        {note && (
-          <Button
-            onClick={handleDelete}
-            variant="outline"
-            size="sm"
-            className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        )}
       </div>
 
       <div className="flex-1 p-4 space-y-4">
