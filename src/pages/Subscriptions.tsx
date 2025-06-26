@@ -53,7 +53,7 @@ const Subscriptions = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-[#F5C118] mb-4">
             ABBONAMENTI
@@ -65,23 +65,22 @@ const Subscriptions = () => {
 
         {/* Centered Horizontal Carousel */}
         <div className="flex justify-center">
-          <div className="w-full max-w-4xl">
+          <div className="w-full max-w-5xl">
             <div 
-              className="flex gap-4 overflow-x-auto pb-4 px-2 snap-x snap-mandatory"
+              className="flex gap-6 overflow-x-auto pb-4 px-4 snap-x snap-mandatory scrollbar-hide"
               style={{ 
                 scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                WebkitScrollbar: { display: 'none' }
+                msOverflowStyle: 'none'
               }}
             >
               {plans.map((plan) => (
                 <div 
                   key={plan.id} 
-                  className="flex-shrink-0 w-72 snap-center"
+                  className="flex-shrink-0 w-64 snap-center"
                 >
                   <div className="relative h-full">
                     <Card className={`
-                      h-full min-h-[480px] bg-white text-black relative transition-all duration-300 flex flex-col
+                      h-full min-h-[420px] bg-white text-black relative transition-all duration-300 flex flex-col
                       border-2 border-[#F5C118] hover:border-[#F5C118] hover:shadow-lg hover:shadow-[#F5C118]/25
                       ${plan.popular ? 'transform scale-105 shadow-xl shadow-[#F5C118]/30 ring-2 ring-[#F5C118]' : ''}
                     `}>
@@ -94,17 +93,17 @@ const Subscriptions = () => {
                       )}
                       
                       <CardHeader className="text-center pb-3">
-                        <CardTitle className="text-2xl font-bold mb-3">
+                        <CardTitle className="text-xl font-bold mb-2">
                           {plan.name}
                         </CardTitle>
-                        <div className="border-b-2 border-[#F5C118] w-20 mx-auto mb-4"></div>
-                        <div className="text-xl font-bold">
+                        <div className="border-b-2 border-[#F5C118] w-16 mx-auto mb-3"></div>
+                        <div className="text-lg font-bold">
                           {plan.price}
                         </div>
                       </CardHeader>
                       
                       <CardContent className="flex-1 flex flex-col px-4">
-                        <div className="space-y-3 mb-6 flex-1">
+                        <div className="space-y-2 mb-4 flex-1">
                           {plan.features.map((feature, index) => (
                             <div key={index} className="flex items-start space-x-2">
                               <Check className="h-4 w-4 text-[#F5C118] mt-0.5 flex-shrink-0" />
@@ -116,7 +115,7 @@ const Subscriptions = () => {
                         </div>
                         
                         <Button 
-                          className="w-full bg-[#87CEEB] hover:bg-[#87CEEB]/80 text-white font-bold py-2 text-base rounded-lg mt-auto"
+                          className="w-full bg-[#87CEEB] hover:bg-[#87CEEB]/80 text-white font-bold py-2 text-sm rounded-lg mt-auto"
                         >
                           ABBONATI
                         </Button>
@@ -129,12 +128,6 @@ const Subscriptions = () => {
           </div>
         </div>
       </div>
-      
-      <style jsx>{`
-        .flex::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
     </div>
   );
 };
