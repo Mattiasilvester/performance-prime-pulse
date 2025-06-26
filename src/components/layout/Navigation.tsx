@@ -3,18 +3,10 @@ import { Home, Dumbbell, Calendar, Bot, User, CreditCard, Menu } from 'lucide-re
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useState } from 'react';
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 
 export const Navigation = () => {
   const location = useLocation();
   const { t } = useTranslation();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const navigationItems = [
     { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
@@ -24,83 +16,11 @@ export const Navigation = () => {
     { id: 'profile', label: t('navigation.profile'), icon: User, path: '/profile' },
   ];
 
-  const drawerItems = [
-    { id: 'dashboard', label: 'Home', icon: Home, path: '/' },
-    { id: 'subscriptions', label: 'Abbonamenti', icon: CreditCard, path: '/subscriptions' },
-    { id: 'workouts', label: 'Allenamenti', icon: Dumbbell, path: '/workouts' },
-    { id: 'schedule', label: 'Calendario', icon: Calendar, path: '/schedule' },
-    { id: 'timer', label: 'Timer', icon: Calendar, path: '/timer' },
-    { id: 'ai-coach', label: 'AI Coach', icon: Bot, path: '/ai-coach' },
-    { id: 'notes', label: 'Note', icon: User, path: '/notes' },
-    { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
-  ];
-
   return (
     <nav className="lg:w-64">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block bg-black rounded-2xl shadow-lg border-2 border-pp-gold p-4">
-        <div className="space-y-2">
-          {drawerItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <Link
-                key={item.id}
-                to={item.path}
-                className={cn(
-                  "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 font-medium",
-                  isActive
-                    ? "bg-pp-gold text-black shadow-lg shadow-pp-gold/25"
-                    : "text-pp-gold hover:bg-pp-gold/10 hover:text-pp-gold"
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="font-medium">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Mobile Drawer */}
-      <div className="lg:hidden">
-        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-          <DrawerTrigger asChild>
-            <button className="p-2 text-pp-gold">
-              <Menu className="h-6 w-6" />
-            </button>
-          </DrawerTrigger>
-          <DrawerContent className="bg-black border-pp-gold">
-            <div className="p-4">
-              <div className="space-y-2">
-                {drawerItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = location.pathname === item.path;
-                  
-                  return (
-                    <DrawerClose key={item.id} asChild>
-                      <Link
-                        to={item.path}
-                        className={cn(
-                          "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 font-medium",
-                          isActive
-                            ? "bg-pp-gold text-black shadow-lg shadow-pp-gold/25"
-                            : "text-pp-gold hover:bg-pp-gold/10 hover:text-pp-gold"
-                        )}
-                        onClick={() => setIsDrawerOpen(false)}
-                      >
-                        <Icon className="h-5 w-5" />
-                        <span className="font-medium">{item.label}</span>
-                      </Link>
-                    </DrawerClose>
-                  );
-                })}
-              </div>
-            </div>
-          </DrawerContent>
-        </Drawer>
-      </div>
+      {/* Desktop Sidebar - REMOVED */}
+      
+      {/* Mobile Drawer - REMOVED */}
 
       {/* Mobile Bottom Navigation */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t-2 border-pp-gold shadow-lg z-50">

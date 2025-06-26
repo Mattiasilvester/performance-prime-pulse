@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Home, Dumbbell, Calendar, Bot, User, FileText, Timer } from 'lucide-react';
+import { Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export const Header = () => {
@@ -27,6 +27,7 @@ export const Header = () => {
 
   const navigationItems = [
     { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
+    { id: 'subscriptions', label: 'Abbonamenti', icon: CreditCard, path: '/subscriptions' },
     { id: 'workouts', label: t('navigation.workouts'), icon: Dumbbell, path: '/workouts' },
     { id: 'schedule', label: t('navigation.schedule'), icon: Calendar, path: '/schedule' },
     { id: 'timer', label: t('navigation.timer'), icon: Timer, path: '/timer' },
@@ -37,6 +38,7 @@ export const Header = () => {
 
   const searchableItems = [
     { label: t('navigation.dashboard'), path: '/' },
+    { label: 'Abbonamenti', path: '/subscriptions' },
     { label: t('navigation.workouts'), path: '/workouts' },
     { label: t('navigation.schedule'), path: '/schedule' },
     { label: t('navigation.timer'), path: '/timer' },

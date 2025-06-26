@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -142,22 +141,22 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="p-3 border-b border-gray-700 flex items-center justify-between">
+        <div className="flex items-center gap-2 flex-1">
           <Button
             onClick={handleSave}
             disabled={isSaving || !content.trim()}
             size="sm"
-            className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/80 text-black py-2 px-3"
+            className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/80 text-black py-1.5 px-3 text-xs"
           >
-            <Save className="h-4 w-4 mr-1" />
+            <Save className="h-3 w-3 mr-1" />
             {isSaving ? 'Salvando...' : 'Salva'}
           </Button>
           <Button
             onClick={onCancel}
             variant="outline"
             size="sm"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700 py-2 px-3"
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 py-1.5 px-3 text-xs"
           >
             Annulla
           </Button>
@@ -167,9 +166,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               disabled={isDeleting}
               variant="outline"
               size="sm"
-              className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white py-2 px-2"
+              className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white py-1.5 px-2 text-xs ml-auto"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-3 w-3" />
             </Button>
           )}
         </div>
