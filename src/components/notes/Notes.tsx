@@ -170,15 +170,15 @@ const Notes = () => {
                     {new Date(note.updated_at).toLocaleDateString('it-IT')}
                   </p>
                 </div>
-                <Button
-                  onClick={(e) => handleDeleteNote(note.id, e)}
-                  variant="ghost"
-                  size="sm"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto w-auto text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
               </div>
+              <Button
+                onClick={(e) => handleDeleteNote(note.id, e)}
+                variant="ghost"
+                size="sm"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto w-auto text-red-400 hover:text-red-300 hover:bg-red-900/20"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           ))}
         </div>
@@ -188,9 +188,9 @@ const Notes = () => {
 
   return (
     <div className="flex h-screen bg-black">
-      {/* Sidebar - Reduced padding further */}
+      {/* Sidebar */}
       <div className="w-80 border-r border-gray-700 flex flex-col">
-        <div className="p-1 border-b border-gray-700">
+        <div className="p-4 border-b border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-[#EEBA2B]">Note</h2>
             <Button
@@ -212,7 +212,7 @@ const Notes = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-1">
+        <div className="flex-1 overflow-y-auto p-4">
           {renderNoteGroup('OGGI', groupedNotes.today)}
           {renderNoteGroup('Ieri', groupedNotes.yesterday)}
           {renderNoteGroup('ULTIMI 30 GIORNI', groupedNotes.last30Days)}
