@@ -10,11 +10,21 @@ export const Navigation = () => {
 
   const navigationItems = [
     { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
-    { id: 'subscriptions', label: 'Abbonamenti', icon: CreditCard, path: '/subscriptions' },
     { id: 'workouts', label: t('navigation.workouts'), icon: Dumbbell, path: '/workouts' },
     { id: 'schedule', label: t('navigation.schedule'), icon: Calendar, path: '/schedule' },
     { id: 'ai-coach', label: t('navigation.aiCoach'), icon: Bot, path: '/ai-coach' },
     { id: 'profile', label: t('navigation.profile'), icon: User, path: '/profile' },
+  ];
+
+  const drawerItems = [
+    { id: 'dashboard', label: 'Home', icon: Home, path: '/' },
+    { id: 'subscriptions', label: 'Abbonamenti', icon: CreditCard, path: '/subscriptions' },
+    { id: 'workouts', label: 'Allenamenti', icon: Dumbbell, path: '/workouts' },
+    { id: 'schedule', label: 'Calendario', icon: Calendar, path: '/schedule' },
+    { id: 'timer', label: 'Timer', icon: Calendar, path: '/timer' },
+    { id: 'ai-coach', label: 'AI Coach', icon: Bot, path: '/ai-coach' },
+    { id: 'notes', label: 'Note', icon: User, path: '/notes' },
+    { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
   ];
 
   return (
@@ -22,7 +32,7 @@ export const Navigation = () => {
       {/* Desktop Sidebar */}
       <div className="hidden lg:block bg-black rounded-2xl shadow-lg border-2 border-pp-gold p-4">
         <div className="space-y-2">
-          {navigationItems.map((item) => {
+          {drawerItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             

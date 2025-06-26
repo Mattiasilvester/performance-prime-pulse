@@ -146,9 +146,9 @@ const Notes = () => {
 
   return (
     <div className="flex h-screen bg-black">
-      {/* Sidebar */}
+      {/* Sidebar - Reduced padding */}
       <div className="w-80 border-r border-gray-700 flex flex-col">
-        <div className="p-4 border-b border-gray-700">
+        <div className="p-2 border-b border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-[#EEBA2B]">Note</h2>
             <Button
@@ -170,10 +170,10 @@ const Notes = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
-          {renderNoteGroup('Oggi', groupedNotes.today)}
+        <div className="flex-1 overflow-y-auto p-2">
+          {renderNoteGroup('OGGI', groupedNotes.today)}
           {renderNoteGroup('Ieri', groupedNotes.yesterday)}
-          {renderNoteGroup('Ultimi 30 giorni', groupedNotes.last30Days)}
+          {renderNoteGroup('ULTIMI 30 GIORNI', groupedNotes.last30Days)}
           {renderNoteGroup('Più vecchie', groupedNotes.older)}
           
           {filteredNotes.length === 0 && (
