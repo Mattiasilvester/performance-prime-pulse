@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -121,8 +120,12 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
         .delete()
         .eq('id', note.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase delete error:', error);
+        throw error;
+      }
       
+      console.log('Note deleted successfully from database');
       onDelete(note.id);
       
       toast({
@@ -172,6 +175,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white py-1.5 px-2 text-xs"
           >
             <Trash2 className="h-3 w-3" />
+            {isDeleting ? '...' : ''}
           </Button>
         )}
       </div>

@@ -77,8 +77,8 @@ const Subscriptions = () => {
                 ${plan.popular ? 'transform scale-105 shadow-xl shadow-[#F5C118]/30 ring-2 ring-[#F5C118]' : ''}
               `}>
                 {plan.popular && (
-                  <div className="absolute -top-6 -right-2 z-10 most-popular-badge">
-                    <div className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold transform rotate-12">
+                  <div className="absolute -top-3 -right-3 z-10 most-popular-badge">
+                    <div className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold transform rotate-12 shadow-lg">
                       MOST POPULAR
                     </div>
                   </div>
