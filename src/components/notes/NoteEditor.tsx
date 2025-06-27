@@ -123,7 +123,6 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
 
       if (error) throw error;
       
-      // Call the onDelete prop to update the parent component
       onDelete(note.id);
       
       toast({
