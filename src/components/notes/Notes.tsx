@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, FileText, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -64,6 +63,7 @@ const Notes = () => {
   };
 
   const handleNoteDeleted = (noteId: string) => {
+    console.log('Removing note from local state:', noteId);
     setNotes(prev => prev.filter(n => n.id !== noteId));
     setSelectedNote(null);
     setIsCreating(false);
