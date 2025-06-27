@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -124,8 +125,8 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
       
       onDelete(note.id);
       toast({
-        title: "Eliminata",
-        description: "La nota è stata eliminata con successo.",
+        title: "Nota eliminata",
+        description: "La nota è stata eliminata definitivamente.",
       });
     } catch (error) {
       console.error('Error deleting note:', error);
@@ -142,7 +143,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   return (
     <div className="h-full flex flex-col">
       <div className="p-3 border-b border-gray-700 flex items-center justify-between">
-        <div className="flex items-center gap-2 flex-1">
+        <div className="flex items-center gap-2">
           <Button
             onClick={handleSave}
             disabled={isSaving || !content.trim()}
@@ -156,22 +157,22 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             onClick={onCancel}
             variant="outline"
             size="sm"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700 py-1.5 px-3 text-xs"
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 py-1.5 px-2 text-xs"
           >
             Annulla
           </Button>
-          {note && (
-            <Button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              variant="outline"
-              size="sm"
-              className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white py-1.5 px-2 text-xs ml-auto"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          )}
         </div>
+        {note && (
+          <Button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            variant="outline"
+            size="sm"
+            className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white py-1.5 px-2 text-xs"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        )}
       </div>
 
       <div className="flex-1 p-4 space-y-4">
