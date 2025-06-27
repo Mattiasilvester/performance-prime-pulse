@@ -123,7 +123,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
 
       if (error) throw error;
       
+      // Call the onDelete prop to update the parent component
       onDelete(note.id);
+      
       toast({
         title: "Nota eliminata",
         description: "La nota è stata eliminata definitivamente.",
