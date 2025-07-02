@@ -1,0 +1,386 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Prime - Oltre ogni limite</title>
+    <meta name="description" content="L'app che trasforma i tuoi dati in performance. Analytics in tempo reale, obiettivi smart e accesso a professionisti del settore.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pp-gold': '#EEBA2B',
+                        'pp-gold-hover': '#f3cf67',
+                        'pp-black': '#000000',
+                        'pp-text': '#F5F5F5'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .pp-shadow {
+            box-shadow: 0 4px 6px -1px rgba(238, 186, 43, 0.1), 0 2px 4px -1px rgba(238, 186, 43, 0.06);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+        }
+    </style>
+</head>
+
+<body class="bg-pp-black text-pp-text antialiased">
+    
+    <!-- Hero Section -->
+    <section class="hero-gradient py-20 px-4 min-h-screen flex items-center">
+        <div class="max-w-7xl mx-auto w-full">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                
+                <!-- Left Content -->
+                <div class="text-center lg:text-left">
+                    <h1 class="text-5xl lg:text-7xl font-black mb-6 leading-tight">
+                        Oltre ogni <span class="text-pp-gold">limite</span>
+                    </h1>
+                    
+                    <p class="text-xl lg:text-2xl mb-4 text-pp-text/90 leading-relaxed">
+                        Trasforma i tuoi dati in performance straordinarie con l'app che gli atleti professionisti usano ogni giorno.
+                    </p>
+                    
+                    <p class="text-lg mb-8 text-pp-text/80">
+                        Analytics in tempo reale, obiettivi intelligenti e accesso diretto ai migliori specialisti del settore.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+                        <button class="bg-pp-gold text-pp-black px-8 py-4 rounded-lg font-semibold text-lg hover:bg-pp-gold-hover transition-colors pp-shadow">
+                            Scopri di più
+                        </button>
+                    </div>
+                    
+                    <!-- Store Badges -->
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <img src="static/app-store-badge.svg" alt="Scarica su App Store" class="h-14 hover:opacity-80 transition-opacity cursor-pointer">
+                        <img src="static/google-play-badge.png" alt="Disponibile su Google Play" class="h-14 hover:opacity-80 transition-opacity cursor-pointer">
+                    </div>
+                </div>
+                
+                <!-- Right Content - Phone Screenshot -->
+                <div class="relative flex justify-center lg:justify-end">
+                    <div class="relative">
+                        <img src="static/app-screenshot-1.png" alt="Performance Prime App Screenshot" class="max-w-sm w-full rounded-3xl shadow-2xl">
+                        <div class="absolute top-4 right-4 w-16 h-16 rounded-full overflow-hidden border-2 border-pp-gold">
+                            <img src="static/logo-pp.jpg" alt="Performance Prime Logo" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    
+                    <!-- QR Code Badge -->
+                    <div class="absolute bottom-0 right-0 bg-white p-4 rounded-2xl shadow-lg">
+                        <img src="static/qr-code.png" alt="QR Code" class="w-20 h-20">
+                        <p class="text-pp-black text-sm font-medium mt-2 text-center">Scansiona<br>e scarica</p>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- Funzionalità Section -->
+    <section class="py-20 px-4 bg-pp-black">
+        <div class="max-w-7xl mx-auto">
+            
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold mb-6">
+                    Funzionalità <span class="text-pp-gold">Avanzate</span>
+                </h2>
+                <p class="text-xl text-pp-text/80 max-w-3xl mx-auto">
+                    Tutto ciò di cui hai bisogno per portare le tue performance al livello successivo, in un'unica app.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
+                
+                <!-- Analytics Card -->
+                <div class="bg-pp-black border-2 border-pp-gold rounded-2xl p-8 text-center hover:border-pp-gold-hover transition-colors pp-shadow">
+                    <div class="w-16 h-16 mx-auto mb-6 bg-pp-gold rounded-2xl flex items-center justify-center">
+                        <img src="static/icon-analytics.svg" alt="Analytics Icon" class="w-8 h-8">
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Analytics in tempo reale</h3>
+                    <p class="text-pp-text/80">
+                        Monitora ogni metrica che conta. Dashboard personalizzabili con insights actionable per ottimizzare ogni sessione.
+                    </p>
+                </div>
+                
+                <!-- Goals Card -->
+                <div class="bg-pp-black border-2 border-pp-gold rounded-2xl p-8 text-center hover:border-pp-gold-hover transition-colors pp-shadow">
+                    <div class="w-16 h-16 mx-auto mb-6 bg-pp-gold rounded-2xl flex items-center justify-center">
+                        <img src="static/icon-goals.svg" alt="Goals Icon" class="w-8 h-8">
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Obiettivi Smart</h3>
+                    <p class="text-pp-text/80">
+                        IA che analizza i tuoi pattern e crea obiettivi personalizzati. Raggiungi risultati misurabili in tempi record.
+                    </p>
+                </div>
+                
+                <!-- Team Card -->
+                <div class="bg-pp-black border-2 border-pp-gold rounded-2xl p-8 text-center hover:border-pp-gold-hover transition-colors pp-shadow">
+                    <div class="w-16 h-16 mx-auto mb-6 bg-pp-gold rounded-2xl flex items-center justify-center">
+                        <img src="static/icon-team.svg" alt="Team Icon" class="w-8 h-8">
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Team Sync</h3>
+                    <p class="text-pp-text/80">
+                        Sincronizza performance con il tuo team. Competizioni interne, classifiche e motivazione collettiva.
+                    </p>
+                </div>
+                
+                <!-- Pro Network Card -->
+                <div class="bg-pp-black border-2 border-pp-gold rounded-2xl p-8 text-center hover:border-pp-gold-hover transition-colors pp-shadow">
+                    <div class="w-16 h-16 mx-auto mb-6 bg-pp-gold rounded-2xl flex items-center justify-center">
+                        <img src="static/icon-professionals.svg" alt="Professionals Icon" class="w-8 h-8">
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Pro Network</h3>
+                    <p class="text-pp-text/80">
+                        Accesso diretto a fisioterapisti, nutrizionisti e mental coach. Consulenze professionali a portata di tap.
+                    </p>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- Come Funziona Section -->
+    <section class="py-20 px-4 bg-gray-900">
+        <div class="max-w-6xl mx-auto">
+            
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold mb-6">
+                    Come <span class="text-pp-gold">Funziona</span>
+                </h2>
+                <p class="text-xl text-pp-text/80 max-w-3xl mx-auto">
+                    Tre semplici passaggi per trasformare il tuo approccio alle performance.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                
+                <!-- Step 1 -->
+                <div class="text-center">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-pp-gold text-pp-black rounded-full flex items-center justify-center text-3xl font-bold">
+                        1
+                    </div>
+                    <div class="bg-pp-black border-2 border-pp-gold rounded-2xl p-8 pp-shadow">
+                        <h3 class="text-2xl font-bold mb-4 text-pp-gold">Registrati</h3>
+                        <p class="text-pp-text/80 text-lg">
+                            Crea l'account in 60 secondi con email o social. Setup guidato per configurare il tuo profilo atletico.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="text-center">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-pp-gold text-pp-black rounded-full flex items-center justify-center text-3xl font-bold">
+                        2
+                    </div>
+                    <div class="bg-pp-black border-2 border-pp-gold rounded-2xl p-8 pp-shadow">
+                        <h3 class="text-2xl font-bold mb-4 text-pp-gold">Imposta goal</h3>
+                        <p class="text-pp-text/80 text-lg">
+                            Collega dispositivi, scegli metriche personalizzate e sincronizza automaticamente tutti i tuoi dati.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="text-center">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-pp-gold text-pp-black rounded-full flex items-center justify-center text-3xl font-bold">
+                        3
+                    </div>
+                    <div class="bg-pp-black border-2 border-pp-gold rounded-2xl p-8 pp-shadow">
+                        <h3 class="text-2xl font-bold mb-4 text-pp-gold">Migliora</h3>
+                        <p class="text-pp-text/80 text-lg">
+                            Analizza insight avanzati, prenota specialisti qualificati e supera sistematicamente ogni limite.
+                        </p>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonianze Section -->
+    <section class="py-20 px-4 bg-pp-black">
+        <div class="max-w-6xl mx-auto">
+            
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold mb-6">
+                    Cosa dicono i <span class="text-pp-gold">Professionisti</span>
+                </h2>
+                <p class="text-xl text-pp-text/80">
+                    Atleti e leader che hanno scelto Performance Prime per raggiungere i loro obiettivi.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                
+                <!-- Testimonianza 1 -->
+                <div class="bg-gray-900 border border-pp-gold/30 rounded-2xl p-8 pp-shadow">
+                    <div class="flex items-center mb-6">
+                        <img src="static/avatar-1.jpg" alt="Marco Rossi" class="w-16 h-16 rounded-full border-2 border-pp-gold mr-4">
+                        <div>
+                            <h4 class="font-bold text-lg">Marco Rossi</h4>
+                            <p class="text-pp-gold text-sm">Triatleta amatoriale</p>
+                        </div>
+                    </div>
+                    <p class="text-pp-text/90 text-lg italic">
+                        "Ho ridotto i tempi di recupero del 25% grazie agli insight personalizzati. I dati sono chiari e actionable."
+                    </p>
+                </div>
+                
+                <!-- Testimonianza 2 -->
+                <div class="bg-gray-900 border border-pp-gold/30 rounded-2xl p-8 pp-shadow">
+                    <div class="flex items-center mb-6">
+                        <img src="static/avatar-2.jpg" alt="Sara Verdi" class="w-16 h-16 rounded-full border-2 border-pp-gold mr-4">
+                        <div>
+                            <h4 class="font-bold text-lg">Sara Verdi</h4>
+                            <p class="text-pp-gold text-sm">Founder @ StartUpX</p>
+                        </div>
+                    </div>
+                    <p class="text-pp-text/90 text-lg italic">
+                        "Dashboard intuitiva per tutti i miei KPI di performance. Finalmente un'app che parla la mia lingua business."
+                    </p>
+                </div>
+                
+                <!-- Testimonianza 3 -->
+                <div class="bg-gray-900 border border-pp-gold/30 rounded-2xl p-8 pp-shadow">
+                    <div class="flex items-center mb-6">
+                        <img src="static/avatar-3.jpg" alt="Luca Bianchi" class="w-16 h-16 rounded-full border-2 border-pp-gold mr-4">
+                        <div>
+                            <h4 class="font-bold text-lg">Luca Bianchi</h4>
+                            <p class="text-pp-gold text-sm">Product Manager</p>
+                        </div>
+                    </div>
+                    <p class="text-pp-text/90 text-lg italic">
+                        "I consigli nutrizionali personalizzati mi hanno dato il 30% di energia in più durante le giornate intense."
+                    </p>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="py-20 px-4 bg-pp-gold">
+        <div class="max-w-4xl mx-auto text-center">
+            
+            <h2 class="text-4xl lg:text-5xl font-bold mb-6 text-pp-black">
+                Scarica Performance Prime
+            </h2>
+            
+            <p class="text-xl text-pp-black/80 mb-12 max-w-2xl mx-auto">
+                Unisciti a migliaia di atleti e professionisti che hanno già scelto Performance Prime per superare ogni limite. 
+                Download gratuito, risultati garantiti.
+            </p>
+            
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-12">
+                
+                <!-- Store Badges -->
+                <div class="flex flex-col sm:flex-row gap-6">
+                    <img src="static/app-store-badge.svg" alt="Scarica su App Store" class="h-16 hover:opacity-80 transition-opacity cursor-pointer">
+                    <img src="static/google-play-badge.png" alt="Disponibile su Google Play" class="h-16 hover:opacity-80 transition-opacity cursor-pointer">
+                </div>
+                
+                <!-- Large QR Code -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <img src="static/qr-code.png" alt="QR Code per download" class="w-32 h-32">
+                    <p class="text-pp-black font-semibold mt-4 text-center">Scansiona e scarica<br>Performance Prime</p>
+                </div>
+                
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-16 px-4 bg-pp-black border-t border-pp-gold/30">
+        <div class="max-w-6xl mx-auto">
+            
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                
+                <!-- Logo and Info -->
+                <div class="flex items-center mb-8 md:mb-0">
+                    <img src="static/logo-pp.jpg" alt="Performance Prime Logo" class="w-12 h-12 rounded-lg mr-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-pp-gold">Performance Prime</h3>
+                        <p class="text-pp-text/60">Oltre ogni limite</p>
+                    </div>
+                </div>
+                
+                <!-- Social Links -->
+                <div class="flex items-center space-x-6">
+                    <a href="#" class="text-pp-text/60 hover:text-pp-gold transition-colors">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-pp-text/60 hover:text-pp-gold transition-colors">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                    </a>
+                </div>
+                
+            </div>
+            
+            <div class="border-t border-pp-gold/30 mt-12 pt-8 text-center">
+                <p class="text-pp-text/60">
+                    © <span id="current-year"></span> Performance Prime. Tutti i diritti riservati.
+                </p>
+            </div>
+            
+        </div>
+    </footer>
+
+    <script>
+        // Set current year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Smooth scroll for CTA buttons
+        document.querySelectorAll('button').forEach(button => {
+            if (button.textContent.includes('Scopri di più')) {
+                button.addEventListener('click', function() {
+                    document.querySelector('section:nth-child(2)').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            }
+        });
+        
+        // Add hover effects to cards
+        document.querySelectorAll('[class*="border-pp-gold"]').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-4px)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+
+</body>
+</html>
