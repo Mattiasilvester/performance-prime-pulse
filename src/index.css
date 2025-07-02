@@ -3,7 +3,12 @@
 @tailwind base;
 @tailwind components;  
 @tailwind utilities;
-
+/* ——— Colore di sfondo globale ——— */
+html,
+body {
+  background: #000;         /* nero puro */
+  color-scheme: dark;       /* status-bar e controlli di sistema in versione dark */
+}
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -271,4 +276,18 @@
 
 .search-result-item:last-child {
   border-bottom: none;
+}
+.header {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 1000;
+  background: inherit; /* o un colore specifico se serve */
+  display: flex;
+  align-items: center;
+}
+body, #root, .app-container {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
 }
