@@ -2,11 +2,15 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ArrowLeft, CalendarIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { fetchUserProfile, updateUserProfile } from '@/services/userService';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const PersonalInfo = () => {
   const navigate = useNavigate();
@@ -15,7 +19,7 @@ const PersonalInfo = () => {
   const [formData, setFormData] = useState({
     nome: '',
     cognome: '',
-    dataNascita: ''
+    dataNascita: null as Date | null
   });
 
   useEffect(() => {
@@ -26,7 +30,7 @@ const PersonalInfo = () => {
           setFormData({
             nome: profile.name || '',
             cognome: profile.surname || '',
-            dataNascita: '' // This would need to be added to the profile schema
+            dataNascita: null // This would need to be added to the profile schema
           });
         }
       } catch (error) {
@@ -44,7 +48,7 @@ const PersonalInfo = () => {
       await updateUserProfile({
         name: formData.nome,
         surname: formData.cognome,
-        birthPlace: formData.dataNascita
+        birthPlace: formData.dataNascita ? format(formData.dataNascita, 'yyyy-MM-dd') : ''
       });
       
       toast({
@@ -116,13 +120,55 @@ const PersonalInfo = () => {
             
             <div>
               <Label htmlFor="data-nascita" className="text-white">Data di nascita</Label>
-              <Input
-                id="data-nascita"
-                type="date"
-                className="bg-black border-gray-500 text-white"
-                value={formData.dataNascita}
-                onChange={(e) => setFormData({ ...formData, dataNascita: e.target.value })}
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-black border-gray-500 text-white hover:bg-gray-900 hover:text-white",
+                      !formData.dataNascita && "text-gray-400"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.dataNascita ? format(formData.dataNascita, "dd/MM/yyyy") : <span>Seleziona data di nascita</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-black border-[#EEBA2B]" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.dataNascita}
+                    onSelect={(date) => setFormData({ ...formData, dataNascita: date })}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                    defaultMonth={new Date(1990, 0)} // Inizia da gennaio 1990
+                    className={cn("p-3 pointer-events-auto")}
+                    classNames={{
+                      months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                      month: "space-y-4",
+                      caption: "flex justify-center pt-1 relative items-center text-white",
+                      caption_label: "text-sm font-medium text-white",
+                      nav: "space-x-1 flex items-center",
+                      nav_button: "h-7 w-7 bg-transparent p-0 hover:bg-[#EEBA2B]/20 text-white hover:text-[#EEBA2B]",
+                      nav_button_previous: "absolute left-1",
+                      nav_button_next: "absolute right-1",
+                      table: "w-full border-collapse space-y-1",
+                      head_row: "flex",
+                      head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
+                      row: "flex w-full mt-2",
+                      cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-[#EEBA2B] first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                      day: "h-9 w-9 p-0 font-normal text-white hover:bg-[#EEBA2B]/20 hover:text-[#EEBA2B] aria-selected:opacity-100",
+                      day_selected: "bg-[#EEBA2B] text-black hover:bg-[#EEBA2B] hover:text-black focus:bg-[#EEBA2B] focus:text-black",
+                      day_today: "bg-gray-800 text-white",
+                      day_outside: "text-gray-600 opacity-50",
+                      day_disabled: "text-gray-600 opacity-50",
+                      day_range_middle: "aria-selected:bg-[#EEBA2B] aria-selected:text-black",
+                      day_hidden: "invisible",
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             
             <Button 
