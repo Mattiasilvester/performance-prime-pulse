@@ -56,6 +56,36 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_workout_stats: {
+        Row: {
+          created_at: string
+          id: string
+          month: string
+          total_hours: number
+          total_workouts: number
+          user_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          month: string
+          total_hours?: number
+          total_workouts?: number
+          user_id: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          month?: string
+          total_hours?: number
+          total_workouts?: number
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           content: string
