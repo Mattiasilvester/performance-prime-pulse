@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, LogOut, ChevronDown } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard, X } from 'lucide-react';
+
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchUserProfile, UserProfile } from '@/services/userService';
 
