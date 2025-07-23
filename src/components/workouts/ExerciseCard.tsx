@@ -9,12 +9,13 @@ interface ExerciseCardProps {
     rest: string;
     completed?: boolean;
   };
-  onStart: (duration: string, rest: string) => void;
-  onComplete: () => void;
-  index?: number;
+  onStart: () => void;
+  onToggleComplete: (index: number) => void;
+  isCompleted: boolean;
+  index: number;
 }
 
-export const ExerciseCard = ({ exercise, onStart, onComplete, index = 0 }: ExerciseCardProps) => {
+export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted, index }: ExerciseCardProps) => {
   return (
     <Card className="bg-black border-2 border-[#EEBA2B]">
       <CardContent className="p-4">
@@ -38,19 +39,22 @@ export const ExerciseCard = ({ exercise, onStart, onComplete, index = 0 }: Exerc
           
           <div className="flex flex-col items-center space-y-2 flex-shrink-0">
             <Button
-              onClick={() => onStart(exercise.duration, exercise.rest)}
+              onClick={onStart}
               size="sm"
               className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 text-xs h-8 min-w-[60px]"
             >
               Avvia
             </Button>
             <Button
-              onClick={onComplete}
+              onClick={() => onToggleComplete(index)}
               size="sm"
-              className="bg-[#EEBA2B] hover:bg-[#d4a61a] text-black px-3 py-2 text-xs font-medium h-8 whitespace-nowrap min-w-[75px]"
-              disabled={exercise.completed}
+              className={`px-3 py-2 text-xs font-medium h-8 whitespace-nowrap min-w-[75px] ${
+                isCompleted 
+                  ? 'bg-green-500 hover:bg-green-600 text-white' 
+                  : 'bg-[#EEBA2B] hover:bg-[#d4a61a] text-black'
+              }`}
             >
-              Completa →
+              {isCompleted ? '✓ Fatto' : 'Completa →'}
             </Button>
           </div>
         </div>

@@ -1,6 +1,8 @@
 import { Heart, Dumbbell, Zap, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StartTodayButton } from './StartTodayButton';
+import { DurationSelector } from './DurationSelector';
+import { useState } from 'react';
 
 const categories = [
   {
@@ -46,10 +48,23 @@ const categories = [
 ];
 
 interface WorkoutCategoriesProps {
-  onStartWorkout: (workoutId: string) => void;
+  onStartWorkout: (workoutId: string, duration?: number) => void;
 }
 
 export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) => {
+  const [selectedCategory, setSelectedCategory] = useState<typeof categories[0] | null>(null);
+  const [showDurationSelector, setShowDurationSelector] = useState(false);
+
+  const handleCategoryClick = (category: typeof categories[0]) => {
+    setSelectedCategory(category);
+    setShowDurationSelector(true);
+  };
+
+  const handleDurationConfirm = (duration: number) => {
+    if (selectedCategory) {
+      onStartWorkout(selectedCategory.id, duration);
+    }
+  };
   return (
     <div className="space-y-6">
       {/* Pulsante Inizia allenamento di oggi */}
@@ -77,7 +92,7 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-white/80">{category.duration}</span>
                   <Button 
-                    onClick={() => onStartWorkout(category.id)}
+                    onClick={() => handleCategoryClick(category)}
                     className="bg-black hover:bg-gray-900 text-white border border-white/20"
                   >
                     Inizia
@@ -107,6 +122,18 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
           </div>
         </div>
       </div>
+
+      {selectedCategory && (
+        <DurationSelector
+          isOpen={showDurationSelector}
+          onClose={() => {
+            setShowDurationSelector(false);
+            setSelectedCategory(null);
+          }}
+          onConfirm={handleDurationConfirm}
+          category={selectedCategory}
+        />
+      )}
     </div>
   );
 };

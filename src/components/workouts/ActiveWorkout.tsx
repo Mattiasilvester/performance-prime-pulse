@@ -53,90 +53,76 @@ const workoutData = {
 
 interface ActiveWorkoutProps {
   workoutId: string;
+  generatedWorkout?: any;
   onClose: () => void;
   onStartExercise: (duration: string, restTime: string) => void;
 }
 
-export const ActiveWorkout = ({ workoutId, onClose, onStartExercise }: ActiveWorkoutProps) => {
-  const [currentExercise, setCurrentExercise] = useState(0);
+export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExercise }: ActiveWorkoutProps) => {
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   
-  const workout = workoutData[workoutId as keyof typeof workoutData] || workoutData.recommended;
+  // Usa l'allenamento generato se disponibile, altrimenti usa quello statico
+  const currentWorkout = generatedWorkout || workoutData[workoutId as keyof typeof workoutData];
   
-  const completeExercise = (index: number) => {
-    setCompletedExercises([...completedExercises, index]);
-    if (index < workout.exercises.length - 1) {
-      setCurrentExercise(index + 1);
+  if (!currentWorkout) {
+    return (
+      <div className="text-white text-center">
+        <p>Allenamento non trovato</p>
+        <Button onClick={onClose} className="mt-4">Torna indietro</Button>
+      </div>
+    );
+  }
+
+  const toggleExerciseComplete = (index: number) => {
+    if (completedExercises.includes(index)) {
+      setCompletedExercises(completedExercises.filter(i => i !== index));
+    } else {
+      setCompletedExercises([...completedExercises, index]);
     }
   };
 
-  const isCompleted = (index: number) => completedExercises.includes(index);
-  
-  const getHeaderBackground = () => {
-    switch (workoutId) {
-      case 'cardio':
-        return '#38B6FF';
-      case 'strength':
-        return '#BC1823';
-      case 'hiit':
-        return '#FF5757';
-      case 'mobility':
-        return '#8C52FF';
-      default:
-        return 'linear-gradient(to right, #2563eb, #7c3aed)';
-    }
-  };
-  
   return (
     <div className="bg-black rounded-2xl shadow-sm overflow-hidden border-2 border-[#EEBA2B]">
-      <div className="p-6 text-white" style={{ background: getHeaderBackground() }}>
+      <div className="p-6 bg-gradient-to-r from-pp-gold to-yellow-600">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-bold">{workout.name}</h3>
-            <p className="text-blue-100">
-              Esercizio {currentExercise + 1} di {workout.exercises.length}
-            </p>
-          </div>
+          <h2 className="text-2xl font-bold text-black">{currentWorkout.name}</h2>
           <Button 
             onClick={onClose}
             variant="ghost" 
             size="sm"
-            className="text-white hover:bg-white/20"
+            className="text-black hover:text-pp-gold hover:bg-black/10"
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
         
-        <div className="mt-4 bg-white/20 rounded-full h-2">
+        <div className="mt-4 bg-black/20 rounded-full h-2">
           <div 
-            className="bg-white rounded-full h-2 transition-all duration-300"
-            style={{ width: `${(completedExercises.length / workout.exercises.length) * 100}%` }}
+            className="bg-black rounded-full h-2 transition-all duration-300"
+            style={{ width: `${(completedExercises.length / (currentWorkout.exercises?.length || 1)) * 100}%` }}
           />
         </div>
+        <p className="text-black mt-2 font-medium">Completa tutti gli esercizi • {currentWorkout.exercises?.length || 0} esercizi</p>
       </div>
 
       <div className="p-6 space-y-4 bg-black">
-        {workout.exercises.map((exercise, index) => (
-          <ExerciseCard
-            key={index}
-            exercise={{ ...exercise, completed: isCompleted(index) }}
-            onStart={onStartExercise}
-            onComplete={() => completeExercise(index)}
-            index={index}
-          />
-        ))}
-        
-        {completedExercises.length === workout.exercises.length && (
-          <div className="text-center p-6 bg-green-50 rounded-xl border-2 border-green-200">
-            <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-3" />
-            <h3 className="text-xl font-bold text-green-800 mb-2">Workout Completato!</h3>
-            <p className="text-green-600 mb-4">Ottimo lavoro! Hai completato tutti gli esercizi.</p>
-            <Button 
-              onClick={onClose}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Torna ai Workout
-            </Button>
+        <div className="grid gap-4">
+          {currentWorkout.exercises?.map((exercise: any, index: number) => (
+            <ExerciseCard
+              key={`${exercise.name}-${index}`}
+              exercise={exercise}
+              index={index}
+              isCompleted={completedExercises.includes(index)}
+              onToggleComplete={toggleExerciseComplete}
+              onStart={() => onStartExercise(exercise.duration, exercise.rest)}
+            />
+          )) || <p className="text-white">Nessun esercizio disponibile</p>}
+        </div>
+
+        {completedExercises.length === (currentWorkout.exercises?.length || 0) && currentWorkout.exercises?.length > 0 && (
+          <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4 text-center">
+            <CheckCircle className="h-8 w-8 text-green-400 mx-auto mb-2" />
+            <p className="text-green-400 font-semibold">Allenamento Completato! 🎉</p>
           </div>
         )}
       </div>

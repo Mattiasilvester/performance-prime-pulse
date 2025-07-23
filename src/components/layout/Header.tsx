@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, LogOut, ChevronDown, X } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,12 +16,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard } from 'lucide-react';
+import { Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard, X } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchUserProfile, UserProfile } from '@/services/userService';
 
 export const Header = () => {
-  const [notifications] = useState([
+  const [notifications, setNotifications] = useState([
     { id: 1, message: "Nuovo allenamento disponibile", time: "2 ore fa" },
     { id: 2, message: "Ricordati di completare il tuo obiettivo settimanale", time: "1 giorno fa" },
     { id: 3, message: "Il tuo piano è stato aggiornato", time: "2 giorni fa" }
@@ -132,6 +132,10 @@ export const Header = () => {
     }
   };
 
+  const removeNotification = (notificationId: number) => {
+    setNotifications(notifications.filter(n => n.id !== notificationId));
+  };
+
   const handleSearchItemClick = (path: string) => {
     navigate(path);
     setShowSearch(false);
@@ -188,8 +192,14 @@ export const Header = () => {
                   <h3 className="font-semibold text-pp-gold border-b border-pp-gold/20 pb-2">Notifiche</h3>
                   {notifications.length > 0 ? (
                     notifications.map((notification) => (
-                      <div key={notification.id} className="p-3 bg-pp-gold/10 rounded-lg border border-pp-gold/20">
-                        <p className="text-pp-gold text-sm">{notification.message}</p>
+                      <div key={notification.id} className="relative p-3 bg-pp-gold/10 rounded-lg border border-pp-gold/20 group">
+                        <button
+                          onClick={() => removeNotification(notification.id)}
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-500/20 rounded-full"
+                        >
+                          <X className="h-3 w-3 text-red-400 hover:text-red-300" />
+                        </button>
+                        <p className="text-pp-gold text-sm pr-6">{notification.message}</p>
                         <p className="text-pp-gold/60 text-xs mt-1">{notification.time}</p>
                       </div>
                     ))
