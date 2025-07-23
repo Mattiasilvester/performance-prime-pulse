@@ -13,12 +13,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { fetchUserProfile, UserProfile } from '@/services/userService';
 
 export const Header = () => {
   const [notifications] = useState(3);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +60,16 @@ export const Header = () => {
       setFilteredItems(searchableItems);
     }
   }, [searchQuery]);
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (user) {
+        const profile = await fetchUserProfile();
+        setUserProfile(profile);
+      }
+    };
+    loadUserProfile();
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -140,7 +152,7 @@ export const Header = () => {
           <div className="flex items-center space-x-3">
             {user && (
               <span className="text-sm text-pp-gold/80 hidden sm:block">
-                {user.email}
+                {userProfile?.name ? `Ciao, ${userProfile.name}!` : user.email}
               </span>
             )}
             <Button 
