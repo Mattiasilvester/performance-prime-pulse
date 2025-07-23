@@ -123,6 +123,14 @@ export const Header = () => {
     }
   };
 
+  const handleNotifications = () => {
+    if (notifications > 0) {
+      toast.info(`Hai ${notifications} nuove notifiche da controllare.`);
+    } else {
+      toast.info('Non ci sono notifiche al momento.');
+    }
+  };
+
   const handleSearchItemClick = (path: string) => {
     navigate(path);
     setShowSearch(false);
@@ -163,7 +171,12 @@ export const Header = () => {
             >
               <Search className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="relative text-pp-gold hover:bg-pp-gold hover:text-black">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="relative text-pp-gold hover:bg-pp-gold hover:text-black"
+              onClick={handleNotifications}
+            >
               <Bell className="h-5 w-5" />
               {notifications > 0 && (
                 <span className="absolute -top-1 -right-1 bg-pp-gold text-black text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
