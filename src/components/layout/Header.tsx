@@ -152,7 +152,7 @@ export const Header = () => {
           <div className="flex items-center space-x-3">
             {user && (
               <span className="text-sm text-pp-gold/80 hidden sm:block">
-                {userProfile?.name ? `Ciao, ${userProfile.name}!` : user.email}
+                {userProfile?.name || user.email}
               </span>
             )}
             <Button 
