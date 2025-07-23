@@ -75,22 +75,22 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-pp-gold to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-black font-black text-3xl">PP</span>
+          <div className="w-20 h-20 bg-black border-2 border-pp-gold rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <span className="text-pp-gold font-black text-3xl">PP</span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Performance Prime</h1>
-          <p className="text-slate-400">Reimposta la tua password</p>
+          <h1 className="text-3xl font-bold text-pp-gold mb-2">Performance Prime</h1>
+          <p className="text-pp-gold/80">Reimposta la tua password</p>
         </div>
 
-        <Card className="bg-black/50 border-pp-gold/20 backdrop-blur-sm shadow-2xl">
+        <Card className="bg-black border-pp-gold/20 backdrop-blur-sm shadow-2xl border-2">
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-2xl font-bold text-pp-gold">
               Nuova Password
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-pp-gold/80">
               Inserisci la tua nuova password per completare il recupero
             </CardDescription>
           </CardHeader>
@@ -106,7 +106,7 @@ const ResetPassword = () => {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="bg-slate-900/50 border-pp-gold/30 text-white placeholder:text-slate-500 pr-10"
+                    className="bg-black border-pp-gold/30 text-pp-gold placeholder:text-pp-gold/50 pr-10 border-2"
                     placeholder="Inserisci la nuova password"
                     required
                     disabled={loading}
@@ -133,7 +133,7 @@ const ResetPassword = () => {
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="bg-slate-900/50 border-pp-gold/30 text-white placeholder:text-slate-500 pr-10"
+                    className="bg-black border-pp-gold/30 text-pp-gold placeholder:text-pp-gold/50 pr-10 border-2"
                     placeholder="Conferma la nuova password"
                     required
                     disabled={loading}
@@ -152,7 +152,7 @@ const ResetPassword = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-pp-gold to-yellow-600 hover:from-pp-gold/90 hover:to-yellow-600/90 text-black font-semibold"
+                className="w-full bg-pp-gold text-black hover:bg-black hover:text-pp-gold border-2 border-pp-gold font-semibold"
                 disabled={loading}
               >
                 {loading ? "Aggiornamento..." : "Aggiorna Password"}
