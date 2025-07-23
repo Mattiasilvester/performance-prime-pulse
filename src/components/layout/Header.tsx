@@ -11,12 +11,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchUserProfile, UserProfile } from '@/services/userService';
 
 export const Header = () => {
-  const [notifications] = useState(3);
+  const [notifications] = useState([
+    { id: 1, message: "Nuovo allenamento disponibile", time: "2 ore fa" },
+    { id: 2, message: "Ricordati di completare il tuo obiettivo settimanale", time: "1 giorno fa" },
+    { id: 3, message: "Il tuo piano è stato aggiornato", time: "2 giorni fa" }
+  ]);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
@@ -123,14 +132,6 @@ export const Header = () => {
     }
   };
 
-  const handleNotifications = () => {
-    if (notifications > 0) {
-      toast.info(`Hai ${notifications} nuove notifiche da controllare.`);
-    } else {
-      toast.info('Non ci sono notifiche al momento.');
-    }
-  };
-
   const handleSearchItemClick = (path: string) => {
     navigate(path);
     setShowSearch(false);
@@ -171,19 +172,33 @@ export const Header = () => {
             >
               <Search className="h-5 w-5" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="relative text-pp-gold hover:bg-pp-gold hover:text-black"
-              onClick={handleNotifications}
-            >
-              <Bell className="h-5 w-5" />
-              {notifications > 0 && (
-                <span className="absolute -top-1 -right-1 bg-pp-gold text-black text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                  {notifications}
-                </span>
-              )}
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="relative text-pp-gold hover:bg-pp-gold hover:text-black">
+                  <Bell className="h-5 w-5" />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-pp-gold text-black text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      {notifications.length}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 bg-black border-pp-gold border-2 shadow-lg z-50">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-pp-gold border-b border-pp-gold/20 pb-2">Notifiche</h3>
+                  {notifications.length > 0 ? (
+                    notifications.map((notification) => (
+                      <div key={notification.id} className="p-3 bg-pp-gold/10 rounded-lg border border-pp-gold/20">
+                        <p className="text-pp-gold text-sm">{notification.message}</p>
+                        <p className="text-pp-gold/60 text-xs mt-1">{notification.time}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-pp-gold/60 text-sm py-4 text-center">Non ci sono notifiche al momento</p>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
