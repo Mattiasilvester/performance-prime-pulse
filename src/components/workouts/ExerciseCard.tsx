@@ -1,6 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ExerciseExplanation } from './ExerciseExplanation';
 
 interface ExerciseCardProps {
   exercise: {
@@ -41,20 +42,20 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
             <Button
               onClick={onStart}
               size="sm"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 text-xs h-8 min-w-[60px]"
+              className="animate-scale-in hover-scale"
             >
-              Avvia
+              AVVIA
             </Button>
             <Button
               onClick={() => onToggleComplete(index)}
               size="sm"
-              className={`px-3 py-2 text-xs font-medium h-8 whitespace-nowrap min-w-[75px] ${
+              className={`animate-scale-in hover-scale ${
                 isCompleted 
-                  ? 'bg-green-500 hover:bg-green-600 text-white' 
-                  : 'bg-[#EEBA2B] hover:bg-[#d4a61a] text-black'
+                  ? 'bg-green-500 hover:bg-green-600 text-white border-green-500' 
+                  : ''
               }`}
             >
-              {isCompleted ? '✓ Fatto' : 'Completa →'}
+              {isCompleted ? '✓ FATTO' : 'COMPLETA →'}
             </Button>
           </div>
         </div>
