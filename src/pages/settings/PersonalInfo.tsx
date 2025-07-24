@@ -18,7 +18,9 @@ const PersonalInfo = () => {
   const [formData, setFormData] = useState({
     nome: '',
     cognome: '',
+    luogoNascita: '',
     dataNascita: null as Date | null,
+    telefono: '',
     avatarUrl: ''
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -33,7 +35,9 @@ const PersonalInfo = () => {
           setFormData({
             nome: profile.name || '',
             cognome: profile.surname || '',
+            luogoNascita: profile.birth_place || '',
             dataNascita: profile.birth_date || null,
+            telefono: profile.phone || '',
             avatarUrl: profile.avatarUrl || ''
           });
           setAvatarPreview(profile.avatarUrl || '');
@@ -60,7 +64,9 @@ const PersonalInfo = () => {
       await updateUserProfile({
         name: formData.nome,
         surname: formData.cognome,
-        birthPlace: formData.dataNascita ? format(formData.dataNascita, 'yyyy-MM-dd') : '',
+        birthPlace: formData.luogoNascita,
+        phone: formData.telefono,
+        birthDate: formData.dataNascita ? format(formData.dataNascita, 'yyyy-MM-dd') : undefined,
         avatarUrl
       });
       
@@ -202,6 +208,30 @@ const PersonalInfo = () => {
                 date={formData.dataNascita}
                 onDateChange={(date) => setFormData({ ...formData, dataNascita: date })}
                 placeholder="Seleziona data di nascita"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="luogo-nascita" className="text-white">Luogo di nascita</Label>
+              <Input
+                id="luogo-nascita"
+                type="text"
+                className="bg-black border-gray-500 text-white"
+                placeholder="Inserisci il luogo di nascita"
+                value={formData.luogoNascita}
+                onChange={(e) => setFormData({ ...formData, luogoNascita: e.target.value })}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="telefono" className="text-white">Numero di telefono</Label>
+              <Input
+                id="telefono"
+                type="tel"
+                className="bg-black border-gray-500 text-white"
+                placeholder="Inserisci il numero di telefono"
+                value={formData.telefono}
+                onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
               />
             </div>
             

@@ -2,16 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Edit, MapPin, Calendar, Trophy, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { fetchUserProfile, updateUserProfile, type UserProfile as UserProfileType } from '@/services/userService';
+import { fetchUserProfile, updateUserProfile, uploadAvatar, type UserProfile as UserProfileType } from '@/services/userService';
 import { fetchWorkoutStats, WorkoutStats } from '@/services/workoutStatsService';
+import { useToast } from '@/hooks/use-toast';
 
 export const UserProfile = () => {
+  const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfileType | null>(null);
   const [stats, setStats] = useState<WorkoutStats>({ total_workouts: 0, total_hours: 0 });
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', surname: '', birthPlace: '' });
   const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -43,16 +46,44 @@ export const UserProfile = () => {
     if (!profile) return;
     
     try {
-      await updateUserProfile(form);
+      let avatarUrl = profile.avatarUrl;
+      
+      // Upload new avatar if one was selected
+      if (imageFile) {
+        avatarUrl = await uploadAvatar(imageFile);
+      }
+      
+      await updateUserProfile({
+        name: form.name,
+        surname: form.surname,
+        birthPlace: form.birthPlace,
+        avatarUrl
+      });
+      
       setEditing(false);
       setProfile({
         ...profile,
         name: form.name,
         surname: form.surname,
-        birth_place: form.birthPlace
+        birth_place: form.birthPlace,
+        avatarUrl
+      });
+      
+      // Reset image states
+      setImageFile(null);
+      setProfileImage(null);
+      
+      toast({
+        title: "Profilo aggiornato con successo!",
+        duration: 3000,
       });
     } catch (error) {
       console.error('Error updating profile:', error);
+      toast({
+        title: "Errore nell'aggiornamento del profilo",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
   };
 
@@ -65,6 +96,9 @@ export const UserProfile = () => {
       });
     }
     setEditing(false);
+    // Reset image states
+    setImageFile(null);
+    setProfileImage(null);
   };
 
   const handleImageUpload = () => {
@@ -74,6 +108,7 @@ export const UserProfile = () => {
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
+        setImageFile(file); // Save the file for upload
         const reader = new FileReader();
         reader.onload = (e) => {
           setProfileImage(e.target?.result as string);
@@ -109,8 +144,10 @@ export const UserProfile = () => {
           <div className="relative w-24 h-24 bg-white rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-4xl overflow-hidden">
             {profileImage ? (
               <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+            ) : profile.avatarUrl && profile.avatarUrl.startsWith('http') ? (
+              <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              profile.avatarUrl
+              <span>{profile.avatarUrl || '👨‍💼'}</span>
             )}
             {editing && (
               <button
