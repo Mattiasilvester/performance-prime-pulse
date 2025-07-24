@@ -18,9 +18,39 @@ export const Navigation = () => {
 
   return (
     <nav className="lg:w-64">
-      {/* Desktop Sidebar - REMOVED */}
-      
-      {/* Mobile Drawer - REMOVED */}
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:bg-black lg:border-r-2 lg:border-pp-gold">
+        <div className="flex flex-col flex-1 min-h-0 p-4">
+          <div className="flex items-center space-x-3 mb-8">
+            <div className="w-8 h-8 bg-gradient-to-br from-pp-gold to-yellow-600 rounded-lg flex items-center justify-center">
+              <Dumbbell className="h-5 w-5 text-black" />
+            </div>
+            <h1 className="text-xl font-bold text-pp-gold">Performance Prime</h1>
+          </div>
+          <nav className="flex-1 space-y-2">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <Link
+                  key={item.id}
+                  to={item.path}
+                  className={cn(
+                    "flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200",
+                    isActive
+                      ? "bg-pp-gold text-black font-medium"
+                      : "text-pp-gold/80 hover:text-pp-gold hover:bg-pp-gold/10"
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
 
       {/* Mobile Bottom Navigation */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t-2 border-pp-gold shadow-lg z-50">
