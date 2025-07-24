@@ -110,7 +110,7 @@ const Auth = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(loginEmail.trim(), {
-        redirectTo: 'https://76fb77d7-848e-47a8-9377-c4c9eb88c0fd.lovableproject.com/reset-password',
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {

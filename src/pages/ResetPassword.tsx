@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,9 +14,29 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [hasValidToken, setHasValidToken] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
+
+  // Verifica se l'utente ha un token valido per il reset
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setHasValidToken(true);
+      } else {
+        // Se non c'è sessione valida, reindirizza al login
+        toast({
+          title: "Errore",
+          description: "Link di recupero password non valido o scaduto.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+      }
+    };
+    checkSession();
+  }, [navigate, toast]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +93,19 @@ const ResetPassword = () => {
       setLoading(false);
     }
   };
+
+  if (!hasValidToken) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-black border-2 border-pp-gold rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-pp-gold font-black text-3xl">PP</span>
+          </div>
+          <p className="text-pp-gold">Verifica del token in corso...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
