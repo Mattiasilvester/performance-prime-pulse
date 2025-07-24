@@ -16,6 +16,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchUserProfile, UserProfile } from '@/services/userService';
@@ -30,6 +40,7 @@ export const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -106,7 +117,11 @@ export const Header = () => {
     };
   }, [showSearch]);
 
-  const handleLogout = async () => {
+  const openLogoutDialog = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -117,6 +132,8 @@ export const Header = () => {
     } catch (error: any) {
       console.error('Errore durante il logout:', error);
       toast.error('Errore durante il logout');
+    } finally {
+      setShowLogoutDialog(false);
     }
   };
 
@@ -241,7 +258,7 @@ export const Header = () => {
                   );
                 })}
                 <DropdownMenuItem
-                  onClick={handleLogout}
+                  onClick={openLogoutDialog}
                   className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-pp-gold hover:bg-pp-gold/10 hover:text-pp-gold"
                 >
                   <LogOut className="h-5 w-5" />
@@ -298,6 +315,31 @@ export const Header = () => {
           </div>
         </div>
       )}
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="bg-black border-2 border-pp-gold max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-pp-gold text-xl font-bold">
+              Conferma Logout
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-pp-gold/80">
+              Sei sicuro di voler effettuare il logout? Verrai reindirizzato alla pagina di accesso.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="bg-transparent border border-pp-gold text-pp-gold hover:bg-pp-gold/10">
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmLogout}
+              className="bg-pp-gold text-black hover:bg-pp-gold/90"
+            >
+              Conferma Logout
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   );
 };
