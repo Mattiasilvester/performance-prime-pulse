@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
-import { ResetPasswordDebug } from "./components/debug/ResetPasswordDebug";
 import Dashboard from "./pages/Dashboard";
 import Workouts from "./pages/Workouts";
 import Schedule from "./pages/Schedule";
@@ -32,7 +31,7 @@ const AppContent = () => (
   <BrowserRouter>
     <Routes>
       <Route path="/auth" element={<Auth />} />
-      <Route path="/reset-password" element={<ResetPasswordDebug />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/" element={
         <ProtectedRoute>
           <AppLayout>
