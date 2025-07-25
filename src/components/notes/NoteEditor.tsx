@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Trash2, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { validateInput, sanitizeText } from '@/lib/security';
 
 interface Note {
   id: string;
@@ -54,12 +55,44 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
       return;
     }
 
+    // Input validation
+    if (!validateInput.textLength(title, 200)) {
+      toast({
+        title: "Errore",
+        description: "Il titolo deve essere massimo 200 caratteri.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateInput.textLength(content, 10000)) {
+      toast({
+        title: "Errore",
+        description: "Il contenuto deve essere massimo 10.000 caratteri.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateInput.noScriptTags(content) || !validateInput.noScriptTags(title)) {
+      toast({
+        title: "Errore",
+        description: "Contenuto non consentito rilevato.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const finalTitle = title.trim() || content.split('\n')[0].substring(0, 50) || 'Nota senza titolo';
+      // Sanitize inputs
+      const sanitizedTitle = sanitizeText(title.trim());
+      const sanitizedContent = sanitizeText(content.trim());
+      
+      const finalTitle = sanitizedTitle || sanitizedContent.split('\n')[0].substring(0, 50) || 'Nota senza titolo';
 
       if (note) {
         // Update existing note
@@ -67,7 +100,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           .from('notes')
           .update({
             title: finalTitle,
-            content: content.trim(),
+            content: sanitizedContent,
             updated_at: new Date().toISOString()
           })
           .eq('id', note.id)
@@ -82,7 +115,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           .from('notes')
           .insert({
             title: finalTitle,
-            content: content.trim(),
+            content: sanitizedContent,
             user_id: user.id
           })
           .select()

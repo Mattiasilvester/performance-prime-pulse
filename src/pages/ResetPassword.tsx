@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { validateInput } from '@/lib/security';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -15,6 +16,7 @@ const ResetPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasValidToken, setHasValidToken] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -41,19 +43,21 @@ const ResetPassword = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password !== confirmPassword) {
+    // Password validation
+    const passwordValidation = validateInput.password(password);
+    if (!passwordValidation.isValid) {
       toast({
         title: "Errore",
-        description: "Le password non coincidono.",
+        description: passwordValidation.errors.join('. '),
         variant: "destructive",
       });
       return;
     }
 
-    if (password.length < 6) {
+    if (password !== confirmPassword) {
       toast({
         title: "Errore",
-        description: "La password deve essere di almeno 6 caratteri.",
+        description: "Le password non coincidono.",
         variant: "destructive",
       });
       return;
@@ -92,6 +96,12 @@ const ResetPassword = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    const validation = validateInput.password(value);
+    setPasswordErrors(validation.errors);
   };
 
   if (!hasValidToken) {
@@ -138,7 +148,7 @@ const ResetPassword = () => {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
                     className="bg-black border-pp-gold/30 text-pp-gold placeholder:text-pp-gold/50 pr-10 border-2"
                     placeholder="Inserisci la nuova password"
                     required
@@ -154,6 +164,13 @@ const ResetPassword = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
+                {passwordErrors.length > 0 && (
+                  <div className="text-red-400 text-sm space-y-1 mt-2">
+                    {passwordErrors.map((error, index) => (
+                      <p key={index}>• {error}</p>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">

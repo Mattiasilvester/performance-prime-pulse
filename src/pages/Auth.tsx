@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { validateInput, sanitizeText, authRateLimiter, passwordResetRateLimiter, generateCSRFToken } from '@/lib/security';
 
 const Auth = () => {
   const [loginEmail, setLoginEmail] = useState('');
@@ -20,15 +21,37 @@ const Auth = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const [csrfToken, setCsrfToken] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setCsrfToken(generateCSRFToken());
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Rate limiting check
+      const rateLimitKey = `login_${loginEmail}`;
+      if (!authRateLimiter.isAllowed(rateLimitKey)) {
+        const resetTime = authRateLimiter.getResetTime(rateLimitKey);
+        const remainingMinutes = resetTime ? Math.ceil((resetTime - Date.now()) / 60000) : 0;
+        throw new Error(`Troppi tentativi di login. Riprova tra ${remainingMinutes} minuti.`);
+      }
+
+      // Input validation
+      if (!validateInput.email(loginEmail)) {
+        throw new Error('Formato email non valido');
+      }
+
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeText(loginEmail.trim().toLowerCase());
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginEmail.trim(),
+        email: sanitizedEmail,
         password: loginPassword,
       });
 
@@ -51,27 +74,59 @@ const Auth = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (registerData.password !== registerData.confirmPassword) {
-      toast.error('Le password non coincidono');
+    // Rate limiting check
+    const rateLimitKey = `register_${registerData.email}`;
+    if (!authRateLimiter.isAllowed(rateLimitKey)) {
+      const resetTime = authRateLimiter.getResetTime(rateLimitKey);
+      const remainingMinutes = resetTime ? Math.ceil((resetTime - Date.now()) / 60000) : 0;
+      toast.error(`Troppi tentativi di registrazione. Riprova tra ${remainingMinutes} minuti.`);
       return;
     }
 
-    if (registerData.password.length < 6) {
-      toast.error('La password deve essere di almeno 6 caratteri');
+    // Input validation
+    if (!validateInput.email(registerData.email)) {
+      toast.error('Formato email non valido');
+      return;
+    }
+
+    if (!validateInput.textLength(registerData.firstName, 50)) {
+      toast.error('Il nome deve essere massimo 50 caratteri');
+      return;
+    }
+
+    if (!validateInput.textLength(registerData.lastName, 50)) {
+      toast.error('Il cognome deve essere massimo 50 caratteri');
+      return;
+    }
+
+    // Password validation
+    const passwordValidation = validateInput.password(registerData.password);
+    if (!passwordValidation.isValid) {
+      toast.error(passwordValidation.errors.join('. '));
+      return;
+    }
+
+    if (registerData.password !== registerData.confirmPassword) {
+      toast.error('Le password non coincidono');
       return;
     }
 
     setLoading(true);
 
     try {
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeText(registerData.email.trim().toLowerCase());
+      const sanitizedFirstName = sanitizeText(registerData.firstName.trim());
+      const sanitizedLastName = sanitizeText(registerData.lastName.trim());
+
       const { data, error } = await supabase.auth.signUp({
-        email: registerData.email.trim(),
+        email: sanitizedEmail,
         password: registerData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            first_name: registerData.firstName,
-            last_name: registerData.lastName,
+            first_name: sanitizedFirstName,
+            last_name: sanitizedLastName,
           }
         }
       });
@@ -106,10 +161,28 @@ const Auth = () => {
       return;
     }
 
+    // Rate limiting check
+    const rateLimitKey = `reset_${loginEmail}`;
+    if (!passwordResetRateLimiter.isAllowed(rateLimitKey)) {
+      const resetTime = passwordResetRateLimiter.getResetTime(rateLimitKey);
+      const remainingMinutes = resetTime ? Math.ceil((resetTime - Date.now()) / 60000) : 0;
+      toast.error(`Troppi tentativi di reset password. Riprova tra ${remainingMinutes} minuti.`);
+      return;
+    }
+
+    // Input validation
+    if (!validateInput.email(loginEmail)) {
+      toast.error('Formato email non valido');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(loginEmail.trim(), {
+      // Sanitize email
+      const sanitizedEmail = sanitizeText(loginEmail.trim().toLowerCase());
+
+      const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
@@ -125,6 +198,12 @@ const Auth = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setRegisterData({...registerData, password: value});
+    const validation = validateInput.password(value);
+    setPasswordErrors(validation.errors);
   };
 
   return (
@@ -281,16 +360,23 @@ const Auth = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-password" className="text-pp-gold font-medium">Password</Label>
-                    <Input
-                      id="register-password"
-                      type="password"
-                      placeholder="crea una password"
-                      value={registerData.password}
-                      onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
-                      required
-                      disabled={loading}
-                      className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
-                    />
+                      <Input
+                        id="register-password"
+                        type="password"
+                        placeholder="crea una password"
+                        value={registerData.password}
+                        onChange={(e) => handlePasswordChange(e.target.value)}
+                        required
+                        disabled={loading}
+                        className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                      />
+                      {passwordErrors.length > 0 && (
+                        <div className="text-red-400 text-sm space-y-1 mt-2">
+                          {passwordErrors.map((error, index) => (
+                            <p key={index}>• {error}</p>
+                          ))}
+                        </div>
+                      )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirm-password" className="text-pp-gold font-medium">Conferma Password</Label>
