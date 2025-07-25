@@ -1,11 +1,11 @@
 
 {
   "navigation": {
-    "dashboard": "Home",
-    "workouts": "Allenamenti", 
-    "schedule": "Calendario",
+    "dashboard": "Dashboard",
+    "workouts": "Allenamento", 
+    "schedule": "Appuntamenti",
     "timer": "Timer",
-    "aiCoach": "AI Coach",
+    "aiCoach": "Coach AI",
     "notes": "Note",
     "profile": "Profilo"
   },
