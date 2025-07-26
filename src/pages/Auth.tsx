@@ -191,7 +191,8 @@ const Auth = () => {
       }
 
       toast.success('Email per il recupero password inviata! Controlla la tua casella di posta.');
-      setShowResetPassword(false);
+      // Non nascondere il form di reset per evitare confusione
+      // setShowResetPassword(false);
     } catch (error: any) {
       console.error('Errore durante il recupero password:', error);
       toast.error(error.message || 'Errore durante il recupero password');
