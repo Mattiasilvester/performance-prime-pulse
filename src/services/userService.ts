@@ -15,20 +15,65 @@ export interface UserProfile {
 
 export const fetchUserProfile = async (): Promise<UserProfile | null> => {
   try {
+    console.log('Fetching user profile...');
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    
+    if (!user) {
+      console.log('No authenticated user found');
+      return null;
+    }
+
+    console.log('User ID:', user.id);
 
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
-      .single();
+      .maybeSingle(); // Use maybeSingle instead of single to avoid errors if no profile exists
 
     if (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error fetching profile:', error);
       return null;
     }
 
+    if (!profile) {
+      console.log('No profile found, creating default profile...');
+      // Create a default profile if none exists
+      const defaultProfile: UserProfile = {
+        id: user.id,
+        name: user.email?.split('@')[0] || 'Utente',
+        surname: '',
+        birth_place: '',
+        phone: '',
+        bio: 'Appassionato di fitness e benessere',
+        avatarUrl: '👨‍💼',
+        email: user.email || '',
+        birth_date: null
+      };
+      
+      // Try to insert the default profile
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          first_name: defaultProfile.name,
+          last_name: defaultProfile.surname,
+          birth_place: defaultProfile.birth_place,
+          phone: defaultProfile.phone,
+          avatar_url: defaultProfile.avatarUrl,
+          email: defaultProfile.email
+        });
+
+      if (insertError) {
+        console.error('Error creating default profile:', insertError);
+      } else {
+        console.log('Default profile created successfully');
+      }
+      
+      return defaultProfile;
+    }
+
+    console.log('Profile found:', profile);
     return {
       id: profile.id,
       name: profile.first_name || '',
