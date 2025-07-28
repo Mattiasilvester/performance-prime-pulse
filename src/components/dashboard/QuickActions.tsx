@@ -58,15 +58,15 @@ const QuickActions = () => {
         .eq('completed', false) // Escludi allenamenti completati
         .maybeSingle();
 
-      console.log('Workout found for today:', data);
-
+      
+      // Remove verbose logging in production
       if (data && !error) {
         setTodayWorkout(data);
       } else {
         setTodayWorkout(null);
       }
     } catch (error) {
-      console.log('No workout found for today:', error);
+      // Silent error handling for production
       setTodayWorkout(null);
     }
   };

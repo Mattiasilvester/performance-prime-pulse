@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { validateInput, sanitizeText, authRateLimiter, passwordResetRateLimiter, generateCSRFToken } from '@/lib/security';
+import { validateInput, sanitizeText, authRateLimiter, passwordResetRateLimiter, generateCSRFToken, validateCSRFToken } from '@/lib/security';
 
 const Auth = () => {
   const [loginEmail, setLoginEmail] = useState('');
@@ -31,6 +31,15 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // CSRF token validation
+    const formData = new FormData(e.target as HTMLFormElement);
+    const submittedToken = formData.get('csrf_token') as string;
+    if (!validateCSRFToken(submittedToken, csrfToken)) {
+      toast.error('Token di sicurezza non valido. Ricarica la pagina.');
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -193,7 +202,7 @@ const Auth = () => {
       toast.success('Email per il recupero password inviata! Controlla la tua casella di posta e clicca sul link per reimpostare la password.');
       setShowResetPassword(false);
     } catch (error: any) {
-      console.error('Errore durante il recupero password:', error);
+      // Log error without exposing sensitive information
       toast.error(error.message || 'Errore durante il recupero password');
     } finally {
       setLoading(false);
@@ -269,6 +278,7 @@ const Auth = () => {
               
               <TabsContent value="login" className="space-y-4">
                 <form onSubmit={handleLogin} className="space-y-4">
+                  <input type="hidden" name="csrf_token" value={csrfToken} />
                   <div className="space-y-2">
                     <Label htmlFor="login-email" className="text-pp-gold font-medium">Email</Label>
                     <Input
