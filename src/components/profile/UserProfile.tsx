@@ -18,9 +18,11 @@ export const UserProfile = () => {
 
   useEffect(() => {
     const loadData = async () => {
+      console.log('Loading profile data...');
       setLoading(true);
       try {
         const profileData = await fetchUserProfile();
+        console.log('Profile data received:', profileData);
         if (profileData) {
           setProfile(profileData);
           setForm({
@@ -28,14 +30,18 @@ export const UserProfile = () => {
             surname: profileData.surname,
             birthPlace: profileData.birth_place,
           });
+        } else {
+          console.log('No profile data received');
         }
 
         const statsData = await fetchWorkoutStats();
+        console.log('Stats data received:', statsData);
         setStats(statsData);
       } catch (error) {
         console.error('Error loading profile data:', error);
       } finally {
         setLoading(false);
+        console.log('Loading completed');
       }
     };
 
