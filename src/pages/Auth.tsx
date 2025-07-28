@@ -145,15 +145,23 @@ const Auth = () => {
       }
 
       if (data.user) {
-        toast.success('Registrazione completata! Controlla la tua email per confermare l\'account.');
-        // Reset form
-        setRegisterData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          password: '',
-          confirmPassword: ''
-        });
+        // Check if user is immediately confirmed (when email confirmation is disabled)
+        if (data.session) {
+          // User is already authenticated, redirect to dashboard
+          toast.success('Registrazione completata! Benvenuto in Performance Prime!');
+          navigate('/');
+        } else {
+          // Email confirmation required
+          toast.success('Registrazione completata! Controlla la tua email per confermare l\'account.');
+          // Reset form
+          setRegisterData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+          });
+        }
       }
     } catch (error: any) {
       console.error('Errore durante la registrazione:', error);
