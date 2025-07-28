@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: mode === 'production' ? '/app/' : '/',
   server: {
     host: "::",
     port: 8080,
@@ -14,6 +15,9 @@ export default defineConfig(({ mode }) => ({
       'Referrer-Policy': 'strict-origin-when-cross-origin',
       'Permissions-Policy': 'geolocation=(), microphone=(), camera=()'
     }
+  },
+  build: {
+    outDir: 'dist/app',
   },
   plugins: [
     react(),

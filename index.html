@@ -1,25 +1,187 @@
-
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Performance Prime - Oltre ogni limite</title>
-    <meta name="description" content="Performance Prime - App multipiattaforma per training, appuntamenti e progressi. Oltre ogni limite." />
-    <meta name="author" content="Performance Prime" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+        }
+        
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+            padding: 2rem;
+        }
+        
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero .highlight {
+            color: #EEBA2B;
+        }
+        
+        .hero p {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            margin-bottom: 2rem;
+            color: #ccc;
+        }
+        
+        .cta-button {
+            background: #EEBA2B;
+            color: #000;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-button:hover {
+            background: #f3cf67;
+            transform: translateY(-2px);
+        }
+        
+        .features {
+            padding: 5rem 2rem;
+            background: #000;
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 3rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .feature-card {
+            border: 2px solid #EEBA2B;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #EEBA2B;
+        }
+        
+        .cta-section {
+            background: #EEBA2B;
+            color: #000;
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1rem;
+        }
+        
+        .app-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .app-button {
+            background: #000;
+            color: #fff;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .app-button:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div>
+            <h1>Oltre ogni <span class="highlight">limite</span></h1>
+            <p>L'app che trasforma i tuoi dati in performance straordinarie</p>
+            <a href="#" class="cta-button" onclick="goToApp()">Scopri Performance Prime</a>
+        </div>
+    </section>
 
-    <meta property="og:title" content="Performance Prime - Oltre ogni limite" />
-    <meta property="og:description" content="App multipiattaforma per training, appuntamenti e progressi" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <!-- Features -->
+    <section class="features">
+        <h2>Funzionalità <span style="color: #EEBA2B;">Avanzate</span></h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>Analytics Real-time</h3>
+                <p>Dashboard personalizzabili con insights per ottimizzare ogni sessione</p>
+            </div>
+            <div class="feature-card">
+                <h3>Obiettivi Smart</h3>
+                <p>IA che crea obiettivi personalizzati per risultati misurabili</p>
+            </div>
+            <div class="feature-card">
+                <h3>Team Sync</h3>
+                <p>Sincronizza performance con il team e competizioni interne</p>
+            </div>
+            <div class="feature-card">
+                <h3>Pro Network</h3>
+                <p>Accesso diretto a specialisti professionali</p>
+            </div>
+        </div>
+    </section>
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+    <!-- CTA -->
+    <section class="cta-section">
+        <h2>Scarica Performance Prime</h2>
+        <p style="font-size: 1.3rem; margin-bottom: 0;">Unisciti a migliaia di atleti che hanno già scelto Performance Prime</p>
+        <div class="app-buttons">
+            <a href="#" class="app-button">📱 App Store</a>
+            <a href="#" class="app-button">🤖 Google Play</a>
+        </div>
+    </section>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <script>
+        function goToApp() {
+            window.location.href = '/app/';
+        }
+    </script>
+</body>
 </html>
