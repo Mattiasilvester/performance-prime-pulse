@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import QRCodeComponent from '../components/QRCode';
 
 const Landing = () => {
   const [showDetailed, setShowDetailed] = useState(false);
@@ -18,7 +19,7 @@ const Landing = () => {
   };
 
   const goToApp = () => {
-    window.location.href = '/app';
+    window.open('https://performanceprime.it', '_blank');
   };
 
   const submitWaitingList = (event: React.FormEvent<HTMLFormElement>) => {
@@ -306,7 +307,7 @@ const Landing = () => {
                 textAlign: 'center',
                 marginBottom: '2rem'
               }}>
-                🧲 Unisciti alla waiting list esclusiva
+                🧲 Unisciti all'esclusiva waiting list
               </h2>
               <p style={{
                 fontSize: '1.3rem',
@@ -316,8 +317,7 @@ const Landing = () => {
                 marginLeft: 'auto',
                 marginRight: 'auto'
               }}>
-                Vuoi essere tra i primi ad accedere alla versione completa di Performance Prime? 
-                Stiamo selezionando utenti motivati e pronti a pagare per un servizio che trasforma il modo di allenarsi.
+                Vuoi essere tra i primi ad accedere alla versione completa di Performance Prime? Stiamo selezionando utenti motivati e pronti a cambiare il proprio modo di allenarsi.
               </p>
               
               <form onSubmit={submitWaitingList} style={{ maxWidth: '500px', margin: '0 auto' }}>
@@ -407,24 +407,10 @@ const Landing = () => {
                 justifyContent: 'center',
                 flexWrap: 'wrap'
               }}>
-                <div style={{ width: '200px', height: '200px' }}>
-                  <div style={{
-                    width: '100%',
-                    height: '100%',
-                    background: '#fff',
-                    borderRadius: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <div style={{
-                      width: '80%',
-                      height: '80%',
-                      background: 'linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(-45deg, #000 25%, transparent 25%)',
-                      backgroundSize: '10px 10px'
-                    }} />
-                  </div>
-                </div>
+                <QRCodeComponent 
+                  url="https://performanceprime.it" 
+                  size={200}
+                />
                 <div style={{ textAlign: 'center' }}>
                   <button 
                     onClick={goToApp}
@@ -443,7 +429,7 @@ const Landing = () => {
                     Scansiona e inizia ora
                   </button>
                   <p style={{ color: '#ccc', fontStyle: 'italic', maxWidth: '300px' }}>
-                    È una versione MVP: il tuo feedback ci aiuterà a costruire la versione definitiva.
+                    Scarica la beta gratuita: il tuo feedback ci aiuterà a costruire la versione definitiva.
                   </p>
                 </div>
               </div>

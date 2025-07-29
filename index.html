@@ -672,8 +672,8 @@
         <!-- 5. Waiting List -->
         <section class="waiting-list">
             <div class="container">
-                <h2>🧲 Unisciti alla waiting list esclusiva</h2>
-                <p class="waiting-text">Vuoi essere tra i primi ad accedere alla versione completa di Performance Prime? Stiamo selezionando utenti motivati e pronti a pagare per un servizio che trasforma il modo di allenarsi.</p>
+                <h2>🧲 Unisciti all'esclusiva waiting list</h2>
+                <p class="waiting-text">Vuoi essere tra i primi ad accedere alla versione completa di Performance Prime? Stiamo selezionando utenti motivati e pronti a cambiare il proprio modo di allenarsi.</p>
                 
                 <form class="waiting-form" onsubmit="submitWaitingList(event)">
                     <input type="text" placeholder="Nome" required>
@@ -693,13 +693,28 @@
                 <h2>Provala ora gratuitamente</h2>
                 <div class="qr-section">
                     <div class="qr-code">
-                        <div class="qr-placeholder">
-                            <div class="qr-pattern"></div>
+                        <div style="
+                            width: 200px; 
+                            height: 200px; 
+                            background: #fff; 
+                            border-radius: 12px; 
+                            border: 3px solid #fff; 
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 8px;
+                        ">
+                            <img 
+                                src="/qr-code-mvp.png" 
+                                alt="QR Code per Performance Prime MVP"
+                                style="width: 184px; height: 184px;"
+                            />
                         </div>
                     </div>
                     <div class="qr-content">
                         <button class="qr-button" onclick="goToApp()">Scansiona e inizia ora</button>
-                        <p class="mvp-text">È una versione MVP: il tuo feedback ci aiuterà a costruire la versione definitiva.</p>
+                        <p class="mvp-text">Scarica la beta gratuita: il tuo feedback ci aiuterà a costruire la versione definitiva.</p>
                     </div>
                 </div>
             </div>
@@ -717,7 +732,7 @@
 
     <script>
         function goToApp() {
-            window.location.href = '/app.html';
+            window.open('https://performanceprime.it', '_blank');
         }
 
         function showDetailedInfo() {
@@ -743,6 +758,8 @@
             alert(`Grazie ${name}! Ti abbiamo aggiunto alla waiting list. Ti contatteremo a ${email}.`);
             event.target.reset();
         }
+
+
     </script>
 </body>
 </html>

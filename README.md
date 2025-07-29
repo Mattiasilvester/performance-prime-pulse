@@ -1,8 +1,19 @@
-# Welcome to your Lovable project
+# Performance Prime Pulse
 
-## Project info
+## 🚀 App Mobile Fitness con AI Coach
 
-**URL**: https://lovable.dev/projects/76fb77d7-848e-47a8-9377-c4c9eb88c0fd
+**Performance Prime Pulse** è un'applicazione React/TypeScript con Capacitor per il fitness e il benessere. Include funzionalità di AI coach, tracking dei workout, pianificazione e integrazione con Supabase.
+
+### 📱 Stato Attuale (29 Luglio 2025)
+- ✅ Landing page completata con QR code funzionante
+- ✅ MVP integrato con link https://performanceprime.it
+- ✅ Server di sviluppo stabile su porta 8080
+- ✅ Copywriting ottimizzato per conversione
+
+### 🔗 Link Utili
+- **Lovable Project**: https://lovable.dev/projects/76fb77d7-848e-47a8-9377-c4c9eb88c0fd
+- **MVP**: https://performanceprime.it
+- **Development Server**: http://localhost:8080
 
 ## How can I edit this code?
 
@@ -30,10 +41,13 @@ git clone <YOUR_GIT_URL>
 cd <YOUR_PROJECT_NAME>
 
 # Step 3: Install the necessary dependencies.
-npm i
+npm install --legacy-peer-deps
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+```
+
+**Note**: Il server sarà disponibile su http://localhost:8080
 ```
 
 **Edit a file directly in GitHub**
@@ -50,17 +64,51 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## 🛠️ Tecnologie Utilizzate
 
-This project is built with:
+### Frontend
+- **React 18+** con TypeScript
+- **Vite** come build tool
+- **Tailwind CSS** per styling
+- **Shadcn/ui** per componenti UI
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Mobile
+- **Capacitor** per app mobile (iOS/Android)
+- **Cross-platform** development
 
-## How can I deploy this project?
+### Backend
+- **Supabase** per database e autenticazione
+- **Real-time** data synchronization
+
+### AI & ML
+- **AI Coach** per personalizzazione
+- **Machine Learning** per insights
+
+### Development
+- **Hot reload** per sviluppo veloce
+- **TypeScript** strict mode
+- **ESLint** per code quality
+
+## 📚 Documentazione
+
+### File di Documentazione
+- **`work.md`** - Log completo del progetto e progressi
+- **`note.md`** - Tracciamento sviluppi interrotti e ripresi
+- **`.cursorrules`** - Regole per Cursor AI
+- **`TECHNICAL_UPDATE_29JULY2025.md`** - Update tecnico dettagliato
+
+### Struttura del Progetto
+```
+src/
+├── components/     # Componenti riutilizzabili
+├── pages/         # Pagine dell'applicazione
+├── hooks/         # Custom hooks
+├── services/      # Servizi e API calls
+├── lib/           # Utility e configurazioni
+└── i18n/          # File di traduzione
+```
+
+## 🚀 Deployment
 
 Simply open [Lovable](https://lovable.dev/projects/76fb77d7-848e-47a8-9377-c4c9eb88c0fd) and click on Share -> Publish.
 

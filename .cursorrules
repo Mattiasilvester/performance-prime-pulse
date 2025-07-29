@@ -1,0 +1,91 @@
+# Cursor Rules per Performance Prime Pulse
+
+## Contesto del Progetto
+Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il benessere. Include funzionalità di AI coach, tracking dei workout, pianificazione e integrazione con Supabase. 
+
+**Stato Attuale (29 Luglio 2025)**: 
+- Landing page completata con QR code funzionante
+- MVP integrato con link https://performanceprime.it
+- Server di sviluppo stabile su porta 8080
+- Copywriting ottimizzato per conversione
+
+## Tecnologie Principali
+- React 18+ con TypeScript
+- Capacitor per app mobile (iOS/Android)
+- Supabase per backend e autenticazione
+- Tailwind CSS per styling
+- Shadcn/ui per componenti UI
+- Vite come build tool
+
+## Convenzioni di Codice
+- Usa TypeScript strict mode
+- Preferisci functional components con hooks
+- Usa named exports invece di default exports
+- Segui la convenzione camelCase per variabili e funzioni
+- Usa PascalCase per componenti React
+- Mantieni i componenti piccoli e focalizzati
+
+## Struttura del Progetto
+- `/src/components/` - Componenti riutilizzabili
+- `/src/pages/` - Pagine dell'applicazione
+- `/src/hooks/` - Custom hooks
+- `/src/services/` - Servizi e API calls
+- `/src/lib/` - Utility e configurazioni
+- `/src/i18n/` - File di traduzione
+
+## Styling
+- Usa Tailwind CSS per lo styling
+- Preferisci componenti Shadcn/ui quando disponibili
+- Mantieni la coerenza con il design system esistente
+- Usa variabili CSS per colori e spacing
+
+## Database e API
+- Usa Supabase per tutte le operazioni di database
+- Implementa proper error handling per le API calls
+- Usa TypeScript types per i dati del database
+- Segui le convenzioni di naming di Supabase
+
+## Mobile (Capacitor)
+- Considera sempre la compatibilità mobile
+- Usa responsive design
+- Testa su dispositivi reali quando possibile
+- Gestisci correttamente le API native di Capacitor
+
+## AI e Machine Learning
+- Implementa funzionalità AI in modo sicuro
+- Valida sempre gli input dell'utente
+- Fornisci feedback chiaro per le operazioni AI
+- Mantieni la privacy dell'utente
+
+## Performance
+- Ottimizza il bundle size
+- Usa lazy loading per i componenti pesanti
+- Implementa caching appropriato
+- Monitora le performance su dispositivi mobili
+
+## Sicurezza
+- Valida sempre gli input dell'utente
+- Usa HTTPS per tutte le comunicazioni
+- Implementa proper authentication
+- Proteggi i dati sensibili
+
+## Testing
+- Scrivi test per le funzionalità critiche
+- Usa React Testing Library per i test dei componenti
+- Testa le integrazioni con Supabase
+- Verifica la compatibilità mobile
+
+## Documentazione
+- Commenta il codice complesso
+- Mantieni README aggiornato
+- Documenta le API custom
+- Fornisci esempi di utilizzo
+
+## Quando Suggerisci Modifiche
+- Mantieni la coerenza con il codice esistente
+- Considera l'impatto sulle performance
+- Verifica la compatibilità mobile
+- Assicurati che le modifiche seguano le convenzioni del progetto
+- Testa sempre il server di sviluppo (porta 8080)
+- Verifica che il QR code funzioni correttamente
+- Mantieni aggiornata la documentazione 
