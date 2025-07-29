@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
@@ -30,95 +31,96 @@ const queryClient = new QueryClient();
 const AppContent = () => (
   <BrowserRouter>
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/" element={
+      <Route path="/app" element={
         <ProtectedRoute>
           <AppLayout>
             <Dashboard />
           </AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/subscriptions" element={
+      <Route path="/app/subscriptions" element={
         <ProtectedRoute>
           <AppLayout>
             <Subscriptions />
           </AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/workouts" element={
+      <Route path="/app/workouts" element={
         <ProtectedRoute>
           <AppLayout>
             <Workouts />
           </AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/schedule" element={
+      <Route path="/app/schedule" element={
         <ProtectedRoute>
           <AppLayout>
             <Schedule />
           </AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/timer" element={
+      <Route path="/app/timer" element={
         <ProtectedRoute>
           <AppLayout>
             <Timer />
           </AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/ai-coach" element={
+      <Route path="/app/ai-coach" element={
         <ProtectedRoute>
           <AppLayout>
             <AICoach />
           </AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/profile" element={
+      <Route path="/app/profile" element={
         <ProtectedRoute>
           <AppLayout>
             <Profile />
           </AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/notes" element={
+      <Route path="/app/notes" element={
         <ProtectedRoute>
           <AppLayout>
             <Notes />
           </AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/settings/personal-info" element={
+      <Route path="/app/settings/personal-info" element={
         <ProtectedRoute>
           <PersonalInfo />
         </ProtectedRoute>
       } />
-      <Route path="/settings/security" element={
+      <Route path="/app/settings/security" element={
         <ProtectedRoute>
           <Security />
         </ProtectedRoute>
       } />
-      <Route path="/settings/notifications" element={
+      <Route path="/app/settings/notifications" element={
         <ProtectedRoute>
           <Notifications />
         </ProtectedRoute>
       } />
-      <Route path="/settings/language" element={
+      <Route path="/app/settings/language" element={
         <ProtectedRoute>
           <Language />
         </ProtectedRoute>
       } />
-      <Route path="/settings/privacy" element={
+      <Route path="/app/settings/privacy" element={
         <ProtectedRoute>
           <Privacy />
         </ProtectedRoute>
       } />
-      <Route path="/settings/privacy-policy" element={
+      <Route path="/app/settings/privacy-policy" element={
         <ProtectedRoute>
           <PrivacyPolicy />
         </ProtectedRoute>
       } />
-      <Route path="/settings/help" element={
+      <Route path="/app/settings/help" element={
         <ProtectedRoute>
           <Help />
         </ProtectedRoute>
