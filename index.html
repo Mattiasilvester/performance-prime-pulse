@@ -717,7 +717,8 @@
 
     <script>
         function goToApp() {
-            window.location.href = '/app/';
+            // In development usa /app/, in produzione il percorso è diverso
+            window.location.href = window.location.origin + '/app/';
         }
 
         function showDetailedInfo() {
