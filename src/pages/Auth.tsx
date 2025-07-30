@@ -72,19 +72,6 @@ const Auth = () => {
         toast.success('Accesso effettuato con successo!');
         navigate('/app');
       }
-<<<<<<< HEAD
-
-      if (!data.user) {
-        console.error('Utente non presente nella risposta Supabase');
-        throw new Error('Errore durante l\'autenticazione: utente non trovato');
-      }
-
-      console.log('Login effettuato con successo per utente:', data.user.id);
-      toast.success('Accesso effettuato con successo!');
-      console.log('🎯 Redirect a: /app');
-      navigate('/app');
-=======
->>>>>>> 2289f95508b812dcc2da47829383c5eb1e2540ec
     } catch (error: any) {
       console.error('Errore durante il login:', error);
       toast.error(error.message || 'Errore durante il login');
@@ -157,38 +144,6 @@ const Auth = () => {
         throw error;
       }
 
-<<<<<<< HEAD
-      // Controllo null safety robusto
-      if (!data) {
-        console.error('Risposta Supabase vuota durante la registrazione');
-        throw new Error('Errore durante la registrazione: risposta vuota dal server');
-      }
-
-      if (!data.user) {
-        console.error('Utente non presente nella risposta Supabase');
-        throw new Error('Errore durante la registrazione: utente non creato');
-      }
-
-      console.log('Registrazione completata per utente:', data.user.id);
-
-      // Check if user is immediately confirmed (when email confirmation is disabled)
-      if (data.session) {
-        // User is already authenticated, redirect to dashboard
-        toast.success('Registrazione completata! Benvenuto in Performance Prime!');
-        console.log('🎯 Redirect a: /app');
-        navigate('/app');
-      } else {
-        // Email confirmation required
-        toast.success('Registrazione completata! Controlla la tua email per confermare l\'account.');
-        // Reset form
-        setRegisterData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          password: '',
-          confirmPassword: ''
-        });
-=======
       if (data.user) {
         // Check if user is immediately confirmed (when email confirmation is disabled)
         if (data.session) {
@@ -207,7 +162,6 @@ const Auth = () => {
             confirmPassword: ''
           });
         }
->>>>>>> 2289f95508b812dcc2da47829383c5eb1e2540ec
       }
     } catch (error: any) {
       console.error('Errore durante la registrazione:', error);

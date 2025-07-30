@@ -27,86 +27,7 @@ const Landing: React.FC<LandingProps> = ({ devMode = false }) => {
   };
 
   const goToApp = () => {
-<<<<<<< HEAD
-    if (devMode) {
-      // In dev mode, vai direttamente alla dashboard
-      console.log('🛠️ Dev Mode: Navigating to dashboard');
-      navigate('/dev/dashboard');
-      return;
-    }
-
-    // Determina l'URL corretto in base all'hostname
-    let mvpUrl;
-    
-    if (window.location.hostname === 'performanceprime.it') {
-      // Se siamo sulla landing page di produzione, punta all'MVP su Lovable
-      mvpUrl = 'https://performance-prime-pulse.lovable.app/auth';
-      console.log(`🌐 Rilevato performanceprime.it - Punto all'MVP Lovable`);
-    } else if (window.location.hostname === 'performance-prime-pulse.lovable.app') {
-      // Se siamo già sull'MVP, vai direttamente al login
-      mvpUrl = '/auth';
-      console.log(`🌐 Rilevato performance-prime-pulse.lovable.app - Vai al login`);
-    } else {
-      // Altrimenti usa la configurazione normale
-      mvpUrl = config.MVP_URL;
-    }
-    
-    console.log(`🚀 Ambiente: ${isDevelopment ? 'Sviluppo' : 'Produzione'}`);
-    console.log(`📱 Aprendo MVP Login: ${mvpUrl}`);
-    console.log(`🎯 Destinazione: Pagina di Login dell'MVP`);
-    console.log(`🔧 Hostname corrente: ${window.location.hostname}`);
-    console.log(`🔍 DEBUG - Bottone "Scansiona e inizia ora" cliccato!`);
-    console.log(`🌐 URL di destinazione: ${mvpUrl}`);
-    console.log(`🖥️ Ambiente corrente: ${window.location.hostname}`);
-    console.log(`📱 Timestamp: ${new Date().toISOString()}`);
-    
-    try {
-      // Se l'URL è relativo, usa navigate invece di window.open
-      if (mvpUrl.startsWith('/')) {
-        console.log('🔄 Navigazione interna a:', mvpUrl);
-        navigate(mvpUrl);
-        return;
-      }
-      
-      const newWindow = window.open(mvpUrl, '_blank');
-      if (newWindow) {
-        console.log('✅ Finestra MVP Login aperta con successo');
-        
-        // Debug avanzato: controlla dopo 2 secondi se la finestra è sulla URL corretta
-        setTimeout(() => {
-          try {
-            console.log('🔍 Verifica URL finale finestra MVP...');
-            if (newWindow.location.href.includes('/auth') || newWindow.location.href.includes('/login')) {
-              console.log('✅ MVP Login caricato correttamente');
-            } else {
-              console.log('⚠️ MVP potrebbe non essere sulla pagina login');
-              console.log('🔍 URL finale:', newWindow.location.href);
-            }
-          } catch (e) {
-            console.log('🔒 Cross-origin, ma finestra MVP aperta');
-          }
-        }, 2000);
-      } else {
-        console.error('❌ Impossibile aprire la finestra - potrebbe essere bloccata dal popup blocker');
-        console.log('🔄 Fallback: naviga nella stessa finestra');
-        window.location.href = mvpUrl;
-      }
-    } catch (error) {
-      console.error('❌ Errore durante l\'apertura della finestra:', error);
-      console.log('🔄 Fallback: naviga nella stessa finestra');
-      window.location.href = mvpUrl;
-    }
-  };
-
-  const handleDeveloperAccess = () => {
-    // Solo in sviluppo - accesso diretto al localhost per sviluppatori
-    if (isDevelopment) {
-      console.log('🛠️ Accesso sviluppatore - Dashboard locale');
-      window.open('http://localhost:8080/app', '_blank');
-    }
-=======
     window.location.href = '/auth';
->>>>>>> 2289f95508b812dcc2da47829383c5eb1e2540ec
   };
 
   const submitWaitingList = (event: React.FormEvent<HTMLFormElement>) => {
@@ -501,11 +422,7 @@ const Landing: React.FC<LandingProps> = ({ devMode = false }) => {
                 flexWrap: 'wrap'
               }}>
                 <QRCodeComponent 
-<<<<<<< HEAD
-                  url={config.MVP_URL} 
-=======
                   url={`${window.location.origin}/auth`}
->>>>>>> 2289f95508b812dcc2da47829383c5eb1e2540ec
                   size={200}
                 />
                 <div style={{ textAlign: 'center' }}>
@@ -579,8 +496,7 @@ const Landing: React.FC<LandingProps> = ({ devMode = false }) => {
 
           {/* Bottone nascosto per sviluppatori (solo in locale) */}
           {isDevelopment && (
-            <button 
-              onClick={handleDeveloperAccess} 
+            <button
               style={{
                 position: 'fixed',
                 bottom: '20px',
