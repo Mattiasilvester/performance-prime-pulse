@@ -99,6 +99,16 @@ npm run dev
 - Custom Tailwind CSS per grafici
 **Risultato**: Nessun warning, performance migliorata
 
+### 10. MVP Login Routing (CRITICO - NUOVO)
+**Problema**: MVP su Lovable mostrava landing page invece di login
+**Soluzione**:
+- Modificato routing in `App.tsx`: root `/` → `HomePage` invece di `Landing`
+- Creato `HomePage.tsx` per routing condizionale basato su autenticazione
+- Aggiornato `environments.js` per puntare a `/auth` invece di root
+- Aggiunto debug avanzato per tracking reindirizzamenti
+- Landing page spostata su `/landing` per accesso esplicito
+**Risultato**: MVP ora reindirizza correttamente al login
+
 ### 10. Footer Responsive Design (NUOVO)
 **Problema**: Footer non ottimizzato per mobile e spaziatura inconsistente
 **Soluzione**:

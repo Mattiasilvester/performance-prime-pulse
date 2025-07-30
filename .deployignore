@@ -1,0 +1,20 @@
+# File da escludere dal deploy Lovable
+src/development/
+src/components/DevTools*
+src/components/DevToolbar*
+src/pages/AICoach.tsx
+src/DevApp.tsx
+src/PublicApp.tsx
+.env.development
+*.test.js
+*.spec.js
+/docs/
+/design/
+README-dev.md
+DEPLOY_CONFIG.md
+DUAL_ROOT_SETUP.md
+MVP_LOGIN_FIX.md
+AZIONI_RAPIDE_IMPLEMENTATION.md
+ENV_SETUP.md
+note.md
+work.md 
