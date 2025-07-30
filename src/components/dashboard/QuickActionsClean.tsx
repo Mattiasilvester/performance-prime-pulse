@@ -4,11 +4,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ObjectiveModal } from '@/components/profile/ObjectiveModal';
 import { WorkoutCreationModal } from '@/components/schedule/WorkoutCreationModal';
-import { AzioneRapidaCard } from './AzioneRapidaCard';
-import styles from './AzioniRapide.module.css';
 
-// Componente completamente riscritto: 29 Luglio 2025 - Azioni Rapide Implementation
-const QuickActions = () => {
+// Componente completamente pulito - 29 Luglio 2025
+const QuickActionsClean = () => {
   const navigate = useNavigate();
   const [todayWorkout, setTodayWorkout] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -118,7 +116,6 @@ const QuickActions = () => {
       textColor: 'text-white',
       onClick: handleStartWorkout,
       disabled: isLoading,
-      loading: isLoading,
     },
     {
       title: 'Prenota Sessione',
@@ -148,23 +145,27 @@ const QuickActions = () => {
 
   return (
     <>
-      {/* Container principale senza overlay */}
+      {/* Container principale completamente pulito - NO OVERLAY */}
       <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg">
         <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {actions.map((action) => (
-            <AzioneRapidaCard
-              key={action.title}
-              title={action.title}
-              subtitle={action.subtitle}
-              icon={action.icon}
-              color={action.color}
-              textColor={action.textColor}
-              onClick={action.onClick}
-              disabled={action.disabled}
-              loading={action.loading}
-            />
-          ))}
+          {actions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.title}
+                onClick={action.onClick}
+                disabled={action.disabled}
+                className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 hover:scale-105 transition-all duration-200 rounded-lg`}
+              >
+                <Icon className="h-6 w-6" />
+                <div className="text-center">
+                  <p className="font-medium text-sm">{action.title}</p>
+                  <p className="text-xs opacity-90">{action.subtitle}</p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -184,4 +185,4 @@ const QuickActions = () => {
   );
 };
 
-export { QuickActions };
+export { QuickActionsClean }; 

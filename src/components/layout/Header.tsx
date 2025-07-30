@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard, X } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard, X, Shield, FileText as FileTextIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -257,6 +257,30 @@ export const Header = () => {
                     </DropdownMenuItem>
                   );
                 })}
+                
+                {/* Divisore */}
+                <div className="h-px bg-pp-gold/20 my-2 mx-4"></div>
+                
+                {/* Sezione Legale */}
+                <DropdownMenuItem
+                  onClick={() => navigate('/privacy-policy')}
+                  className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-pp-gold/80 hover:bg-pp-gold/10 hover:text-pp-gold opacity-80"
+                >
+                  <Shield className="h-5 w-5" />
+                  <span className="font-medium">Privacy Policy</span>
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem
+                  onClick={() => navigate('/terms-of-service')}
+                  className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-pp-gold/80 hover:bg-pp-gold/10 hover:text-pp-gold opacity-80"
+                >
+                  <FileTextIcon className="h-5 w-5" />
+                  <span className="font-medium">Termini di Servizio</span>
+                </DropdownMenuItem>
+                
+                {/* Divisore */}
+                <div className="h-px bg-pp-gold/20 my-2 mx-4"></div>
+                
                 <DropdownMenuItem
                   onClick={openLogoutDialog}
                   className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-pp-gold hover:bg-pp-gold/10 hover:text-pp-gold"
