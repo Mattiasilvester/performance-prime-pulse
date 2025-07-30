@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import QRCodeComponent from '../components/QRCode';
-import DevTools from '../components/DevTools';
-import { config, isDevelopment } from '../config/environments';
 
-interface LandingProps {
-  devMode?: boolean;
-}
-
-const Landing: React.FC<LandingProps> = ({ devMode = false }) => {
+const Landing = () => {
   const [showDetailed, setShowDetailed] = useState(false);
-  const navigate = useNavigate();
 
   const showDetailedInfo = () => {
     setShowDetailed(true);
@@ -49,13 +41,7 @@ const Landing: React.FC<LandingProps> = ({ devMode = false }) => {
       lineHeight: '1.6',
       margin: 0,
       padding: 0
-    }} className={devMode ? 'landing-page dev-mode' : 'landing-page'}>
-      {devMode && (
-        <div className="dev-mode-banner">
-          🛠️ MODALITÀ SVILUPPO - Testing & Build
-        </div>
-      )}
-      <DevTools />
+    }}>
       {/* Hero Section */}
       {!showDetailed && (
         <section id="hero-section" style={{
@@ -440,82 +426,15 @@ const Landing: React.FC<LandingProps> = ({ devMode = false }) => {
                       marginBottom: '1rem'
                     }}
                   >
-                    {devMode ? '🛠️ Vai alla Dashboard' : '🚀 Scansiona e inizia ora'}
+                    Scansiona e inizia ora
                   </button>
-                                                <p style={{ color: '#ccc', fontStyle: 'italic', maxWidth: '300px' }}>
-                                Scarica la beta gratuita: il tuo feedback ci aiuterà a costruire la versione definitiva.
-                              </p>
-                              <p style={{ color: '#ff6b6b', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-                                ⚠️ MVP in sviluppo locale - Deploy su Lovable in corso
-                              </p>
-                  <a 
-                    href={devMode ? '/dev/dashboard' : (window.location.hostname === 'performanceprime.it' 
-                      ? 'https://performance-prime-pulse.lovable.app/auth' 
-                      : config.MVP_URL)}
-                    target={devMode ? '_self' : '_blank'}
-                    rel="noopener noreferrer"
-                    style={{
-                      color: '#EEBA2B',
-                      textDecoration: 'none',
-                      fontSize: '0.9rem',
-                      marginTop: '0.5rem',
-                      display: 'block'
-                    }}
-                    onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
-                    onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
-                  >
-                    {devMode ? 'Accesso diretto Dashboard →' : 'Oppure clicca qui per accedere direttamente →'}
-                  </a>
-                  
-                  {/* Bottone alternativo per utenti esistenti */}
-                  {!devMode && (
-                    <a 
-                      href={window.location.hostname === 'performanceprime.it'
-                        ? 'https://performance-prime-pulse.lovable.app/auth'
-                        : config.MVP_URL}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{
-                        color: '#28a745',
-                        textDecoration: 'none',
-                        fontSize: '0.8rem',
-                        marginTop: '0.3rem',
-                        display: 'block',
-                        opacity: 0.8
-                      }}
-                      onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
-                      onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
-                    >
-                      🆕 Nuovo utente? Registrati qui →
-                    </a>
-                  )}
+                  <p style={{ color: '#ccc', fontStyle: 'italic', maxWidth: '300px' }}>
+                    Scarica la beta gratuita: il tuo feedback ci aiuterà a costruire la versione definitiva.
+                  </p>
                 </div>
               </div>
             </div>
           </section>
-
-          {/* Bottone nascosto per sviluppatori (solo in locale) */}
-          {isDevelopment && (
-            <button
-              style={{
-                position: 'fixed',
-                bottom: '20px',
-                right: '20px',
-                background: '#28a745',
-                color: 'white',
-                border: 'none',
-                padding: '10px 15px',
-                borderRadius: '5px',
-                zIndex: 9999,
-                fontSize: '0.9rem',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
-              }}
-            >
-              🛠️ Dev Dashboard
-            </button>
-          )}
 
           {/* Footer */}
           <footer style={{
