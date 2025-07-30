@@ -11,7 +11,21 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { total_workouts: 0, total_hours: 0 };
 
-    // Calcola statistiche dai workout completati
+    // Prima controlla se esistono statistiche nella tabella user_workout_stats
+    const { data: stats, error: statsError } = await supabase
+      .from('user_workout_stats')
+      .select('total_workouts, total_hours')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!statsError && stats) {
+      return {
+        total_workouts: stats.total_workouts || 0,
+        total_hours: Math.round((stats.total_hours || 0) / 60 * 10) / 10 // Converti minuti in ore
+      };
+    }
+
+    // Se non ci sono statistiche, calcola dai workout completati
     const { data: workouts, error } = await supabase
       .from('custom_workouts')
       .select('total_duration')

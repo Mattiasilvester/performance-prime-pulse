@@ -1,19 +1,15 @@
-import { Play, Calendar, MessageSquare, Plus } from 'lucide-react';
+import { Play, Calendar, MessageSquare, Plus, Lock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ObjectiveModal } from '@/components/profile/ObjectiveModal';
-import { WorkoutCreationModal } from '@/components/schedule/WorkoutCreationModal';
-import { AzioneRapidaCard } from './AzioneRapidaCard';
-import styles from './AzioniRapide.module.css';
 
-// Componente completamente riscritto: 29 Luglio 2025 - Azioni Rapide Implementation
 const QuickActions = () => {
   const navigate = useNavigate();
   const [todayWorkout, setTodayWorkout] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isObjectiveModalOpen, setIsObjectiveModalOpen] = useState(false);
-  const [isWorkoutCreationModalOpen, setIsWorkoutCreationModalOpen] = useState(false);
 
   useEffect(() => {
     checkTodayWorkout();
@@ -83,9 +79,9 @@ const QuickActions = () => {
       console.log('Starting today workout:', todayWorkout);
       navigate('/workouts', { state: { startCustomWorkout: todayWorkout.id } });
     } else {
-      // Se non c'è un allenamento per oggi, apri il popup per creare un nuovo workout
-      console.log('No workout for today, opening creation modal');
-      setIsWorkoutCreationModalOpen(true);
+      // Se non c'è un allenamento per oggi, vai al calendario con il popup aperto per oggi
+      console.log('No workout for today, opening calendar');
+      navigate('/schedule', { state: { openWorkoutModal: true } });
     }
     
     setIsLoading(false);
@@ -99,46 +95,33 @@ const QuickActions = () => {
     setIsObjectiveModalOpen(false);
   };
 
-  const handleWorkoutCreationModalClose = () => {
-    setIsWorkoutCreationModalOpen(false);
-  };
-
-  const handleWorkoutCreated = () => {
-    setIsWorkoutCreationModalOpen(false);
-    // Ricontrolla se è stato creato un workout per oggi
-    checkTodayWorkout();
-  };
-
   const actions = [
     {
-      title: 'Inizia Allenamento',
-      subtitle: todayWorkout ? 'Workout di oggi' : 'Crea nuovo workout',
+      label: 'Inizia Allenamento',
+      description: todayWorkout ? 'Workout di oggi' : 'Crea nuovo workout',
       icon: Play,
       color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
       textColor: 'text-white',
       onClick: handleStartWorkout,
       disabled: isLoading,
-      loading: isLoading,
     },
     {
-      title: 'Prenota Sessione',
-      subtitle: 'Con un professionista',
+      label: 'Prenota Sessione',
+      description: 'Con un professionista',
       icon: Calendar,
       color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
       textColor: 'text-white',
-      onClick: () => navigate('/schedule'),
     },
     {
-      title: 'Chat AI Coach',
-      subtitle: 'Chiedi consiglio',
+      label: 'Chat AI Coach',
+      description: 'Chiedi consiglio',
       icon: MessageSquare,
       color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
       textColor: 'text-white',
-      onClick: () => navigate('/ai-coach'),
     },
     {
-      title: 'Nuovo Obiettivo',
-      subtitle: 'Sfida te stesso',
+      label: 'Nuovo Obiettivo',
+      description: 'Sfida te stesso',
       icon: Plus,
       color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
       textColor: 'text-white',
@@ -148,23 +131,27 @@ const QuickActions = () => {
 
   return (
     <>
-      {/* Container principale senza overlay */}
       <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg">
+
         <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {actions.map((action) => (
-            <AzioneRapidaCard
-              key={action.title}
-              title={action.title}
-              subtitle={action.subtitle}
-              icon={action.icon}
-              color={action.color}
-              textColor={action.textColor}
-              onClick={action.onClick}
-              disabled={action.disabled}
-              loading={action.loading}
-            />
-          ))}
+          {actions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <Button
+                key={action.label}
+                onClick={action.onClick}
+                disabled={action.disabled}
+                className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 hover:scale-105 transition-all duration-200`}
+              >
+                <Icon className="h-6 w-6" />
+                <div className="text-center">
+                  <p className="font-medium text-sm">{action.label}</p>
+                  <p className="text-xs opacity-90">{action.description}</p>
+                </div>
+              </Button>
+            );
+          })}
         </div>
       </div>
 
@@ -172,13 +159,6 @@ const QuickActions = () => {
         isOpen={isObjectiveModalOpen}
         onClose={handleObjectiveModalClose}
         onObjectiveCreated={handleObjectiveModalClose}
-      />
-
-      <WorkoutCreationModal
-        isOpen={isWorkoutCreationModalOpen}
-        selectedDate={new Date()}
-        onClose={handleWorkoutCreationModalClose}
-        onWorkoutCreated={handleWorkoutCreated}
       />
     </>
   );

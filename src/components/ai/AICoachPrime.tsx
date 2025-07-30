@@ -11,7 +11,6 @@ interface AICoachPrimeProps {
 }
 
 export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatInterfaceRef }) => {
-  console.log('AICoachPrime rendering - NO OVERLAY');
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

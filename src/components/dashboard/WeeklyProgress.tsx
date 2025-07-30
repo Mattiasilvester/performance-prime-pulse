@@ -1,4 +1,5 @@
 
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -62,9 +63,6 @@ export const WeeklyProgress = () => {
 
     loadWeeklyData();
   }, []);
-
-  const maxWorkouts = Math.max(...data.map(d => d.workouts), 1);
-
   return (
     <div className="bg-black rounded-2xl p-6 shadow-lg border-2 border-pp-gold">
       <div className="flex items-center justify-between mb-4">
@@ -72,26 +70,27 @@ export const WeeklyProgress = () => {
         <span className="text-sm text-white">Questa settimana</span>
       </div>
       
-      <div className="space-y-3">
-        {data.map((day, index) => (
-          <div key={day.name} className="flex items-center space-x-3">
-            <div className="w-12 text-xs text-pp-gold font-medium">
-              {day.name}
-            </div>
-            <div className="flex-1 bg-gray-800 rounded-full h-4 overflow-hidden">
-              <div 
-                className="bg-pp-gold h-full rounded-full transition-all duration-300"
-                style={{ 
-                  width: `${(day.workouts / maxWorkouts) * 100}%`,
-                  minWidth: day.workouts > 0 ? '8px' : '0px'
-                }}
-              />
-            </div>
-            <div className="w-8 text-xs text-pp-gold text-right">
-              {day.workouts}
-            </div>
-          </div>
-        ))}
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" />
+            <XAxis 
+              dataKey="name" 
+              tick={{ fill: '#EEBA2B', fontSize: 12 }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
+            />
+            <YAxis 
+              tick={{ fill: '#EEBA2B', fontSize: 12 }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
+            />
+            <Bar 
+              dataKey="workouts" 
+              fill="#EEBA2B" 
+              radius={[4, 4, 0, 0]}
+              className="hover:opacity-80 transition-opacity"
+            />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
       
       <div className="mt-4 text-center">
