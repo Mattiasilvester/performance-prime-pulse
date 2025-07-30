@@ -19,7 +19,7 @@ const Landing = () => {
   };
 
   const goToApp = () => {
-    window.open('https://performanceprime.it', '_blank');
+    window.location.href = '/auth';
   };
 
   const submitWaitingList = (event: React.FormEvent<HTMLFormElement>) => {
@@ -408,7 +408,7 @@ const Landing = () => {
                 flexWrap: 'wrap'
               }}>
                 <QRCodeComponent 
-                  url="https://performanceprime.it" 
+                  url={`${window.location.origin}/auth`}
                   size={200}
                 />
                 <div style={{ textAlign: 'center' }}>
