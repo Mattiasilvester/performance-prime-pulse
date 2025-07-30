@@ -1,16 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { sanitizeText, validateInput, authRateLimiter, passwordResetRateLimiter, generateCSRFToken, validateCSRFToken } from '@/lib/security';
-import { config } from '@/lib/config';
-import { RateLimiter } from '@/lib/security';
+import { toast } from 'sonner';
+import { validateInput, sanitizeText, authRateLimiter, passwordResetRateLimiter, generateCSRFToken, validateCSRFToken } from '@/lib/security';
 
 const Auth = () => {
   const [loginEmail, setLoginEmail] = useState('');
@@ -26,19 +23,11 @@ const Auth = () => {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [csrfToken, setCsrfToken] = useState('');
-  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     setCsrfToken(generateCSRFToken());
   }, []);
-
-  // Redirect if user is already authenticated
-  useEffect(() => {
-    if (!authLoading && user) {
-      navigate(config.getDashboardUrl());
-    }
-  }, [user, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,34 +59,19 @@ const Auth = () => {
       // Sanitize inputs
       const sanitizedEmail = sanitizeText(loginEmail.trim().toLowerCase());
 
-      console.log('Tentativo di login per:', sanitizedEmail);
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email: sanitizedEmail,
         password: loginPassword,
       });
 
-      console.log('Risposta Supabase login:', { data, error });
-
       if (error) {
-        console.error('Errore Supabase durante il login:', error);
         throw error;
       }
 
-      // Controllo null safety robusto
-      if (!data) {
-        console.error('Risposta Supabase vuota durante il login');
-        throw new Error('Errore durante l\'autenticazione: risposta vuota dal server');
+      if (data.user) {
+        toast.success('Accesso effettuato con successo!');
+        navigate('/');
       }
-
-      if (!data.user) {
-        console.error('Utente non presente nella risposta Supabase');
-        throw new Error('Errore durante l\'autenticazione: utente non trovato');
-      }
-
-      console.log('Login effettuato con successo per utente:', data.user.id);
-      toast.success('Accesso effettuato con successo!');
-      navigate(config.getDashboardUrl());
     } catch (error: any) {
       console.error('Errore durante il login:', error);
       toast.error(error.message || 'Errore durante il login');
@@ -154,13 +128,11 @@ const Auth = () => {
       const sanitizedFirstName = sanitizeText(registerData.firstName.trim());
       const sanitizedLastName = sanitizeText(registerData.lastName.trim());
 
-      console.log('Tentativo di registrazione per:', sanitizedEmail);
-
       const { data, error } = await supabase.auth.signUp({
         email: sanitizedEmail,
         password: registerData.password,
         options: {
-          emailRedirectTo: config.getSupabaseRedirectUrl(),
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             first_name: sanitizedFirstName,
             last_name: sanitizedLastName,
@@ -168,42 +140,28 @@ const Auth = () => {
         }
       });
 
-      console.log('Risposta Supabase registrazione:', { data, error });
-
       if (error) {
-        console.error('Errore Supabase durante la registrazione:', error);
         throw error;
       }
 
-      // Controllo null safety robusto
-      if (!data) {
-        console.error('Risposta Supabase vuota durante la registrazione');
-        throw new Error('Errore durante la registrazione: risposta vuota dal server');
-      }
-
-      if (!data.user) {
-        console.error('Utente non presente nella risposta Supabase');
-        throw new Error('Errore durante la registrazione: utente non creato');
-      }
-
-      console.log('Registrazione completata per utente:', data.user.id);
-
-      // Check if user is immediately confirmed (when email confirmation is disabled)
-      if (data.session) {
-        // User is already authenticated, redirect to dashboard
-        toast.success('Registrazione completata! Benvenuto in Performance Prime!');
-        navigate(config.getDashboardUrl());
-      } else {
-        // Email confirmation required
-        toast.success('Registrazione completata! Controlla la tua email per confermare l\'account.');
-        // Reset form
-        setRegisterData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          password: '',
-          confirmPassword: ''
-        });
+      if (data.user) {
+        // Check if user is immediately confirmed (when email confirmation is disabled)
+        if (data.session) {
+          // User is already authenticated, redirect to dashboard
+          toast.success('Registrazione completata! Benvenuto in Performance Prime!');
+          navigate('/');
+        } else {
+          // Email confirmation required
+          toast.success('Registrazione completata! Controlla la tua email per confermare l\'account.');
+          // Reset form
+          setRegisterData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+          });
+        }
       }
     } catch (error: any) {
       console.error('Errore durante la registrazione:', error);
@@ -242,7 +200,7 @@ const Auth = () => {
       const sanitizedEmail = sanitizeText(loginEmail.trim().toLowerCase());
 
       const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
-        redirectTo: config.getResetPasswordUrl(),
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {
