@@ -68,22 +68,40 @@ const Landing = () => {
             }}>
               L'app che trasforma i tuoi dati in performance straordinarie
             </p>
-            <button 
-              onClick={showDetailedInfo}
-              style={{
-                background: '#EEBA2B',
-                color: '#000',
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              Scopri Performance Prime
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button 
+                onClick={showDetailedInfo}
+                style={{
+                  background: '#EEBA2B',
+                  color: '#000',
+                  padding: '1rem 2rem',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Scopri Performance Prime
+              </button>
+              <button 
+                onClick={goToApp}
+                style={{
+                  background: 'transparent',
+                  color: '#EEBA2B',
+                  padding: '1rem 2rem',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
+                  border: '2px solid #EEBA2B',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Accedi
+              </button>
+            </div>
           </div>
         </section>
       )}
