@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import QRCodeComponent from '../components/QRCode';
+import DevTools from '../components/DevTools';
+import { config, isDevelopment } from '../config/environments';
 
-const Landing = () => {
+interface LandingProps {
+  devMode?: boolean;
+}
+
+const Landing: React.FC<LandingProps> = ({ devMode = false }) => {
   const [showDetailed, setShowDetailed] = useState(false);
+  const navigate = useNavigate();
 
   const showDetailedInfo = () => {
     setShowDetailed(true);
@@ -19,7 +27,82 @@ const Landing = () => {
   };
 
   const goToApp = () => {
-    window.open('https://performanceprime.it', '_blank');
+    if (devMode) {
+      // In dev mode, vai direttamente alla dashboard
+      console.log('🛠️ Dev Mode: Navigating to dashboard');
+      navigate('/dev/dashboard');
+      return;
+    }
+
+    // Determina l'URL corretto in base all'hostname
+    let mvpUrl;
+    
+    if (window.location.hostname === 'performanceprime.it') {
+      // Se siamo sulla landing page di produzione, punta all'MVP su Lovable
+      mvpUrl = 'https://performance-prime-pulse.lovable.app/auth';
+      console.log(`🌐 Rilevato performanceprime.it - Punto all'MVP Lovable`);
+    } else if (window.location.hostname === 'performance-prime-pulse.lovable.app') {
+      // Se siamo già sull'MVP, vai direttamente al login
+      mvpUrl = '/auth';
+      console.log(`🌐 Rilevato performance-prime-pulse.lovable.app - Vai al login`);
+    } else {
+      // Altrimenti usa la configurazione normale
+      mvpUrl = config.MVP_URL;
+    }
+    
+    console.log(`🚀 Ambiente: ${isDevelopment ? 'Sviluppo' : 'Produzione'}`);
+    console.log(`📱 Aprendo MVP Login: ${mvpUrl}`);
+    console.log(`🎯 Destinazione: Pagina di Login dell'MVP`);
+    console.log(`🔧 Hostname corrente: ${window.location.hostname}`);
+    console.log(`🔍 DEBUG - Bottone "Scansiona e inizia ora" cliccato!`);
+    console.log(`🌐 URL di destinazione: ${mvpUrl}`);
+    console.log(`🖥️ Ambiente corrente: ${window.location.hostname}`);
+    console.log(`📱 Timestamp: ${new Date().toISOString()}`);
+    
+    try {
+      // Se l'URL è relativo, usa navigate invece di window.open
+      if (mvpUrl.startsWith('/')) {
+        console.log('🔄 Navigazione interna a:', mvpUrl);
+        navigate(mvpUrl);
+        return;
+      }
+      
+      const newWindow = window.open(mvpUrl, '_blank');
+      if (newWindow) {
+        console.log('✅ Finestra MVP Login aperta con successo');
+        
+        // Debug avanzato: controlla dopo 2 secondi se la finestra è sulla URL corretta
+        setTimeout(() => {
+          try {
+            console.log('🔍 Verifica URL finale finestra MVP...');
+            if (newWindow.location.href.includes('/auth') || newWindow.location.href.includes('/login')) {
+              console.log('✅ MVP Login caricato correttamente');
+            } else {
+              console.log('⚠️ MVP potrebbe non essere sulla pagina login');
+              console.log('🔍 URL finale:', newWindow.location.href);
+            }
+          } catch (e) {
+            console.log('🔒 Cross-origin, ma finestra MVP aperta');
+          }
+        }, 2000);
+      } else {
+        console.error('❌ Impossibile aprire la finestra - potrebbe essere bloccata dal popup blocker');
+        console.log('🔄 Fallback: naviga nella stessa finestra');
+        window.location.href = mvpUrl;
+      }
+    } catch (error) {
+      console.error('❌ Errore durante l\'apertura della finestra:', error);
+      console.log('🔄 Fallback: naviga nella stessa finestra');
+      window.location.href = mvpUrl;
+    }
+  };
+
+  const handleDeveloperAccess = () => {
+    // Solo in sviluppo - accesso diretto al localhost per sviluppatori
+    if (isDevelopment) {
+      console.log('🛠️ Accesso sviluppatore - Dashboard locale');
+      window.open('http://localhost:8080/app', '_blank');
+    }
   };
 
   const submitWaitingList = (event: React.FormEvent<HTMLFormElement>) => {
@@ -41,7 +124,13 @@ const Landing = () => {
       lineHeight: '1.6',
       margin: 0,
       padding: 0
-    }}>
+    }} className={devMode ? 'landing-page dev-mode' : 'landing-page'}>
+      {devMode && (
+        <div className="dev-mode-banner">
+          🛠️ MODALITÀ SVILUPPO - Testing & Build
+        </div>
+      )}
+      <DevTools />
       {/* Hero Section */}
       {!showDetailed && (
         <section id="hero-section" style={{
@@ -408,7 +497,7 @@ const Landing = () => {
                 flexWrap: 'wrap'
               }}>
                 <QRCodeComponent 
-                  url="https://performanceprime.it" 
+                  url={config.MVP_URL} 
                   size={200}
                 />
                 <div style={{ textAlign: 'center' }}>
@@ -426,15 +515,83 @@ const Landing = () => {
                       marginBottom: '1rem'
                     }}
                   >
-                    Scansiona e inizia ora
+                    {devMode ? '🛠️ Vai alla Dashboard' : '🚀 Scansiona e inizia ora'}
                   </button>
-                  <p style={{ color: '#ccc', fontStyle: 'italic', maxWidth: '300px' }}>
-                    Scarica la beta gratuita: il tuo feedback ci aiuterà a costruire la versione definitiva.
-                  </p>
+                                                <p style={{ color: '#ccc', fontStyle: 'italic', maxWidth: '300px' }}>
+                                Scarica la beta gratuita: il tuo feedback ci aiuterà a costruire la versione definitiva.
+                              </p>
+                              <p style={{ color: '#ff6b6b', fontSize: '0.8rem', marginTop: '0.5rem' }}>
+                                ⚠️ MVP in sviluppo locale - Deploy su Lovable in corso
+                              </p>
+                  <a 
+                    href={devMode ? '/dev/dashboard' : (window.location.hostname === 'performanceprime.it' 
+                      ? 'https://performance-prime-pulse.lovable.app/auth' 
+                      : config.MVP_URL)}
+                    target={devMode ? '_self' : '_blank'}
+                    rel="noopener noreferrer"
+                    style={{
+                      color: '#EEBA2B',
+                      textDecoration: 'none',
+                      fontSize: '0.9rem',
+                      marginTop: '0.5rem',
+                      display: 'block'
+                    }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
+                  >
+                    {devMode ? 'Accesso diretto Dashboard →' : 'Oppure clicca qui per accedere direttamente →'}
+                  </a>
+                  
+                  {/* Bottone alternativo per utenti esistenti */}
+                  {!devMode && (
+                    <a 
+                      href={window.location.hostname === 'performanceprime.it'
+                        ? 'https://performance-prime-pulse.lovable.app/auth'
+                        : config.MVP_URL}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{
+                        color: '#28a745',
+                        textDecoration: 'none',
+                        fontSize: '0.8rem',
+                        marginTop: '0.3rem',
+                        display: 'block',
+                        opacity: 0.8
+                      }}
+                      onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
+                      onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
+                    >
+                      🆕 Nuovo utente? Registrati qui →
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
           </section>
+
+          {/* Bottone nascosto per sviluppatori (solo in locale) */}
+          {isDevelopment && (
+            <button 
+              onClick={handleDeveloperAccess} 
+              style={{
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                background: '#28a745',
+                color: 'white',
+                border: 'none',
+                padding: '10px 15px',
+                borderRadius: '5px',
+                zIndex: 9999,
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+              }}
+            >
+              🛠️ Dev Dashboard
+            </button>
+          )}
 
           {/* Footer */}
           <footer style={{

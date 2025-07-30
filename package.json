@@ -5,10 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build": "tsc && vite build",
+    "build:public": "REACT_APP_DEPLOY_TARGET=lovable npm run build",
+    "build:dev": "REACT_APP_DEPLOY_TARGET=development npm run build",
+    "deploy:lovable": "npm run build:public && echo 'Deploy to Lovable ready'",
+    "start:public": "REACT_APP_DEPLOY_TARGET=lovable npm run dev",
+    "start:dev": "npm run dev",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.0",
