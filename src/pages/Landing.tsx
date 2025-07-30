@@ -430,22 +430,38 @@ const Landing = () => {
                   size={200}
                 />
                 <div style={{ textAlign: 'center' }}>
-                  <button 
-                    onClick={goToApp}
-                    style={{
-                      background: '#EEBA2B',
-                      color: '#000',
-                      padding: '1rem 2rem',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '1.2rem',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      marginBottom: '1rem'
-                    }}
-                  >
-                    Scansiona e inizia ora
-                  </button>
+                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                    <button 
+                      onClick={goToApp}
+                      style={{
+                        background: '#EEBA2B',
+                        color: '#000',
+                        padding: '1rem 2rem',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Scansiona e inizia ora
+                    </button>
+                    <button 
+                      onClick={goToApp}
+                      style={{
+                        background: 'transparent',
+                        color: '#EEBA2B',
+                        padding: '1rem 2rem',
+                        border: '2px solid #EEBA2B',
+                        borderRadius: '8px',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Accedi
+                    </button>
+                  </div>
                   <p style={{ color: '#ccc', fontStyle: 'italic', maxWidth: '300px' }}>
                     Scarica la beta gratuita: il tuo feedback ci aiuterà a costruire la versione definitiva.
                   </p>
