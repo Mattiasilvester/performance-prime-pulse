@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { validateInput, sanitizeText, authRateLimiter } from '@/lib/security';
+import { toast } from 'sonner';
 
 interface ObjectiveModalProps {
   isOpen: boolean;
@@ -14,21 +16,63 @@ export const ObjectiveModal = ({ isOpen, onClose, onObjectiveCreated }: Objectiv
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    // Validate title
+    if (!title.trim()) {
+      newErrors.title = 'Il titolo è obbligatorio';
+    } else if (!validateInput.textLength(title, 100)) {
+      newErrors.title = 'Il titolo non può superare i 100 caratteri';
+    } else if (!validateInput.noScriptTags(title)) {
+      newErrors.title = 'Il titolo contiene contenuto non valido';
+    }
+
+    // Validate description
+    if (!description.trim()) {
+      newErrors.description = 'La descrizione è obbligatoria';
+    } else if (!validateInput.textLength(description, 500)) {
+      newErrors.description = 'La descrizione non può superare i 500 caratteri';
+    } else if (!validateInput.noScriptTags(description)) {
+      newErrors.description = 'La descrizione contiene contenuto non valido';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSave = async () => {
-    if (!title.trim() || !description.trim()) return;
+    if (!validateForm()) {
+      toast.error('Correggi gli errori nel modulo prima di continuare');
+      return;
+    }
+
+    // Rate limiting check
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error('Devi essere autenticato per creare un obiettivo');
+      return;
+    }
+
+    if (!authRateLimiter.isAllowed(user.id)) {
+      toast.error('Troppi tentativi. Riprova tra qualche minuto.');
+      return;
+    }
     
     setIsLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      // Sanitize inputs before saving
+      const sanitizedTitle = sanitizeText(title.trim());
+      const sanitizedDescription = sanitizeText(description.trim());
 
       const { error } = await supabase
         .from('user_objectives')
         .insert({
           user_id: user.id,
-          title: title.trim(),
-          description: description.trim(),
+          title: sanitizedTitle,
+          description: sanitizedDescription,
           completed: false,
           progress: 0
         });
@@ -37,14 +81,25 @@ export const ObjectiveModal = ({ isOpen, onClose, onObjectiveCreated }: Objectiv
 
       setTitle('');
       setDescription('');
+      setErrors({});
       onClose();
       if (onObjectiveCreated) {
         onObjectiveCreated();
       }
+      toast.success('Obiettivo creato con successo!');
     } catch (error) {
       console.error('Error saving objective:', error);
+      toast.error('Errore durante il salvataggio dell\'obiettivo');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string, setter: (value: string) => void) => {
+    setter(value);
+    // Clear errors when user starts typing
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: '' });
     }
   };
 
@@ -74,11 +129,12 @@ export const ObjectiveModal = ({ isOpen, onClose, onObjectiveCreated }: Objectiv
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-3 bg-black border border-white/20 rounded-lg text-white"
+              onChange={(e) => handleInputChange('title', e.target.value, setTitle)}
+              className={`w-full p-3 bg-black border rounded-lg text-white ${errors.title ? 'border-red-500' : 'border-white/20'}`}
               placeholder="Es. Correre 10km"
-              maxLength={50}
+              maxLength={100}
             />
+            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
           </div>
 
           <div>
@@ -87,11 +143,12 @@ export const ObjectiveModal = ({ isOpen, onClose, onObjectiveCreated }: Objectiv
             </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3 bg-black border border-white/20 rounded-lg text-white min-h-[100px] resize-none"
+              onChange={(e) => handleInputChange('description', e.target.value, setDescription)}
+              className={`w-full p-3 bg-black border rounded-lg text-white min-h-[100px] resize-none ${errors.description ? 'border-red-500' : 'border-white/20'}`}
               placeholder="Descrivi in cosa consiste la sfida per completare questo obiettivo..."
-              maxLength={200}
+              maxLength={500}
             />
+            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
           </div>
         </div>
 
@@ -105,7 +162,7 @@ export const ObjectiveModal = ({ isOpen, onClose, onObjectiveCreated }: Objectiv
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!title.trim() || !description.trim() || isLoading}
+            disabled={!title.trim() || !description.trim() || isLoading || Object.keys(errors).length > 0}
             className="flex-1 bg-[#EEBA2B] hover:bg-[#EEBA2B]/80 text-black font-medium"
           >
             {isLoading ? 'Salvando...' : 'Salva'}

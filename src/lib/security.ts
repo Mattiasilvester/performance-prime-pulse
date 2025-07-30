@@ -109,9 +109,30 @@ export class RateLimiter {
 export const authRateLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 minutes
 export const passwordResetRateLimiter = new RateLimiter(3, 60 * 60 * 1000); // 3 attempts per hour
 
+// Enhanced rate limiter for form submissions
+export const formSubmissionRateLimiter = new RateLimiter(10, 60 * 1000); // 10 submissions per minute
+
+// Security logging utility
+export const securityLogger = {
+  logSuspiciousActivity: (activity: string, userId?: string, details?: any) => {
+    console.warn(`[SECURITY] ${activity}`, {
+      userId,
+      timestamp: new Date().toISOString(),
+      details
+    });
+  },
+  
+  logValidationError: (field: string, error: string, userId?: string) => {
+    console.warn(`[VALIDATION] ${field}: ${error}`, {
+      userId,
+      timestamp: new Date().toISOString()
+    });
+  }
+};
+
 // Secure headers utility (for use in vite.config.ts)
 export const securityHeaders = {
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://kfxoyucatvvcgmqalxsg.supabase.co wss://kfxoyucatvvcgmqalxsg.supabase.co;",
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://kfxoyucatvvcgmqalxsg.supabase.co wss://kfxoyucatvvcgmqalxsg.supabase.co;",
   'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',

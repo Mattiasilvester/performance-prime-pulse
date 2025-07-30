@@ -2,16 +2,9 @@
 import { Award, Target, Calendar, Zap, Heart, Dumbbell, Lock } from 'lucide-react';
 
 export const AchievementsBoard = () => {
+  console.log('AchievementsBoard rendering - NO OVERLAY');
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-gray-600 p-6 relative achievement-board">
-      {/* Overlay per indicare che è disabilitato */}
-      <div className="lock-overlay">
-        <Lock className="h-12 w-12 text-white mx-auto mb-4" />
-        <h3>Funzionalità in arrivo</h3>
-        <p>Le medaglie e gli obiettivi saranno disponibili presto!</p>
-      </div>
-
-      {/* Contenuto offuscato */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-[#EEBA2B]">Albo delle Medaglie</h3>
