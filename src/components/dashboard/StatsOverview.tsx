@@ -29,42 +29,20 @@ export const StatsOverview = () => {
         // Carica obiettivi
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          try {
-            const { data: objectives, error: objectivesError } = await supabase
-              .from('user_objectives')
-              .select('completed')
-              .eq('user_id', user.id);
-            
-            if (objectivesError) {
-              console.warn('Tabella user_objectives non disponibile:', objectivesError);
-              // Fallback: usa valori di default
-              setStats({
-                totalWorkouts: workoutStats.total_workouts,
-                totalHours: workoutStats.total_hours,
-                totalObjectives: 0,
-                completedObjectives: 0
-              });
-            } else {
-              const totalObjectives = objectives?.length || 0;
-              const completedObjectives = objectives?.filter(obj => obj.completed).length || 0;
-              
-              setStats({
-                totalWorkouts: workoutStats.total_workouts,
-                totalHours: workoutStats.total_hours,
-                totalObjectives,
-                completedObjectives
-              });
-            }
-          } catch (error) {
-            console.error('Error loading objectives:', error);
-            // Fallback: usa valori di default
-            setStats({
-              totalWorkouts: workoutStats.total_workouts,
-              totalHours: workoutStats.total_hours,
-              totalObjectives: 0,
-              completedObjectives: 0
-            });
-          }
+          const { data: objectives } = await supabase
+            .from('user_objectives')
+            .select('completed')
+            .eq('user_id', user.id);
+          
+          const totalObjectives = objectives?.length || 0;
+          const completedObjectives = objectives?.filter(obj => obj.completed).length || 0;
+          
+          setStats({
+            totalWorkouts: workoutStats.total_workouts,
+            totalHours: workoutStats.total_hours,
+            totalObjectives,
+            completedObjectives
+          });
         }
       } catch (error) {
         console.error('Error loading stats:', error);
