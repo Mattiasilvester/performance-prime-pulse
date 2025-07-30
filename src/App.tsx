@@ -2,13 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import Landing from "./pages/Landing";
+import { MVPHomePage } from "./components/MVPHomePage";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
-import MVPPage from "./pages/MVPPage";
 import Workouts from "./pages/Workouts";
 import Schedule from "./pages/Schedule";
 import AICoach from "./pages/AICoach";
@@ -32,8 +31,11 @@ const queryClient = new QueryClient();
 const AppContent = () => (
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/mvp" element={<MVPPage />} />
+      {/* MVP Homepage - Redirect intelligente */}
+      <Route path="/" element={<MVPHomePage />} />
+      {/* Redirect legacy routes */}
+      <Route path="/login" element={<Navigate to="/auth" replace />} />
+      <Route path="/register" element={<Navigate to="/auth" replace />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/app" element={
@@ -127,7 +129,8 @@ const AppContent = () => (
           <Help />
         </ProtectedRoute>
       } />
-      <Route path="*" element={<NotFound />} />
+      {/* Fallback - Qualsiasi route non trovata torna alla homepage */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </BrowserRouter>
 );
