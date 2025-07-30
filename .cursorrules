@@ -3,19 +3,11 @@
 ## Contesto del Progetto
 Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il benessere. Include funzionalità di AI coach, tracking dei workout, pianificazione e integrazione con Supabase. 
 
-**Stato Attuale (29 Luglio 2025 - 20:00)**: 
+**Stato Attuale (29 Luglio 2025)**: 
 - Landing page completata con QR code funzionante
 - MVP integrato con link https://performanceprime.it
 - Server di sviluppo stabile su porta 8080
 - Copywriting ottimizzato per conversione
-- **NUOVO**: Azioni Rapide implementate nella dashboard
-- **NUOVO**: Footer responsive e ottimizzato
-- **NUOVO**: Privacy Policy completa integrata
-- **NUOVO**: Sistema autenticazione robusto con null safety
-- **NUOVO**: Errori 406 Supabase risolti
-- **NUOVO**: Recharts warnings risolti
-- **NUOVO**: Overlay "Funzionalità in arrivo" rimosso
-- **NUOVO**: Environment variables configurate
 
 ## Tecnologie Principali
 - React 18+ con TypeScript
@@ -32,9 +24,6 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - Segui la convenzione camelCase per variabili e funzioni
 - Usa PascalCase per componenti React
 - Mantieni i componenti piccoli e focalizzati
-- **NUOVO**: Implementa sempre null safety per autenticazione
-- **NUOVO**: Usa environment variables per configurazione
-- **NUOVO**: Gestisci errori robustamente per API calls
 
 ## Struttura del Progetto
 - `/src/components/` - Componenti riutilizzabili
@@ -43,33 +32,24 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - `/src/services/` - Servizi e API calls
 - `/src/lib/` - Utility e configurazioni
 - `/src/i18n/` - File di traduzione
-- **NUOVO**: `/public/` - File statici (privacy-policy.html, terms-of-service.html)
 
 ## Styling
 - Usa Tailwind CSS per lo styling
 - Preferisci componenti Shadcn/ui quando disponibili
 - Mantieni la coerenza con il design system esistente
 - Usa variabili CSS per colori e spacing
-- **NUOVO**: Implementa responsive design con breakpoint 700px
-- **NUOVO**: Usa gap ottimizzati: 1.5rem desktop, 1.2rem mobile
-- **NUOVO**: Hover effects con transizioni 0.3s
 
 ## Database e API
 - Usa Supabase per tutte le operazioni di database
 - Implementa proper error handling per le API calls
 - Usa TypeScript types per i dati del database
 - Segui le convenzioni di naming di Supabase
-- **NUOVO**: Gestisci tabelle inesistenti con fallback values
-- **NUOVO**: Evita query a `user_workout_stats` (non esistente)
-- **NUOVO**: Usa solo `custom_workouts` per statistiche
 
 ## Mobile (Capacitor)
 - Considera sempre la compatibilità mobile
 - Usa responsive design
 - Testa su dispositivi reali quando possibile
 - Gestisci correttamente le API native di Capacitor
-- **NUOVO**: Footer responsive: colonna mobile, riga desktop
-- **NUOVO**: Link legali: 2.5rem gap desktop, 0.7rem mobile
 
 ## AI e Machine Learning
 - Implementa funzionalità AI in modo sicuro
@@ -82,41 +62,24 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - Usa lazy loading per i componenti pesanti
 - Implementa caching appropriato
 - Monitora le performance su dispositivi mobili
-- **NUOVO**: Evita Recharts warnings usando custom progress bars
-- **NUOVO**: Load time target: <2s
 
 ## Sicurezza
 - Valida sempre gli input dell'utente
 - Usa HTTPS per tutte le comunicazioni
 - Implementa proper authentication
 - Proteggi i dati sensibili
-- **NUOVO**: Privacy policy compliance GDPR
-- **NUOVO**: Environment variables per API keys
 
 ## Testing
 - Scrivi test per le funzionalità critiche
 - Usa React Testing Library per i test dei componenti
 - Testa le integrazioni con Supabase
 - Verifica la compatibilità mobile
-- **NUOVO**: Testa autenticazione con null safety
-- **NUOVO**: Verifica privacy policy compliance
 
 ## Documentazione
 - Commenta il codice complesso
 - Mantieni README aggiornato
 - Documenta le API custom
 - Fornisci esempi di utilizzo
-- **NUOVO**: Aggiorna TECHNICAL_UPDATE_29JULY2025.md
-- **NUOVO**: Mantieni work.md aggiornato
-
-## Problemi Risolti Recentemente
-- ✅ Overlay "Funzionalità in arrivo" rimosso
-- ✅ Errori 406 Supabase risolti
-- ✅ TypeError authentication risolto
-- ✅ Redirect production risolto
-- ✅ Recharts warnings risolti
-- ✅ Footer responsive implementato
-- ✅ Privacy policy integration completa
 
 ## Quando Suggerisci Modifiche
 - Mantieni la coerenza con il codice esistente
@@ -125,10 +88,4 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - Assicurati che le modifiche seguano le convenzioni del progetto
 - Testa sempre il server di sviluppo (porta 8080)
 - Verifica che il QR code funzioni correttamente
-- Mantieni aggiornata la documentazione
-- **NUOVO**: Implementa null safety per autenticazione
-- **NUOVO**: Usa environment variables per configurazione
-- **NUOVO**: Gestisci errori robustamente per API calls
-- **NUOVO**: Testa responsive design su mobile
-- **NUOVO**: Verifica privacy policy compliance
-- **NUOVO**: Aggiorna footer su entrambe le landing (statica e React) 
+- Mantieni aggiornata la documentazione 
