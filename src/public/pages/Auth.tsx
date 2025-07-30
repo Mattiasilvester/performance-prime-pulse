@@ -6,10 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { sanitizeText, validateInput, authRateLimiter, passwordResetRateLimiter, generateCSRFToken, validateCSRFToken } from '@/lib/security';
-import { config } from '@/lib/config';
-import { RateLimiter } from '@/lib/security';
+import { supabase } from '@/shared/integrations/supabase/client';
+import { sanitizeText, validateInput, authRateLimiter, passwordResetRateLimiter, generateCSRFToken, validateCSRFToken } from '@/shared/lib/security';
 
 const Auth = () => {
   const [loginEmail, setLoginEmail] = useState('');
@@ -152,7 +150,7 @@ const Auth = () => {
         email: sanitizedEmail,
         password: registerData.password,
         options: {
-          emailRedirectTo: config.getSupabaseRedirectUrl(),
+          emailRedirectTo: `${window.location.origin}/app`,
           data: {
             first_name: sanitizedFirstName,
             last_name: sanitizedLastName,
@@ -235,7 +233,7 @@ const Auth = () => {
       const sanitizedEmail = sanitizeText(loginEmail.trim().toLowerCase());
 
       const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
-        redirectTo: config.getResetPasswordUrl(),
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {

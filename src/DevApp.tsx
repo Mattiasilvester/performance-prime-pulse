@@ -58,7 +58,7 @@ function DevApp() {
             path="/dev/dashboard" 
             element={
               <AppLayout>
-                <Dashboard user={mockUser} devMode={true} />
+                <Dashboard />
               </AppLayout>
             } 
           />
@@ -66,7 +66,7 @@ function DevApp() {
             path="/dev/profile" 
             element={
               <AppLayout>
-                <Profile user={mockUser} devMode={true} />
+                <Profile />
               </AppLayout>
             } 
           />
@@ -74,7 +74,7 @@ function DevApp() {
             path="/dev/workouts" 
             element={
               <AppLayout>
-                <Workouts user={mockUser} devMode={true} />
+                <Workouts />
               </AppLayout>
             } 
           />
@@ -82,7 +82,7 @@ function DevApp() {
             path="/dev/schedule" 
             element={
               <AppLayout>
-                <Schedule user={mockUser} devMode={true} />
+                <Schedule />
               </AppLayout>
             } 
           />
@@ -90,7 +90,7 @@ function DevApp() {
             path="/dev/ai-coach" 
             element={
               <AppLayout>
-                <AICoach user={mockUser} devMode={true} />
+                <AICoach />
               </AppLayout>
             } 
           />
@@ -98,7 +98,7 @@ function DevApp() {
             path="/dev/timer" 
             element={
               <AppLayout>
-                <Timer user={mockUser} devMode={true} />
+                <Timer />
               </AppLayout>
             } 
           />
@@ -106,7 +106,7 @@ function DevApp() {
             path="/dev/notes" 
             element={
               <AppLayout>
-                <Notes user={mockUser} devMode={true} />
+                <Notes />
               </AppLayout>
             } 
           />
@@ -114,7 +114,7 @@ function DevApp() {
             path="/dev/subscriptions" 
             element={
               <AppLayout>
-                <Subscriptions user={mockUser} devMode={true} />
+                <Subscriptions />
               </AppLayout>
             } 
           />
