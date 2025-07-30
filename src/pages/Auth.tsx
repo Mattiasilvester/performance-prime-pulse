@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,11 +26,19 @@ const Auth = () => {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [csrfToken, setCsrfToken] = useState('');
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     setCsrfToken(generateCSRFToken());
   }, []);
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(config.getDashboardUrl());
+    }
+  }, [user, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
