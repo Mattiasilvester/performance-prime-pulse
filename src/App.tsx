@@ -7,26 +7,26 @@ import { TooltipProvider } from '@/shared/ui/tooltip';
 import { AuthProvider } from '@/shared/hooks/useAuth';
 
 // Componenti pubblici
-import Landing from './pages/Landing';
-import Auth from './pages/Auth';
-import ResetPassword from './pages/ResetPassword';
-import Dashboard from './pages/Dashboard';
-import Workouts from './pages/Workouts';
-import Schedule from './pages/Schedule';
-import Profile from './pages/Profile';
-import Notes from './pages/Notes';
-import Timer from './pages/Timer';
-import Subscriptions from './pages/Subscriptions';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import NotFound from './pages/NotFound';
-import PersonalInfo from './pages/settings/PersonalInfo';
-import Security from './pages/settings/Security';
-import Notifications from './pages/settings/Notifications';
-import Language from './pages/settings/Language';
-import Privacy from './pages/settings/Privacy';
-import Help from './pages/settings/Help';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { AppLayout } from './components/layout/AppLayout';
+import Landing from './public/pages/Landing';
+import Auth from './public/pages/Auth';
+import ResetPassword from './public/pages/ResetPassword';
+import Dashboard from './public/pages/Dashboard';
+import Workouts from './public/pages/Workouts';
+import Schedule from './public/pages/Schedule';
+import Profile from './public/pages/Profile';
+import Notes from './public/pages/Notes';
+import Timer from './public/pages/Timer';
+import Subscriptions from './public/pages/Subscriptions';
+import PrivacyPolicy from './public/pages/PrivacyPolicy';
+import NotFound from './public/pages/NotFound';
+import PersonalInfo from './public/pages/settings/PersonalInfo';
+import Security from './public/pages/settings/Security';
+import Notifications from './public/pages/settings/Notifications';
+import Language from './public/pages/settings/Language';
+import Privacy from './public/pages/settings/Privacy';
+import Help from './public/pages/settings/Help';
+import { ProtectedRoute } from './public/components/auth/ProtectedRoute';
+import { AppLayout } from './public/components/layout/AppLayout';
 import { supabase } from '@/shared/integrations/supabase/client';
 
 // Componente Homepage intelligente per utenti pubblici
