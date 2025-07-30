@@ -20,7 +20,7 @@ import Security from "./pages/settings/Security";
 import Notifications from "./pages/settings/Notifications";
 import Language from "./pages/settings/Language";
 import Privacy from "./pages/settings/Privacy";
-import PrivacyPolicy from "./pages/settings/PrivacyPolicy";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Help from "./pages/settings/Help";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
@@ -34,6 +34,8 @@ const AppContent = () => (
       <Route path="/" element={<Landing />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<PrivacyPolicy />} />
       <Route path="/app" element={
         <ProtectedRoute>
           <AppLayout>

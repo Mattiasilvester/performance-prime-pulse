@@ -143,7 +143,7 @@ const Landing = () => {
                     Mattia Silvestrelli
                   </h3>
                   <p style={{ color: '#ccc', fontSize: '1.1rem' }}>
-                    Velocista della Nazionale Italiana, imprenditore, atleta e trainer.
+                    Velocista della Nazionale Italiana, neo imprenditore, atleta e trainer.
                   </p>
                 </div>
                 
@@ -438,33 +438,209 @@ const Landing = () => {
 
           {/* Footer */}
           <footer style={{
-            padding: '3rem 0',
+            padding: '3rem 0 2rem 0',
             background: '#1a1a1a',
             textAlign: 'center',
             borderTop: '1px solid #333'
           }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem' }}>
-              <p style={{ fontSize: '1.3rem', color: '#EEBA2B', marginBottom: '1rem' }}>
-                📧 performanceprime0@gmail.com
-              </p>
-              <p style={{ color: '#ccc', marginBottom: '2rem' }}>
-                Hai domande? Scrivici, ti risponderemo noi direttamente.
-              </p>
-              <button 
-                onClick={backToHero}
-                style={{
-                  background: 'transparent',
-                  color: '#EEBA2B',
-                  border: '2px solid #EEBA2B',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '1rem'
-                }}
-              >
-                ← Torna all'inizio
-              </button>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1.5rem',
+              maxWidth: '900px',
+              margin: '0 auto'
+            }}>
+              {/* Blocco Contatti */}
+              <div style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <p style={{ 
+                  fontSize: '1.3rem', 
+                  color: '#EEBA2B', 
+                  marginBottom: '0.5rem' 
+                }}>
+                  📧 <span>performanceprime0@gmail.com</span>
+                </p>
+                <p style={{ 
+                  color: '#ccc', 
+                  marginBottom: '0.5rem', 
+                  fontSize: '1.1rem' 
+                }}>
+                  Hai domande? Scrivici, ti risponderemo noi direttamente.
+                </p>
+                <p style={{ 
+                  fontSize: '1rem', 
+                  color: '#888', 
+                  marginBottom: '0.5rem' 
+                }}>
+                  P.I. 17774791002
+                </p>
+              </div>
+
+              {/* Blocco Link Legali */}
+              <div style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem',
+                margin: '1.2rem 0 0.5rem 0'
+              }}>
+                <nav style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '2.5rem',
+                  flexWrap: 'wrap',
+                  margin: '0.5rem 0'
+                }}>
+                  <a 
+                    href="/privacy-policy.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{
+                      color: '#ccc',
+                      textDecoration: 'none',
+                      fontSize: '1.05rem',
+                      fontWeight: '500',
+                      transition: 'color 0.3s',
+                      padding: '5px 10px'
+                    }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#EEBA2B'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.color = '#ccc'}
+                  >
+                    Privacy Policy
+                  </a>
+                  <span style={{ 
+                    color: '#888', 
+                    fontWeight: '300', 
+                    fontSize: '1.2rem' 
+                  }}>|</span>
+                  <a 
+                    href="/terms-of-service.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{
+                      color: '#ccc',
+                      textDecoration: 'none',
+                      fontSize: '1.05rem',
+                      fontWeight: '500',
+                      transition: 'color 0.3s',
+                      padding: '5px 10px'
+                    }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#EEBA2B'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.color = '#ccc'}
+                  >
+                    Termini di Servizio
+                  </a>
+                  <span style={{ 
+                    color: '#888', 
+                    fontWeight: '300', 
+                    fontSize: '1.2rem' 
+                  }}>|</span>
+                  <a 
+                    href="mailto:primeassistenza@gmail.com"
+                    style={{
+                      color: '#ccc',
+                      textDecoration: 'none',
+                      fontSize: '1.05rem',
+                      fontWeight: '500',
+                      transition: 'color 0.3s',
+                      padding: '5px 10px'
+                    }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.color = '#EEBA2B'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.color = '#ccc'}
+                  >
+                    Contatti
+                  </a>
+                </nav>
+              </div>
+
+              {/* Blocco Copyright */}
+              <div style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginTop: '0.5rem'
+              }}>
+                <p style={{ 
+                  textAlign: 'center',
+                  color: '#888',
+                  fontSize: '0.95rem',
+                  margin: '2px 0'
+                }}>
+                  &copy; 2025 Performance Prime - Tutti i diritti riservati
+                </p>
+                <p style={{ 
+                  textAlign: 'center',
+                  color: '#888',
+                  fontSize: '0.95rem',
+                  margin: '2px 0'
+                }}>
+                  MASRL - via Fiume Giallo 405, Roma, Italia
+                </p>
+              </div>
+
+              {/* Blocco Bottone */}
+              <div style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <button 
+                  onClick={backToHero}
+                  style={{
+                    background: 'transparent',
+                    color: '#EEBA2B',
+                    border: '2px solid #EEBA2B',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    marginTop: '1.2rem',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#EEBA2B';
+                    e.currentTarget.style.color = '#000';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = '#EEBA2B';
+                  }}
+                >
+                  ← Torna all'inizio
+                </button>
+              </div>
             </div>
+
+            {/* Responsive CSS */}
+            <style>{`
+              @media (max-width: 700px) {
+                .footer-flex {
+                  gap: 1.2rem;
+                }
+                .legal-links {
+                  flex-direction: column;
+                  gap: 0.7rem;
+                }
+                .separator {
+                  display: none;
+                }
+                .footer-block {
+                  gap: 0.3rem;
+                }
+              }
+            `}</style>
           </footer>
         </div>
       )}

@@ -488,23 +488,78 @@
 
         /* Footer */
         .footer {
-            padding: 3rem 0;
+            padding: 3rem 0 2rem 0;
             background: #1a1a1a;
             text-align: center;
             border-top: 1px solid #333;
         }
-
+        .footer-flex {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .footer-block {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
         .contact-info {
             font-size: 1.3rem;
             color: #EEBA2B;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
-
         .footer-text {
             color: #ccc;
-            margin-bottom: 2rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
         }
-
+        .piva-info {
+            font-size: 1rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+        .legal-block {
+            margin: 1.2rem 0 0.5rem 0;
+        }
+        .legal-links {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            margin: 0.5rem 0 0.5rem 0;
+        }
+        .legal-link {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 1.05rem;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 5px 10px;
+        }
+        .legal-link:hover {
+            color: #EEBA2B;
+            text-decoration: underline;
+        }
+        .separator {
+            color: #888;
+            font-weight: 300;
+            font-size: 1.2rem;
+        }
+        .copyright-block {
+            margin-top: 0.5rem;
+        }
+        .copyright {
+            text-align: center;
+            color: #888;
+            font-size: 0.95rem;
+            margin: 2px 0;
+        }
         .back-button {
             background: transparent;
             color: #EEBA2B;
@@ -513,34 +568,26 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 1rem;
-            transition: all 0.3s ease;
+            margin-top: 1.2rem;
+            transition: all 0.3s;
         }
-
         .back-button:hover {
             background: #EEBA2B;
             color: #000;
         }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .founders-grid {
-                grid-template-columns: 1fr;
+        @media (max-width: 700px) {
+            .footer-flex {
+                gap: 1.2rem;
             }
-            
-            .features-grid-detailed {
-                grid-template-columns: 1fr;
-            }
-            
-            .screenshots-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .qr-section {
+            .legal-links {
                 flex-direction: column;
+                gap: 0.7rem;
             }
-            
-            .form-footer {
-                flex-direction: column;
+            .separator {
+                display: none;
+            }
+            .footer-block {
+                gap: 0.3rem;
             }
         }
     </style>
@@ -567,7 +614,7 @@
                     <div class="founder-card">
                         <img src="/lovable-uploads/52bb3c82-1dba-4fc5-8b49-8d68a33b60da.png" alt="Mattia Silvestrelli" class="founder-photo">
                         <h3>Mattia Silvestrelli</h3>
-                        <p>Velocista della Nazionale Italiana, imprenditore, atleta e trainer.</p>
+                        <p>Velocista della Nazionale Italiana, neo imprenditore, atleta e trainer.</p>
                     </div>
                     <div class="founder-card">
                         <img src="/lovable-uploads/7650d1e1-ca82-4075-b952-116b0bbb5cab.png" alt="Nicholas Capponi" class="founder-photo">
@@ -722,10 +769,28 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <div class="container">
-                <p class="contact-info">📧 performanceprime0@gmail.com</p>
-                <p class="footer-text">Hai domande? Scrivici, ti risponderemo noi direttamente.</p>
-                <button class="back-button" onclick="backToHero()">← Torna all'inizio</button>
+            <div class="container footer-flex">
+                <div class="footer-block">
+                    <p class="contact-info">📧 <span>performanceprime0@gmail.com</span></p>
+                    <p class="footer-text">Hai domande? Scrivici, ti risponderemo noi direttamente.</p>
+                    <p class="piva-info">P.I. 17774791002</p>
+                </div>
+                <div class="footer-block legal-block">
+                    <nav class="legal-links">
+                        <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer" class="legal-link">Privacy Policy</a>
+                        <span class="separator">|</span>
+                        <a href="/terms-of-service.html" target="_blank" rel="noopener noreferrer" class="legal-link">Termini di Servizio</a>
+                        <span class="separator">|</span>
+                        <a href="mailto:primeassistenza@gmail.com" class="legal-link">Contatti</a>
+                    </nav>
+                </div>
+                <div class="footer-block copyright-block">
+                    <p class="copyright">&copy; 2025 Performance Prime - Tutti i diritti riservati</p>
+                    <p class="copyright">MASRL - via Fiume Giallo 405, Roma, Italia</p>
+                </div>
+                <div class="footer-block">
+                    <button class="back-button" onclick="backToHero()">← Torna all'inizio</button>
+                </div>
             </div>
         </footer>
     </section>

@@ -109,8 +109,8 @@ body {
   }
 }
 
-/* Overlay di blocco per le funzionalità - Layout uniforme e corretto */
-.lock-overlay {
+/* Overlay di blocco per le funzionalità - DISABILITATO PER AZIONI RAPIDE */
+/* .lock-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -129,9 +129,38 @@ body {
   text-align: center;
   padding: 2rem;
   pointer-events: all;
+} */
+
+/* REGOLA SPECIFICA PER RIMUOVERE OVERLAY DALLE AZIONI RAPIDE */
+.azioniRapideContainer .lock-overlay {
+  display: none !important;
 }
 
-.lock-overlay .lock-icon {
+.azioniRapideContainer * {
+  pointer-events: auto !important;
+}
+
+/* Nascondi qualsiasi overlay di blocco nelle azioni rapide */
+.azioniRapideContainer .lock-overlay,
+.azioniRapideContainer .locked-container {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* REGOLE GLOBALI PER RIMUOVERE OVERLAY DI BLOCCO */
+.lock-overlay {
+  display: none !important;
+}
+
+.locked-container {
+  position: relative !important;
+}
+
+.locked-container * {
+  pointer-events: auto !important;
+}
+
+/* .lock-overlay .lock-icon {
   width: 4rem;
   height: 4rem;
   margin-bottom: 1.5rem;
@@ -149,10 +178,10 @@ body {
   font-size: 1rem;
   opacity: 0.8;
   color: rgba(255, 255, 255, 0.8);
-}
+} */
 
-/* Contenitore con overlay bloccato */
-.locked-container {
+/* Contenitore con overlay bloccato - DISABILITATO PER AZIONI RAPIDE */
+/* .locked-container {
   position: relative;
 }
 
@@ -162,10 +191,10 @@ body {
 
 .locked-container .lock-overlay {
   pointer-events: all;
-}
+} */
 
 /* Per AI Coach - overlay selettivo solo su elementi specifici */
-.ai-coach-locked .lock-overlay {
+/* .ai-coach-locked .lock-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -184,7 +213,7 @@ body {
   text-align: center;
   padding: 2rem;
   pointer-events: all;
-}
+} */
 
 /* Calendario panel styling */
 .calendar-panel {
@@ -290,4 +319,39 @@ body {
 }
 body, #root, .app-container {
   padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
+}
+
+/* CSS Updated: 29 Luglio 2025 - 15:30 - Azioni Rapide Implementation */
+
+/* RIMOZIONE COMPLETA DI TUTTI GLI OVERLAY DI BLOCCO - AGGIORNATO 29 LUGLIO 2025 */
+.lock-overlay,
+.locked-container,
+.azioniRapideContainer .lock-overlay,
+.azioniRapideContainer .locked-container,
+.achievement-board .lock-overlay,
+.achievement-board .locked-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+  z-index: -9999 !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* FORZA TUTTI GLI ELEMENTI A ESSERE VISIBILI */
+* {
+  pointer-events: auto !important;
+}
+
+/* REGOLE SPECIFICHE PER AZIONI RAPIDE */
+.azioniRapideContainer,
+.azioniRapideContainer * {
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }

@@ -55,36 +55,44 @@ export const RecentActivity = () => {
         });
 
         // Carica obiettivi recenti
-        const { data: objectives } = await supabase
-          .from('user_objectives')
-          .select('title, completed_at')
-          .eq('user_id', user.id)
-          .eq('completed', true)
-          .order('completed_at', { ascending: false })
-          .limit(2);
+        try {
+          const { data: objectives, error: objectivesError } = await supabase
+            .from('user_objectives')
+            .select('title, completed_at')
+            .eq('user_id', user.id)
+            .eq('completed', true)
+            .order('completed_at', { ascending: false })
+            .limit(2);
 
-        objectives?.forEach(objective => {
-          if (objective.completed_at) {
-            const completedDate = new Date(objective.completed_at);
-            const now = new Date();
-            const diffHours = Math.floor((now.getTime() - completedDate.getTime()) / (1000 * 60 * 60));
-            
-            let timeAgo = '';
-            if (diffHours < 1) timeAgo = 'meno di 1 ora fa';
-            else if (diffHours < 24) timeAgo = `${diffHours} ore fa`;
-            else timeAgo = `${Math.floor(diffHours / 24)} giorni fa`;
+          if (!objectivesError && objectives) {
+            objectives.forEach(objective => {
+              if (objective.completed_at) {
+                const completedDate = new Date(objective.completed_at);
+                const now = new Date();
+                const diffHours = Math.floor((now.getTime() - completedDate.getTime()) / (1000 * 60 * 60));
+                
+                let timeAgo = '';
+                if (diffHours < 1) timeAgo = 'meno di 1 ora fa';
+                else if (diffHours < 24) timeAgo = `${diffHours} ore fa`;
+                else timeAgo = `${Math.floor(diffHours / 24)} giorni fa`;
 
-            recentActivities.push({
-              type: 'objective',
-              title: `Obiettivo "${objective.title}" raggiunto`,
-              time: '',
-              ago: timeAgo,
-              status: 'completed',
-              icon: Target,
-              color: 'text-pp-gold',
+                recentActivities.push({
+                  type: 'objective',
+                  title: `Obiettivo "${objective.title}" raggiunto`,
+                  time: '',
+                  ago: timeAgo,
+                  status: 'completed',
+                  icon: Target,
+                  color: 'text-pp-gold',
+                });
+              }
             });
+          } else {
+            console.warn('Tabella user_objectives non disponibile:', objectivesError);
           }
-        });
+        } catch (error) {
+          console.error('Error loading objectives:', error);
+        }
 
         // Ordina per data più recente
         recentActivities.sort((a, b) => {
