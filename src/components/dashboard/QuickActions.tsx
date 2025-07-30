@@ -131,12 +131,7 @@ const QuickActions = () => {
 
   return (
     <>
-      <div className="locked-container bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg">
-        <div className="lock-overlay">
-          <Lock className="lock-icon" />
-          <h3>Funzionalità in arrivo</h3>
-          <p>Le azioni rapide saranno disponibili presto!</p>
-        </div>
+      <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg">
 
         <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
