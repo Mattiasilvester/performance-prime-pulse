@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { validateInput, sanitizeText, sanitizeHtml } from '@/lib/security';
+import { toast } from 'sonner';
 
 interface CustomPlanModalProps {
   onClose: () => void;
@@ -30,10 +32,58 @@ export const CustomPlanModal: React.FC<CustomPlanModalProps> = ({ onClose, onSav
     goal: '',
     details: '',
   });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    // Validate title
+    if (planData.title && !validateInput.textLength(planData.title, 100)) {
+      newErrors.title = 'Il titolo non può superare i 100 caratteri';
+    }
+    if (planData.title && !validateInput.noScriptTags(planData.title)) {
+      newErrors.title = 'Il titolo contiene contenuto non valido';
+    }
+
+    // Validate details
+    if (planData.details && !validateInput.textLength(planData.details, 500)) {
+      newErrors.details = 'I dettagli non possono superare i 500 caratteri';
+    }
+    if (planData.details && !validateInput.noScriptTags(planData.details)) {
+      newErrors.details = 'I dettagli contengono contenuto non valido';
+    }
+
+    // Validate goal selection
+    if (!planData.goal) {
+      newErrors.goal = 'Seleziona un obiettivo';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSave = () => {
-    if (!planData.goal) return;
-    onSave(planData);
+    if (!validateForm()) {
+      toast.error('Correggi gli errori nel modulo prima di continuare');
+      return;
+    }
+
+    // Sanitize inputs before saving
+    const sanitizedData = {
+      title: sanitizeText(planData.title),
+      goal: planData.goal, // Goal is from select, already safe
+      details: sanitizeHtml(planData.details),
+    };
+
+    onSave(sanitizedData);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setPlanData({ ...planData, [field]: value });
+    // Clear errors when user starts typing
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: '' });
+    }
   };
 
   return (
@@ -51,16 +101,18 @@ export const CustomPlanModal: React.FC<CustomPlanModalProps> = ({ onClose, onSav
             <Input
               id="plan-title"
               value={planData.title}
-              onChange={(e) => setPlanData({ ...planData, title: e.target.value })}
+              onChange={(e) => handleInputChange('title', e.target.value)}
               placeholder="Es. Allenamento Forza Base"
-              className="bg-[#333333] border-[#EEBA2B] text-white"
+              className={`bg-[#333333] border-[#EEBA2B] text-white ${errors.title ? 'border-red-500' : ''}`}
+              maxLength={100}
             />
+            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="goal" className="text-[#EEBA2B]">Cosa vuoi migliorare? *</Label>
-            <Select onValueChange={(value) => setPlanData({ ...planData, goal: value })}>
-              <SelectTrigger className="bg-[#333333] border-[#EEBA2B] text-white">
+            <Select onValueChange={(value) => handleInputChange('goal', value)}>
+              <SelectTrigger className={`bg-[#333333] border-[#EEBA2B] text-white ${errors.goal ? 'border-red-500' : ''}`}>
                 <SelectValue placeholder="Seleziona il tuo obiettivo" />
               </SelectTrigger>
               <SelectContent className="bg-[#333333] border-[#EEBA2B]">
@@ -73,6 +125,7 @@ export const CustomPlanModal: React.FC<CustomPlanModalProps> = ({ onClose, onSav
                 <SelectItem value="condizionamento">Condizionamento Generale</SelectItem>
               </SelectContent>
             </Select>
+            {errors.goal && <p className="text-red-500 text-sm mt-1">{errors.goal}</p>}
           </div>
 
           <div className="space-y-2">
@@ -80,11 +133,13 @@ export const CustomPlanModal: React.FC<CustomPlanModalProps> = ({ onClose, onSav
             <Textarea
               id="details"
               value={planData.details}
-              onChange={(e) => setPlanData({ ...planData, details: e.target.value })}
+              onChange={(e) => handleInputChange('details', e.target.value)}
               placeholder="Aggiungi dettagli specifici come tempo disponibile, attrezzature, preferenze..."
-              className="bg-[#333333] border-[#EEBA2B] text-white"
+              className={`bg-[#333333] border-[#EEBA2B] text-white ${errors.details ? 'border-red-500' : ''}`}
               rows={3}
+              maxLength={500}
             />
+            {errors.details && <p className="text-red-500 text-sm mt-1">{errors.details}</p>}
           </div>
         </div>
 
