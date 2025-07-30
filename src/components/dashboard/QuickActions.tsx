@@ -131,6 +131,7 @@ const QuickActions = () => {
 
   return (
     <>
+      {console.log('QuickActions rendering - NO OVERLAY')}
       <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg">
 
         <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>

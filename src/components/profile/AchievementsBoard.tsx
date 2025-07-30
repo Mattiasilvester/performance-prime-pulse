@@ -2,6 +2,7 @@
 import { Award, Target, Calendar, Zap, Heart, Dumbbell, Lock } from 'lucide-react';
 
 export const AchievementsBoard = () => {
+  console.log('AchievementsBoard rendering - NO OVERLAY');
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-gray-600 p-6 relative achievement-board">
       <div>

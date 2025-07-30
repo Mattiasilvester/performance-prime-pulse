@@ -26,6 +26,7 @@ const insights = [
 ];
 
 export const AIInsights = () => {
+  console.log('AIInsights rendering - NO OVERLAY');
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-gray-500 p-6 insights-ai relative">
 
