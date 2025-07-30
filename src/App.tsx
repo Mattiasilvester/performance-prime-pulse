@@ -8,6 +8,7 @@ import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
+import MVPPage from "./pages/MVPPage";
 import Workouts from "./pages/Workouts";
 import Schedule from "./pages/Schedule";
 import AICoach from "./pages/AICoach";
@@ -32,6 +33,7 @@ const AppContent = () => (
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/mvp" element={<MVPPage />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/app" element={
