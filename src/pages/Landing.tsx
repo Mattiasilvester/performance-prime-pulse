@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import QRCodeComponent from '../components/QRCode';
 
 const Landing = () => {
   const [showDetailed, setShowDetailed] = useState(false);
+  const navigate = useNavigate();
 
   const showDetailedInfo = () => {
     setShowDetailed(true);
@@ -19,7 +21,7 @@ const Landing = () => {
   };
 
   const goToApp = () => {
-    window.open('https://performanceprime.it', '_blank');
+    navigate('/auth');
   };
 
   const submitWaitingList = (event: React.FormEvent<HTMLFormElement>) => {
@@ -408,7 +410,7 @@ const Landing = () => {
                 flexWrap: 'wrap'
               }}>
                 <QRCodeComponent 
-                  url="https://performanceprime.it" 
+                  url={window.location.origin + '/auth'} 
                   size={200}
                 />
                 <div style={{ textAlign: 'center' }}>
