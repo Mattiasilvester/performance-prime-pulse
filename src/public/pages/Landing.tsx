@@ -172,7 +172,9 @@ const Landing: React.FC<LandingProps> = ({ devMode = false }) => {
                 borderRadius: '12px',
                 boxShadow: '0 8px 32px rgba(238, 186, 43, 0.3)'
               }}>
-                <QRCodeComponent />
+                <QRCodeComponent 
+                  url={`${window.location.origin}/auth`}
+                />
               </div>
               
               <div style={{ textAlign: 'center' }}>

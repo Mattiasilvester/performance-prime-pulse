@@ -1,5 +1,5 @@
 import React from 'react';
-import { isDevelopment, config } from '../config/environments';
+import { isDevelopment, config } from '@/shared/config/environments';
 
 const DevTools = () => {
   if (!isDevelopment) return null;

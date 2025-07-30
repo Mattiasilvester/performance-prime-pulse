@@ -19,7 +19,7 @@ import Security from './pages/settings/Security';
 import Notifications from './pages/settings/Notifications';
 import Language from './pages/settings/Language';
 import Privacy from './pages/settings/Privacy';
-import PrivacyPolicy from './pages/PrivacyPolicy';
+import PrivacyPolicy from './public/pages/PrivacyPolicy';
 import Help from './pages/settings/Help';
 import NotFound from './pages/NotFound';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
