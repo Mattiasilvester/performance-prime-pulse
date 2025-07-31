@@ -19,7 +19,7 @@ const Landing = () => {
   };
 
   const goToApp = () => {
-    window.location.href = '/auth';
+    window.location.href = 'https://performance-prime-pulse.lovable.app/auth';
   };
 
   const submitWaitingList = (event: React.FormEvent<HTMLFormElement>) => {
