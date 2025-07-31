@@ -1,0 +1,31 @@
+{
+  "name": "performance-prime-pulse",
+  "version": "1.0.0",
+  "description": "Performance Prime - App React con homepage intelligente",
+  "main": "index.html",
+  "entry": "index.html",
+  "type": "spa",
+  "rewrites": [
+    {
+      "source": "**",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": {
+    "/*": {
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0"
+    },
+    "/assets/*": {
+      "Cache-Control": "public, max-age=31536000, immutable"
+    }
+  },
+  "environment": {
+    "NODE_ENV": "production"
+  },
+  "build": {
+    "output": "dist",
+    "public": "public"
+  }
+} 
