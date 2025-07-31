@@ -31,8 +31,8 @@ const queryClient = new QueryClient();
 const AppContent = () => (
   <BrowserRouter>
     <Routes>
-      {/* MVP Homepage - Redirect diretto al login */}
-      <Route path="/" element={<Navigate to="/auth" replace />} />
+      {/* MVP - Login come homepage */}
+      <Route path="/" element={<Auth />} />
       {/* Redirect legacy routes */}
       <Route path="/login" element={<Navigate to="/auth" replace />} />
       <Route path="/register" element={<Navigate to="/auth" replace />} />
