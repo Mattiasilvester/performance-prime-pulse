@@ -5,25 +5,47 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/hooks/useAuth';
+import { useAuthListener } from '@/hooks/useAuthListener';
 
 // Import diretto per MVP
+import SmartHomePage from './pages/SmartHomePage';
 import Auth from './public/pages/Auth';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  // Monitora cambiamenti stato auth
+  useAuthListener();
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Navigate to="/auth" replace />} />
+              {/* Homepage intelligente con redirect basato su auth */}
+              <Route path="/" element={<SmartHomePage />} />
+              
+              {/* Pagina di autenticazione */}
               <Route path="/auth" element={<Auth />} />
-              <Route path="/app" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              
+              {/* Route protette */}
+              <Route path="/app" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              
+              {/* 404 Not Found */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
