@@ -4,11 +4,13 @@
 Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il benessere. Include funzionalità di AI coach, tracking dei workout, pianificazione e integrazione con Supabase. 
 
 **Stato Attuale (31 Luglio 2025)**: 
-- ✅ **MVP funzionante** con server attivo su `http://localhost:8080/`
+- ✅ **MVP corretto e funzionante** con server attivo su `http://localhost:8080/`
+- ✅ **Link pubblico:** `https://performanceprime.it`
 - ✅ **Architettura semplificata** - eliminata landing page complessa
 - ✅ **Flusso diretto:** `/` → `/auth` → `/app`
 - ✅ **Autenticazione Supabase** funzionante
 - ✅ **Dashboard protetta** e responsive
+- ✅ **Overlay corretto** - Funzioni premium bloccate con design coerente
 
 ## Tecnologie Principali
 - React 18+ con TypeScript
@@ -92,6 +94,10 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - Mantieni aggiornata la documentazione
 
 ## Problemi Risolti Recentemente (31 Luglio 2025)
+- ✅ **Overlay corretto** - Implementato overlay individuale su funzioni premium
+- ✅ **Header e Footer** - Layout completo con navigazione
+- ✅ **Menu dropdown** - Termini e Condizioni + GDPR
+- ✅ **Design coerente** - Tema scuro con accenti oro
 - ✅ **Errori import `@/lib/config`** - Risolti aggiornando import a `@/shared/config/environments`
 - ✅ **Errori `_jsxDEV is not a function`** - Risolti pulendo cache Vite e semplificando App.tsx
 - ✅ **Landing page problematica** - Eliminata completamente per semplificare architettura
@@ -101,16 +107,18 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - **Flusso semplificato:** `/` → redirect a `/auth` → `/app`
 - **Componenti diretti:** Import diretti in `src/App.tsx`
 - **Routing ottimizzato:** Solo route essenziali
-- **Cache pulita:** Risolti tutti gli errori
+- **Layout completo:** Header + Main Content + Navigation Footer
+- **Overlay corretto:** Funzioni premium bloccate con design coerente
 
 ## Server e Development
 - **Server attivo:** `http://localhost:8080/`
+- **Link pubblico:** `https://performanceprime.it`
 - **Comando:** `npm run dev`
 - **Cache:** Pulita automaticamente
 - **Hot reload:** Funzionante
 
 ## Prossimi Sviluppi
-- 🔄 **Ricostruzione landing page** pulita e semplice
-- 🔄 **Ottimizzazione performance** ulteriore
-- 🔄 **Test completi** su dispositivi reali
+- 🔄 **Landing page** per app completa
+- 🔄 **Subdomain separato** per sviluppo
+- 🔄 **Testing completo** su entrambi gli ambienti
 - 🔄 **Deploy produzione** su Lovable 
