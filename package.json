@@ -5,12 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-<<<<<<< Updated upstream
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "lint": "eslint .",
-    "preview": "vite preview"
-=======
     "build": "tsc && vite build",
     "build:public": "NODE_ENV=production vite build",
     "build:dev": "NODE_ENV=development vite build",
@@ -19,7 +13,6 @@
     "start:dev": "npm run dev",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
->>>>>>> Stashed changes
   },
   "dependencies": {
     "@capacitor/android": "^7.4.0",
