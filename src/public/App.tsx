@@ -1,0 +1,256 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/shared/ui/toaster';
+import { Toaster as Sonner } from '@/shared/ui/sonner';
+import { TooltipProvider } from '@/shared/ui/tooltip';
+import { AuthProvider } from '@/shared/hooks/useAuth';
+
+// Componenti pubblici
+
+import Auth from './pages/Auth';
+import ResetPassword from './pages/ResetPassword';
+import Dashboard from './pages/Dashboard';
+import Workouts from './pages/Workouts';
+import Schedule from './pages/Schedule';
+import Profile from './pages/Profile';
+import Notes from './pages/Notes';
+import Timer from './pages/Timer';
+import Subscriptions from './pages/Subscriptions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import NotFound from './pages/NotFound';
+import PersonalInfo from './pages/settings/PersonalInfo';
+import Security from './pages/settings/Security';
+import Notifications from './pages/settings/Notifications';
+import Language from './pages/settings/Language';
+import Privacy from './pages/settings/Privacy';
+import Help from './pages/settings/Help';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { AppLayout } from './components/layout/AppLayout';
+import { supabase } from '@/shared/integrations/supabase/client';
+
+// Componente Homepage intelligente per utenti pubblici
+const PublicHomePage = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          navigate('/dashboard');
+        } else {
+          navigate('/auth');
+        }
+      } catch (error) {
+        navigate('/auth');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuthStatus();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_IN') {
+          navigate('/dashboard');
+        } else if (event === 'SIGNED_OUT') {
+          navigate('/auth');
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  if (isLoading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #000 0%, #1a1a1a 100%)',
+        color: '#fff',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      }}>
+        <div style={{
+          width: '50px',
+          height: '50px',
+          border: '3px solid #EEBA2B',
+          borderTop: '3px solid transparent',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          marginBottom: '2rem'
+        }}></div>
+        <p style={{ fontSize: '1.2rem', color: '#EEBA2B' }}>
+          Caricamento Performance Prime...
+        </p>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+const queryClient = new QueryClient();
+
+function PublicApp() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Homepage intelligente */}
+              <Route path="/" element={<PublicHomePage />} />
+              
+
+              
+              {/* Autenticazione */}
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              
+              {/* Pagine legali */}
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<PrivacyPolicy />} />
+              
+              {/* App protetta */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Dashboard />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Dashboard />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/subscriptions" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Subscriptions />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/workouts" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Workouts />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/schedule" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Schedule />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/timer" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Timer />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/profile" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Profile />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/notes" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Notes />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Settings */}
+              <Route path="/app/settings/personal-info" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <PersonalInfo />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/settings/security" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Security />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/settings/notifications" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Notifications />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/settings/language" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Language />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/settings/privacy" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Privacy />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/settings/privacy-policy" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <PrivacyPolicy />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/app/settings/help" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Help />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default PublicApp; 
