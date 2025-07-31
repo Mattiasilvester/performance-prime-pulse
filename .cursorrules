@@ -11,6 +11,7 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - ✅ **Autenticazione Supabase** funzionante
 - ✅ **Dashboard protetta** e responsive
 - ✅ **Overlay corretto** - Funzioni premium bloccate con design coerente
+- ✅ **Layout corretto** - Header + Main Content (senza menu laterale)
 
 ## Tecnologie Principali
 - React 18+ con TypeScript
@@ -94,28 +95,41 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - Mantieni aggiornata la documentazione
 
 ## Problemi Risolti Recentemente (31 Luglio 2025)
+- ✅ **Layout corretto** - Rimosso menu laterale, solo Header + Main Content
 - ✅ **Overlay corretto** - Implementato overlay individuale su funzioni premium
-- ✅ **Header e Footer** - Layout completo con navigazione
-- ✅ **Menu dropdown** - Termini e Condizioni + GDPR
+- ✅ **Menu dropdown** - Solo menu utente in alto a destra con Termini/GDPR
 - ✅ **Design coerente** - Tema scuro con accenti oro
-- ✅ **Errori import `@/lib/config`** - Risolti aggiornando import a `@/shared/config/environments`
-- ✅ **Errori `_jsxDEV is not a function`** - Risolti pulendo cache Vite e semplificando App.tsx
-- ✅ **Landing page problematica** - Eliminata completamente per semplificare architettura
-- ✅ **Cache Vite obsoleta** - Pulita con `rm -rf node_modules/.vite dist`
+- ✅ **Eliminazione sistema overlay complesso** - Ripristinato design originale
+- ✅ **AppLayout ottimizzato** - Struttura pulita senza Navigation
 
-## Architettura Attuale
-- **Flusso semplificato:** `/` → redirect a `/auth` → `/app`
-- **Componenti diretti:** Import diretti in `src/App.tsx`
-- **Routing ottimizzato:** Solo route essenziali
-- **Layout completo:** Header + Main Content + Navigation Footer
-- **Overlay corretto:** Funzioni premium bloccate con design coerente
+## Layout Corretto
+- **Header:** Logo "DD" + "Performance Prime" + menu dropdown utente
+- **Main Content:** Dashboard con metriche, azioni rapide, progressi
+- **Nessun menu laterale:** Rimossa sidebar di navigazione
+- **Responsive:** Ottimizzato per mobile e desktop
 
-## Server e Development
-- **Server attivo:** `http://localhost:8080/`
-- **Link pubblico:** `https://performanceprime.it`
-- **Comando:** `npm run dev`
-- **Cache:** Pulita automaticamente
-- **Hot reload:** Funzionante
+## Overlay Premium
+- **Lucchetto 🔒** al centro per funzioni bloccate
+- **Messaggio:** "Funzionalità in arrivo"
+- **Sottotitolo:** "Le azioni rapide saranno disponibili presto!"
+- **Opacità:** Contenuto bloccato al 30%
+
+## Menu Dropdown
+- **Utente:** Nome utente + icone (search, notifications, menu)
+- **Voci:** Dashboard, Abbonamenti, Allenamento, Appuntamenti, Timer, Coach AI, Note, Profilo, Logout
+- **Legale:** Termini e Condizioni, Privacy Policy (GDPR)
+
+## Funzionalità Accessibili
+- **Dashboard:** Metriche personalizzate e statistiche
+- **Allenamento:** Categorie workout e esercizi
+- **Appuntamenti:** Calendario base e gestione
+- **Coach AI:** Chat base e assistenza
+- **Profilo:** Gestione informazioni utente
+
+## Funzioni Premium (Bloccate)
+- **Azioni Rapide:** "Prenota Sessione" e "Chat AI Coach" con overlay
+- **Insights AI:** Analisi avanzata bloccata
+- **Contatto Professionisti:** Prenotazioni premium bloccate
 
 ## Prossimi Sviluppi
 - 🔄 **Landing page** per app completa

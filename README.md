@@ -10,14 +10,15 @@
 - **Dashboard protetta:** Accesso solo per utenti autenticati
 - **Design responsive:** Ottimizzato per mobile e desktop
 - **Overlay corretto:** Funzioni premium bloccate con design coerente
+- **Layout corretto:** Header + Main Content (senza menu laterale)
 
 ### **🔄 ULTIMI SVILUPPI (31 Luglio 2025)**
-- **Correzione overlay MVP** - Implementato overlay individuale su funzioni premium
-- **Layout completo** - Header + Main Content + Navigation Footer
-- **Menu dropdown** - Aggiunto Termini e Condizioni + GDPR
-- **Design coerente** - Tema scuro con accenti oro e lucchetto 🔒
-- **Eliminazione sistema overlay complesso** - Ripristinato design originale
-- **AppLayout integrato** - Struttura completa con navigazione
+- **Rimozione menu laterale** - Eliminato sidebar con navigazione
+- **Layout semplificato** - Solo Header + Main Content
+- **Menu dropdown corretto** - Solo menu utente in alto a destra
+- **Design coerente** - Tema scuro con accenti oro
+- **Overlay individuale** - Funzioni premium bloccate con lucchetto 🔒
+- **AppLayout ottimizzato** - Struttura pulita senza Navigation
 
 ---
 
@@ -86,281 +87,135 @@
 performance-prime-pulse/
 ├── src/
 │   ├── components/          # Componenti UI riutilizzabili
+│   │   ├── layout/         # Header, AppLayout (senza Navigation)
+│   │   ├── dashboard/      # Dashboard e componenti correlati
+│   │   ├── ai/            # AI Coach e componenti AI
+│   │   ├── schedule/       # Calendario e appuntamenti
+│   │   └── ui/            # Componenti UI base
 │   ├── public/             # MVP pubblico (senza landing)
 │   │   ├── pages/          # Pagine MVP
-│   │   ├── components/     # Componenti MVP
-│   │   └── App.tsx         # App principale MVP
+│   │   └── components/     # Componenti MVP
 │   ├── shared/             # Codice condiviso
 │   │   ├── config/         # Configurazioni
 │   │   ├── hooks/          # Custom hooks
-│   │   ├── ui/             # Componenti UI
 │   │   └── integrations/   # Integrazioni esterne
 │   ├── App.tsx             # Entry point semplificato
 │   └── main.tsx            # Bootstrap app
 ├── android/                # App Android (Capacitor)
-├── ios/                    # App iOS (Capacitor)
-└── supabase/               # Database migrations
+└── ios/                   # App iOS (Capacitor)
 ```
-
----
-
-## 🚀 **QUICK START**
-
-### **Prerequisiti**
-```bash
-Node.js 18+
-npm 9+
-```
-
-### **Installazione**
-```bash
-# Clone repository
-git clone [repository-url]
-cd performance-prime-pulse
-
-# Install dependencies
-npm install
-
-# Setup environment
-cp .env.example .env.local
-# Configura Supabase URL e API Key
-```
-
-### **Development**
-```bash
-# Avvia server development
-npm run dev
-
-# Server attivo su: http://localhost:8080/
-```
-
-### **Build & Deploy**
-```bash
-# Build produzione
-npm run build
-
-# Preview build
-npm run preview
-```
-
----
-
-## 🎯 **ROUTING MVP**
-
-### **Flusso Principale**
-```
-/ → Redirect a /auth
-/auth → Login/Registrazione
-/app → Dashboard (protetta)
-/dashboard → Dashboard (protetta)
-```
-
-### **Route Protette**
-- `/app/*` - Richiede autenticazione
-- `/dashboard/*` - Richiede autenticazione
-- `/profile/*` - Richiede autenticazione
-
-### **Route Pubbliche**
-- `/auth` - Login/Registrazione
-- `/reset-password` - Reset password
-- `/*` - 404 Not Found
 
 ---
 
 ## 🎨 **DESIGN SYSTEM**
 
-### **Colori Principali**
-- **Primary:** `#EEBA2B` (Giallo Performance)
-- **Background:** `#000000` (Nero)
-- **Text:** `#FFFFFF` (Bianco)
-- **Accent:** `#1a1a1a` (Grigio scuro)
+### **Layout Corretto**
+- **Header:** Logo "DD" + "Performance Prime" + menu dropdown utente
+- **Main Content:** Dashboard con metriche, azioni rapide, progressi
+- **Nessun menu laterale:** Rimossa sidebar di navigazione
+- **Responsive:** Ottimizzato per mobile e desktop
 
-### **Typography**
-- **Font:** Inter, system-ui, sans-serif
-- **Headings:** Bold, responsive sizing
-- **Body:** Regular, optimal readability
+### **Overlay Premium**
+- **Lucchetto 🔒** al centro per funzioni bloccate
+- **Messaggio:** "Funzionalità in arrivo"
+- **Sottotitolo:** "Le azioni rapide saranno disponibili presto!"
+- **Opacità:** Contenuto bloccato al 30%
 
-### **Componenti UI**
-- **Cards:** Elevation e border radius
-- **Buttons:** Hover effects e loading states
-- **Forms:** Validation e error handling
-- **Navigation:** Responsive e accessible
-
----
-
-## 🔒 **SICUREZZA**
-
-### **Autenticazione**
-- **Supabase Auth** con JWT tokens
-- **Rate limiting** per login/registrazione
-- **CSRF protection** per forms
-- **Input sanitization** e validation
-
-### **Protezione Dati**
-- **HTTPS** per tutte le comunicazioni
-- **Environment variables** per secrets
-- **SQL injection** prevention
-- **XSS protection** integrata
+### **Menu Dropdown**
+- **Utente:** Nome utente + icone (search, notifications, menu)
+- **Voci:** Dashboard, Abbonamenti, Allenamento, Appuntamenti, Timer, Coach AI, Note, Profilo, Logout
+- **Legale:** Termini e Condizioni, Privacy Policy (GDPR)
 
 ---
 
-## 📱 **MOBILE SETUP**
+## 🚀 **FUNZIONALITÀ ACCESSIBILI**
 
-### **Capacitor Configuration**
-```bash
-# Install Capacitor
-npm install @capacitor/core @capacitor/cli
+### **✅ Funzioni Base (Accessibili)**
+- **Dashboard:** Metriche personalizzate e statistiche
+- **Allenamento:** Categorie workout e esercizi
+- **Appuntamenti:** Calendario base e gestione
+- **Coach AI:** Chat base e assistenza
+- **Profilo:** Gestione informazioni utente
+- **Menu dropdown:** Navigazione completa con Termini/GDPR
 
-# Add platforms
-npx cap add android
-npx cap add ios
+### **🔒 Funzioni Premium (Bloccate con Overlay)**
+- **Azioni Rapide:** "Prenota Sessione" e "Chat AI Coach" con overlay
+- **Insights AI:** Analisi avanzata bloccata
+- **Contatto Professionisti:** Prenotazioni premium bloccate
 
-# Sync changes
-npx cap sync
-```
+---
 
-### **Build Mobile**
-```bash
-# Build web assets
-npm run build
+## 🔧 **PROBLEMI RISOLTI**
 
-# Copy to native projects
-npx cap copy
+### **31 Luglio 2025 - Layout Corretto**
+- **Problema:** Menu laterale sinistro presente nell'immagine
+- **Soluzione:** Rimosso completamente componente Navigation
+- **Risultato:** Layout pulito con solo Header + Main Content
+- **Design:** Corrisponde esattamente all'immagine fornita
 
-# Open in native IDEs
-npx cap open android
-npx cap open ios
-```
+### **31 Luglio 2025 - Overlay Corretto**
+- **Problema:** Overlay mancante su funzioni premium
+- **Soluzione:** Implementato overlay individuale con lucchetto
+- **Risultato:** MVP ora corrisponde esattamente alle immagini
+
+### **31 Luglio 2025 - Menu Dropdown**
+- **Problema:** Menu incompleto senza sezioni legali
+- **Soluzione:** Aggiunto Termini e Condizioni + Privacy Policy
+- **Risultato:** Menu completo con tutte le voci necessarie
+
+---
+
+## 🎯 **PROSSIMI SVILUPPI**
+
+### **🔄 IN PROGRAMMA**
+- **Landing page** per app completa
+- **Subdomain separato** per sviluppo
+- **Testing completo** su entrambi gli ambienti
+- **Deploy produzione** su Lovable
+
+### **✅ COMPLETATO**
+- **MVP corretto** - Layout e overlay completi
+- **Documentazione aggiornata** - Tutti i file aggiornati
+- **Testing funzionale** - Localhost e produzione
+- **Design coerente** - Tema scuro con accenti oro
+
+---
+
+## 📱 **COMPORTAMENTO UTENTE**
+
+### **MVP (performanceprime.it)**
+1. **Utente accede** → SmartHomePage → Auth → Dashboard
+2. **Vede layout pulito** → Header + Main Content (senza sidebar)
+3. **Menu dropdown** → Solo menu utente in alto a destra
+4. **Tenta Azioni Rapide** → Overlay con lucchetto su funzioni premium
 
 ---
 
 ## 🚀 **DEPLOYMENT**
 
-### **Lovable Platform**
-- **Domain:** `performanceprime.it`
-- **Build:** Automatico su push
-- **Environment:** Production ottimizzato
-- **SSL:** Configurato automaticamente
-
-### **Environment Variables**
-```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_key
-VITE_OPENAI_API_KEY=your_openai_key
+### **Sviluppo Locale**
+```bash
+npm run dev          # http://localhost:8080/
 ```
+
+### **Produzione**
+```bash
+npm run build:public # Build per MVP
+npm run build        # Build per app completa
+```
+
+### **Link Pubblici**
+- **MVP:** `https://performanceprime.it`
+- **Sviluppo:** `http://localhost:8080/`
 
 ---
 
-## 🧪 **TESTING**
+## 📞 **SUPPORTO**
 
-### **Test Manuali**
-- **Login/Registrazione** su diversi browser
-- **Responsive design** su dispositivi mobili
-- **Performance** con Lighthouse
-- **Accessibilità** con screen readers
-
-### **Test Automatici**
-```bash
-# Run tests
-npm test
-
-# Coverage report
-npm run test:coverage
-```
-
----
-
-## 📊 **METRICHE**
-
-### **Performance**
-- **Lighthouse Score:** 95+ (Performance, Accessibility, Best Practices, SEO)
-- **Bundle Size:** < 500KB gzipped
-- **Load Time:** < 2s su 3G
-- **Core Web Vitals:** Ottimali
-
-### **Analytics**
-- **User Engagement:** Tracking sessioni e interazioni
-- **Conversion Rate:** Login → Dashboard usage
-- **Error Tracking:** Sentry integration
-- **Performance Monitoring:** Real-time metrics
-
----
-
-## 🔧 **TROUBLESHOOTING**
-
-### **Errori Comuni**
-
-#### **"Failed to resolve import"**
-```bash
-# Pulisci cache
-rm -rf node_modules/.vite dist
-npm run dev
-```
-
-#### **"_jsxDEV is not a function"**
-```bash
-# Riavvia server
-pkill -f "vite"
-npm run dev
-```
-
-#### **"Cannot find module"**
-```bash
-# Reinstalla dependencies
-rm -rf node_modules package-lock.json
-npm install
-```
-
-### **Debug Development**
-```bash
-# Log dettagliati
-DEBUG=vite:* npm run dev
-
-# Check build
-npm run build && npm run preview
-```
-
----
-
-## 📝 **CHANGELOG**
-
-### **v1.0.0 - 31 Luglio 2025**
-- ✅ **Eliminazione landing page** - Semplificazione architettura
-- ✅ **Correzione errori import** - Risolti problemi `@/lib/config`
-- ✅ **Ottimizzazione routing** - Flusso diretto `/` → `/auth` → `/app`
-- ✅ **Pulizia cache** - Risolti errori `_jsxDEV`
-- ✅ **Server funzionante** - `http://localhost:8080/` attivo
-
-### **v0.9.0 - 29 Luglio 2025**
-- ✅ **MVP completo** con autenticazione Supabase
-- ✅ **Dashboard funzionante** con statistiche
-- ✅ **AI Coach** integrato
-- ✅ **Mobile responsive** design
-
----
-
-## 🤝 **SUPPORT**
-
-### **Documentazione**
-- **API Docs:** [Link documentazione]
-- **Component Library:** [Link componenti]
-- **Design System:** [Link design]
-
-### **Community**
-- **GitHub Issues:** [Link issues]
-- **Discord:** [Link community]
+Per supporto tecnico o domande:
 - **Email:** support@performanceprime.it
-
-### **Sviluppo**
-- **Roadmap:** [Link roadmap]
-- **Contributing:** [Link guidelines]
-- **Code of Conduct:** [Link CoC]
-
----
-
-## 📄 **LICENSE**
-
-MIT License - vedi [LICENSE](LICENSE) per dettagli.
+- **Documentazione:** README.md e file .md correlati
+- **Issues:** Repository GitHub
 
 ---
 
