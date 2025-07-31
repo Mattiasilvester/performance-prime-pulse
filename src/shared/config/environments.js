@@ -1,39 +1,72 @@
 // src/config/environments.js
 const environments = {
   development: {
+    // Ambiente di sviluppo - App completa con landing page
     APP_URL: 'http://localhost:8080',
-    API_URL: 'http://localhost:3000/api',
-    DASHBOARD_URL: 'http://localhost:8080/app',
-
-    MVP_URL: 'http://localhost:8080/auth' // MVP locale per sviluppo - punta al login
+    MVP_URL: 'http://localhost:8080',
+    SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+    SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+    IS_MVP_MODE: false, // App completa
+    ENABLE_LANDING_PAGE: true,
+    ENABLE_OVERLAY_BLOCKS: false, // Disabilita overlay nell'ambiente sviluppo
   },
   production: {
-    APP_URL: 'https://performance-prime-pulse.lovable.app',
-    API_URL: 'https://performance-prime-pulse.lovable.app/api',
-    DASHBOARD_URL: 'https://performance-prime-pulse.lovable.app/app',
-
-    MVP_URL: 'https://performance-prime-pulse.lovable.app/auth' // MVP produzione - punta al login
+    // Ambiente produzione - MVP con overlay di blocco
+    APP_URL: 'https://performanceprime.it',
+    MVP_URL: 'https://performanceprime.it',
+    SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+    SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+    IS_MVP_MODE: true, // MVP con overlay
+    ENABLE_LANDING_PAGE: false,
+    ENABLE_OVERLAY_BLOCKS: true, // Abilita overlay nell'MVP
   }
 };
 
-// Determina ambiente automaticamente
-const getCurrentEnvironment = () => {
-  const hostname = window.location.hostname;
-  
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'development';
+const config = {
+  getCurrentEnvironment: () => {
+    const env = process.env.NODE_ENV || 'development';
+    return environments[env] || environments.development;
+  },
+
+  getAppUrl: () => {
+    return config.getCurrentEnvironment().APP_URL;
+  },
+
+  getMvpUrl: () => {
+    return config.getCurrentEnvironment().MVP_URL;
+  },
+
+  getSupabaseUrl: () => {
+    return config.getCurrentEnvironment().SUPABASE_URL;
+  },
+
+  getSupabaseAnonKey: () => {
+    return config.getCurrentEnvironment().SUPABASE_ANON_KEY;
+  },
+
+  isMvpMode: () => {
+    return config.getCurrentEnvironment().IS_MVP_MODE;
+  },
+
+  shouldEnableLandingPage: () => {
+    return config.getCurrentEnvironment().ENABLE_LANDING_PAGE;
+  },
+
+  shouldEnableOverlayBlocks: () => {
+    return config.getCurrentEnvironment().ENABLE_OVERLAY_BLOCKS;
+  },
+
+  getSupabaseRedirectUrl: () => {
+    return `${config.getAppUrl()}/auth`;
+  },
+
+  getResetPasswordUrl: () => {
+    return `${config.getAppUrl()}/reset-password`;
+  },
+
+  getDashboardUrl: () => {
+    return `${config.getAppUrl()}/app`;
   }
-  return 'production';
 };
 
-// Esporta configurazione corrente
-export const config = environments[getCurrentEnvironment()];
-export const isDevelopment = getCurrentEnvironment() === 'development';
-export const isProduction = getCurrentEnvironment() === 'production';
-
-// Log per debug
-console.log(`🌍 Ambiente: ${isDevelopment ? 'Sviluppo' : 'Produzione'}`);
-console.log(`📱 MVP URL: ${config.MVP_URL}`);
-console.log(`🛠️ Dashboard URL: ${config.DASHBOARD_URL}`);
-
-console.log(`🌐 Hostname corrente: ${window.location.hostname}`); 
+export { config }; 

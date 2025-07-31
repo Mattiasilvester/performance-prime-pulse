@@ -2,19 +2,22 @@
 
 ## 🚀 **STATO ATTUALE (31 Luglio 2025)**
 
-### **✅ MVP FUNZIONANTE**
+### **✅ MVP CORRETTO E FUNZIONANTE**
 - **Server attivo:** `http://localhost:8080/`
+- **Link pubblico:** `https://performanceprime.it`
 - **Architettura semplificata:** Eliminata landing page, flusso diretto `/` → `/auth` → `/app`
 - **Autenticazione Supabase:** Login/registrazione funzionante
 - **Dashboard protetta:** Accesso solo per utenti autenticati
 - **Design responsive:** Ottimizzato per mobile e desktop
+- **Overlay corretto:** Funzioni premium bloccate con design coerente
 
-### **🔄 ULTIMI SVILUPPI**
-- **Eliminazione completa landing page** (31 Luglio 2025)
-- **Semplificazione architettura** - rimossi file complessi
-- **Correzione errori import** - risolti problemi `@/lib/config`
-- **Ottimizzazione routing** - flusso diretto e semplificato
-- **Pulizia cache** - risolti errori `_jsxDEV`
+### **🔄 ULTIMI SVILUPPI (31 Luglio 2025)**
+- **Correzione overlay MVP** - Implementato overlay individuale su funzioni premium
+- **Layout completo** - Header + Main Content + Navigation Footer
+- **Menu dropdown** - Aggiunto Termini e Condizioni + GDPR
+- **Design coerente** - Tema scuro con accenti oro e lucchetto 🔒
+- **Eliminazione sistema overlay complesso** - Ripristinato design originale
+- **AppLayout integrato** - Struttura completa con navigazione
 
 ---
 

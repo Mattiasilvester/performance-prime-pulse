@@ -5,12 +5,14 @@
 
 ## 🚀 **STATO ATTUALE**
 
-### **✅ MVP FUNZIONANTE**
+### **✅ MVP CORRETTO E FUNZIONANTE**
 - **Server attivo:** `http://localhost:8080/`
+- **Link pubblico:** `https://performanceprime.it`
 - **Architettura semplificata:** Eliminata landing page complessa
 - **Flusso diretto:** `/` → `/auth` → `/app`
 - **Autenticazione:** Supabase funzionante
 - **Dashboard:** Protetta e responsive
+- **Overlay corretto:** Funzioni premium bloccate con design coerente
 
 ---
 
@@ -98,6 +100,31 @@ const App = () => {
             </Routes>
           </BrowserRouter>
           <Toaster />
+
+#### **15:00 - Correzione Overlay MVP**
+- **Problema identificato:** Overlay mancante su funzioni premium
+- **Sistema overlay complesso:** Rimosso `MVPOverlay.tsx`
+- **Implementato:** Overlay individuale su "Prenota Sessione" e "Chat AI Coach"
+- **Design:** Lucchetto 🔒 al centro con messaggio "Funzionalità in arrivo"
+
+#### **15:30 - Layout Completo**
+- **Creato:** `AppLayout.tsx` con Header + Main Content + Navigation Footer
+- **Integrato:** Layout nel componente Dashboard
+- **Header:** Logo "DD" + "Performance Prime" + menu utente
+- **Navigation:** Footer con 5 sezioni (Dashboard, Allenamento, Appuntamenti, Coach AI, Profilo)
+
+#### **16:00 - Menu Dropdown Completo**
+- **Aggiunto:** Termini e Condizioni sotto Logout
+- **Aggiunto:** Privacy Policy (GDPR) sotto Logout
+- **Separatore:** Visivo tra Logout e sezioni legali
+- **Icone:** FileText per Termini, Shield per GDPR
+
+#### **16:30 - Testing e Verifica**
+- **Localhost:** `http://localhost:8080` - Funzionante
+- **Produzione:** `https://performanceprime.it` - Funzionante
+- **Overlay:** Visibili su funzioni premium
+- **Layout:** Header e Footer presenti
+- **Menu:** Dropdown completo con Termini/GDPR
           <Sonner />
         </TooltipProvider>
       </AuthProvider>

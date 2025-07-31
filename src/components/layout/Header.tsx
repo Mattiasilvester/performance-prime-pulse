@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard, X } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard, X, Shield, FileText as FileTextIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -263,6 +263,27 @@ export const Header = () => {
                 >
                   <LogOut className="h-5 w-5" />
                   <span className="font-medium">Logout</span>
+                </DropdownMenuItem>
+                
+                {/* Separatore */}
+                <div className="border-t border-pp-gold/20 my-2"></div>
+                
+                {/* Termini e Condizioni */}
+                <DropdownMenuItem
+                  onClick={() => navigate('/terms')}
+                  className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-pp-gold hover:bg-pp-gold/10 hover:text-pp-gold"
+                >
+                  <FileTextIcon className="h-5 w-5" />
+                  <span className="font-medium">Termini e Condizioni</span>
+                </DropdownMenuItem>
+                
+                {/* GDPR */}
+                <DropdownMenuItem
+                  onClick={() => navigate('/privacy')}
+                  className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-pp-gold hover:bg-pp-gold/10 hover:text-pp-gold"
+                >
+                  <Shield className="h-5 w-5" />
+                  <span className="font-medium">Privacy Policy</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

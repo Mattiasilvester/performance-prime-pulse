@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Header } from './Header';
 import { Navigation } from './Navigation';
 
@@ -6,15 +7,18 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-export const AppLayout = ({ children }: AppLayoutProps) => {
+export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-black w-full">
+    <div className="min-h-screen bg-black">
+      {/* Header */}
       <Header />
-      <div className="container mx-auto px-4 py-6 max-w-full pt-20 lg:pl-72">
-        <main className="w-full">
-          {children}
-        </main>
-      </div>
+      
+      {/* Main Content */}
+      <main className="pb-20 lg:pb-6">
+        {children}
+      </main>
+      
+      {/* Navigation Footer */}
       <Navigation />
     </div>
   );

@@ -5,29 +5,51 @@
 
 ## 🚀 **STATO ATTUALE**
 
-### **✅ MVP FUNZIONANTE**
+### **✅ MVP CORRETTO E FUNZIONANTE**
 - **Server attivo:** `http://localhost:8080/`
+- **Link pubblico:** `https://performanceprime.it`
 - **Architettura semplificata:** Eliminata landing page complessa
 - **Flusso diretto:** `/` → `/auth` → `/app`
 - **Autenticazione:** Supabase funzionante
 - **Dashboard:** Protetta e responsive
+- **Overlay corretto:** Funzioni premium bloccate con design coerente
 
 ### **🔄 ULTIMI SVILUPPI (31 Luglio 2025)**
 
-#### **1. Eliminazione Completa Landing Page**
+#### **1. Correzione Overlay MVP**
+- **Rimosso:** Sistema overlay complesso (`MVPOverlay.tsx`)
+- **Implementato:** Overlay individuale su funzioni premium
+- **Bloccate:** "Prenota Sessione" e "Chat AI Coach"
+- **Accessibili:** "Inizia Allenamento" e "Nuovo Obiettivo"
+- **Design:** Lucchetto 🔒 al centro con messaggio "Funzionalità in arrivo"
+
+#### **2. Layout Completo**
+- **Creato:** `AppLayout.tsx` con Header + Main Content + Navigation Footer
+- **Integrato:** Layout nel componente Dashboard
+- **Header:** Logo "DD" + "Performance Prime" + menu utente
+- **Navigation:** Footer con 5 sezioni (Dashboard, Allenamento, Appuntamenti, Coach AI, Profilo)
+- **Responsive:** Desktop sidebar + Mobile bottom navigation
+
+#### **3. Menu Dropdown Completo**
+- **Aggiunto:** Termini e Condizioni sotto Logout
+- **Aggiunto:** Privacy Policy (GDPR) sotto Logout
+- **Separatore:** Visivo tra Logout e sezioni legali
+- **Icone:** FileText per Termini, Shield per GDPR
+
+#### **4. Eliminazione Landing Page (Precedente)**
 - **Rimosso:** `src/public/pages/Landing.tsx`
 - **Rimosso:** `src/public/components/QRCode.tsx`
 - **Rimosso:** `src/pages/Landing.tsx`
 - **Rimosso:** `src/PublicApp.tsx`
 - **Rimosso:** `src/DevApp.tsx`
 
-#### **2. Semplificazione Architettura**
+#### **5. Semplificazione Architettura**
 - **Nuovo flusso:** `/` → redirect automatico a `/auth`
 - **Routing semplificato:** Solo route essenziali
 - **Componenti diretti:** Import diretti in `src/App.tsx`
 - **Cache pulita:** Risolti errori `_jsxDEV`
 
-#### **3. Correzione Errori Import**
+#### **6. Correzione Errori Import**
 - **Risolto:** `Failed to resolve import "@/lib/config"`
 - **Aggiornato:** Import da `@/shared/config/environments`
 - **Corretto:** Path aliases in `vite.config.ts`
