@@ -108,30 +108,11 @@ npm run dev
 ### **3. Landing Page Problematica**
 **Problema:** Landing page causava errori e complessità
 
-<<<<<<< Updated upstream
----
-
-## 📁 File Modificati
-
-### Componenti React
-- `src/components/QRCode.tsx` - Nuovo componente QR code
-- `src/pages/Landing.tsx` - Landing page aggiornata
-
-### File Statici
-- `index.html` - Versione HTML aggiornata
-- `public/qr-code-mvp.png` - QR code generato
-
-### Documentazione
-- `work.md` - Aggiornato con progressi
-- `note.md` - Tracciamento problemi risolti
-- `.cursorrules` - Regole aggiornate
-=======
 **Soluzione:**
 - ✅ Eliminata completamente
 - ✅ Semplificato routing
 - ✅ Flusso diretto `/` → `/auth`
 - ✅ Rimossi componenti non necessari
->>>>>>> Stashed changes
 
 ---
 
