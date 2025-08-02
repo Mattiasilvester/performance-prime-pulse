@@ -3,13 +3,16 @@ import './index.css'
 
 // Debug: stampa la modalità
 console.log('VITE_APP_MODE:', import.meta.env.VITE_APP_MODE);
+console.log('Current port:', window.location.port);
 
-// Import dinamico basato su modalità
+// Import dinamico basato su modalità o porta
 const loadApp = async () => {
   try {
     let App;
-    if (import.meta.env.VITE_APP_MODE === 'landing') {
-      console.log('Loading landing app...');
+    
+    // Se siamo sulla porta 8081, forziamo la landing page
+    if (window.location.port === '8081' || import.meta.env.VITE_APP_MODE === 'landing') {
+      console.log('Loading LANDING PAGE...');
       const module = await import('./landing/App');
       App = module.default;
     } else {
