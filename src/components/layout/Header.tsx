@@ -270,7 +270,7 @@ export const Header = () => {
                 
                 {/* Termini e Condizioni */}
                 <DropdownMenuItem
-                  onClick={() => navigate('/terms')}
+                  onClick={() => navigate('/terms-and-conditions')}
                   className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-pp-gold hover:bg-pp-gold/10 hover:text-pp-gold"
                 >
                   <FileTextIcon className="h-5 w-5" />
@@ -279,7 +279,7 @@ export const Header = () => {
                 
                 {/* GDPR */}
                 <DropdownMenuItem
-                  onClick={() => navigate('/privacy')}
+                  onClick={() => navigate('/privacy-policy')}
                   className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-pp-gold hover:bg-pp-gold/10 hover:text-pp-gold"
                 >
                   <Shield className="h-5 w-5" />

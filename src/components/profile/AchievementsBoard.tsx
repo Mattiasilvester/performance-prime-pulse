@@ -48,6 +48,15 @@ export const AchievementsBoard = () => {
           })}
         </div>
       </div>
+      
+      {/* Overlay unico su tutta la sezione Albo delle Medaglie */}
+      <div className="absolute inset-0 bg-gray-600/40 backdrop-blur-sm rounded-2xl z-10 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🔒</div>
+          <h3 className="text-lg font-bold text-white mb-2">Funzionalità in arrivo</h3>
+          <p className="text-sm text-gray-200">L'albo delle medaglie sarà disponibile presto!</p>
+        </div>
+      </div>
     </div>
   );
 };

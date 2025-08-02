@@ -80,6 +80,64 @@
   - `src/components/schedule/UpcomingAppointments.tsx` - Overlay Appuntamenti
   - `src/components/schedule/ProfessionalsList.tsx` - Overlay Professionisti
 
+### **8. Sezione Coach AI**
+- **Route:** `/ai-coach` correttamente integrata
+- **File modificati:**
+  - `src/App.tsx` - Aggiunta route AICoach
+  - `src/pages/AICoach.tsx` - Integrazione AppLayout
+  - `src/components/ai/AICoach.tsx` - Layout corretto
+  - `src/components/ai/AIInsights.tsx` - Overlay aggiunto
+- **Componenti:** AICoachPrime, ChatInterface, AIInsights
+- **Layout:** Integrato con AppLayout e Bottom Navigation
+- **Funzionalità:** Chat AI, Piani personalizzati, Suggerimenti AI
+
+### **9. Sezione Profile**
+- **Route:** `/profile` correttamente integrata
+- **File modificati:**
+  - `src/App.tsx` - Aggiunta route Profile
+  - `src/pages/Profile.tsx` - Integrazione AppLayout
+  - `src/components/profile/Profile.tsx` - Layout corretto
+- **Componenti:** UserProfile, AchievementsBoard, ProgressHistory, Settings
+- **Layout:** Integrato con AppLayout e Bottom Navigation
+- **Funzionalità:** Gestione profilo, Achievement, Progressi, Impostazioni
+
+### **10. Sezione Subscriptions**
+- **Route:** `/subscriptions` correttamente integrata
+- **File modificati:**
+  - `src/App.tsx` - Aggiunta route Subscriptions
+  - `src/pages/Subscriptions.tsx` - Integrazione AppLayout
+- **Componenti:** Piani BASIC, ADVANCED, PRO
+- **Layout:** Integrato con AppLayout e Bottom Navigation
+- **Funzionalità:** Gestione abbonamenti e piani premium
+
+### **11. Sezione Timer**
+- **Route:** `/timer` correttamente integrata
+- **File modificati:**
+  - `src/App.tsx` - Aggiunta route Timer
+  - `src/pages/Timer.tsx` - Integrazione AppLayout
+- **Componenti:** WorkoutTimer con controlli completi
+- **Layout:** Integrato con AppLayout e Bottom Navigation
+- **Funzionalità:** Timer countdown, input ore/minuti/secondi
+
+### **12. Sezione Notes**
+- **Route:** `/notes` correttamente integrata
+- **File modificati:**
+  - `src/App.tsx` - Aggiunta route Notes
+  - `src/pages/Notes.tsx` - Integrazione AppLayout
+- **Componenti:** Notes con sidebar e editor
+- **Layout:** Integrato con AppLayout e Bottom Navigation
+- **Funzionalità:** Creazione, modifica, eliminazione note
+
+### **13. Pagine Legali**
+- **Route:** `/terms-and-conditions` e `/privacy-policy` correttamente integrate
+- **File modificati:**
+  - `src/App.tsx` - Aggiunta route pagine legali
+  - `src/pages/TermsAndConditions.tsx` - Pagina completa
+  - `src/pages/PrivacyPolicy.tsx` - Pagina completa
+- **Componenti:** Termini e Condizioni, Privacy Policy
+- **Layout:** Integrato con AppLayout e Bottom Navigation
+- **Funzionalità:** Contenuto legale completo e GDPR compliant
+
 ---
 
 ## 🏗️ **ARCHITETTURA AGGIORNATA**
@@ -130,11 +188,39 @@
 
 ### **Coach AI**
 - **Chat base** e assistenza
+- **Piani personalizzati** con modal di creazione
+- **Suggerimenti AI** e consigli del giorno
+- **Insights AI** (con overlay premium)
 - **Funzionalità AI** in sviluppo
 
 ### **Profilo**
 - **Gestione informazioni** utente
+- **Achievement board** e progressi
+- **Cronologia progressi** e statistiche
 - **Impostazioni** e preferenze
+
+### **Abbonamenti**
+- **Piani disponibili:** BASIC, ADVANCED, PRO
+- **Gestione abbonamenti** e piani premium
+- **Feature dettagliate** per ogni piano
+- **Accesso dal menu dropdown** utente
+
+### **Timer**
+- **Timer countdown** per allenamenti
+- **Input ore/minuti/secondi** personalizzabili
+- **Controlli play/pause/reset** completi
+- **Accesso dal menu dropdown** utente
+
+### **Note**
+- **Creazione e modifica** note personali
+- **Ricerca note** con filtro
+- **Organizzazione temporale** (oggi, ieri, ultimi 30 giorni)
+- **Accesso dal menu dropdown** utente
+
+### **Pagine Legali**
+- **Termini e Condizioni** - Contenuto legale completo
+- **Privacy Policy** - GDPR compliant
+- **Accesso dal menu dropdown** utente
 
 ---
 
@@ -152,6 +238,8 @@
 ### **Insights AI**
 - **Analisi avanzata** bloccata
 - **Contatto professionisti** bloccato
+- **Insights AI** con overlay
+- **Albo delle medaglie** con overlay
 
 ---
 
@@ -216,6 +304,17 @@
 - ✅ `src/components/schedule/ProfessionalsList.tsx` - Overlay aggiunto
 - ✅ `src/pages/Workouts.tsx` - Integrazione AppLayout
 - ✅ `src/pages/Schedule.tsx` - Integrazione AppLayout
+- ✅ `src/pages/AICoach.tsx` - Integrazione AppLayout
+- ✅ `src/components/ai/AICoach.tsx` - Layout corretto
+- ✅ `src/components/ai/AIInsights.tsx` - Overlay aggiunto
+- ✅ `src/pages/Profile.tsx` - Integrazione AppLayout
+- ✅ `src/components/profile/Profile.tsx` - Layout corretto
+- ✅ `src/components/profile/AchievementsBoard.tsx` - Overlay aggiunto
+- ✅ `src/pages/Subscriptions.tsx` - Integrazione AppLayout
+- ✅ `src/pages/Timer.tsx` - Integrazione AppLayout
+- ✅ `src/pages/Notes.tsx` - Integrazione AppLayout
+- ✅ `src/pages/TermsAndConditions.tsx` - Pagina completa
+- ✅ `src/pages/PrivacyPolicy.tsx` - Pagina completa
 
 ---
 
