@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 const Subscriptions = () => {
   const plans = [
@@ -52,8 +53,8 @@ const Subscriptions = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-8">
+    <AppLayout>
+      <div className="container mx-auto px-4 py-6 space-y-6">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-[#F5C118] mb-4">
             ABBONAMENTI
@@ -64,7 +65,7 @@ const Subscriptions = () => {
         </div>
 
         <div 
-          className="flex gap-6 overflow-x-auto pb-4 px-4 snap-x snap-mandatory scrollbar-hide justify-center pt-20"
+          className="flex gap-6 overflow-x-auto pb-4 px-4 snap-x snap-mandatory scrollbar-hide justify-center"
         >
           {plans.map((plan) => (
             <div 
@@ -117,7 +118,7 @@ const Subscriptions = () => {
           ))}
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

@@ -28,7 +28,6 @@ const insights = [
 export const AIInsights = () => {
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-gray-500 p-6 insights-ai relative">
-
       <h3 className="text-lg font-semibold text-[#EEBA2B] mb-4">
         Insights AI
       </h3>
@@ -54,6 +53,15 @@ export const AIInsights = () => {
             </div>
           );
         })}
+      </div>
+      
+      {/* Overlay unico su tutta la sezione Insights AI */}
+      <div className="absolute inset-0 bg-gray-600/40 backdrop-blur-sm rounded-2xl z-10 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🔒</div>
+          <h3 className="text-lg font-bold text-white mb-2">Funzionalità in arrivo</h3>
+          <p className="text-sm text-gray-200">Gli insights AI saranno disponibili presto!</p>
+        </div>
       </div>
     </div>
   );

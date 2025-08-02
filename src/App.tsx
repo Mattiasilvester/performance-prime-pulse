@@ -13,6 +13,13 @@ import Auth from './public/pages/Auth';
 import Dashboard from './pages/Dashboard';
 import Workouts from './pages/Workouts';
 import Schedule from './pages/Schedule';
+import AICoach from './pages/AICoach';
+import Profile from './pages/Profile';
+import Subscriptions from './pages/Subscriptions';
+import Timer from './pages/Timer';
+import Notes from './pages/Notes';
+import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -56,6 +63,48 @@ const App = () => {
               <Route path="/schedule" element={
                 <ProtectedRoute>
                   <Schedule />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/ai-coach" element={
+                <ProtectedRoute>
+                  <AICoach />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/subscriptions" element={
+                <ProtectedRoute>
+                  <Subscriptions />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/timer" element={
+                <ProtectedRoute>
+                  <Timer />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/notes" element={
+                <ProtectedRoute>
+                  <Notes />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/terms-and-conditions" element={
+                <ProtectedRoute>
+                  <TermsAndConditions />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/privacy-policy" element={
+                <ProtectedRoute>
+                  <PrivacyPolicy />
                 </ProtectedRoute>
               } />
               
