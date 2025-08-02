@@ -12,7 +12,10 @@
     "start:public": "NODE_ENV=production npm run dev",
     "start:dev": "npm run dev",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "dev:landing": "VITE_APP_MODE=landing vite",
+    "build:landing": "VITE_APP_MODE=landing tsc && vite build",
+    "preview:landing": "VITE_APP_MODE=landing vite preview"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.0",
