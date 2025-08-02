@@ -18,6 +18,10 @@ const AuthPage = () => {
   // Controlla se utente già autenticato
   useEffect(() => {
     const checkExistingSession = async () => {
+      if (!supabase) {
+        console.warn('Supabase not available, skipping session check');
+        return;
+      }
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         // Utente già loggato → Vai all'MVP Dashboard
@@ -38,6 +42,37 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // MOCK AUTH PER TEST UI - TEMPORANEO
+    console.log('🔄 Mock auth per test UI');
+    
+    // Simula validazione
+    if (mode === 'register') {
+      if (formData.password !== formData.confirmPassword) {
+        setError('Le password non coincidono');
+        setLoading(false);
+        return;
+      }
+      if (formData.password.length < 6) {
+        setError('La password deve essere di almeno 6 caratteri');
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Simula login/registrazione riuscita
+    setTimeout(() => {
+      console.log('✅ Mock auth successful');
+      redirectToMVPDashboard();
+    }, 1000);
+
+    // CODICE SUPABASE ORIGINALE (COMMENTATO)
+    /*
+    if (!supabase) {
+      setError('Servizio di autenticazione non disponibile');
+      setLoading(false);
+      return;
+    }
 
     try {
       if (mode === 'register') {
@@ -87,6 +122,7 @@ const AuthPage = () => {
     } finally {
       setLoading(false);
     }
+    */
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

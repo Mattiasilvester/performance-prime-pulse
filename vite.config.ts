@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: "::",
-      port: 8080,
+      port: isLanding ? 8081 : 8080,
       headers: {
         'X-Frame-Options': 'DENY',
         'X-Content-Type-Options': 'nosniff',
