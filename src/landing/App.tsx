@@ -6,6 +6,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import './styles/landing.css';
 
 function LandingApp() {
+  console.log('🚀 Landing App loaded!');
+  
   return (
     <BrowserRouter>
       <div className="landing-app">
