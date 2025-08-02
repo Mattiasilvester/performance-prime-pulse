@@ -40,7 +40,7 @@ const professionals = [
 
 export const ProfessionalsList = () => {
   return (
-    <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl shadow-lg border-2 border-[#c89116] p-6 professionisti">
+    <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl shadow-lg border-2 border-[#c89116] p-6 professionisti relative">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-pp-gold">Professionisti</h3>
         <Button variant="ghost" size="sm" className="text-white hover:text-pp-gold">
@@ -94,6 +94,15 @@ export const ProfessionalsList = () => {
             <div className={`prof-card__status-dot ${professional.available ? 'online' : 'offline'}`} />
           </div>
         ))}
+      </div>
+      
+      {/* Overlay unico su tutta la sezione Professionisti */}
+      <div className="absolute inset-0 bg-gray-600/40 backdrop-blur-sm rounded-2xl z-10 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🔒</div>
+          <h3 className="text-lg font-bold text-white mb-2">Funzionalità in arrivo</h3>
+          <p className="text-sm text-gray-200">I professionisti saranno disponibili presto!</p>
+        </div>
       </div>
     </div>
   );

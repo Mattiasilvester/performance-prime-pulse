@@ -85,7 +85,7 @@ export const Workouts = () => {
   };
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-6 bg-black min-h-screen border-2 border-black">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-pp-gold">Allenamenti</h2>

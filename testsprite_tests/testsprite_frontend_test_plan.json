@@ -1,0 +1,542 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Registration Success",
+    "description": "Verify that a new user can successfully register with valid details.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the registration page."
+      },
+      {
+        "type": "action",
+        "description": "Enter valid user information including email, username, and password."
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm user registration is successful and user is redirected appropriately."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Registration with Invalid Email",
+    "description": "Verify the system shows an error when registering with an invalid email format.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the registration page."
+      },
+      {
+        "type": "action",
+        "description": "Enter invalid email, valid username, and password."
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that an email format validation error message is displayed."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Login Success",
+    "description": "Verify that a registered user can login with correct credentials.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page."
+      },
+      {
+        "type": "action",
+        "description": "Enter valid registered email and password."
+      },
+      {
+        "type": "action",
+        "description": "Click the login button."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm user is successfully logged in and redirected to the Dashboard."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Login Failure with Incorrect Password",
+    "description": "Verify login fails when user enters an incorrect password.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page."
+      },
+      {
+        "type": "action",
+        "description": "Enter registered email and incorrect password."
+      },
+      {
+        "type": "action",
+        "description": "Click the login button."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an error message about incorrect credentials is displayed."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Password Reset Workflow",
+    "description": "Verify that the password reset process completes successfully via email.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the password reset page."
+      },
+      {
+        "type": "action",
+        "description": "Submit a registered email address."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that a password reset email is sent."
+      },
+      {
+        "type": "action",
+        "description": "Follow the reset link and set a new password."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm password is successfully updated and user can login with new password."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Dashboard Metric Accuracy",
+    "description": "Verify that the Dashboard displays accurate and up-to-date user metrics and recent activity.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as an active user with recorded workout data."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the Dashboard page."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that weekly progress, key metrics, and recent activities are displayed correctly."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "AI Coach Personalized Plan Delivery",
+    "description": "Verify AI Coach provides personalized workout plans based on user input and profile data.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and access the AI Coach chat interface."
+      },
+      {
+        "type": "action",
+        "description": "Submit user goals and preferences through chat."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify AI responds with a customized workout plan and fitness insights."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Workout Creation and Tracking",
+    "description": "Ensure users can create workouts, add exercises, track progress, and complete workout sessions.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to the Workout Management section."
+      },
+      {
+        "type": "action",
+        "description": "Create a new workout with multiple exercises."
+      },
+      {
+        "type": "action",
+        "description": "Start the workout and track exercise completion."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify workout exercises update progress correctly and workouts can be marked complete."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Automatic Workout Generation",
+    "description": "Check that the system correctly generates a workout automatically based on user preferences.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Access automatic workout generation in the workout section."
+      },
+      {
+        "type": "action",
+        "description": "Input desired workout duration and focus areas."
+      },
+      {
+        "type": "action",
+        "description": "Submit parameters to generate a workout."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a workout is generated that matches the input preferences."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Appointment Scheduling and Management",
+    "description": "Validate that users can schedule, reschedule, and cancel appointments and view them on the calendar.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to the Schedule page."
+      },
+      {
+        "type": "action",
+        "description": "Create a new appointment using the calendar interface."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the appointment appears in the calendar and upcoming appointments list."
+      },
+      {
+        "type": "action",
+        "description": "Reschedule the appointment to a different date/time."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the appointment is updated accordingly."
+      },
+      {
+        "type": "action",
+        "description": "Cancel the appointment."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the appointment is removed from the calendar and upcoming appointments."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "User Profile Update and Goal Tracking",
+    "description": "Ensure updates to user profile information, goals, and achievements are saved and displayed correctly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to the Profile & Settings section."
+      },
+      {
+        "type": "action",
+        "description": "Update profile fields, add a new goal, and mark an achievement."
+      },
+      {
+        "type": "action",
+        "description": "Save changes."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify updates persist and are correctly rendered throughout the application."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Notes System Functionality",
+    "description": "Verify users can add, edit, and delete personal workout notes without errors.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to the Notes section."
+      },
+      {
+        "type": "action",
+        "description": "Create a new note."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the note is saved and displayed correctly."
+      },
+      {
+        "type": "action",
+        "description": "Edit the note content."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify edited content is saved and updated correctly."
+      },
+      {
+        "type": "action",
+        "description": "Delete the note."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the note is removed from the system."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Workout Timer Accuracy and Integration",
+    "description": "Verify the workout timer counts time accurately and integrates with workout sessions.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start a workout session with the timer enabled."
+      },
+      {
+        "type": "action",
+        "description": "Start the timer and let it run for a specified duration."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the timer counts accurately and matches real elapsed time."
+      },
+      {
+        "type": "action",
+        "description": "Pause and resume the timer during the workout."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure timer controls work correctly without time loss."
+      },
+      {
+        "type": "action",
+        "description": "Stop the timer and complete the workout."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify session duration is recorded and linked to workout data."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Subscription Management Workflow",
+    "description": "Validate subscription plan selection, payment processing, and subscription status updates.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to the Subscriptions page."
+      },
+      {
+        "type": "action",
+        "description": "View available subscription plans."
+      },
+      {
+        "type": "action",
+        "description": "Select a premium subscription plan and proceed to payment."
+      },
+      {
+        "type": "action",
+        "description": "Complete the payment process."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify subscription status is updated to active premium."
+      },
+      {
+        "type": "action",
+        "description": "Cancel the subscription."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure subscription status updates to reflect cancellation."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Route Protection for Authenticated Areas",
+    "description": "Ensure protected routes are inaccessible to unauthenticated users and redirect to login.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to navigate directly to a protected route (e.g. Dashboard) without logging in."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify unauthenticated user is redirected to the login page."
+      },
+      {
+        "type": "action",
+        "description": "Login with valid credentials."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access the protected route again."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the route is accessible after authentication."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Multi-language Support Verification",
+    "description": "Verify UI elements and text appropriately change according to selected language and no content breaks occur.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to language settings."
+      },
+      {
+        "type": "action",
+        "description": "Switch language from default (e.g. English) to another language (e.g. Italian)."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI text updates properly in the selected language throughout key pages."
+      },
+      {
+        "type": "action",
+        "description": "Switch back to the original language."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm text changes back accordingly with no UI breakage."
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Mobile Responsiveness and Capacitor Integration",
+    "description": "Verify that the application UI renders correctly and functions on major mobile devices using Capacitor.",
+    "category": "ui",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Launch the app on iOS and Android devices."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI adjusts responsively without scrolling or layout breakage."
+      },
+      {
+        "type": "action",
+        "description": "Perform typical user flows such as login, navigation, workout tracking, and scheduling."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure all flows work without errors or crashes."
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "QR Code Generation and Display",
+    "description": "Validate that QR codes are generated correctly and rendered in relevant contexts.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger QR code generation for a specific workout or appointment."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the QR code is generated and displayed correctly."
+      },
+      {
+        "type": "action",
+        "description": "Scan the QR code using a QR code reader."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm scanned information matches the intended workout or appointment details."
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "UI Consistency Using Reusable Components",
+    "description": "Ensure the UI components render consistently and conform to design across various pages and devices.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open multiple application pages including Dashboard, AI Coach, Workouts, Schedule, and Profile."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify consistent styling, spacing, and interaction of UI elements based on the Shadcn/ui component library."
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Logout Functionality",
+    "description": "Verify users can logout securely from the application and session data is cleared.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login to the application."
+      },
+      {
+        "type": "action",
+        "description": "Click the logout button or link."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user is securely logged out, session cleaned, and redirected to the login or landing page."
+      }
+    ]
+  }
+]

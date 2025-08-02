@@ -11,6 +11,8 @@ import { useAuthListener } from '@/hooks/useAuthListener';
 import SmartHomePage from './pages/SmartHomePage';
 import Auth from './public/pages/Auth';
 import Dashboard from './pages/Dashboard';
+import Workouts from './pages/Workouts';
+import Schedule from './pages/Schedule';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -42,6 +44,18 @@ const App = () => {
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/workouts" element={
+                <ProtectedRoute>
+                  <Workouts />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/schedule" element={
+                <ProtectedRoute>
+                  <Schedule />
                 </ProtectedRoute>
               } />
               

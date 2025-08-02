@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:8081",
+  "loginUser": "test1",
+  "loginPassword": "test1234",
+  "executionArgs": {
+    "projectName": "performance-prime-pulse",
+    "projectPath": "/Users/mattiasilvestrelli/Prime-puls-HUB/performance-prime-pulse",
+    "testIds": [],
+    "additionalInstruction": "Testa tutte le funzionalità principali dell'app MVP: autenticazione, dashboard, AI coach, workout management, schedule, profile, notes, timer e subscriptions. Verifica che il layout sia corretto (header + main content senza sidebar) e che gli overlay premium funzionino correttamente. Testa la responsività su dispositivi mobili. Il server è ora funzionante sulla porta 8081.",
+    "envs": {
+      "API_KEY": "sk-user-uJYrrzJloT3zAuGW0K9F5D_yiCSKY8yyjTGoRti7LrPKYvd7olDkjA3xKUPE-QvdY48_HTfEXvaXBqwNOR186X2zMjSw9qwshPVJh62W5ItfhPolJ_iwbXA7GPDBaYBVVzM"
+    }
+  },
+  "proxy": "http://6834feae-b534-481a-971e-98352f10767c:65S1leENby2QcocKyrj4iHlpeJX7fzr0@tun.testsprite.com:8080"
+}

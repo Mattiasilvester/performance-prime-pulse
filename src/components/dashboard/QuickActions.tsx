@@ -135,44 +135,10 @@ const QuickActions = () => {
 
         <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
         
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 relative">
           {actions.map((action) => {
             const Icon = action.icon;
             
-            // Determina se l'azione deve essere bloccata nell'MVP
-            const isBlockedInMVP = action.label === 'Prenota Sessione' || action.label === 'Chat AI Coach';
-            
-            if (isBlockedInMVP) {
-              return (
-                <div key={action.label} className="relative">
-                  {/* Overlay di blocco per singola azione */}
-                  <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-4xl mb-4">🔒</div>
-                      <h3 className="text-lg font-bold text-white mb-2">Funzionalità in arrivo</h3>
-                      <p className="text-sm text-gray-300">Le azioni rapide saranno disponibili presto!</p>
-                    </div>
-                  </div>
-                  
-                  {/* Contenuto originale (bloccato) */}
-                  <div className="opacity-30 pointer-events-none">
-                    <Button
-                      onClick={action.onClick}
-                      disabled={action.disabled}
-                      className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 hover:scale-105 transition-all duration-200`}
-                    >
-                      <Icon className="h-6 w-6" />
-                      <div className="text-center">
-                        <p className="font-medium text-sm">{action.label}</p>
-                        <p className="text-xs opacity-90">{action.description}</p>
-                      </div>
-                    </Button>
-                  </div>
-                </div>
-              );
-            }
-            
-            // Altrimenti mostra il pulsante normale
             return (
               <Button
                 key={action.label}
@@ -188,6 +154,15 @@ const QuickActions = () => {
               </Button>
             );
           })}
+          
+          {/* Overlay unico su tutta la sezione Azioni Rapide */}
+          <div className="absolute inset-0 bg-gray-600/40 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-4xl mb-4">🔒</div>
+              <h3 className="text-lg font-bold text-white mb-2">Funzionalità in arrivo</h3>
+              <p className="text-sm text-gray-200">Le azioni rapide saranno disponibili presto!</p>
+            </div>
+          </div>
         </div>
       </div>
 

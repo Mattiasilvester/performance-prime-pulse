@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Navigation } from '@/components/layout/Navigation';
 
 const Timer = () => {
   const navigate = useNavigate();
@@ -42,8 +41,6 @@ const Timer = () => {
           </div>
         </div>
       </div>
-      
-      <Navigation />
     </div>
   );
 };
