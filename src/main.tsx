@@ -1,5 +1,9 @@
 import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
 import './index.css'
+
+// Import condizionale basato su modalità
+const App = import.meta.env.VITE_APP_MODE === 'landing' 
+  ? require('./landing/App').default 
+  : require('./App').default;
 
 createRoot(document.getElementById("root")!).render(<App />);
