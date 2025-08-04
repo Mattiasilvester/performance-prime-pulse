@@ -10,6 +10,7 @@ import { useAuthListener } from '@/hooks/useAuthListener';
 // Import diretto per MVP
 import SmartHomePage from './pages/SmartHomePage';
 import Auth from './public/pages/Auth';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Workouts from './pages/Workouts';
 import Schedule from './pages/Schedule';
@@ -40,6 +41,9 @@ const App = () => {
               
               {/* Pagina di autenticazione */}
               <Route path="/auth" element={<Auth />} />
+              
+              {/* Pagina di reset password */}
+              <Route path="/reset-password" element={<ResetPassword />} />
               
               {/* Route protette */}
               <Route path="/app" element={
