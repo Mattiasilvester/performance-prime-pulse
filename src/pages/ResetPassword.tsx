@@ -23,22 +23,55 @@ const ResetPassword = () => {
 
   // Verifica se l'utente ha un token valido per il reset
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setHasValidToken(true);
+    const checkResetToken = async () => {
+      // Controlla se abbiamo parametri access_token e refresh_token nell'URL
+      const accessToken = searchParams.get('access_token');
+      const refreshToken = searchParams.get('refresh_token');
+      const type = searchParams.get('type');
+      
+      console.log('Reset password URL params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+      
+      if (accessToken && refreshToken && type === 'recovery') {
+        try {
+          // Imposta la sessione usando i token dall'URL
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          
+          if (error) {
+            console.error('Errore impostazione sessione:', error);
+            throw error;
+          }
+          
+          console.log('Sessione impostata con successo per reset password');
+          setHasValidToken(true);
+        } catch (error) {
+          console.error('Errore durante l\'impostazione della sessione:', error);
+          toast({
+            title: "Errore",
+            description: "Link di recupero password non valido o scaduto.",
+            variant: "destructive",
+          });
+          navigate('/auth');
+        }
       } else {
-        // Se non c'è sessione valida, reindirizza al login
-        toast({
-          title: "Errore",
-          description: "Link di recupero password non valido o scaduto.",
-          variant: "destructive",
-        });
-        navigate('/auth');
+        // Verifica sessione esistente
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setHasValidToken(true);
+        } else {
+          toast({
+            title: "Errore", 
+            description: "Link di recupero password non valido o scaduto.",
+            variant: "destructive",
+          });
+          navigate('/auth');
+        }
       }
     };
-    checkSession();
-  }, [navigate, toast]);
+    checkResetToken();
+  }, [navigate, toast, searchParams]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
