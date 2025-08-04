@@ -9,7 +9,7 @@ import { useAuthListener } from '@/hooks/useAuthListener';
 
 // Import diretto per MVP
 import SmartHomePage from './pages/SmartHomePage';
-import Auth from './public/pages/Auth';
+import Auth from './pages/Auth';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Workouts from './pages/Workouts';
