@@ -200,7 +200,7 @@ const Auth = () => {
       const sanitizedEmail = sanitizeText(loginEmail.trim().toLowerCase());
 
       const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `http://localhost:8080/reset-password`,
       });
 
       if (error) {
