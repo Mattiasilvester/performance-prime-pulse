@@ -134,31 +134,55 @@ const AuthPage = () => {
 
   return (
     <div className="auth-page">
+      {/* Background Animation */}
+      <div className="auth-background">
+        <div className="auth-shapes">
+          <div className="auth-shape auth-shape-1"></div>
+          <div className="auth-shape auth-shape-2"></div>
+        </div>
+      </div>
+      
       <div className="auth-container">
+        {/* Brand Header */}
+        <div className="auth-brand">
+          <div className="auth-logo">DD</div>
+          <h1 className="auth-brand-title">Performance Prime</h1>
+        </div>
+        
         <div className="auth-header">
-          <h1>Performance Prime</h1>
-          <p>{mode === 'login' ? 'Accedi al tuo account' : 'Crea il tuo account'}</p>
+          <h2 className="auth-title">
+            {mode === 'login' ? 'Bentornato!' : 'Crea il tuo account'}
+          </h2>
+          <p className="auth-subtitle">
+            {mode === 'login' 
+              ? 'Accedi alla tua dashboard personalizzata' 
+              : 'Inizia il tuo percorso verso la performance'
+            }
+          </p>
         </div>
 
         {/* Toggle Login/Register */}
         <div className="auth-toggle">
           <button
-            className={mode === 'login' ? 'active' : ''}
+            className={`toggle-btn ${mode === 'login' ? 'active' : ''}`}
             onClick={() => setMode('login')}
           >
-            Accedi
+            <span className="toggle-icon">🔐</span>
+            <span>Accedi</span>
           </button>
           <button
-            className={mode === 'register' ? 'active' : ''}
+            className={`toggle-btn ${mode === 'register' ? 'active' : ''}`}
             onClick={() => setMode('register')}
           >
-            Registrati
+            <span className="toggle-icon">🚀</span>
+            <span>Registrati</span>
           </button>
         </div>
 
         {/* Error Message */}
         {error && (
           <div className="error-message">
+            <span className="error-icon">⚠️</span>
             {error}
           </div>
         )}
@@ -167,25 +191,29 @@ const AuthPage = () => {
         <form onSubmit={handleSubmit} className="auth-form">
           {mode === 'register' && (
             <>
-              <input
-                type="text"
-                name="firstName"
-                placeholder="Nome"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                required
-              />
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Cognome"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                required
-              />
+              <div className="form-row">
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="Nome"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  required
+                  className="form-input"
+                />
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Cognome"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  required
+                  className="form-input"
+                />
+              </div>
             </>
           )}
-
+          
           <input
             type="email"
             name="email"
@@ -193,8 +221,9 @@ const AuthPage = () => {
             value={formData.email}
             onChange={handleInputChange}
             required
+            className="form-input"
           />
-
+          
           <input
             type="password"
             name="password"
@@ -202,8 +231,9 @@ const AuthPage = () => {
             value={formData.password}
             onChange={handleInputChange}
             required
+            className="form-input"
           />
-
+          
           {mode === 'register' && (
             <input
               type="password"
@@ -212,18 +242,38 @@ const AuthPage = () => {
               value={formData.confirmPassword}
               onChange={handleInputChange}
               required
+              className="form-input"
             />
           )}
-
-          <button type="submit" disabled={loading} className="auth-submit">
-            {loading ? 'Caricamento...' : (mode === 'login' ? 'Accedi' : 'Registrati')}
+          
+          <button 
+            type="submit" 
+            className={`auth-submit ${loading ? 'loading' : ''}`}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span className="loading-spinner"></span>
+                <span>Caricamento...</span>
+              </>
+            ) : (
+              <>
+                <span className="submit-icon">
+                  {mode === 'login' ? '🔐' : '🚀'}
+                </span>
+                <span>{mode === 'login' ? 'Accedi' : 'Registrati'}</span>
+              </>
+            )}
           </button>
         </form>
 
-        {/* Back to Landing */}
+        {/* Auth Footer */}
         <div className="auth-footer">
-          <button onClick={() => navigate('/')} className="back-button">
-            ← Torna alla home
+          <button 
+            onClick={() => navigate('/')} 
+            className="back-button"
+          >
+            ← Torna alla landing page
           </button>
         </div>
       </div>

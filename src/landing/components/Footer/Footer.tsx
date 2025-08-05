@@ -11,7 +11,7 @@ const Footer = () => {
           <div className="footer-section">
             <h3 className="footer-title">Performance Prime</h3>
             <p className="footer-description">
-              Oltre ogni limite, verso la tua migliore versione.
+              Oltre ogni limite, verso la tua versione migliore.
             </p>
           </div>
           
@@ -24,6 +24,14 @@ const Footer = () => {
                   className="footer-link"
                 >
                   Accedi
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => navigate('/terms-and-conditions')}
+                  className="footer-link"
+                >
+                  Termini e Condizioni
                 </button>
               </li>
               <li>
@@ -41,6 +49,9 @@ const Footer = () => {
             <h4 className="footer-subtitle">Contatti</h4>
             <p className="footer-contact">
               Email: primeassistenza@gmail.com
+            </p>
+            <p className="footer-contact">
+              P.IVA: 17774791002
             </p>
           </div>
         </div>

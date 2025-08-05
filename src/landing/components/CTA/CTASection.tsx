@@ -25,15 +25,6 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
             </p>
           </div>
         </div>
-        
-        <div className="cta-links">
-          <button 
-            onClick={onCTAClick}
-            className="cta-link"
-          >
-            Oppure clicca qui per accedere direttamente →
-          </button>
-        </div>
       </div>
     </section>
   );

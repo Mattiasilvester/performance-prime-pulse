@@ -20,7 +20,7 @@ const LandingPage = () => {
       <HeroSection onCTAClick={handleCTAClick} />
       
       {/* Features Section */}
-      <FeaturesSection />
+      <FeaturesSection onCTAClick={handleCTAClick} />
       
       {/* Call to Action Section */}
       <CTASection onCTAClick={handleCTAClick} />

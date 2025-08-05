@@ -118,7 +118,7 @@ const TermsAndConditions = () => {
               <h2 className="text-xl font-semibold text-pp-gold mb-3">8. Contatti</h2>
               <p className="text-gray-300 leading-relaxed">
                 Per domande sui Termini e Condizioni, contattaci all'indirizzo: 
-                <span className="text-pp-gold"> support@performanceprime.it</span>
+                <span className="text-pp-gold"> primeassistenza@gmail.com</span>
               </p>
             </section>
 
