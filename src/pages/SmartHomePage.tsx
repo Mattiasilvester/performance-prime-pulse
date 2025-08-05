@@ -3,14 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { testAuthConfiguration, simulateAuthFlow, checkAuthPersistence } from '@/utils/authTest';
 
-// Import landing page components
-import LandingPage from './Landing';
-
 const SmartHomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>('');
-  const [showLanding, setShowLanding] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,9 +28,8 @@ const SmartHomePage = () => {
         if (error) {
           console.error('❌ Errore controllo sessione:', error);
           setDebugInfo('Errore controllo sessione');
-          // In caso di errore, mostra landing page
-          setShowLanding(true);
-          setIsLoading(false);
+          // In caso di errore, vai al login
+          navigate('/auth', { replace: true });
           return;
         }
 
@@ -46,16 +41,16 @@ const SmartHomePage = () => {
           setDebugInfo('Utente autenticato, redirect a dashboard');
           navigate('/dashboard', { replace: true });
         } else {
-          // ❌ Utente non autenticato → Mostra Landing Page
-          console.log('❌ Utente non autenticato, mostra landing page');
-          setDebugInfo('Utente non autenticato, mostra landing page');
-          setShowLanding(true);
+          // ❌ Utente non autenticato → Auth
+          console.log('❌ Utente non autenticato, redirect a auth');
+          setDebugInfo('Utente non autenticato, redirect a auth');
+          navigate('/auth', { replace: true });
         }
       } catch (error) {
         console.error('💥 Errore imprevisto homepage:', error);
         setDebugInfo('Errore imprevisto durante controllo auth');
-        // In caso di errore, mostra landing page
-        setShowLanding(true);
+        // In caso di errore, vai comunque al login
+        navigate('/auth', { replace: true });
       } finally {
         setIsLoading(false);
         setAuthChecked(true);
@@ -79,11 +74,6 @@ const SmartHomePage = () => {
         </div>
       </div>
     );
-  }
-
-  // Mostra landing page per utenti non autenticati
-  if (showLanding) {
-    return <LandingPage />;
   }
 
   // Questo componente fa solo redirect, non dovrebbe mai renderizzare contenuto
