@@ -1,224 +1,248 @@
-# Performance Prime Pulse
+# 🚀 Performance Prime - App Unificata
 
-## 🚀 **MVP CORRETTO E FUNZIONANTE**
+**Ultimo aggiornamento:** 5 Agosto 2025  
+**Stato:** ✅ **PRODUZIONE STABILE** - Deploy funzionante su `performanceprime.it`
 
-**Stato Attuale (2 Agosto 2025)**: 
-- ✅ **MVP corretto e funzionante** con server attivo su `http://localhost:8080/`
-- ✅ **Link pubblico:** `https://performanceprime.it`
-- ✅ **Architettura semplificata** - eliminata landing page complessa
-- ✅ **Flusso diretto:** `/` → `/auth` → `/app`
-- ✅ **Autenticazione Supabase** funzionante
-- ✅ **Dashboard protetta** e responsive
-- ✅ **Overlay corretto** - Funzioni premium bloccate con design coerente
-- ✅ **Layout corretto** - Header + Main Content (senza menu laterale)
-- ✅ **Sidebar sinistra completamente rimossa**
-- ✅ **Barra di navigazione inferiore** implementata
-- ✅ **Sezioni complete:** Dashboard, Allenamento, Appuntamenti, Coach AI, Profilo
+## 📋 PANORAMICA PROGETTO
 
-## 🎯 **Ultimi Sviluppi (2 Agosto 2025)**
+Performance Prime è un'applicazione React/TypeScript unificata che combina:
+- **Landing Page** per acquisizione utenti
+- **Sistema di Autenticazione** Supabase
+- **Dashboard MVP** per utenti autenticati
+- **Flusso completo:** Landing → Auth → Dashboard
 
-### **✅ Rimozione Completa Sidebar Sinistra**
-- **Problema:** Sidebar sinistra ancora presente nell'MVP pubblico
-- **Soluzione:** Eliminato completamente il componente Navigation.tsx
-- **Risultato:** Layout pulito con solo Header + Main Content
+## 🏗️ ARCHITETTURA UNIFICATA
 
-### **✅ Overlay Semi-Trasparente Azioni Rapide**
-- **Problema:** Overlay troppo scuro (`bg-black/80`)
-- **Soluzione:** Overlay semi-trasparente (`bg-gray-600/40`)
-- **Risultato:** Contenuto visibile sotto overlay con UX migliorata
+### **Entry Point Principale**
+```
+index.html → src/main.tsx → src/App.tsx
+```
 
-### **✅ Overlay Unico su Sezione Completa**
-- **Problema:** Overlay individuali su ogni card
-- **Soluzione:** Overlay unico su tutta la sezione "Azioni Rapide"
-- **Risultato:** Design pulito e coerente
+### **Routing Unificato**
+```typescript
+// src/App.tsx - App unificata
+<Routes>
+  {/* HOMEPAGE: Landing page per utenti non autenticati */}
+  <Route path="/" element={<SmartHomePage />} />
+  
+  {/* AUTH: Pagina di autenticazione unificata */}
+  <Route path="/auth" element={<Auth />} />
+  
+  {/* MVP DASHBOARD: Route protette per utenti autenticati */}
+  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+  <Route path="/workouts" element={<ProtectedRoute><Workouts /></ProtectedRoute>} />
+  <Route path="/schedule" element={<ProtectedRoute><Schedule /></ProtectedRoute>} />
+  <Route path="/ai-coach" element={<ProtectedRoute><AICoach /></ProtectedRoute>} />
+  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+  
+  {/* PAGINE LEGALI: Accessibili a tutti */}
+  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+</Routes>
+```
 
-### **✅ Barra di Navigazione Inferiore**
-- **Implementazione:** 5 icone (Dashboard, Allenamento, Appuntamenti, Coach AI, Profilo)
-- **Design:** Solo mobile (`lg:hidden`), tema scuro con accenti oro
-- **Funzionalità:** Navigazione completa tra sezioni
+### **Flusso Utente Completo**
+```
+performanceprime.it/
+├── /                    → Landing page (non autenticati)
+├── /auth               → Login/registrazione
+├── /dashboard          → Dashboard MVP (autenticati)
+├── /workouts           → Allenamenti MVP
+├── /schedule           → Appuntamenti MVP
+├── /ai-coach           → Coach AI MVP
+├── /profile            → Profilo MVP
+└── /privacy-policy     → Pagine legali
+```
 
-### **✅ Sezione Allenamento**
-- **Route:** `/workouts` correttamente integrata
-- **Funzionalità:** Categorie workout (Cardio, Forza, HIIT, Mobilità)
-- **Layout:** Integrato con AppLayout e Bottom Navigation
+## 🛠️ TECNOLOGIE
 
-### **✅ Sezione Appuntamenti**
-- **Route:** `/schedule` correttamente integrata
-- **Componenti:** AppointmentCalendar, UpcomingAppointments, ProfessionalsList
-- **Layout:** Integrato con AppLayout e Bottom Navigation
+- **Frontend:** React 18+ con TypeScript
+- **Styling:** Tailwind CSS + Shadcn/ui
+- **Backend:** Supabase (Auth + Database)
+- **Build:** Vite
+- **Mobile:** Capacitor (iOS/Android)
+- **Deploy:** Lovable
 
-### **✅ Sezione Coach AI**
-- **Route:** `/ai-coach` correttamente integrata
-- **Componenti:** AICoachPrime, ChatInterface, AIInsights
-- **Layout:** Integrato con AppLayout e Bottom Navigation
-- **Funzionalità:** Chat AI, Piani personalizzati, Suggerimenti AI
+## 🚀 COMANDI SVILUPPO
 
-### **✅ Sezione Profile**
-- **Route:** `/profile` correttamente integrata
-- **Componenti:** UserProfile, AchievementsBoard, ProgressHistory, Settings
-- **Layout:** Integrato con AppLayout e Bottom Navigation
-- **Funzionalità:** Gestione profilo, achievement, progressi, impostazioni
+### **Sviluppo Locale**
+```bash
+# MVP Dashboard (porta 8080)
+npm run dev
 
-### **✅ Sezione Subscriptions**
-- **Route:** `/subscriptions` correttamente integrata
-- **Componenti:** Piani BASIC, ADVANCED, PRO
-- **Layout:** Integrato con AppLayout e Bottom Navigation
-- **Funzionalità:** Gestione abbonamenti e piani premium
+# Landing Page (porta 8081) - DEPRECATO
+npm run dev:landing
 
-### **✅ Sezione Timer**
-- **Route:** `/timer` correttamente integrata
-- **Componenti:** WorkoutTimer con controlli completi
-- **Layout:** Integrato con AppLayout e Bottom Navigation
-- **Funzionalità:** Timer countdown, input ore/minuti/secondi
+# Build produzione
+npm run build:public
 
-### **✅ Sezione Notes**
-- **Route:** `/notes` correttamente integrata
-- **Componenti:** Notes con sidebar e editor
-- **Layout:** Integrato con AppLayout e Bottom Navigation
-- **Funzionalità:** Creazione, modifica, eliminazione note
+# Deploy Lovable
+npm run deploy:lovable
+```
 
-### **✅ Pagine Legali**
-- **Route:** `/terms-and-conditions` e `/privacy-policy` correttamente integrate
-- **Componenti:** Termini e Condizioni, Privacy Policy
-- **Layout:** Integrato con AppLayout e Bottom Navigation
-- **Funzionalità:** Contenuto legale completo e GDPR compliant
+### **Build e Deploy**
+```bash
+# Build app unificata
+npm run build:public
 
-### **✅ Overlay Sezioni Premium**
-- **Azioni Rapide:** Overlay unico con messaggio "Le azioni rapide saranno disponibili presto!"
-- **Prossimi Appuntamenti:** Overlay unico con messaggio "Gli appuntamenti saranno disponibili presto!"
-- **Professionisti:** Overlay unico con messaggio "I professionisti saranno disponibili presto!"
-- **Insights AI:** Overlay unico con messaggio "Gli insights AI saranno disponibili presto!"
+# Deploy su Lovable
+npm run deploy:lovable
+```
 
-## 🏗️ **Architettura**
+## 📁 STRUTTURA PROGETTO
 
-### **Layout Corretto**
-- **Header:** Logo "DD" + "Performance Prime" + menu dropdown utente
-- **Main Content:** Dashboard con metriche, azioni rapide, progressi
-- **Nessuna sidebar sinistra:** Rimossa completamente
-- **Responsive:** Ottimizzato per mobile e desktop
+```
+src/
+├── App.tsx                    # ← Router principale UNIFICATO
+├── main.tsx                   # ← Entry point UNIFICATO
+├── landing/                   # ← Componenti landing page
+│   ├── App.tsx               # ← Router landing (DEPRECATO)
+│   ├── pages/
+│   │   ├── LandingPage.tsx   # ← Homepage landing
+│   │   └── AuthPage.tsx      # ← Auth landing
+│   └── components/           # ← Componenti landing
+├── pages/                    # ← Pagine MVP
+│   ├── Dashboard.tsx         # ← Dashboard principale
+│   ├── Auth.tsx              # ← Auth MVP
+│   ├── Profile.tsx           # ← Profilo utente
+│   ├── Workouts.tsx          # ← Allenamenti
+│   ├── Schedule.tsx          # ← Appuntamenti
+│   ├── AICoach.tsx           # ← Coach AI
+│   ├── Timer.tsx             # ← Timer allenamenti
+│   ├── Notes.tsx             # ← Note personali
+│   └── Subscriptions.tsx     # ← Gestione abbonamenti
+├── components/               # ← Componenti MVP
+│   ├── ui/                  # ← Componenti UI
+│   ├── layout/              # ← Layout components
+│   ├── dashboard/           # ← Dashboard components
+│   ├── workouts/            # ← Workout components
+│   ├── schedule/            # ← Schedule components
+│   ├── profile/             # ← Profile components
+│   └── ai/                  # ← AI components
+├── hooks/                   # ← Custom hooks
+├── services/                # ← API services
+├── integrations/            # ← Integrazioni esterne
+│   └── supabase/           # ← Configurazione Supabase
+└── shared/                 # ← Codice condiviso
+```
 
-### **Overlay Premium**
-- **Lucchetto 🔒** al centro per funzioni bloccate
-- **Messaggio:** "Funzionalità in arrivo"
-- **Sottotitolo:** Messaggi specifici per ogni sezione
-- **Opacità:** Contenuto bloccato visibile sotto overlay
+## 🔧 CONFIGURAZIONE DEPLOY
 
-### **Menu Dropdown**
-- **Utente:** Nome utente + icone (search, notifications, menu)
-- **Voci:** Dashboard, Abbonamenti, Allenamento, Appuntamenti, Timer, Coach AI, Note, Profilo, Logout
-- **Legale:** Termini e Condizioni, Privacy Policy (GDPR)
+### **Lovable Settings**
+- **Source Folder:** `/` (root del progetto)
+- **Entry File:** `index.html`
+- **Build Command:** `npm run build:public`
+- **Output Directory:** `dist/`
 
-## 🎯 **Funzionalità Accessibili**
+### **Build Output**
+```
+dist/
+├── index.html               # ← ENTRY POINT LOVABLE
+├── assets/
+│   ├── App-*.js            # ← MVP dashboard bundle
+│   ├── index-*.js          # ← App principale bundle
+│   ├── landing-*.js        # ← Landing page bundle
+│   └── *.css               # ← Styles unificati
+└── (altri file statici)
+```
 
-### **Dashboard**
-- **Metriche personalizzate** e statistiche
-- **Azioni rapide** (con overlay premium)
-- **Progressi settimanali** e attività recenti
+## 🎯 FUNZIONALITÀ
 
-### **Allenamento**
-- **Categorie workout:** Cardio, Forza, HIIT, Mobilità
-- **Workout consigliato:** "HIIT Total Body"
-- **Timer integrato** per tracking allenamenti
+### **Landing Page (Pubblica)**
+- ✅ Hero section con CTA
+- ✅ Features section
+- ✅ QR code per download app
+- ✅ Form di registrazione
+- ✅ Design responsive
+- ✅ Integrazione Supabase
 
-### **Appuntamenti**
-- **Calendario** per gestione date
-- **Appuntamenti imminenti** (con overlay premium)
-- **Lista professionisti** (con overlay premium)
-- **Modal workout** per creazione e visualizzazione
+### **MVP Dashboard (Autenticati)**
+- ✅ Dashboard con metriche personalizzate
+- ✅ Sezione allenamenti con categorie
+- ✅ Calendario appuntamenti
+- ✅ Coach AI con chat
+- ✅ Timer per allenamenti
+- ✅ Note personali
+- ✅ Gestione profilo e obiettivi
+- ✅ Sistema abbonamenti
+- ✅ Pagine legali (GDPR compliant)
 
-### **Coach AI**
-- **Chat base** e assistenza
-- **Piani personalizzati** con modal di creazione
-- **Suggerimenti AI** e consigli del giorno
-- **Insights AI** (con overlay premium)
-- **Funzionalità AI** in sviluppo
+### **Sistema di Autenticazione**
+- ✅ Registrazione email/password
+- ✅ Login con credenziali
+- ✅ Reset password
+- ✅ Protezione route
+- ✅ Gestione sessioni Supabase
 
-### **Profilo**
-- **Gestione informazioni** utente
-- **Achievement board** e progressi
-- **Cronologia progressi** e statistiche
-- **Impostazioni** e preferenze
+## 🚨 PROTEZIONE CODICE PRODUZIONE
 
-### **Abbonamenti**
-- **Piani disponibili:** BASIC, ADVANCED, PRO
-- **Gestione abbonamenti** e piani premium
-- **Feature dettagliate** per ogni piano
-- **Accesso dal menu dropdown** utente
+### **File Protetti (NON MODIFICARE)**
+```
+src/App.tsx                    # ← Router principale PROTETTO
+src/main.tsx                   # ← Entry point PROTETTO
+src/landing/                   # ← Landing page PROTETTA
+src/pages/                     # ← Pagine MVP PROTETTE
+package.json                   # ← Scripts build PROTETTI
+vite.config.ts                 # ← Config build PROTETTA
+```
 
-### **Timer**
-- **Timer countdown** per allenamenti
-- **Input ore/minuti/secondi** personalizzabili
-- **Controlli play/pause/reset** completi
-- **Accesso dal menu dropdown** utente
+### **Zone Sicure per Sviluppo**
+```
+src/development/               # ← Features in sviluppo
+src/experimental/              # ← Sperimentazioni
+docs/                         # ← Documentazione
+tests/                        # ← Test files
+```
 
-### **Note**
-- **Creazione e modifica** note personali
-- **Ricerca note** con filtro
-- **Organizzazione temporale** (oggi, ieri, ultimi 30 giorni)
-- **Accesso dal menu dropdown** utente
-
-### **Pagine Legali**
-- **Termini e Condizioni** - Contenuto legale completo
-- **Privacy Policy** - GDPR compliant
-- **Accesso dal menu dropdown** utente
-
-## 🔒 **Funzioni Premium (Bloccate)**
-
-### **Azioni Rapide**
-- **"Prenota Sessione"** e **"Chat AI Coach"** con overlay
-- **Overlay unico** su tutta la sezione
-
-### **Appuntamenti**
-- **"Prossimi Appuntamenti"** con overlay
-- **"Professionisti"** con overlay
-- **Prenotazioni premium** bloccate
-
-### **Insights AI**
-- **Analisi avanzata** bloccata
-- **Contatto professionisti** bloccato
-- **Insights AI** con overlay
-- **Albo delle medaglie** con overlay
-
-## 🚀 **Prossimi Sviluppi**
-
-### **🔄 IN PROGRAMMA**
-- **Landing page** per app completa
-- **Subdomain separato** per sviluppo
-- **Testing completo** su entrambi gli ambienti
-- **Deploy produzione** su Lovable
+## 📊 STATO ATTUALE
 
 ### **✅ COMPLETATO**
-- **MVP corretto** - Layout e overlay completi
-- **Sidebar rimossa** - Completamente eliminata
-- **Documentazione aggiornata** - Tutti i file aggiornati
-- **Testing funzionale** - Localhost e produzione
-- **Design coerente** - Tema scuro con accenti oro
-- **Barra navigazione** - Mobile completa
-- **Sezioni funzionanti** - Dashboard, Allenamento, Appuntamenti
+- ✅ App unificata funzionante
+- ✅ Deploy stabile su Lovable
+- ✅ Landing page pubblica
+- ✅ Auth system operativo
+- ✅ MVP dashboard completa
+- ✅ Flusso utente naturale
+- ✅ Protezione codice produzione
 
-## 📊 **Metriche Finali**
+### **🔄 IN SVILUPPO**
+- 🔄 Features sperimentali in `src/development/`
+- 🔄 Testing e ottimizzazioni
+- 🔄 Documentazione aggiornata
 
-### **Performance**
-- **Server attivo:** `http://localhost:8080/`
-- **Link pubblico:** `https://performanceprime.it`
-- **Errori console:** 0 (tutti risolti)
-- **Layout:** Corrisponde esattamente alle specifiche
+### **📈 PROSSIMI OBIETTIVI**
+- 📈 Analytics e tracking
+- 📈 Performance optimization
+- 📈 Mobile app deployment
+- 📈 Advanced AI features
 
-### **Architettura**
-- **File eliminati:** Navigation.tsx completamente rimosso
-- **Import semplificati:** Tutti i riferimenti Navigation rimossi
-- **Routing ottimizzato:** 6 route essenziali
-- **Cache pulita:** 100% risolto
+## 🐛 RISOLUZIONE PROBLEMI
 
-### **Design**
-- **Overlay corretto:** Individuale su funzioni premium
-- **Layout pulito:** Header + Main Content (senza sidebar)
-- **Menu dropdown:** Completo con Termini/GDPR
-- **Responsive:** Ottimizzato per mobile e desktop
-- **Barra mobile:** 5 icone con navigazione completa
+### **Problemi Risolti Recentemente**
+1. **Merge incompleto** → ✅ Risolto con commit pulito
+2. **Configurazione Lovable** → ✅ Entry point corretto (`index.html`)
+3. **Build separati** → ✅ App unificata con build singolo
+4. **Routing confuso** → ✅ Router unificato in `src/App.tsx`
+
+### **Debug Comandi**
+```bash
+# Verifica stato git
+git status
+
+# Test build
+npm run build:public
+
+# Verifica deploy
+npm run deploy:lovable
+```
+
+## 📞 SUPPORTO
+
+**Per problemi o modifiche:**
+1. Verifica che non tocchi file protetti
+2. Usa cartelle di sviluppo per nuove features
+3. Testa sempre prima del deploy
+4. Documenta le modifiche
 
 ---
 
-**🎯 MVP PRONTO PER LA PRODUZIONE!**
-
-*Performance Prime Pulse - Oltre ogni limite* 🚀
+**Performance Prime è ora un'applicazione unificata stabile e funzionante! 🚀**
