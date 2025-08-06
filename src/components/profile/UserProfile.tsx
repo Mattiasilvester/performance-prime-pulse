@@ -173,7 +173,7 @@ export const UserProfile = () => {
                 onClick={handleCancel}
                 variant="outline" 
                 size="sm" 
-                className="bg-gray-600 text-white border-gray-600 hover:bg-gray-700"
+                className="border-border-primary text-text-primary hover:bg-surface-secondary hover:text-text-primary"
               >
                 Annulla
               </Button>

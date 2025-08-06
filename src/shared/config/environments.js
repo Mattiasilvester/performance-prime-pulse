@@ -1,72 +1,80 @@
-// src/config/environments.js
+// Configurazione ambienti per Performance Prime
 const environments = {
   development: {
-    // Ambiente di sviluppo - App completa con landing page
-    APP_URL: 'http://localhost:8080',
-    MVP_URL: 'http://localhost:8080',
-    SUPABASE_URL: process.env.VITE_SUPABASE_URL,
-    SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
-    IS_MVP_MODE: false, // App completa
-    ENABLE_LANDING_PAGE: true,
-    ENABLE_OVERLAY_BLOCKS: false, // Disabilita overlay nell'ambiente sviluppo
+    SUPABASE_URL: "https://kfxoyucatvvcgmqalxsg.supabase.co",
+    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmeG95dWNhdHZ2Y2dtcWFseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDc2NTksImV4cCI6MjA2NTgyMzY1OX0.hQhfOogGGc9kvOGvxjOv6QTKxSysbTa6En-0wG9_DCY",
+    APP_URL: "http://localhost:8080",
+    REDIRECT_URLS: [
+      "http://localhost:8080/auth",
+      "http://localhost:8080/reset-password",
+      "http://localhost:8080/dashboard",
+      "http://localhost:8081/auth",
+      "http://localhost:8081/reset-password",
+      "http://localhost:8081/dashboard",
+      "http://localhost:8082/auth",
+      "http://localhost:8082/reset-password",
+      "http://localhost:8082/dashboard"
+    ]
   },
   production: {
-    // Ambiente produzione - MVP con overlay di blocco
-    APP_URL: 'https://performanceprime.it',
-    MVP_URL: 'https://performanceprime.it',
-    SUPABASE_URL: process.env.VITE_SUPABASE_URL,
-    SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
-    IS_MVP_MODE: true, // MVP con overlay
-    ENABLE_LANDING_PAGE: false,
-    ENABLE_OVERLAY_BLOCKS: true, // Abilita overlay nell'MVP
+    SUPABASE_URL: "https://kfxoyucatvvcgmqalxsg.supabase.co",
+    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmeG95dWNhdHZ2Y2dtcWFseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDc2NTksImV4cCI6MjA2NTgyMzY1OX0.hQhfOogGGc9kvOGvxjOv6QTKxSysbTa6En-0wG9_DCY",
+    APP_URL: "https://performanceprime.it",
+    REDIRECT_URLS: [
+      "https://performanceprime.it/auth",
+      "https://performanceprime.it/reset-password",
+      "https://performanceprime.it/dashboard",
+      "https://www.performanceprime.it/auth",
+      "https://www.performanceprime.it/reset-password",
+      "https://www.performanceprime.it/dashboard"
+    ]
   }
 };
 
-const config = {
-  getCurrentEnvironment: () => {
-    const env = process.env.NODE_ENV || 'development';
-    return environments[env] || environments.development;
-  },
-
-  getAppUrl: () => {
-    return config.getCurrentEnvironment().APP_URL;
-  },
-
-  getMvpUrl: () => {
-    return config.getCurrentEnvironment().MVP_URL;
-  },
-
-  getSupabaseUrl: () => {
-    return config.getCurrentEnvironment().SUPABASE_URL;
-  },
-
-  getSupabaseAnonKey: () => {
-    return config.getCurrentEnvironment().SUPABASE_ANON_KEY;
-  },
-
-  isMvpMode: () => {
-    return config.getCurrentEnvironment().IS_MVP_MODE;
-  },
-
-  shouldEnableLandingPage: () => {
-    return config.getCurrentEnvironment().ENABLE_LANDING_PAGE;
-  },
-
-  shouldEnableOverlayBlocks: () => {
-    return config.getCurrentEnvironment().ENABLE_OVERLAY_BLOCKS;
-  },
-
-  getSupabaseRedirectUrl: () => {
-    return `${config.getAppUrl()}/auth`;
-  },
-
-  getResetPasswordUrl: () => {
-    return `${config.getAppUrl()}/reset-password`;
-  },
-
-  getDashboardUrl: () => {
-    return `${config.getAppUrl()}/app`;
+// Determina l'ambiente corrente
+const getCurrentEnvironment = () => {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+    
+    // Sviluppo locale
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'development';
+    }
+    
+    // Produzione
+    if (hostname === 'performanceprime.it' || hostname === 'www.performanceprime.it') {
+      return 'production';
+    }
   }
+  
+  // Default a development
+  return 'development';
 };
 
-export { config }; 
+// Esporta la configurazione corrente
+export const config = environments[getCurrentEnvironment()];
+
+// Funzioni di utilità per URL
+export const getAppUrl = () => {
+  return config.APP_URL;
+};
+
+export const getRedirectUrl = (path = '') => {
+  return `${config.APP_URL}${path}`;
+};
+
+export const getResetPasswordUrl = () => {
+  return getRedirectUrl('/reset-password');
+};
+
+export const getAuthUrl = () => {
+  return getRedirectUrl('/auth');
+};
+
+export const getDashboardUrl = () => {
+  return getRedirectUrl('/dashboard');
+};
+
+// Esporta anche la configurazione completa per Supabase
+export default config; 
