@@ -61,6 +61,7 @@ performanceprime.it/
 - **Build:** Vite
 - **Mobile:** Capacitor (iOS/Android)
 - **Deploy:** Lovable
+- **Domain:** Aruba DNS
 
 ## 🚀 COMANDI SVILUPPO
 
@@ -133,6 +134,15 @@ src/
 - **Build Command:** `npm run build:public`
 - **Output Directory:** `dist/`
 
+### **Domain Configuration**
+- **Registrar:** Aruba
+- **Domain:** `performanceprime.it`
+- **DNS Records:**
+  ```
+  CNAME: www → lovable.app
+  TTL: 1 Ora
+  ```
+
 ### **Build Output**
 ```
 dist/
@@ -203,17 +213,24 @@ tests/                        # ← Test files
 - ✅ MVP dashboard completa
 - ✅ Flusso utente naturale
 - ✅ Protezione codice produzione
+- ✅ Repository pulito
+- ✅ Build unificato
+- ✅ Router unificato
+- ✅ **Configurazione DNS Aruba completata**
+- ✅ **Record CNAME www → lovable.app configurato**
 
 ### **🔄 IN SVILUPPO**
 - 🔄 Features sperimentali in `src/development/`
 - 🔄 Testing e ottimizzazioni
 - 🔄 Documentazione aggiornata
+- 🔄 **Propagazione DNS in corso (1-2 ore)**
 
 ### **📈 PROSSIMI OBIETTIVI**
 - 📈 Analytics e tracking
 - 📈 Performance optimization
 - 📈 Mobile app deployment
 - 📈 Advanced AI features
+- 📈 **Test dominio personalizzato**
 
 ## 🐛 RISOLUZIONE PROBLEMI
 
@@ -222,6 +239,8 @@ tests/                        # ← Test files
 2. **Configurazione Lovable** → ✅ Entry point corretto (`index.html`)
 3. **Build separati** → ✅ App unificata con build singolo
 4. **Routing confuso** → ✅ Router unificato in `src/App.tsx`
+5. **Dominio non riconosciuto** → ✅ Configurato DNS su Aruba
+6. **Record DNS conflittuali** → ✅ Risolto eliminando record esistenti
 
 ### **Debug Comandi**
 ```bash
@@ -233,7 +252,26 @@ npm run build:public
 
 # Verifica deploy
 npm run deploy:lovable
+
+# Test dominio
+curl -I https://www.performanceprime.it
 ```
+
+## 🌐 CONFIGURAZIONE DOMINIO
+
+### **Aruba DNS Configuration**
+```
+Record CNAME:
+- Nome host: www
+- Valore: lovable.app
+- TTL: 1 Ora
+```
+
+### **Lovable Domain Settings**
+- **Custom Domain:** `performanceprime.it`
+- **Status:** Configurato
+- **SSL:** In corso di configurazione
+- **Propagazione DNS:** 1-2 ore
 
 ## 📞 SUPPORTO
 
@@ -245,4 +283,4 @@ npm run deploy:lovable
 
 ---
 
-**Performance Prime è ora un'applicazione unificata stabile e funzionante! 🚀**
+**Performance Prime è ora un'applicazione unificata stabile e funzionante con dominio personalizzato configurato! 🚀**
