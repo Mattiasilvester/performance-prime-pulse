@@ -5,7 +5,7 @@ const Footer = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="footer">
+    <footer className="footer" style={{ backgroundColor: '#1a1a1a' }}>
       <div className="footer-container">
         <div className="footer-content">
           <div className="footer-section">
