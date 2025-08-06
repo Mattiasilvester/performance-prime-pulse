@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { testAuthConfiguration, simulateAuthFlow, checkAuthPersistence } from '@/utils/authTest';
 
 // Import landing page components
-import LandingPage from './Landing';
+import LandingPage from '../landing/pages/LandingPage';
+import '../landing/styles/landing.css';
 
 const SmartHomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,12 +13,20 @@ const SmartHomePage = () => {
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [showLanding, setShowLanding] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
       try {
         console.log('🔍 Homepage: Controllo stato autenticazione...');
         setDebugInfo('Controllo autenticazione in corso...');
+        
+        // Se siamo già nella pagina di auth, non fare controlli
+        if (location.pathname === '/auth') {
+          console.log('📍 Siamo nella pagina auth, non fare controlli');
+          setIsLoading(false);
+          return;
+        }
         
         // Test configurazione auth (solo in development)
         if (process.env.NODE_ENV === 'development') {
@@ -63,7 +72,7 @@ const SmartHomePage = () => {
     };
 
     checkAuthAndRedirect();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   // Loading screen mentre controlla l'autenticazione
   if (isLoading) {
