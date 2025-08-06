@@ -194,7 +194,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             onClick={onCancel}
             variant="outline"
             size="sm"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700 py-1.5 px-2 text-xs"
+            className="border-border-primary text-text-primary hover:bg-surface-secondary hover:text-text-primary py-1.5 px-2 text-xs"
           >
             Annulla
           </Button>

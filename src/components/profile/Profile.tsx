@@ -9,8 +9,8 @@ export const Profile = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-pp-gold">Il Tuo Profilo</h2>
-          <p className="text-white">Monitora i tuoi progressi e risultati</p>
+          <h2 className="text-2xl font-bold text-brand-primary">Il Tuo Profilo</h2>
+          <p className="text-text-secondary">Monitora i tuoi progressi e risultati</p>
         </div>
       </div>
 

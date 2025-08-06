@@ -1,34 +1,64 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import App from './App'
 
 // Debug: stampa la modalità
+console.log('🚀 Performance Prime - Caricamento app...');
 console.log('VITE_APP_MODE:', import.meta.env.VITE_APP_MODE);
 console.log('Current port:', window.location.port);
 
-// Import dinamico basato su modalità o porta
+// Caricamento diretto dell'app unificata
 const loadApp = async () => {
   try {
-    let App;
+    console.log('📦 Loading UNIFIED app...');
     
-    // Se siamo sulla porta 8081, forziamo la landing page
-    if (window.location.port === '8081' || import.meta.env.VITE_APP_MODE === 'landing') {
-      console.log('Loading LANDING PAGE...');
-      const module = await import('./landing/App');
-      App = module.default;
-    } else {
-      console.log('Loading MVP app...');
-      const module = await import('./App');
-      App = module.default;
+    const rootElement = document.getElementById("root");
+    if (!rootElement) {
+      throw new Error("Elemento 'root' non trovato nel DOM");
     }
     
-    createRoot(document.getElementById("root")!).render(<App />);
+    console.log('✅ Root element trovato, creando React app...');
+    const root = createRoot(rootElement);
+    
+    console.log('🎨 Rendering App component...');
+    root.render(<App />);
+    
+    console.log('✅ App caricata con successo!');
   } catch (error) {
-    console.error('Error loading app:', error);
-    // Fallback al MVP app
-    const module = await import('./App');
-    const App = module.default;
-    createRoot(document.getElementById("root")!).render(<App />);
+    console.error('❌ Error loading app:', error);
+    
+    // Mostra errore visibile
+    const root = document.getElementById("root");
+    if (root) {
+      root.innerHTML = `
+        <div style="
+          color: white; 
+          padding: 40px; 
+          font-family: Arial, sans-serif;
+          background: #1A1A1A;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        ">
+          <h1 style="color: #FFD700; margin-bottom: 20px;">🚨 Errore di caricamento</h1>
+          <p style="margin-bottom: 10px;">Si è verificato un errore nel caricamento dell'applicazione Performance Prime.</p>
+          <p style="margin-bottom: 20px; color: #A0A0A0;">Errore: ${error}</p>
+          <button onclick="location.reload()" style="
+            background: #FFD700;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+          ">🔄 Ricarica pagina</button>
+        </div>
+      `;
+    }
   }
 };
 
+// Avvia il caricamento
 loadApp();

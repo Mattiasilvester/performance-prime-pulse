@@ -48,26 +48,26 @@ export const Settings = () => {
   };
 
   return (
-    <div className="bg-black rounded-2xl shadow-sm border-2 border-[#EEBA2B] p-6 relative">
-      <h3 className="text-xl font-semibold text-[#EEBA2B] mb-6">Impostazioni</h3>
+    <div className="bg-surface-primary rounded-2xl shadow-sm border-2 border-brand-primary p-6 relative">
+      <h3 className="text-xl font-semibold text-brand-primary mb-6">Impostazioni</h3>
 
       <div className="space-y-6">
         {settingsSections.map((section, sectionIndex) => (
           <div key={sectionIndex}>
-            <h4 className="text-sm font-medium text-[#EEBA2B] mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-medium text-brand-primary mb-3 uppercase tracking-wide">
               {section.title}
             </h4>
             <div className="space-y-2">
-              {section.items.map((item, itemIndex) => {
+              {settingsSections[sectionIndex].items.map((item, itemIndex) => {
                 const Icon = item.icon;
                 return (
                   <button
                     key={itemIndex}
                     onClick={() => handleSettingClick(item.action)}
-                    className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-[#CCCCCC] hover:bg-opacity-20 focus:bg-[#CCCCCC] focus:bg-opacity-20 focus:outline-none transition-colors text-left"
+                    className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-surface-secondary hover:bg-opacity-80 focus:bg-surface-secondary focus:bg-opacity-80 focus:outline-none transition-colors text-left group"
                   >
-                    <Icon className="h-5 w-5 text-white" />
-                    <span className="font-medium text-white">{item.label}</span>
+                    <Icon className="h-5 w-5 text-text-primary group-hover:text-brand-primary transition-colors" />
+                    <span className="font-medium text-text-primary group-hover:text-brand-primary transition-colors">{item.label}</span>
                   </button>
                 );
               })}

@@ -10,6 +10,7 @@ import { fetchUserProfile, updateUserProfile, uploadAvatar } from '@/services/us
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { analytics } from '@/services/analytics';
 
 const PersonalInfo = () => {
   const navigate = useNavigate();
@@ -50,6 +51,9 @@ const PersonalInfo = () => {
     };
 
     loadUserData();
+    
+    // Traccia visualizzazione pagina
+    analytics.trackSettings('view', 'personal_info');
   }, []);
 
   const handleSave = async () => {
@@ -70,12 +74,25 @@ const PersonalInfo = () => {
         avatarUrl
       });
       
+      // Traccia aggiornamento profilo
+      analytics.trackSettings('update', 'personal_info');
+      
       toast({
         title: "Informazioni personali aggiornate con successo.",
         duration: 3000,
       });
+      
+      // Naviga automaticamente alla pagina precedente dopo il salvataggio
+      navigate('/profile');
     } catch (error) {
       console.error('Error updating profile:', error);
+      
+      // Traccia errore
+      analytics.trackError('profile_update_error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        section: 'personal_info'
+      });
+      
       toast({
         title: "Errore nell'aggiornamento delle informazioni.",
         variant: "destructive",
@@ -93,6 +110,12 @@ const PersonalInfo = () => {
         setAvatarPreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+      
+      // Traccia upload avatar
+      analytics.trackUserAction('avatar_upload', {
+        file_size: file.size,
+        file_type: file.type
+      });
     }
   };
 
@@ -103,6 +126,9 @@ const PersonalInfo = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    
+    // Traccia rimozione avatar
+    analytics.trackUserAction('avatar_remove');
   };
 
   if (loading) {

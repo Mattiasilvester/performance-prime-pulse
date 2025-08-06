@@ -89,7 +89,7 @@ export const CustomPlanModal: React.FC<CustomPlanModalProps> = ({ onClose, onSav
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} className="border-[#EEBA2B] text-[#EEBA2B]">
+          <Button variant="outline" onClick={onClose} className="border-brand-primary text-text-primary hover:bg-surface-secondary hover:text-text-primary">
             Annulla
           </Button>
           <Button 

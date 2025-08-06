@@ -3,76 +3,98 @@
 @tailwind base;
 @tailwind components;  
 @tailwind utilities;
+
 /* ——— Colore di sfondo globale ——— */
 html,
 body {
-  background: #000;         /* nero puro */
+  background: #1A1A1A;         /* grigio scuro invece di nero puro */
   color-scheme: dark;       /* status-bar e controlli di sistema in versione dark */
 }
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    /* Nuova palette colori con migliore contrasto e gerarchia */
+    
+    /* Background colors */
+    --background: 0 0% 10%;           /* #1A1A1A - Sfondo principale */
+    --background-secondary: 0 0% 16%; /* #2A2A2A - Sfondo secondario */
+    --background-tertiary: 0 0% 25%;  /* #404040 - Sfondo terziario */
+    
+    /* Text colors */
+    --text-primary: 0 0% 100%;        /* #FFFFFF - Testo principale */
+    --text-secondary: 0 0% 63%;       /* #A0A0A0 - Testo secondario */
+    --text-muted: 0 0% 45%;           /* #737373 - Testo attenuato */
+    
+    /* Brand colors */
+    --brand-primary: 51 100% 50%;     /* #FFD700 - Oro principale */
+    --brand-secondary: 217 91% 60%;   /* #3B82F6 - Blu secondario */
+    --brand-accent: 142 76% 36%;      /* #16A34A - Verde accent */
+    
+    /* Interactive colors */
+    --interactive-primary: 51 100% 50%;    /* #FFD700 - Bottoni principali */
+    --interactive-secondary: 217 91% 60%;  /* #3B82F6 - Bottoni secondari */
+    --interactive-danger: 0 84% 60%;       /* #EF4444 - Pericolo/errore */
+    --interactive-success: 142 76% 36%;    /* #16A34A - Successo */
+    --interactive-warning: 38 92% 50%;     /* #F59E0B - Avviso */
+    
+    /* Surface colors */
+    --surface-primary: 0 0% 16%;      /* #2A2A2A - Card principali */
+    --surface-secondary: 0 0% 25%;    /* #404040 - Card secondarie */
+    --surface-tertiary: 0 0% 35%;     /* #595959 - Card terziarie */
+    
+    /* Border colors */
+    --border-primary: 0 0% 25%;       /* #404040 - Bordi principali */
+    --border-secondary: 0 0% 35%;     /* #595959 - Bordi secondari */
+    --border-accent: 51 100% 50%;     /* #FFD700 - Bordi accent */
+    
+    /* Legacy support for shadcn/ui - AGGIORNATO PER CONTRASTO */
+    --foreground: 0 0% 100%;          /* #FFFFFF - Testo sempre visibile */
+    --card: 0 0% 16%;
+    --card-foreground: 0 0% 100%;     /* #FFFFFF - Testo card sempre visibile */
+    --popover: 0 0% 16%;
+    --popover-foreground: 0 0% 100%;  /* #FFFFFF - Testo popover sempre visibile */
+    --primary: 51 100% 50%;
+    --primary-foreground: 0 0% 0%;    /* #000000 - Testo su oro */
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF - Testo su blu */
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 63%;     /* #A0A0A0 - Testo attenuato ma leggibile */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;   /* #FFFFFF - Testo su accent */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF - Testo su rosso */
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 51 100% 50%;
     --radius: 0.5rem;
 
-    /* Custom colors */
-    --pp-gold: 45 85% 55%;
+    /* Performance Prime legacy colors */
+    --pp-gold: 51 100% 50%;
+    --pp-black: 0 0% 10%;
+    --pp-gray: 0 0% 20%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Dark mode - già configurato sopra */
+    --background: 0 0% 10%;
+    --foreground: 0 0% 100%;          /* #FFFFFF - Testo sempre visibile */
+    --card: 0 0% 16%;
+    --card-foreground: 0 0% 100%;     /* #FFFFFF - Testo card sempre visibile */
+    --popover: 0 0% 16%;
+    --popover-foreground: 0 0% 100%;  /* #FFFFFF - Testo popover sempre visibile */
+    --primary: 51 100% 50%;
+    --primary-foreground: 0 0% 0%;    /* #000000 - Testo su oro */
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF - Testo su blu */
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 63%;     /* #A0A0A0 - Testo attenuato ma leggibile */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;   /* #FFFFFF - Testo su accent */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF - Testo su rosso */
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 51 100% 50%;
   }
 }
 
@@ -84,6 +106,36 @@ body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
   }
+}
+
+/* Utility classes per la nuova palette */
+@layer utilities {
+  /* Background utilities */
+  .bg-surface-primary { background-color: hsl(var(--surface-primary)); }
+  .bg-surface-secondary { background-color: hsl(var(--surface-secondary)); }
+  .bg-surface-tertiary { background-color: hsl(var(--surface-tertiary)); }
+  
+  /* Text utilities */
+  .text-primary { color: hsl(var(--text-primary)); }
+  .text-secondary { color: hsl(var(--text-secondary)); }
+  .text-muted { color: hsl(var(--text-muted)); }
+  
+  /* Brand utilities */
+  .text-brand-primary { color: hsl(var(--brand-primary)); }
+  .text-brand-secondary { color: hsl(var(--brand-secondary)); }
+  .text-brand-accent { color: hsl(var(--brand-accent)); }
+  
+  /* Interactive utilities */
+  .bg-interactive-primary { background-color: hsl(var(--interactive-primary)); }
+  .bg-interactive-secondary { background-color: hsl(var(--interactive-secondary)); }
+  .bg-interactive-danger { background-color: hsl(var(--interactive-danger)); }
+  .bg-interactive-success { background-color: hsl(var(--interactive-success)); }
+  .bg-interactive-warning { background-color: hsl(var(--interactive-warning)); }
+  
+  /* Border utilities */
+  .border-primary { border-color: hsl(var(--border-primary)); }
+  .border-secondary { border-color: hsl(var(--border-secondary)); }
+  .border-accent { border-color: hsl(var(--border-accent)); }
 }
 
 /* Custom classes for better responsive design */
@@ -109,33 +161,32 @@ body {
   }
 }
 
-
-/* Calendario panel styling */
+/* Calendario panel styling - aggiornato con nuova palette */
 .calendar-panel {
-  background: linear-gradient(135deg, #000000 0%, #C89116 100%);
-  border: 2px solid #EEBA2B;
+  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--surface-primary)) 100%);
+  border: 2px solid hsl(var(--brand-primary));
   border-radius: 1rem;
   padding: 1.5rem;
-  color: white;
+  color: hsl(var(--text-primary));
 }
 
 .calendar-panel__title {
-  color: #EEBA2B;
+  color: hsl(var(--brand-primary));
   font-size: 1.25rem;
   font-weight: bold;
 }
 
 .calendar-panel__weekday {
-  color: rgba(255, 255, 255, 0.7);
+  color: hsl(var(--text-secondary));
 }
 
 .calendar-panel__day {
-  color: white;
+  color: hsl(var(--text-primary));
 }
 
 .calendar-panel__new-button {
-  background: #EEBA2B;
-  color: black;
+  background: hsl(var(--brand-primary));
+  color: hsl(var(--background));
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 500;
@@ -145,17 +196,17 @@ body {
 }
 
 .calendar-panel__new-button:hover {
-  background: #d4a61a;
+  background: hsl(var(--brand-primary) / 0.9);
 }
 
-/* Search functionality */
+/* Search functionality - aggiornato con nuova palette */
 .search-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: hsl(var(--background) / 0.8);
   z-index: 50;
   display: flex;
   align-items: flex-start;
@@ -164,13 +215,14 @@ body {
 }
 
 .search-container {
-  background: white;
+  background: hsl(var(--surface-primary));
   border-radius: 0.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px hsl(var(--background) / 0.3);
   max-width: 500px;
   width: 90%;
   max-height: 400px;
   overflow: hidden;
+  border: 1px solid hsl(var(--border-primary));
 }
 
 .search-input {
@@ -179,7 +231,9 @@ body {
   border: none;
   outline: none;
   font-size: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid hsl(var(--border-primary));
+  background: hsl(var(--surface-primary));
+  color: hsl(var(--text-primary));
 }
 
 .search-results {
@@ -189,18 +243,20 @@ body {
 
 .search-result-item {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid hsl(var(--border-primary));
   cursor: pointer;
   transition: background 0.2s;
+  color: hsl(var(--text-primary));
 }
 
 .search-result-item:hover {
-  background: #f9fafb;
+  background: hsl(var(--surface-secondary));
 }
 
 .search-result-item:last-child {
   border-bottom: none;
 }
+
 .header {
   position: fixed;
   top: env(safe-area-inset-top, 0px);
@@ -208,22 +264,23 @@ body {
   right: 0;
   height: 56px;
   z-index: 1000;
-  background: inherit; /* o un colore specifico se serve */
+  background: inherit;
   display: flex;
   align-items: center;
 }
+
 body, #root, .app-container {
   padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
 }
 
-/* Stili per SmartHomePage */
+/* Stili per SmartHomePage - aggiornato con nuova palette */
 .homepage-loading {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
-  color: white;
+  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--surface-primary)) 100%);
+  color: hsl(var(--text-primary));
 }
 
 .loading-container {
@@ -234,8 +291,8 @@ body, #root, .app-container {
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 3px solid rgba(238, 186, 43, 0.3);
-  border-top: 3px solid #EEBA2B;
+  border: 3px solid hsl(var(--brand-primary) / 0.3);
+  border-top: 3px solid hsl(var(--brand-primary));
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 20px;
@@ -245,6 +302,7 @@ body, #root, .app-container {
   font-size: 0.9rem;
   opacity: 0.7;
   margin-top: 10px;
+  color: hsl(var(--text-secondary));
 }
 
 .debug-info {
@@ -252,6 +310,7 @@ body, #root, .app-container {
   opacity: 0.5;
   margin-top: 15px;
   font-family: monospace;
+  color: hsl(var(--text-muted));
 }
 
 @keyframes spin {
@@ -259,14 +318,14 @@ body, #root, .app-container {
   100% { transform: rotate(360deg); }
 }
 
-/* Stili per ProtectedRoute */
+/* Stili per ProtectedRoute - aggiornato con nuova palette */
 .protected-route-loading {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
-  color: white;
+  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--surface-primary)) 100%);
+  color: hsl(var(--text-primary));
 }
 
 .protected-route-loading .loading-container {
@@ -277,8 +336,8 @@ body, #root, .app-container {
 .protected-route-loading .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 2px solid rgba(238, 186, 43, 0.3);
-  border-top: 2px solid #EEBA2B;
+  border: 2px solid hsl(var(--brand-primary) / 0.3);
+  border-top: 2px solid hsl(var(--brand-primary));
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;

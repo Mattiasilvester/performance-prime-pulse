@@ -74,7 +74,7 @@ export const DurationSelector = ({ isOpen, onClose, onConfirm, category }: Durat
             <Button
               variant="outline"
               onClick={onClose}
-              className="flex-1 border-gray-600 text-white hover:bg-gray-800"
+              className="flex-1 border-border-primary text-text-primary hover:bg-surface-secondary hover:text-text-primary"
             >
               Annulla
             </Button>
