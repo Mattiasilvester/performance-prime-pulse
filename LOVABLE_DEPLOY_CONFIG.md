@@ -34,59 +34,114 @@ npm run build:public
 dist/
 ```
 
-### **VERIFICA DEPLOY**
+---
 
-1. **Entry Point Corretto:**
-   - ✅ `index.html` → `src/main.tsx`
-   - ✅ App unificata con landing + MVP
+## 🌐 CONFIGURAZIONE DOMINIO
 
-2. **Build App Unificata:**
-   - ✅ `npm run build:public`
-   - ✅ Include landing page + MVP dashboard
-
-3. **Output Files:**
-   - ✅ `dist/index.html`
-   - ✅ `dist/assets/App-*.js`
-   - ✅ `dist/assets/index-*.js`
-   - ✅ `dist/assets/landing-*.js`
-
-### **DIFFERENZE MVP vs LANDING**
-
-| Feature | MVP Dashboard | Landing Page |
-|---------|---------------|--------------|
-| **Entry** | `index.html` | `landing.html` |
-| **Script** | `src/main.tsx` | `src/landing-main.tsx` |
-| **App** | `src/App.tsx` | `src/landing/App.tsx` |
-| **Config** | `vite.config.ts` | `vite.config.landing.ts` |
-| **Port** | 8080 | 8081 |
-| **Build** | `npm run build` | `npm run build:landing` |
-
-### **COMANDI DEPLOY**
-
-```bash
-# Build App Unificata per Lovable
-npm run build:public
-
-# Deploy su Lovable
-npm run deploy:lovable
-
-# Verifica build
-ls -la dist/
+### **Aruba DNS Configuration**
+```
+Record CNAME:
+- Nome host: www
+- Valore: lovable.app
+- TTL: 1 Ora
 ```
 
-### **STRUTTURA FINALE**
+### **Lovable Domain Settings**
+- **Custom Domain:** `performanceprime.it`
+- **Status:** Configurato
+- **SSL:** In corso di configurazione
+- **Propagazione DNS:** 1-2 ore
+
+---
+
+## 🚨 PROBLEMI RISOLTI
+
+### **1. Dominio non riconosciuto**
+**Problema:** `"Domain name not formatted correctly: Error: parseLovableDomain: Not valid lovable domain"`
+
+**Soluzione:** Configurato record CNAME su Aruba DNS Panel
+- ✅ Eliminato record conflittuali esistenti
+- ✅ Aggiunto record CNAME: `www → lovable.app`
+- ✅ Configurazione completata
+
+### **2. Propagazione DNS**
+**Problema:** Record configurato ma non ancora propagato
+
+**Soluzione:** Aspettare propagazione naturale
+- ⏰ Tempo di propagazione: 1-2 ore
+- 🔄 SSL certificate: Fino a 24 ore
+- 🌐 Test immediato: Possibile ma potrebbe non funzionare
+
+---
+
+## 🎯 FLUSSO UTENTE
 
 ```
-dist/
-├── index.html           # ← ENTRY POINT LOVABLE
-├── assets/
-│   ├── App-*.js        # MVP dashboard bundle
-│   ├── index-*.js      # App principale bundle
-│   ├── landing-*.js    # Landing page bundle
-│   └── *.css           # Styles unificati
-└── (altri file statici)
+performanceprime.it/
+├── /                    → Landing page (non autenticati)
+├── /auth               → Login/registrazione
+├── /dashboard          → Dashboard MVP (autenticati)
+├── /workouts           → Allenamenti MVP
+├── /schedule           → Appuntamenti MVP
+├── /ai-coach           → Coach AI MVP
+├── /profile            → Profilo MVP
+└── /privacy-policy     → Pagine legali
 ```
 
 ---
 
-**✅ APP UNIFICATA:** `performanceprime.it` ora include landing + auth + MVP tutto insieme! 
+## 📊 STATO ATTUALE
+
+### **✅ COMPLETATO**
+- ✅ App unificata funzionante
+- ✅ Deploy stabile su Lovable
+- ✅ Configurazione DNS Aruba completata
+- ✅ Record CNAME www → lovable.app configurato
+
+### **🔄 IN CORSO**
+- 🔄 Propagazione DNS (1-2 ore)
+- 🔄 Configurazione SSL certificate (fino a 24 ore)
+
+### **📈 PROSSIMI PASSI**
+- 📈 Test dominio personalizzato
+- 📈 Verifica SSL certificate
+- 📈 Monitoraggio performance
+
+---
+
+## 🐛 DEBUG E TROUBLESHOOTING
+
+### **Comandi di Test**
+```bash
+# Test build
+npm run build:public
+
+# Test deploy
+npm run deploy:lovable
+
+# Test dominio
+curl -I https://www.performanceprime.it
+
+# Verifica DNS
+nslookup www.performanceprime.it
+```
+
+### **Problemi Comuni**
+1. **Dominio non funziona** → Aspetta propagazione DNS
+2. **SSL non attivo** → Aspetta fino a 24 ore
+3. **Build fallisce** → Verifica `npm run build:public`
+4. **Deploy fallisce** → Verifica configurazione Lovable
+
+---
+
+## 📞 SUPPORTO
+
+**Per problemi:**
+1. Verifica configurazione DNS su Aruba
+2. Controlla status su Lovable
+3. Testa build localmente
+4. Aspetta propagazione DNS
+
+---
+
+**Performance Prime è ora configurato correttamente su Lovable con dominio personalizzato! 🚀** 
