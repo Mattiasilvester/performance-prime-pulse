@@ -67,7 +67,7 @@ performanceprime.it/
 
 ### **Sviluppo Locale**
 ```bash
-# MVP Dashboard (porta 8080)
+# MVP Dashboard (porta 8082)
 npm run dev
 
 # Landing Page (porta 8081) - DEPRECATO
@@ -100,7 +100,13 @@ src/
 │   ├── pages/
 │   │   ├── LandingPage.tsx   # ← Homepage landing
 │   │   └── AuthPage.tsx      # ← Auth landing
-│   └── components/           # ← Componenti landing
+│   ├── components/           # ← Componenti landing
+│   │   ├── Hero/
+│   │   ├── Features/
+│   │   ├── CTA/
+│   │   └── Footer/
+│   └── styles/
+│       └── landing.css       # ← Stili landing
 ├── pages/                    # ← Pagine MVP
 │   ├── Dashboard.tsx         # ← Dashboard principale
 │   ├── Auth.tsx              # ← Auth MVP
@@ -164,6 +170,9 @@ dist/
 - ✅ Form di registrazione
 - ✅ Design responsive
 - ✅ Integrazione Supabase
+- ✅ **Layout alternato nero/grigio**
+- ✅ **Sezione founders spostata in CTA**
+- ✅ **Card founders orizzontali su desktop**
 
 ### **MVP Dashboard (Autenticati)**
 - ✅ Dashboard con metriche personalizzate
@@ -189,7 +198,6 @@ dist/
 ```
 src/App.tsx                    # ← Router principale PROTETTO
 src/main.tsx                   # ← Entry point PROTETTO
-src/landing/                   # ← Landing page PROTETTA
 src/pages/                     # ← Pagine MVP PROTETTE
 package.json                   # ← Scripts build PROTETTI
 vite.config.ts                 # ← Config build PROTETTA
@@ -197,6 +205,7 @@ vite.config.ts                 # ← Config build PROTETTA
 
 ### **Zone Sicure per Sviluppo**
 ```
+src/landing/                   # ← Landing page (ZONA SICURA)
 src/development/               # ← Features in sviluppo
 src/experimental/              # ← Sperimentazioni
 docs/                         # ← Documentazione
@@ -218,12 +227,16 @@ tests/                        # ← Test files
 - ✅ Router unificato
 - ✅ **Configurazione DNS Aruba completata**
 - ✅ **Record CNAME www → lovable.app configurato**
+- ✅ **Layout alternato nero/grigio implementato**
+- ✅ **Sezione founders spostata in CTA**
+- ✅ **Card founders orizzontali su desktop**
 
 ### **🔄 IN SVILUPPO**
 - 🔄 Features sperimentali in `src/development/`
 - 🔄 Testing e ottimizzazioni
 - 🔄 Documentazione aggiornata
 - 🔄 **Propagazione DNS in corso (1-2 ore)**
+- 🔄 **Test layout responsive landing page**
 
 ### **📈 PROSSIMI OBIETTIVI**
 - 📈 Analytics e tracking
@@ -231,6 +244,7 @@ tests/                        # ← Test files
 - 📈 Mobile app deployment
 - 📈 Advanced AI features
 - 📈 **Test dominio personalizzato**
+- 📈 **Ottimizzazioni landing page**
 
 ## 🐛 RISOLUZIONE PROBLEMI
 
@@ -241,6 +255,9 @@ tests/                        # ← Test files
 4. **Routing confuso** → ✅ Router unificato in `src/App.tsx`
 5. **Dominio non riconosciuto** → ✅ Configurato DNS su Aruba
 6. **Record DNS conflittuali** → ✅ Risolto eliminando record esistenti
+7. **Layout landing page** → ✅ Alternanza nero/grigio implementata
+8. **Posizione sezione founders** → ✅ Spostata da Hero a CTA
+9. **Layout card founders** → ✅ Orizzontali su desktop, verticali su mobile
 
 ### **Debug Comandi**
 ```bash
@@ -255,6 +272,9 @@ npm run deploy:lovable
 
 # Test dominio
 curl -I https://www.performanceprime.it
+
+# Sviluppo locale
+npm run dev
 ```
 
 ## 🌐 CONFIGURAZIONE DOMINIO
@@ -273,6 +293,26 @@ Record CNAME:
 - **SSL:** In corso di configurazione
 - **Propagazione DNS:** 1-2 ore
 
+## 🎨 LANDING PAGE - ULTIME MODIFICHE
+
+### **Layout Alternato**
+```
+Hero Section (NERA) → Features Section (GRIGIA) → CTA Section (NERA) → Footer (GRIGIO)
+```
+
+### **Sezione Founders**
+- **Posizione:** CTA Section (sotto bottone "Scansiona e inizia ora")
+- **Layout:** Card orizzontali su desktop/tablet, verticali su mobile
+- **Responsive:** `flex-direction: row` su desktop, `column` su mobile
+
+### **Zona Sicura per Sviluppo**
+```
+src/landing/                   # ← Landing page (MODIFICABILE)
+├── pages/
+├── components/
+└── styles/
+```
+
 ## 📞 SUPPORTO
 
 **Per problemi o modifiche:**
@@ -283,4 +323,4 @@ Record CNAME:
 
 ---
 
-**Performance Prime è ora un'applicazione unificata stabile e funzionante con dominio personalizzato configurato! 🚀**
+**Performance Prime è ora un'applicazione unificata stabile e funzionante con dominio personalizzato configurato e landing page ottimizzata! 🚀**

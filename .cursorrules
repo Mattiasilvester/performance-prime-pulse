@@ -16,6 +16,9 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 - ✅ **Sezioni complete:** Dashboard, Allenamento, Appuntamenti, Coach AI, Profilo
 - ✅ **Configurazione DNS Aruba completata**
 - ✅ **Dominio personalizzato configurato**
+- ✅ **Layout alternato nero/grigio landing page**
+- ✅ **Sezione founders spostata in CTA**
+- ✅ **Card founders orizzontali su desktop**
 
 ## Architettura Unificata (Nuova)
 ### **App Unificata (performanceprime.it)**
@@ -67,13 +70,13 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 ## Struttura del Progetto
 - `/src/App.tsx` - Router principale UNIFICATO
 - `/src/main.tsx` - Entry point UNIFICATO
-- `/src/landing/` - Componenti landing page (integrati)
+- `/src/landing/` - Componenti landing page (ZONA SICURA)
   - `/src/landing/pages/` - Pagine landing (LandingPage, AuthPage)
-  - `/src/landing/components/` - Componenti landing
+  - `/src/landing/components/` - Componenti landing (Hero, Features, CTA, Footer)
   - `/src/landing/lib/` - Configurazioni landing (supabase.ts)
-  - `/src/landing/styles/` - Stili landing
-- `/src/pages/` - Pagine MVP
-- `/src/components/` - Componenti MVP
+  - `/src/landing/styles/` - Stili landing (landing.css)
+- `/src/pages/` - Pagine MVP (PROTETTE)
+- `/src/components/` - Componenti MVP (PROTETTI)
 - `/src/shared/` - Codice condiviso (config, hooks, ui, integrations)
 - `/src/development/` - Features in sviluppo (ZONA SICURA)
 - `/src/experimental/` - Sperimentazioni (ZONA SICURA)
@@ -83,9 +86,10 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 - **File:** `vite.config.ts`
 - **Entry:** `index.html` → `src/main.tsx`
 - **Build:** `npm run build:public`
+- **Dev Server:** Porta 8082 (automatica)
 
 ## Scripts Package.json
-- `npm run dev` - App unificata (porta 8080)
+- `npm run dev` - App unificata (porta 8082)
 - `npm run build:public` - Build produzione
 - `npm run deploy:lovable` - Deploy Lovable
 
@@ -94,6 +98,7 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 - Preferisci componenti Shadcn/ui quando disponibili
 - Mantieni la coerenza con il design system esistente
 - Usa variabili CSS per colori e spacing
+- **Landing page:** Stili in `src/landing/styles/landing.css`
 
 ## Database e API
 - Usa Supabase per tutte le operazioni di database
@@ -143,7 +148,6 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 ```
 src/App.tsx                    # ← Router principale PROTETTO
 src/main.tsx                   # ← Entry point PROTETTO
-src/landing/                   # ← Landing page PROTETTA
 src/pages/                     # ← Pagine MVP PROTETTE
 package.json                   # ← Scripts build PROTETTI
 vite.config.ts                 # ← Config build PROTETTA
@@ -152,10 +156,10 @@ index.html                     # ← HTML entry PROTETTO
 
 ### **Zone Sicure per Sviluppo**
 ```
-src/development/               # ← Features in sviluppo
-src/experimental/              # ← Sperimentazioni
-docs/                         # ← Documentazione
-tests/                        # ← Test files
+src/landing/                   # ← Landing page (ZONA SICURA)
+├── pages/
+├── components/
+└── styles/
 ```
 
 ### **Regole Operative**
@@ -163,6 +167,7 @@ tests/                        # ← Test files
 - ✅ **Analizzare** il codice per capire funzionalità
 - ✅ **Copiare** parti per nuove features
 - ✅ **Suggerire** miglioramenti senza modificare
+- ✅ **Modificare** solo `src/landing/` per landing page
 - ❌ **Modificare** file protetti senza permesso
 - ❌ **Rinominare** file o cartelle protette
 - ❌ **Spostare** componenti protetti
@@ -186,6 +191,7 @@ Se risposta è SÌ a qualsiasi domanda → FERMA e CHIEDI CONFERMA
 - Verifica che il flusso Landing → Auth → MVP funzioni correttamente
 - Mantieni aggiornata la documentazione
 - **NON toccare file protetti senza permesso esplicito**
+- **MODIFICA SOLO `src/landing/` per landing page**
 
 ## Problemi Risolti Recentemente (5 Agosto 2025)
 - ✅ **App unificata** - Landing + Auth + MVP tutto insieme
@@ -197,6 +203,9 @@ Se risposta è SÌ a qualsiasi domanda → FERMA e CHIEDI CONFERMA
 - ✅ **Protezione codice produzione** - File protetti identificati
 - ✅ **Configurazione DNS Aruba** - Record CNAME configurato
 - ✅ **Dominio personalizzato** - `performanceprime.it` attivo
+- ✅ **Layout alternato landing page** - Nero/grigio implementato
+- ✅ **Sezione founders spostata** - Da Hero a CTA
+- ✅ **Card founders orizzontali** - Layout responsive corretto
 
 ## Flusso Utente Completo
 ```
@@ -252,6 +261,25 @@ performanceprime.it/
 - **Albo delle medaglie:** Sezione achievement con overlay
 - **Contatto Professionisti:** Prenotazioni premium bloccate
 
+## Landing Page - Ultime Modifiche
+### **Layout Alternato**
+```
+Hero Section (NERA) → Features Section (GRIGIA) → CTA Section (NERA) → Footer (GRIGIO)
+```
+
+### **Sezione Founders**
+- **Posizione:** CTA Section (sotto bottone "Scansiona e inizia ora")
+- **Layout:** Card orizzontali su desktop/tablet, verticali su mobile
+- **Responsive:** `flex-direction: row` su desktop, `column` su mobile
+
+### **Zona Sicura per Sviluppo**
+```
+src/landing/                   # ← Landing page (MODIFICABILE)
+├── pages/
+├── components/
+└── styles/
+```
+
 ## Prossimi Sviluppi
 - 🔄 **Features sperimentali** in `src/development/`
 - 🔄 **Testing e ottimizzazioni**
@@ -259,8 +287,9 @@ performanceprime.it/
 - 🔄 **Mobile app deployment**
 - 🔄 **Advanced AI features**
 - 🔄 **Test dominio personalizzato**
+- 🔄 **Ottimizzazioni landing page**
 
 ## Motto Operativo
 **"Se funziona, non toccarlo - sviluppa a fianco!"**
 
-Il deploy su `performanceprime.it` è **PERFETTO e FUNZIONANTE** con dominio personalizzato configurato. Proteggi il codice di produzione e sviluppa nuove features nelle zone sicure. 
+Il deploy su `performanceprime.it` è **PERFETTO e FUNZIONANTE** con dominio personalizzato configurato e landing page ottimizzata. Proteggi il codice di produzione e sviluppa nuove features nelle zone sicure. 
