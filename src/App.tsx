@@ -7,7 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/hooks/useAuth';
 import { useAuthListener } from '@/hooks/useAuthListener';
 
-// Import diretto per MVP
+// Import MVP pages
 import SmartHomePage from './pages/SmartHomePage';
 import Auth from './pages/Auth';
 import ResetPassword from './pages/ResetPassword';
@@ -24,6 +24,12 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Import Landing page components
+import LandingPage from './landing/pages/LandingPage';
+import AuthPage from './landing/pages/AuthPage';
+import PrivacyPolicyLanding from './landing/pages/PrivacyPolicy';
+import './landing/styles/landing.css';
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -36,22 +42,18 @@ const App = () => {
         <TooltipProvider>
           <BrowserRouter>
             <Routes>
-              {/* Homepage intelligente con redirect basato su auth */}
+              {/* HOMEPAGE: Landing page per utenti non autenticati */}
               <Route path="/" element={<SmartHomePage />} />
               
-              {/* Pagina di autenticazione */}
+              {/* AUTH: Pagina di autenticazione unificata */}
               <Route path="/auth" element={<Auth />} />
+              <Route path="/login" element={<Navigate to="/auth" replace />} />
+              <Route path="/register" element={<Navigate to="/auth" replace />} />
               
-              {/* Pagina di reset password */}
+              {/* RESET PASSWORD */}
               <Route path="/reset-password" element={<ResetPassword />} />
               
-              {/* Route protette */}
-              <Route path="/app" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              
+              {/* MVP DASHBOARD: Route protette per utenti autenticati */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
@@ -100,17 +102,12 @@ const App = () => {
                 </ProtectedRoute>
               } />
               
-              <Route path="/terms-and-conditions" element={
-                <ProtectedRoute>
-                  <TermsAndConditions />
-                </ProtectedRoute>
-              } />
+              {/* PAGINE LEGALI: Accessibili a tutti */}
+              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               
-              <Route path="/privacy-policy" element={
-                <ProtectedRoute>
-                  <PrivacyPolicy />
-                </ProtectedRoute>
-              } />
+              {/* COMPATIBILITÀ: Route legacy */}
+              <Route path="/app" element={<Navigate to="/dashboard" replace />} />
               
               {/* 404 Not Found */}
               <Route path="*" element={<NotFound />} />
