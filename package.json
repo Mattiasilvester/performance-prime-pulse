@@ -8,13 +8,13 @@
     "build": "tsc && vite build",
     "build:public": "NODE_ENV=production vite build",
     "build:dev": "NODE_ENV=development vite build",
-    "deploy:lovable": "npm run build:public && lovable deploy",
+    "deploy:lovable": "npm run build:landing && lovable deploy",
     "start:public": "NODE_ENV=production npm run dev",
     "start:dev": "npm run dev",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "dev:landing": "vite --config vite.config.landing.ts --open /landing.html",
-    "build:landing": "VITE_APP_MODE=landing tsc && vite build",
+    "build:landing": "VITE_APP_MODE=landing tsc && vite build --config vite.config.landing.ts",
     "preview:landing": "VITE_APP_MODE=landing vite preview"
   },
   "dependencies": {
