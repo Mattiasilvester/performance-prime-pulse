@@ -1,14 +1,12 @@
-# Cursor Rules per Performance Prime Pulse
+# Cursor Rules per Performance Prime - App Unificata
 
 ## Contesto del Progetto
-Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il benessere. Include funzionalità di AI coach, tracking dei workout, pianificazione e integrazione con Supabase. 
+Questo è un'applicazione React/TypeScript unificata per il fitness e il benessere. Include funzionalità di AI coach, tracking dei workout, pianificazione e integrazione con Supabase. 
 
-**Stato Attuale (2 Agosto 2025)**: 
-- ✅ **MVP corretto e funzionante** con server attivo su `http://localhost:8080/`
-- ✅ **Link pubblico:** `https://performanceprime.it`
-- ✅ **Landing Page completa** con server attivo su `http://localhost:8081/`
-- ✅ **Architettura duale** - MVP Dashboard + Landing Page separati
-- ✅ **Flusso completo:** Landing → Auth → MVP Dashboard (deployato)
+**Stato Attuale (5 Agosto 2025)**: 
+- ✅ **App unificata funzionante** con deploy stabile su `performanceprime.it`
+- ✅ **Architettura unificata** - Landing + Auth + MVP tutto insieme
+- ✅ **Flusso completo:** Landing → Auth → Dashboard (stessa app)
 - ✅ **Autenticazione Supabase** funzionante
 - ✅ **Dashboard protetta** e responsive
 - ✅ **Overlay corretto** - Funzioni premium bloccate con design coerente
@@ -17,18 +15,34 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - ✅ **Barra di navigazione inferiore** implementata
 - ✅ **Sezioni complete:** Dashboard, Allenamento, Appuntamenti, Coach AI, Profilo
 
-## Architettura Duale (Nuova)
-### **MVP Dashboard (Porta 8080)**
-- **URL:** `http://localhost:8080/`
-- **Entry:** `src/main.tsx` → `src/App.tsx`
+## Architettura Unificata (Nuova)
+### **App Unificata (performanceprime.it)**
+- **URL:** `https://performanceprime.it`
+- **Entry:** `index.html` → `src/main.tsx` → `src/App.tsx`
 - **Config:** `vite.config.ts`
-- **Scopo:** Dashboard completa per utenti autenticati
+- **Scopo:** App completa con landing + auth + MVP
 
-### **Landing Page (Porta 8081)**
-- **URL:** `http://localhost:8081/landing.html`
-- **Entry:** `src/landing-main.tsx` → `src/landing/App.tsx`
-- **Config:** `vite.config.landing.ts`
-- **Scopo:** Landing page pubblica per acquisizione utenti
+### **Routing Unificato**
+```typescript
+// src/App.tsx - App unificata
+<Routes>
+  {/* HOMEPAGE: Landing page per utenti non autenticati */}
+  <Route path="/" element={<SmartHomePage />} />
+  
+  {/* AUTH: Pagina di autenticazione unificata */}
+  <Route path="/auth" element={<Auth />} />
+  
+  {/* MVP DASHBOARD: Route protette per utenti autenticati */}
+  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+  <Route path="/workouts" element={<ProtectedRoute><Workouts /></ProtectedRoute>} />
+  <Route path="/schedule" element={<ProtectedRoute><Schedule /></ProtectedRoute>} />
+  <Route path="/ai-coach" element={<ProtectedRoute><AICoach /></ProtectedRoute>} />
+  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+  
+  {/* PAGINE LEGALI: Accessibili a tutti */}
+  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+</Routes>
+```
 
 ## Tecnologie Principali
 - React 18+ con TypeScript
@@ -47,37 +61,29 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - Mantieni i componenti piccoli e focalizzati
 
 ## Struttura del Progetto
-- `/src/components/` - Componenti riutilizzabili MVP
-- `/src/landing/` - Landing page completa
-  - `/src/landing/App.tsx` - Entry point landing
+- `/src/App.tsx` - Router principale UNIFICATO
+- `/src/main.tsx` - Entry point UNIFICATO
+- `/src/landing/` - Componenti landing page (integrati)
   - `/src/landing/pages/` - Pagine landing (LandingPage, AuthPage)
   - `/src/landing/components/` - Componenti landing
   - `/src/landing/lib/` - Configurazioni landing (supabase.ts)
   - `/src/landing/styles/` - Stili landing
-- `/src/public/pages/` - Pagine MVP
-- `/src/public/components/` - Componenti MVP
+- `/src/pages/` - Pagine MVP
+- `/src/components/` - Componenti MVP
 - `/src/shared/` - Codice condiviso (config, hooks, ui, integrations)
-- `/src/App.tsx` - Entry point MVP
-- `/src/main.tsx` - Bootstrap MVP
-- `/src/landing-main.tsx` - Bootstrap landing
-- `/landing.html` - HTML entry landing
+- `/src/development/` - Features in sviluppo (ZONA SICURA)
+- `/src/experimental/` - Sperimentazioni (ZONA SICURA)
 
 ## Configurazioni Vite
-### **MVP Dashboard**
+### **App Unificata**
 - **File:** `vite.config.ts`
-- **Porta:** 8080
 - **Entry:** `index.html` → `src/main.tsx`
-
-### **Landing Page**
-- **File:** `vite.config.landing.ts`
-- **Porta:** 8081
-- **Entry:** `landing.html` → `src/landing-main.tsx`
+- **Build:** `npm run build:public`
 
 ## Scripts Package.json
-- `npm run dev` - MVP Dashboard (porta 8080)
-- `npm run dev:landing` - Landing Page (porta 8081)
-- `npm run build` - Build MVP
-- `npm run build:landing` - Build Landing
+- `npm run dev` - App unificata (porta 8080)
+- `npm run build:public` - Build produzione
+- `npm run deploy:lovable` - Deploy Lovable
 
 ## Styling
 - Usa Tailwind CSS per lo styling
@@ -127,43 +133,77 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - Documenta le API custom
 - Fornisci esempi di utilizzo
 
+## 🚨 PROTEZIONE CODICE PRODUZIONE
+
+### **File Protetti (NON MODIFICARE)**
+```
+src/App.tsx                    # ← Router principale PROTETTO
+src/main.tsx                   # ← Entry point PROTETTO
+src/landing/                   # ← Landing page PROTETTA
+src/pages/                     # ← Pagine MVP PROTETTE
+package.json                   # ← Scripts build PROTETTI
+vite.config.ts                 # ← Config build PROTETTA
+index.html                     # ← HTML entry PROTETTO
+```
+
+### **Zone Sicure per Sviluppo**
+```
+src/development/               # ← Features in sviluppo
+src/experimental/              # ← Sperimentazioni
+docs/                         # ← Documentazione
+tests/                        # ← Test files
+```
+
+### **Regole Operative**
+- ✅ **Leggere** i file per reference
+- ✅ **Analizzare** il codice per capire funzionalità
+- ✅ **Copiare** parti per nuove features
+- ✅ **Suggerire** miglioramenti senza modificare
+- ❌ **Modificare** file protetti senza permesso
+- ❌ **Rinominare** file o cartelle protette
+- ❌ **Spostare** componenti protetti
+- ❌ **Cambiare** configurazioni build
+
+### **Controlli di Sicurezza**
+Prima di ogni modifica verifica:
+1. ❓ "Questa modifica tocca file di produzione?"
+2. ❓ "L'utente ha esplicitamente richiesto questo cambio?"
+3. ❓ "Potrebbe rompere il deploy funzionante?"
+4. ❓ "È davvero necessaria o solo un 'miglioramento'?"
+
+Se risposta è SÌ a qualsiasi domanda → FERMA e CHIEDI CONFERMA
+
 ## Quando Suggerisci Modifiche
 - Mantieni la coerenza con il codice esistente
 - Considera l'impatto sulle performance
 - Verifica la compatibilità mobile
 - Assicurati che le modifiche seguano le convenzioni del progetto
-- Testa sempre entrambi i server di sviluppo (porte 8080 e 8081)
+- Testa sempre l'app unificata
 - Verifica che il flusso Landing → Auth → MVP funzioni correttamente
 - Mantieni aggiornata la documentazione
+- **NON toccare file protetti senza permesso esplicito**
 
-## Problemi Risolti Recentemente (2 Agosto 2025)
-- ✅ **Sidebar sinistra completamente rimossa** - Eliminato Navigation.tsx
-- ✅ **Overlay semi-trasparente** - `bg-gray-600/40` invece di `bg-black/80`
-- ✅ **Overlay unico su sezioni complete** - Design pulito e coerente
-- ✅ **Barra di navigazione inferiore** - 5 icone mobile complete
-- ✅ **Sezione Allenamento** - Route `/workouts` e funzionalità complete
-- ✅ **Sezione Appuntamenti** - Route `/schedule` e componenti integrati
-- ✅ **Sezione Coach AI** - Route `/ai-coach` e funzionalità complete
-- ✅ **Sezione Profile** - Route `/profile` e funzionalità complete
-- ✅ **Sezione Subscriptions** - Route `/subscriptions` e funzionalità complete
-- ✅ **Sezione Timer** - Route `/timer` e funzionalità complete
-- ✅ **Sezione Notes** - Route `/notes` e funzionalità complete
-- ✅ **Pagine Legali** - Route `/terms-and-conditions` e `/privacy-policy` complete
-- ✅ **Correzione routing pagine legali** - Menu dropdown con link corretti
-- ✅ **Privacy Policy ufficiale** - Contenuto identico a privacypolicies.com
-- ✅ **Overlay sezioni premium** - Azioni Rapide, Prossimi Appuntamenti, Professionisti, Insights AI, Albo delle medaglie
+## Problemi Risolti Recentemente (5 Agosto 2025)
+- ✅ **App unificata** - Landing + Auth + MVP tutto insieme
+- ✅ **Merge incompleto risolto** - Repository pulito
+- ✅ **Configurazione Lovable corretta** - Entry point `index.html`
+- ✅ **Build unificato** - Un solo build per tutto
+- ✅ **Router unificato** - Tutto in `src/App.tsx`
+- ✅ **Deploy stabile** - Funzionante su `performanceprime.it`
+- ✅ **Protezione codice produzione** - File protetti identificati
 
-## Landing Page - Sviluppi Recenti (2 Agosto 2025)
-- ✅ **Architettura duale implementata** - MVP e Landing separati
-- ✅ **Server separato porta 8081** - `npm run dev:landing`
-- ✅ **Entry point dedicato** - `landing.html` → `src/landing-main.tsx`
-- ✅ **Configurazione Vite separata** - `vite.config.landing.ts`
-- ✅ **Componenti landing completi** - Hero, Features, AuthPage
-- ✅ **Supabase configurato** - URL e Key corrette dell'MVP
-- ✅ **Mock Auth implementato** - Test UI senza errori
-- ✅ **Flusso utente completo** - Landing → Auth → MVP deployato
-- ✅ **Routing condizionale risolto** - Separazione MVP/Landing
-- ✅ **Errori di sintassi risolti** - Export condizionali corretti
+## Flusso Utente Completo
+```
+performanceprime.it/
+├── /                    → Landing page (non autenticati)
+├── /auth               → Login/registrazione
+├── /dashboard          → Dashboard MVP (autenticati)
+├── /workouts           → Allenamenti MVP
+├── /schedule           → Appuntamenti MVP
+├── /ai-coach           → Coach AI MVP
+├── /profile            → Profilo MVP
+└── /privacy-policy     → Pagine legali
+```
 
 ## Layout Corretto
 - **Header:** Logo "DD" + "Performance Prime" + menu dropdown utente
@@ -207,7 +247,13 @@ Questo è un'applicazione React/TypeScript con Capacitor per il fitness e il ben
 - **Contatto Professionisti:** Prenotazioni premium bloccate
 
 ## Prossimi Sviluppi
-- 🔄 **Deploy landing page** su subdomain separato
-- 🔄 **Testing completo** su entrambi gli ambienti
-- 🔄 **Integrazione finale** Landing → MVP
-- 🔄 **Deploy produzione** su Lovable 
+- 🔄 **Features sperimentali** in `src/development/`
+- 🔄 **Testing e ottimizzazioni**
+- 🔄 **Analytics e tracking**
+- 🔄 **Mobile app deployment**
+- 🔄 **Advanced AI features**
+
+## Motto Operativo
+**"Se funziona, non toccarlo - sviluppa a fianco!"**
+
+Il deploy su `performanceprime.it` è **PERFETTO e FUNZIONANTE**. Proteggi il codice di produzione e sviluppa nuove features nelle zone sicure. 
