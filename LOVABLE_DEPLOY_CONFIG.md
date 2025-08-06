@@ -1,16 +1,16 @@
 # 🚀 LOVABLE DEPLOY CONFIGURATION
 
-## 📋 CONFIGURAZIONE LOVABLE - LANDING PAGE
+## 📋 CONFIGURAZIONE LOVABLE - APP UNIFICATA
 
 ### **ENTRY POINT CORRETTO**
-- **File HTML:** `landing.html` (NON `index.html`)
-- **Entry Script:** `src/landing-main.tsx` (NON `src/main.tsx`)
-- **App Component:** `src/landing/App.tsx`
+- **File HTML:** `index.html` (entry point principale)
+- **Entry Script:** `src/main.tsx` (app unificata)
+- **App Component:** `src/App.tsx` (include landing + MVP)
 
 ### **BUILD CONFIGURAZIONE**
-- **Config File:** `vite.config.landing.ts`
-- **Build Command:** `npm run build:landing`
-- **Output:** `dist/landing.html`
+- **Config File:** `vite.config.ts`
+- **Build Command:** `npm run build:public`
+- **Output:** `dist/index.html`
 
 ### **LOVABLE SETTINGS**
 
@@ -21,12 +21,12 @@
 
 #### **Entry File:**
 ```
-landing.html
+index.html
 ```
 
 #### **Build Command:**
 ```bash
-npm run build:landing
+npm run build:public
 ```
 
 #### **Output Directory:**
@@ -37,17 +37,18 @@ dist/
 ### **VERIFICA DEPLOY**
 
 1. **Entry Point Corretto:**
-   - ✅ `landing.html` → `src/landing-main.tsx`
-   - ❌ NON `index.html` → `src/main.tsx`
+   - ✅ `index.html` → `src/main.tsx`
+   - ✅ App unificata con landing + MVP
 
-2. **Build Landing Page:**
-   - ✅ `npm run build:landing`
-   - ❌ NON `npm run build`
+2. **Build App Unificata:**
+   - ✅ `npm run build:public`
+   - ✅ Include landing page + MVP dashboard
 
 3. **Output Files:**
-   - ✅ `dist/landing.html`
-   - ✅ `dist/assets/main-*.js`
-   - ✅ `dist/assets/main-*.css`
+   - ✅ `dist/index.html`
+   - ✅ `dist/assets/App-*.js`
+   - ✅ `dist/assets/index-*.js`
+   - ✅ `dist/assets/landing-*.js`
 
 ### **DIFFERENZE MVP vs LANDING**
 
@@ -63,8 +64,8 @@ dist/
 ### **COMANDI DEPLOY**
 
 ```bash
-# Build Landing Page per Lovable
-npm run build:landing
+# Build App Unificata per Lovable
+npm run build:public
 
 # Deploy su Lovable
 npm run deploy:lovable
@@ -77,13 +78,15 @@ ls -la dist/
 
 ```
 dist/
-├── landing.html          # ← ENTRY POINT LOVABLE
+├── index.html           # ← ENTRY POINT LOVABLE
 ├── assets/
-│   ├── main-*.js        # Landing page bundle
-│   └── main-*.css       # Landing page styles
+│   ├── App-*.js        # MVP dashboard bundle
+│   ├── index-*.js      # App principale bundle
+│   ├── landing-*.js    # Landing page bundle
+│   └── *.css           # Styles unificati
 └── (altri file statici)
 ```
 
 ---
 
-**⚠️ IMPORTANTE:** Lovable deve usare `landing.html` come entry point, NON `index.html`! 
+**✅ APP UNIFICATA:** `performanceprime.it` ora include landing + auth + MVP tutto insieme! 
