@@ -1,11 +1,14 @@
 import React from 'react';
 import { supabase } from '../../../integrations/supabase/client';
+import { useScrollAnimation } from '../../hooks/useScrollAnimation';
 
 interface FeaturesSectionProps {
   onCTAClick?: () => void;
 }
 
 const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onCTAClick }) => {
+  const featuresRef = useScrollAnimation();
+  
   const features = [
     {
       icon: '⚡',
@@ -46,7 +49,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onCTAClick }) => {
   ];
 
   return (
-    <section className="features-section" style={{ backgroundColor: '#1a1a1a' }}>
+    <section className="features-section" style={{ backgroundColor: '#1a1a1a' }} ref={featuresRef}>
       <div className="features-container">
         <div className="features-header">
           <h2 className="features-title">
@@ -62,7 +65,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onCTAClick }) => {
           {features.map((feature, index) => (
             <div 
               key={index} 
-              className="feature-card"
+              className="feature-card animate-on-scroll"
               style={{ '--card-delay': `${index * 0.1}s` } as React.CSSProperties}
             >
               <div className="feature-icon-container" style={{ background: feature.gradient }}>
@@ -75,6 +78,21 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onCTAClick }) => {
               <div className="feature-hover-effect"></div>
             </div>
           ))}
+          
+          {/* Nuova card allenamenti */}
+          <div 
+            className="feature-card animate-on-scroll"
+            style={{ '--card-delay': '0.7s' } as React.CSSProperties}
+          >
+            <div className="feature-icon-container" style={{ background: 'linear-gradient(135deg, #FF6B6B, #FF8E53)' }}>
+              <span className="feature-icon">🏋️‍♂️</span>
+            </div>
+            <div className="feature-content">
+              <h3 className="feature-title">Scegli il tuo tipo di allenamento</h3>
+              <p className="feature-description">Ibrido, Forze speciali, Militari, Pesistica e molto altro...</p>
+            </div>
+            <div className="feature-hover-effect"></div>
+          </div>
         </div>
         
         <div className="features-cta">
@@ -89,64 +107,6 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onCTAClick }) => {
               🚀 Inizia Ora
             </button>
           </div>
-        </div>
-        
-        {/* Waiting List Section */}
-        <div className="waiting-list-section">
-          <h3 className="waiting-list-title">Iscriviti alla Waiting List</h3>
-          <p className="waiting-list-description">
-            Sii tra i primi a provare Performance Prime quando sarà disponibile
-          </p>
-          <form className="waiting-list-form" onSubmit={async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const email = formData.get('email') as string;
-            
-            try {
-              // Salva email nella waiting list di Supabase
-              const { data, error } = await supabase
-                .from('waiting_list')
-                .insert([
-                  {
-                    email: email,
-                    status: 'pending',
-                    source: 'landing_page',
-                    notes: `Iscrizione automatica dalla landing page - ${new Date().toLocaleString('it-IT')}`
-                  }
-                ])
-                .select();
-              
-              if (error) {
-                console.error('Errore salvataggio email:', error);
-                alert('Errore nell\'iscrizione. Riprova più tardi.');
-                return;
-              }
-              
-              console.log('Email salvata con successo:', data);
-              alert(`Grazie! Ti abbiamo aggiunto alla waiting list. Ti contatteremo a ${email}.`);
-              
-              // Reset sicuro del form
-              if (e.currentTarget) {
-                e.currentTarget.reset();
-              }
-            } catch (error) {
-              console.error('Errore salvataggio email:', error);
-              alert('Errore nell\'iscrizione. Riprova più tardi.');
-            }
-          }}>
-            <div className="waiting-list-input-group">
-              <input 
-                type="email" 
-                name="email" 
-                placeholder="La tua email" 
-                required
-                className="waiting-list-input"
-              />
-              <button type="submit" className="waiting-list-button">
-                Iscriviti
-              </button>
-            </div>
-          </form>
         </div>
       </div>
     </section>

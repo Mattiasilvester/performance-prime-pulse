@@ -97,7 +97,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem; /* Ridotto da 1.5rem */
   opacity: 0;
   animation: fadeInUp 1s ease-out 0.5s forwards;
 }
@@ -150,7 +150,7 @@
   font-size: 4rem;
   font-weight: 800;
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.8rem; /* Ridotto da 1rem */
   line-height: 1.1;
   background: linear-gradient(135deg, #ffffff 0%, #EEBA2B 100%);
   -webkit-background-clip: text;
@@ -184,7 +184,7 @@
   font-size: 1.25rem;
   color: #ccc;
   max-width: 600px;
-  margin-bottom: 2rem;
+  margin-bottom: 1.2rem; /* Ridotto da 1.5rem */
   line-height: 1.6;
   opacity: 0;
   animation: fadeInUp 1s ease-out 1.5s forwards;
@@ -447,6 +447,22 @@
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 30px;
   margin-bottom: 4rem;
+}
+
+/* Posizionamento card allenamento sotto Community */
+.features-grid .feature-card:last-child {
+  grid-column: 2 / 3;
+  grid-row: 3 / 4;
+  justify-self: center;
+}
+
+/* Responsive per card allenamento */
+@media (max-width: 768px) {
+  .features-grid .feature-card:last-child {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    justify-self: stretch;
+  }
 }
 
 .feature-card {
@@ -1332,5 +1348,628 @@
   
   .waiting-list-button {
     width: 100%;
+  }
+} 
+
+/* Hero Description - New Content */
+.hero-description {
+  max-width: 800px;
+  margin: 0.3rem auto 2rem;
+  text-align: center;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* Spaziatura uniforme tra elementi */
+}
+
+.hero-app-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #EEBA2B;
+  margin-bottom: 0.6rem; /* Ridotto da 0.8rem */
+  text-shadow: 0 0 20px rgba(238, 186, 43, 0.3);
+}
+
+.hero-app-subtitle {
+  font-size: 1.3rem;
+  color: #ffffff;
+  margin-bottom: 1rem; /* Ridotto da 1.2rem */
+  font-weight: 500;
+}
+
+.hero-app-description {
+  font-size: 1.1rem;
+  color: #cccccc;
+  line-height: 1.6;
+  margin-bottom: 0.4rem; /* Ridotto da 0.6rem */
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Linea divisoria oro */
+.hero-divider {
+  width: 250px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #EEBA2B, transparent);
+  margin: 1.5rem auto;
+  border-radius: 1px;
+  box-shadow: 0 0 10px rgba(238, 186, 43, 0.3);
+  animation: fadeInUp 0.8s ease-out 1s both;
+}
+
+/* Container per le card con layout ottimizzato */
+.hero-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* Spaziatura uniforme tra card */
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.hero-features-list,
+.hero-differences {
+  width: 100%; /* Larghezza identica */
+  max-width: 700px; /* Max-width coerente */
+  margin: 0; /* Reset margin per usare gap del container */
+  text-align: left;
+  background: rgba(26, 26, 26, 0.8);
+  border-radius: 20px;
+  padding: 2rem; /* Padding uniforme */
+  border: 1px solid rgba(238, 186, 43, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Include padding nel width */
+}
+
+/* Rimuovo le regole specifiche precedenti */
+.hero-features-list {
+  margin-bottom: 0 !important; /* Reset margin */
+}
+
+.hero-features-list:hover,
+.hero-differences:hover {
+  background: rgba(26, 26, 26, 0.9);
+  border-color: rgba(238, 186, 43, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.features-title,
+.differences-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #EEBA2B;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.features-list,
+.differences-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.features-list li,
+.differences-list li {
+  font-size: 1rem;
+  color: #ffffff;
+  line-height: 1.5;
+  margin-bottom: 0.8rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.features-list li::before,
+.differences-list li::before {
+  content: "•";
+  color: #EEBA2B;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.hero-cta-section {
+  margin: 3rem 0 2rem;
+  text-align: center;
+  padding: 2rem;
+  background: rgba(238, 186, 43, 0.1);
+  border-radius: 20px;
+  border: 1px solid rgba(238, 186, 43, 0.2);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #EEBA2B;
+  margin-bottom: 1rem;
+}
+
+.cta-description {
+  font-size: 1rem;
+  color: #ffffff;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.cta-special {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #EEBA2B;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Responsive Design per Hero Description */
+@media (max-width: 768px) {
+  .hero-description {
+    margin: 1.2rem auto 1.2rem; /* Ridotto da 1.5rem */
+    padding: 0 1rem;
+  }
+  
+  .hero-cards-container {
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+  
+  .hero-app-title {
+    font-size: 2rem;
+    margin-bottom: 0.4rem; /* Ridotto da 0.6rem */
+  }
+  
+  .hero-app-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem; /* Ridotto da 1rem */
+  }
+  
+  .hero-app-description {
+    font-size: 1rem;
+    margin-bottom: 0.3rem; /* Ridotto da 0.5rem */
+  }
+  
+  /* Linea divisoria responsive */
+  .hero-divider {
+    width: 200px;
+    margin: 1.2rem auto;
+    animation-duration: 0.6s;
+    animation-delay: 0.8s;
+  }
+  
+  .features-title,
+  .differences-title {
+    font-size: 1.2rem;
+  }
+  
+  .features-list li,
+  .differences-list li {
+    font-size: 0.9rem;
+  }
+  
+  .hero-cta-section {
+    padding: 1.5rem;
+    margin: 1.2rem 0 1.2rem; /* Ridotto da 1.5rem */
+  }
+  
+  .cta-title {
+    font-size: 1.3rem;
+  }
+  
+  .cta-description {
+    font-size: 0.9rem;
+  }
+  
+  .cta-special {
+    font-size: 1rem;
+  }
+  
+  .hero-features-list,
+  .hero-differences {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-description {
+    margin: 0.8rem auto 0.8rem; /* Ridotto da 1rem */
+    padding: 0 0.5rem;
+  }
+  
+  .hero-cards-container {
+    gap: 1rem;
+    padding: 0 0.5rem;
+  }
+  
+  .hero-app-title {
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem; /* Ridotto da 0.5rem */
+  }
+  
+  .hero-app-subtitle {
+    font-size: 1rem;
+    margin-bottom: 0.6rem; /* Ridotto da 0.8rem */
+  }
+  
+  .hero-app-description {
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem; /* Ridotto da 0.4rem */
+  }
+  
+  /* Linea divisoria mobile */
+  .hero-divider {
+    width: 150px;
+    margin: 1rem auto;
+    animation-duration: 0.5s;
+    animation-delay: 0.6s;
+  }
+  
+  .features-title,
+  .differences-title {
+    font-size: 1.1rem;
+  }
+  
+  .features-list li,
+  .differences-list li {
+    font-size: 0.85rem;
+    padding-left: 1rem;
+  }
+  
+  .hero-cta-section {
+    padding: 1rem;
+    margin: 0.8rem 0 0.8rem; /* Ridotto da 1rem */
+  }
+  
+  .cta-title {
+    font-size: 1.2rem;
+  }
+  
+  .cta-description {
+    font-size: 0.85rem;
+  }
+  
+  .cta-special {
+    font-size: 0.9rem;
+  }
+  
+  .hero-features-list,
+  .hero-differences {
+    padding: 1rem;
+    border-radius: 15px;
+  }
+} 
+
+/* Animazioni Globali Landing Page - SOLO ANIMAZIONI */
+
+/* Keyframes per animazioni */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rotateIn {
+  from {
+    opacity: 0;
+    transform: rotate(-10deg) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+/* Classe base per animazioni on-scroll */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-on-scroll.animated {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animazioni Hero Section - SOLO ANIMAZIONI */
+.hero-title {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.hero-subtitle {
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.hero-brand {
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+/* Linea divisoria - sostituisce i testi rimossi */
+.hero-divider {
+  animation: fadeInUp 0.8s ease-out 0.8s both;
+}
+
+.hero-app-description {
+  animation: fadeInUp 0.8s ease-out 1s both;
+}
+
+.hero-app-description:nth-of-type(2) {
+  animation-delay: 1.2s;
+}
+
+/* Animazioni Card - SOLO ANIMAZIONI */
+.hero-features-list {
+  animation: fadeInUp 0.8s ease-out 1.6s both;
+}
+
+.hero-differences {
+  animation: fadeInUp 0.8s ease-out 1.8s both;
+}
+
+/* Stagger animation per bullet points - SOLO ANIMAZIONI */
+.features-list li,
+.differences-list li {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.features-list li:nth-child(1) { animation-delay: 1.8s; }
+.features-list li:nth-child(2) { animation-delay: 1.9s; }
+.features-list li:nth-child(3) { animation-delay: 2.0s; }
+.features-list li:nth-child(4) { animation-delay: 2.1s; }
+.features-list li:nth-child(5) { animation-delay: 2.2s; }
+.features-list li:nth-child(6) { animation-delay: 2.3s; }
+
+.differences-list li:nth-child(1) { animation-delay: 2.0s; }
+.differences-list li:nth-child(2) { animation-delay: 2.1s; }
+.differences-list li:nth-child(3) { animation-delay: 2.2s; }
+.differences-list li:nth-child(4) { animation-delay: 2.3s; }
+.differences-list li:nth-child(5) { animation-delay: 2.4s; }
+
+/* Animazioni CTA - SOLO ANIMAZIONI */
+.hero-cta-section {
+  animation: fadeInUp 0.8s ease-out 2.5s both;
+}
+
+.cta-title {
+  animation: fadeInUp 0.8s ease-out 2.7s both;
+}
+
+.cta-description {
+  animation: fadeInUp 0.8s ease-out 2.9s both;
+}
+
+.cta-special {
+  animation: fadeInUp 0.8s ease-out 3.1s both;
+}
+
+/* Animazioni Features Preview - SOLO ANIMAZIONI */
+.hero-features {
+  animation: fadeInUp 0.8s ease-out 3.3s both;
+}
+
+.feature-pill {
+  animation: scaleIn 0.6s ease-out forwards;
+}
+
+.feature-pill:nth-child(1) { animation-delay: 3.5s; }
+.feature-pill:nth-child(2) { animation-delay: 3.7s; }
+.feature-pill:nth-child(3) { animation-delay: 3.9s; }
+
+/* Animazioni Features Section - SOLO ANIMAZIONI */
+.features-section {
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+.features-title {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.feature-card {
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+.feature-card:nth-child(1) { animation-delay: 0.4s; }
+.feature-card:nth-child(2) { animation-delay: 0.6s; }
+.feature-card:nth-child(3) { animation-delay: 0.8s; }
+.feature-card:nth-child(4) { animation-delay: 1.0s; }
+.feature-card:nth-child(5) { animation-delay: 1.2s; }
+.feature-card:nth-child(6) { animation-delay: 1.4s; }
+
+/* Animazioni CTA Section - SOLO ANIMAZIONI */
+.cta-section {
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+.cta-title {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.cta-button {
+  animation: scaleIn 0.6s ease-out 0.4s both;
+}
+
+/* Animazioni QR Code - SOLO ANIMAZIONI */
+.qr-code-container {
+  animation: rotateIn 0.8s ease-out 0.6s both;
+}
+
+/* Animazioni Footer - SOLO ANIMAZIONI */
+.footer {
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+.footer-section {
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+.footer-section:nth-child(1) { animation-delay: 0.2s; }
+.footer-section:nth-child(2) { animation-delay: 0.4s; }
+.footer-section:nth-child(3) { animation-delay: 0.6s; }
+
+.footer-copyright {
+  animation: fadeIn 0.8s ease-out 0.8s both;
+}
+
+/* Animazioni Founders Section - SOLO ANIMAZIONI */
+.founders-section {
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+.founder-card {
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+.founder-card:nth-child(1) { animation-delay: 0.2s; }
+.founder-card:nth-child(2) { animation-delay: 0.4s; }
+
+/* Responsive Animations - SOLO ANIMAZIONI */
+@media (max-width: 768px) {
+  .hero-title {
+    animation-duration: 0.6s;
+  }
+  
+  .hero-subtitle {
+    animation-duration: 0.6s;
+    animation-delay: 0.3s;
+  }
+  
+  .hero-brand {
+    animation-duration: 0.6s;
+    animation-delay: 0.5s;
+  }
+  
+  /* Linea divisoria responsive */
+  .hero-divider {
+    animation-duration: 0.6s;
+    animation-delay: 0.7s;
+  }
+  
+  .hero-app-description {
+    animation-duration: 0.6s;
+    animation-delay: 0.9s;
+  }
+  
+  .hero-app-description:nth-of-type(2) {
+    animation-delay: 1.1s;
+  }
+  
+  .hero-features-list {
+    animation-duration: 0.6s;
+    animation-delay: 1.3s;
+  }
+  
+  .hero-differences {
+    animation-duration: 0.6s;
+    animation-delay: 1.5s;
+  }
+  
+  /* Stagger ridotto su mobile */
+  .features-list li:nth-child(1) { animation-delay: 1.5s; }
+  .features-list li:nth-child(2) { animation-delay: 1.6s; }
+  .features-list li:nth-child(3) { animation-delay: 1.7s; }
+  .features-list li:nth-child(4) { animation-delay: 1.8s; }
+  .features-list li:nth-child(5) { animation-delay: 1.9s; }
+  .features-list li:nth-child(6) { animation-delay: 2.0s; }
+  
+  .differences-list li:nth-child(1) { animation-delay: 1.7s; }
+  .differences-list li:nth-child(2) { animation-delay: 1.8s; }
+  .differences-list li:nth-child(3) { animation-delay: 1.9s; }
+  .differences-list li:nth-child(4) { animation-delay: 2.0s; }
+  .differences-list li:nth-child(5) { animation-delay: 2.1s; }
+}
+
+@media (max-width: 480px) {
+  /* Animazioni ancora più veloci su mobile */
+  .hero-title {
+    animation-duration: 0.5s;
+  }
+  
+  .hero-subtitle {
+    animation-duration: 0.5s;
+    animation-delay: 0.2s;
+  }
+  
+  .hero-brand {
+    animation-duration: 0.5s;
+    animation-delay: 0.4s;
+  }
+  
+  /* Linea divisoria mobile */
+  .hero-divider {
+    animation-duration: 0.5s;
+    animation-delay: 0.6s;
+  }
+  
+  .hero-app-description {
+    animation-duration: 0.5s;
+    animation-delay: 0.8s;
+  }
+  
+  .hero-app-description:nth-of-type(2) {
+    animation-delay: 1.0s;
+  }
+  
+  .hero-features-list {
+    animation-duration: 0.5s;
+    animation-delay: 1.2s;
+  }
+  
+  .hero-differences {
+    animation-duration: 0.5s;
+    animation-delay: 1.4s;
+  }
+  
+  /* Stagger minimo su mobile */
+  .features-list li:nth-child(1) { animation-delay: 1.4s; }
+  .features-list li:nth-child(2) { animation-delay: 1.5s; }
+  .features-list li:nth-child(3) { animation-delay: 1.6s; }
+  .features-list li:nth-child(4) { animation-delay: 1.7s; }
+  .features-list li:nth-child(5) { animation-delay: 1.8s; }
+  .features-list li:nth-child(6) { animation-delay: 1.9s; }
+  
+  .differences-list li:nth-child(1) { animation-delay: 1.6s; }
+  .differences-list li:nth-child(2) { animation-delay: 1.7s; }
+  .differences-list li:nth-child(3) { animation-delay: 1.8s; }
+  .differences-list li:nth-child(4) { animation-delay: 1.9s; }
+  .differences-list li:nth-child(5) { animation-delay: 2.0s; }
+}
+
+/* Accessibility - Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 } 
