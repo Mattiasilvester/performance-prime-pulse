@@ -28,10 +28,11 @@ Implementazione completa della funzionalità di allegati per le schede allenamen
 - ✅ **Sicurezza:** Solo utente proprietario
 
 ### **4. Integrazione UI**
-- ✅ **Pulsante allegati:** Icona paperclip nell'header
+- ✅ **Pulsante allegati:** Icona paperclip nella schermata allenamenti
 - ✅ **Sezione espandibile:** Mostra/nasconde allegati
 - ✅ **Design coerente:** Stile app unificato
 - ✅ **Responsive:** Funziona su mobile e desktop
+- ✅ **Posizionamento intuitivo:** Pulsante chiaro e visibile
 
 ---
 
@@ -87,9 +88,10 @@ interface WorkoutAttachment {
 - **`viewAttachment()`:** Preview immagini/PDF
 
 ### **3. Integrazione:**
-- **`CustomWorkoutDisplay.tsx`:** Pulsante allegati nell'header
+- **`Workouts.tsx`:** Pulsante allegati nella schermata principale
 - **Sezione espandibile:** Mostra/nasconde allegati
 - **Callback:** Aggiornamenti in tempo reale
+- **Posizionamento:** Pulsante chiaro e intuitivo nell'header
 
 ---
 
@@ -126,13 +128,15 @@ if (!allowedTypes.includes(file.type)) {
 
 ### **1. Pulsante Allegati:**
 ```typescript
-<Button 
-  onClick={() => setShowAttachments(!showAttachments)}
-  variant="ghost"
-  size="sm"
-  className="text-white hover:bg-white/20"
+<Button
+  onClick={() => {
+    setShowAttachments(!showAttachments);
+    setSelectedWorkoutId(null);
+  }}
+  className="bg-[#EEBA2B] text-black hover:bg-[#EEBA2B]/80 flex items-center gap-2"
 >
-  <Paperclip className="h-5 w-5" />
+  <Paperclip className="h-4 w-4" />
+  Allegati
 </Button>
 ```
 
@@ -219,15 +223,16 @@ try {
 
 ### **1. Caricamento Allegati:**
 ```
-1. Utente clicca icona paperclip
+1. Utente clicca pulsante "Allegati" nella schermata allenamenti
 2. Sezione allegati si espande
-3. Utente clicca "Carica File"
-4. Selezione file multipli
-5. Validazione automatica
-6. Upload su Supabase Storage
-7. Salvataggio record database
-8. Aggiornamento UI
-9. Notifica successo
+3. Utente avvia un allenamento personalizzato
+4. Utente clicca "Carica File" nella sezione allegati
+5. Selezione file multipli
+6. Validazione automatica
+7. Upload su Supabase Storage
+8. Salvataggio record database
+9. Aggiornamento UI
+10. Notifica successo
 ```
 
 ### **2. Visualizzazione Allegati:**
@@ -347,4 +352,4 @@ try {
 
 **Data:** 6 Agosto 2025  
 **Status:** ✅ **COMPLETATO** - Funzionalità allegati implementata  
-**Files:** `src/components/workouts/WorkoutAttachments.tsx`, `src/components/workouts/CustomWorkoutDisplay.tsx`, `supabase/migrations/20250620000000-workout-attachments.sql`, `supabase/migrations/20250620000001-storage-bucket.sql`
+**Files:** `src/components/workouts/WorkoutAttachments.tsx`, `src/components/workouts/Workouts.tsx`, `src/components/workouts/CustomWorkoutDisplay.tsx`, `supabase/migrations/20250620000000-workout-attachments.sql`, `supabase/migrations/20250620000001-storage-bucket.sql`
