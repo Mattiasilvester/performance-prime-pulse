@@ -2,6 +2,7 @@ import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot,
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -30,34 +31,18 @@ import {
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchUserProfile, UserProfile } from '@/services/userService';
 
-// Interfaccia per le notifiche con stato "read"
-interface Notification {
-  id: number;
-  message: string;
-  time: string;
-  read: boolean;
-}
-
 export const Header = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    { id: 1, message: "Nuovo allenamento disponibile", time: "2 ore fa", read: false },
-    { id: 2, message: "Ricordati di completare il tuo obiettivo settimanale", time: "1 giorno fa", read: false },
-    { id: 3, message: "Il tuo piano è stato aggiornato", time: "2 giorni fa", read: false }
-  ]);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const { user } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
-
-  // Calcola le notifiche non lette
-  const unreadNotifications = notifications.filter(notification => !notification.read);
-  const unreadCount = unreadNotifications.length;
 
   const navigationItems = [
     { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
@@ -161,27 +146,7 @@ export const Header = () => {
     }
   };
 
-  // Funzione per rimuovere una notifica
-  const removeNotification = (notificationId: number) => {
-    setNotifications(notifications.filter(n => n.id !== notificationId));
-  };
 
-  // Funzione per segnare una notifica come letta
-  const markNotificationAsRead = (notificationId: number) => {
-    setNotifications(notifications.map(notification => 
-      notification.id === notificationId 
-        ? { ...notification, read: true }
-        : notification
-    ));
-  };
-
-  // Funzione per segnare tutte le notifiche come lette
-  const markAllNotificationsAsRead = () => {
-    setNotifications(notifications.map(notification => ({
-      ...notification,
-      read: true
-    })));
-  };
 
   const handleSearchItemClick = (path: string) => {
     navigate(path);
@@ -242,7 +207,7 @@ export const Header = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={markAllNotificationsAsRead}
+                        onClick={markAllAsRead}
                         className="text-xs text-interactive-primary hover:bg-interactive-primary/10"
                       >
                         Segna tutte come lette
@@ -259,7 +224,7 @@ export const Header = () => {
                               ? 'bg-surface-secondary/50 opacity-75' 
                               : 'bg-surface-secondary'
                           }`}
-                          onClick={() => markNotificationAsRead(notification.id)}
+                          onClick={() => markAsRead(notification.id)}
                         >
                           <button
                             onClick={(e) => {

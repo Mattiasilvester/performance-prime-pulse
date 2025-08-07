@@ -6,6 +6,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/hooks/useAuth';
 import { useAuthListener } from '@/hooks/useAuthListener';
+import { NotificationProvider } from '@/hooks/useNotifications';
 // import { AnalyticsConsent } from '@/components/ui/AnalyticsConsent';
 // import { analytics } from '@/services/analytics';
 
@@ -68,9 +69,10 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <BrowserRouter>
-            <PageTracker>
+        <NotificationProvider>
+          <TooltipProvider>
+            <BrowserRouter>
+              <PageTracker>
               <Routes>
                 {/* HOMEPAGE: Landing page per utenti non autenticati */}
                 <Route path="/" element={<SmartHomePage />} />
@@ -185,6 +187,7 @@ const App = () => {
           <Sonner />
           {/* <AnalyticsConsent /> */}
         </TooltipProvider>
+        </NotificationProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
