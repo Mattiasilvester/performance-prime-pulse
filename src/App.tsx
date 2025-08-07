@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/hooks/useAuth';
 import { useAuthListener } from '@/hooks/useAuthListener';
 import { NotificationProvider } from '@/hooks/useNotifications';
+import { NotesProvider } from '@/hooks/useNotes';
 // import { AnalyticsConsent } from '@/components/ui/AnalyticsConsent';
 // import { analytics } from '@/services/analytics';
 
@@ -70,9 +71,10 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <NotificationProvider>
-          <TooltipProvider>
-            <BrowserRouter>
-              <PageTracker>
+          <NotesProvider>
+            <TooltipProvider>
+              <BrowserRouter>
+                <PageTracker>
               <Routes>
                 {/* HOMEPAGE: Landing page per utenti non autenticati */}
                 <Route path="/" element={<SmartHomePage />} />
@@ -187,6 +189,7 @@ const App = () => {
           <Sonner />
           {/* <AnalyticsConsent /> */}
         </TooltipProvider>
+        </NotesProvider>
         </NotificationProvider>
       </AuthProvider>
     </QueryClientProvider>

@@ -3,18 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Trash2, Save } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useNotes, Note } from '@/hooks/useNotes';
 import { useToast } from '@/hooks/use-toast';
 import { validateInput, sanitizeText } from '@/lib/security';
-
-interface Note {
-  id: string;
-  title: string;
-  content: string;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-}
 
 interface NoteEditorProps {
   note: Note | null;
@@ -33,6 +24,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { createNote, updateNote, deleteNote } = useNotes();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -85,50 +77,29 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
 
     setIsSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
       // Sanitize inputs
       const sanitizedTitle = sanitizeText(title.trim());
       const sanitizedContent = sanitizeText(content.trim());
       
       const finalTitle = sanitizedTitle || sanitizedContent.split('\n')[0].substring(0, 50) || 'Nota senza titolo';
 
+      let savedNote: Note | null = null;
+
       if (note) {
         // Update existing note
-        const { data, error } = await supabase
-          .from('notes')
-          .update({
-            title: finalTitle,
-            content: sanitizedContent,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', note.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        onSave(data);
+        savedNote = await updateNote(note.id, finalTitle, sanitizedContent);
       } else {
         // Create new note
-        const { data, error } = await supabase
-          .from('notes')
-          .insert({
-            title: finalTitle,
-            content: sanitizedContent,
-            user_id: user.id
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        onSave(data);
+        savedNote = await createNote(finalTitle, sanitizedContent);
       }
 
-      toast({
-        title: "Salvato!",
-        description: "La nota è stata salvata con successo.",
-      });
+      if (savedNote) {
+        onSave(savedNote);
+        toast({
+          title: "Salvato!",
+          description: "La nota è stata salvata con successo.",
+        });
+      }
     } catch (error) {
       console.error('Error saving note:', error);
       toast({
@@ -148,23 +119,10 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
 
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from('notes')
-        .delete()
-        .eq('id', note.id);
-
-      if (error) {
-        console.error('Supabase delete error:', error);
-        throw error;
+      const success = await deleteNote(note.id);
+      if (success) {
+        onDelete(note.id);
       }
-      
-      console.log('Note deleted successfully from database');
-      onDelete(note.id);
-      
-      toast({
-        title: "Nota eliminata",
-        description: "La nota è stata eliminata definitivamente.",
-      });
     } catch (error) {
       console.error('Error deleting note:', error);
       toast({

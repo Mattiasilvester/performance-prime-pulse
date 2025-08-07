@@ -3,46 +3,20 @@ import { Plus, Search, FileText, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NoteEditor } from './NoteEditor';
-import { supabase } from '@/integrations/supabase/client';
+import { useNotes, Note } from '@/hooks/useNotes';
 import { useToast } from '@/hooks/use-toast';
 
-interface Note {
-  id: string;
-  title: string;
-  content: string;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-}
-
 const Notes = () => {
-  const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const { notes, isLoading, loadNotes, deleteNote } = useNotes();
   const { toast } = useToast();
 
+  // Ricarica le note quando si entra nella pagina
   useEffect(() => {
     loadNotes();
-  }, []);
-
-  const loadNotes = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('notes')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-      setNotes(data || []);
-    } catch (error) {
-      console.error('Error loading notes:', error);
-    }
-  };
+  }, [loadNotes]);
 
   const createNewNote = () => {
     setSelectedNote(null);
@@ -50,21 +24,12 @@ const Notes = () => {
   };
 
   const handleNoteSaved = (note: Note) => {
-    setNotes(prev => {
-      const existing = prev.find(n => n.id === note.id);
-      if (existing) {
-        return prev.map(n => n.id === note.id ? note : n);
-      } else {
-        return [note, ...prev];
-      }
-    });
     setSelectedNote(note);
     setIsCreating(false);
   };
 
   const handleNoteDeleted = (noteId: string) => {
     console.log('Removing note from local state:', noteId);
-    setNotes(prev => prev.filter(n => n.id !== noteId));
     setSelectedNote(null);
     setIsCreating(false);
   };
@@ -74,26 +39,9 @@ const Notes = () => {
     
     if (!confirm('Sei sicuro di voler eliminare questa nota?')) return;
 
-    try {
-      const { error } = await supabase
-        .from('notes')
-        .delete()
-        .eq('id', noteId);
-
-      if (error) throw error;
-      
+    const success = await deleteNote(noteId);
+    if (success) {
       handleNoteDeleted(noteId);
-      toast({
-        title: "Eliminata",
-        description: "La nota è stata eliminata con successo.",
-      });
-    } catch (error) {
-      console.error('Error deleting note:', error);
-      toast({
-        title: "Errore",
-        description: "Impossibile eliminare la nota.",
-        variant: "destructive",
-      });
     }
   };
 
