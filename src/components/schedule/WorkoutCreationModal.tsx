@@ -1,11 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Upload, FileText, Edit3, AlertTriangle } from 'lucide-react';
+import { X, Plus, Upload, FileText, Edit3, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useFileAccess } from '@/hooks/useFileAccess';
+import { FileAnalyzer, FileAnalysisResult, ExtractedExercise } from '@/services/fileAnalysis';
+import { FileAnalysisResults } from './FileAnalysisResults';
 
 interface Exercise {
   name: string;
@@ -39,6 +41,8 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
   const [isLoading, setIsLoading] = useState(false);
   const [creationMethod, setCreationMethod] = useState<'manual' | 'file' | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileAnalysis, setFileAnalysis] = useState<FileAnalysisResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const navigate = useNavigate();
   const { hasConsent } = useFileAccess();
 
@@ -51,6 +55,8 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
       setDuration('');
       setCreationMethod(null);
       setUploadedFile(null);
+      setFileAnalysis(null);
+      setIsAnalyzing(false);
     }
   }, [isOpen, selectedDate]);
 
@@ -71,7 +77,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       // Validazione file
@@ -89,6 +95,18 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
       }
 
       setUploadedFile(file);
+      
+      // Analizza il file automaticamente
+      setIsAnalyzing(true);
+      try {
+        const analysis = await FileAnalyzer.analyzeFile(file);
+        setFileAnalysis(analysis);
+      } catch (error) {
+        console.error('Errore analisi file:', error);
+        alert('Errore nell\'analisi del file. Riprova.');
+      } finally {
+        setIsAnalyzing(false);
+      }
     }
   };
 
@@ -98,6 +116,36 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
 
   const handleFileCreation = () => {
     setCreationMethod('file');
+  };
+
+  const handleAcceptAnalysis = (exercises: ExtractedExercise[], title?: string, duration?: string) => {
+    // Converti gli esercizi estratti nel formato del modal
+    const convertedExercises = exercises.map(ex => ({
+      name: ex.name,
+      sets: ex.sets || '3',
+      reps: ex.reps || '10',
+      rest: ex.rest || '2 min'
+    }));
+
+    setExercises(convertedExercises);
+    if (title) setCustomTitle(title);
+    if (duration) setDuration(duration);
+    
+    // Passa al metodo manuale per permettere modifiche
+    setCreationMethod('manual');
+    setSelectedType('personalizzato');
+    setFileAnalysis(null);
+  };
+
+  const handleRejectAnalysis = () => {
+    setFileAnalysis(null);
+    setUploadedFile(null);
+  };
+
+  const handleEditAnalysis = () => {
+    if (fileAnalysis) {
+      handleAcceptAnalysis(fileAnalysis.exercises, fileAnalysis.workoutTitle, fileAnalysis.duration);
+    }
   };
 
   const handleSave = async () => {
@@ -370,39 +418,63 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
             <label className="block text-white text-sm font-medium mb-4">
               Carica il tuo allenamento
             </label>
-            <div className="border-2 border-dashed border-[#c89116]/50 rounded-lg p-6 text-center">
-              <input
-                type="file"
-                accept=".jpg,.jpeg,.png,.pdf"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="workout-file-upload"
-              />
-              <label
-                htmlFor="workout-file-upload"
-                className="cursor-pointer block"
-              >
-                <div className="flex flex-col items-center">
-                  <Upload className="h-12 w-12 text-[#c89116] mb-4" />
-                  <p className="text-white font-medium mb-2">Clicca per caricare un file</p>
-                  <p className="text-gray-400 text-sm mb-4">
-                    Supporta JPEG, PNG e PDF (max 10MB)
-                  </p>
-                  <Button 
-                    type="button"
-                    className="bg-[#c89116] text-black hover:bg-[#c89116]/80"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      document.getElementById('workout-file-upload')?.click();
-                    }}
-                  >
-                    Sfoglia File
-                  </Button>
-                </div>
-              </label>
-            </div>
             
-            {uploadedFile && (
+            {!fileAnalysis ? (
+              <div className="border-2 border-dashed border-[#c89116]/50 rounded-lg p-6 text-center">
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="workout-file-upload"
+                />
+                <label
+                  htmlFor="workout-file-upload"
+                  className="cursor-pointer block"
+                >
+                  <div className="flex flex-col items-center">
+                    <Upload className="h-12 w-12 text-[#c89116] mb-4" />
+                    <p className="text-white font-medium mb-2">Clicca per caricare un file</p>
+                    <p className="text-gray-400 text-sm mb-4">
+                      Supporta JPEG, PNG e PDF (max 10MB)
+                    </p>
+                    <Button 
+                      type="button"
+                      className="bg-[#c89116] text-black hover:bg-[#c89116]/80"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById('workout-file-upload')?.click();
+                      }}
+                    >
+                      Sfoglia File
+                    </Button>
+                  </div>
+                </label>
+              </div>
+            ) : (
+              <FileAnalysisResults
+                result={fileAnalysis}
+                onAccept={handleAcceptAnalysis}
+                onReject={handleRejectAnalysis}
+                onEdit={handleEditAnalysis}
+              />
+            )}
+            
+            {isAnalyzing && (
+              <div className="mt-4 p-4 bg-blue-500/20 border border-blue-500/50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 text-blue-400 animate-spin" />
+                  <div>
+                    <p className="text-blue-400 font-medium">Analizzando il file...</p>
+                    <p className="text-blue-400/70 text-sm">
+                      Riconoscendo esercizi e informazioni
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {uploadedFile && !fileAnalysis && !isAnalyzing && (
               <div className="mt-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg">
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-green-400" />
