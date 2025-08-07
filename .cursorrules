@@ -3,7 +3,7 @@
 ## Contesto del Progetto
 Questo è un'applicazione React/TypeScript unificata per il fitness e il benessere. Include funzionalità di AI coach, tracking dei workout, pianificazione e integrazione con Supabase. 
 
-**Stato Attuale (6 Agosto 2025)**: 
+**Stato Attuale (7 Agosto 2025)**: 
 - ✅ **App unificata funzionante** con deploy stabile su `performanceprime.it`
 - ✅ **Architettura unificata** - Landing + Auth + MVP tutto insieme
 - ✅ **Flusso completo:** Landing → Auth → Dashboard (stessa app)
@@ -30,6 +30,13 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 - ✅ **Tagline allenamenti** - Aggiunta sotto card features
 - ✅ **Card allenamenti dedicata** - Trasformata in card separata
 - ✅ **Posizionamento card** - Centrata sotto Community
+- ✅ **Sistema consenso file** - Banner e sezione impostazioni implementati
+- ✅ **Analisi OCR file** - Riconoscimento automatico esercizi da immagini/PDF
+- ✅ **Integrazione allegati** - Caricamento file nel modal creazione allenamento
+- ✅ **Pattern matching** - Riconoscimento formati italiani e inglesi
+- ✅ **Componente risultati** - FileAnalysisResults per rivedere esercizi estratti
+- ✅ **Hook useFileAccess** - Gestione stato consenso con localStorage
+- ✅ **Servizio FileAnalyzer** - OCR avanzato con database 50+ esercizi
 
 ## Architettura Unificata (Nuova)
 ### **App Unificata (performanceprime.it)**
@@ -205,7 +212,7 @@ Se risposta è SÌ a qualsiasi domanda → FERMA e CHIEDI CONFERMA
 - **NON toccare file protetti senza permesso esplicito**
 - **MODIFICA SOLO `src/landing/` per landing page**
 
-## Problemi Risolti Recentemente (6 Agosto 2025)
+## Problemi Risolti Recentemente (7 Agosto 2025)
 - ✅ **App unificata** - Landing + Auth + MVP tutto insieme
 - ✅ **Merge incompleto risolto** - Repository pulito
 - ✅ **Configurazione Lovable corretta** - Entry point `index.html`
@@ -229,6 +236,13 @@ Se risposta è SÌ a qualsiasi domanda → FERMA e CHIEDI CONFERMA
 - ✅ **Tagline allenamenti** - Aggiunta sotto card features
 - ✅ **Card allenamenti dedicata** - Trasformata in card separata
 - ✅ **Posizionamento card** - Centrata sotto Community
+- ✅ **Sistema consenso file** - Banner e sezione impostazioni implementati
+- ✅ **Analisi OCR file** - Riconoscimento automatico esercizi da immagini/PDF
+- ✅ **Integrazione allegati** - Caricamento file nel modal creazione allenamento
+- ✅ **Pattern matching** - Riconoscimento formati italiani e inglesi
+- ✅ **Componente risultati** - FileAnalysisResults per rivedere esercizi estratti
+- ✅ **Hook useFileAccess** - Gestione stato consenso con localStorage
+- ✅ **Servizio FileAnalyzer** - OCR avanzato con database 50+ esercizi
 
 ## Flusso Utente Completo
 ```
@@ -325,6 +339,10 @@ src/landing/                   # ← Landing page (MODIFICABILE)
 - 🔄 **Advanced AI features**
 - 🔄 **Test dominio personalizzato**
 - 🔄 **Ottimizzazioni landing page**
+- 🔄 **OCR avanzato** - Integrazione Tesseract.js per analisi reale
+- 🔄 **Machine Learning** - Miglioramento riconoscimento esercizi
+- 🔄 **API OCR** - Servizio esterno per analisi più accurate
+- 🔄 **Batch processing** - Analisi multipli file contemporaneamente
 
 ## Motto Operativo
 **"Se funziona, non toccarlo - sviluppa a fianco!"**
