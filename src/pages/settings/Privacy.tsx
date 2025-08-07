@@ -1,16 +1,18 @@
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Shield, BarChart3, ToggleLeft, ToggleRight } from 'lucide-react';
+import { ArrowLeft, Shield, BarChart3, ToggleLeft, ToggleRight, FileText, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { analytics } from '@/services/analytics';
+import { useFileAccess } from '@/hooks/useFileAccess';
 
 const Privacy = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
+  const { hasConsent, acceptFileAccess, declineFileAccess, resetFileAccess } = useFileAccess();
 
   useEffect(() => {
     // Carica stato analytics
@@ -117,6 +119,80 @@ const Privacy = () => {
                   <p>• GDPR compliant di default</p>
                   <p>• Outbound links tracking</p>
                   <p>• Script ufficiale Plausible</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* File Access Consent */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-[#EEBA2B]" />
+                <h3 className="text-lg font-medium text-white">Accesso ai File</h3>
+              </div>
+              
+              <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white font-medium">Consenso Accesso File</p>
+                    <p className="text-text-secondary text-sm">
+                      {hasConsent === true 
+                        ? 'Consentito - Puoi caricare allegati agli allenamenti'
+                        : hasConsent === false
+                        ? 'Non consentito - Funzionalità allegati disabilitata'
+                        : 'Non ancora deciso'
+                      }
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    onClick={handleAnalyticsToggle}
+                    className={`p-2 rounded-full ${
+                      hasConsent === true
+                        ? 'bg-interactive-success text-white' 
+                        : 'bg-surface-tertiary text-text-secondary'
+                    }`}
+                  >
+                    {hasConsent === true ? (
+                      <ToggleRight className="h-4 w-4" />
+                    ) : (
+                      <ToggleLeft className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                
+                <div className="text-xs text-text-muted space-y-1">
+                  <p>• Accesso solo ai file selezionati manualmente</p>
+                  <p>• Nessun accesso automatico al sistema</p>
+                  <p>• File utilizzati solo per allegati allenamenti</p>
+                  <p>• Supporta JPEG, PNG e PDF (max 10MB)</p>
+                </div>
+                
+                <div className="flex gap-2 pt-2">
+                  {hasConsent === null ? (
+                    <>
+                      <Button
+                        onClick={acceptFileAccess}
+                        className="flex-1 bg-[#EEBA2B] hover:bg-[#d4a61a] text-black text-sm"
+                      >
+                        Accetta
+                      </Button>
+                      <Button
+                        onClick={declineFileAccess}
+                        variant="outline"
+                        className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800 text-sm"
+                      >
+                        Rifiuta
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={resetFileAccess}
+                      className="w-full bg-gray-600 hover:bg-gray-700 text-white text-sm"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Cambia Decisione
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Upload, FileText, Edit3 } from 'lucide-react';
+import { X, Plus, Upload, FileText, Edit3, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import { useFileAccess } from '@/hooks/useFileAccess';
 
 interface Exercise {
   name: string;
@@ -39,6 +40,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
   const [creationMethod, setCreationMethod] = useState<'manual' | 'file' | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const navigate = useNavigate();
+  const { hasConsent } = useFileAccess();
 
   // Reset form when modal opens or date changes
   useEffect(() => {
@@ -290,15 +292,30 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
               </Card>
               
               <Card 
-                className="bg-black border-2 border-[#c89116] hover:border-[#c89116]/80 cursor-pointer transition-all"
-                onClick={handleFileCreation}
+                className={`border-2 transition-all ${
+                  hasConsent === false 
+                    ? 'bg-gray-800 border-gray-600 cursor-not-allowed opacity-50' 
+                    : 'bg-black border-[#c89116] hover:border-[#c89116]/80 cursor-pointer'
+                }`}
+                onClick={hasConsent !== false ? handleFileCreation : undefined}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <Upload className="h-6 w-6 text-[#c89116]" />
+                    <Upload className={`h-6 w-6 ${hasConsent === false ? 'text-gray-500' : 'text-[#c89116]'}`} />
                     <div>
                       <h4 className="text-white font-medium">Carica File</h4>
-                      <p className="text-gray-400 text-sm">Carica un'immagine o PDF del tuo allenamento</p>
+                      <p className="text-gray-400 text-sm">
+                        {hasConsent === false 
+                          ? 'Consenso accesso file richiesto nelle impostazioni'
+                          : 'Carica un\'immagine o PDF del tuo allenamento'
+                        }
+                      </p>
+                      {hasConsent === false && (
+                        <div className="flex items-center gap-1 mt-2 text-orange-400 text-xs">
+                          <AlertTriangle className="h-3 w-3" />
+                          <span>Vai in Impostazioni → Privacy</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -363,16 +380,25 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
               />
               <label
                 htmlFor="workout-file-upload"
-                className="cursor-pointer"
+                className="cursor-pointer block"
               >
-                <Upload className="h-12 w-12 text-[#c89116] mx-auto mb-4" />
-                <p className="text-white font-medium mb-2">Clicca per caricare un file</p>
-                <p className="text-gray-400 text-sm mb-4">
-                  Supporta JPEG, PNG e PDF (max 10MB)
-                </p>
-                <Button className="bg-[#c89116] text-black hover:bg-[#c89116]/80">
-                  Seleziona File
-                </Button>
+                <div className="flex flex-col items-center">
+                  <Upload className="h-12 w-12 text-[#c89116] mb-4" />
+                  <p className="text-white font-medium mb-2">Clicca per caricare un file</p>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Supporta JPEG, PNG e PDF (max 10MB)
+                  </p>
+                  <Button 
+                    type="button"
+                    className="bg-[#c89116] text-black hover:bg-[#c89116]/80"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById('workout-file-upload')?.click();
+                    }}
+                  >
+                    Sfoglia File
+                  </Button>
+                </div>
               </label>
             </div>
             
