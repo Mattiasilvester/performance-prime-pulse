@@ -47,6 +47,54 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTAClick }) => {
             <span className="highlight-text"> performance straordinarie</span>
           </p>
           
+          {/* New Content Section */}
+          <div className="hero-description">
+            {/* Linea divisoria oro al posto dei testi rimossi */}
+            <div className="hero-divider"></div>
+            
+            <p className="hero-app-description">
+              Performance Prime è la prima app creata da atleti per atleti, amatori e performer che vogliono evolversi davvero.
+            </p>
+            
+            <p className="hero-app-description">
+              Allenamento, nutrizione, routine e progressi: tutto in un'unica piattaforma intelligente, personalizzata e motivante.
+            </p>
+            
+            {/* Container ottimizzato per le card */}
+            <div className="hero-cards-container">
+              <div className="hero-features-list">
+                <h3 className="features-title">✅ Cosa puoi fare:</h3>
+                <ul className="features-list">
+                  <li>Trova palestre e professionisti vicino a te</li>
+                  <li>Ricevi piani su misura con l'AI Coach</li>
+                  <li>Organizza tutto con calendario, note, timer e promemoria</li>
+                  <li>Tieni traccia di peso, forza, cardio, progressi</li>
+                  <li>Accedi al nostro e-commerce sportivo integrato</li>
+                  <li>Entra in una community reale e motivante</li>
+                </ul>
+              </div>
+              
+              <div className="hero-differences">
+                <h3 className="differences-title">🚀 Perché è diversa:</h3>
+                <ul className="differences-list">
+                  <li>Niente piani standard: tutto è su misura per te</li>
+                  <li>AI Coach + professionisti reali: scegli tu come essere seguito</li>
+                  <li>Creato da atleti veri: Nicholas (judo) e Mattia (atletica)</li>
+                  <li>Focus su performance, costanza e risultati, non solo estetica</li>
+                  <li>Design semplice, intuitivo, senza distrazioni</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="hero-cta-section">
+              <h3 className="cta-title">👇 Provala ora</h3>
+              <p className="cta-description">
+                Accedi al nostro MVP gratuito, lasciaci un feedback e unisciti alla waiting list per l'app completa.
+              </p>
+              <p className="cta-special">Siete i primi. Siete speciali.</p>
+            </div>
+          </div>
+          
           {/* Features Preview */}
           <div className="hero-features">
             <div className="feature-pill">
@@ -60,24 +108,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTAClick }) => {
             <div className="feature-pill">
               <span className="feature-icon">📊</span>
               <span>Analisi Dettagliate</span>
-            </div>
-          </div>
-          
-          {/* Social Proof */}
-          <div className="hero-social-proof">
-            <div className="social-stats">
-              <div className="stat">
-                <span className="stat-number">500+</span>
-                <span className="stat-label">Utenti Beta</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">4.8★</span>
-                <span className="stat-label">Rating</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">24/7</span>
-                <span className="stat-label">Support</span>
-              </div>
             </div>
           </div>
         </div>
