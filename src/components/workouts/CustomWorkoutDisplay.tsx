@@ -1,8 +1,9 @@
 
 import { useState } from 'react';
-import { CheckCircle, ArrowRight, X } from 'lucide-react';
+import { CheckCircle, ArrowRight, X, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { WorkoutAttachments } from './WorkoutAttachments';
 
 interface CustomWorkoutDisplayProps {
   workout: any;
@@ -13,6 +14,7 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
   const [currentExercise, setCurrentExercise] = useState(0);
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [startTime] = useState(Date.now());
+  const [showAttachments, setShowAttachments] = useState(false);
   
   const exercises = workout.exercises || [];
   
@@ -68,14 +70,24 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
               Esercizio {currentExercise + 1} di {exercises.length}
             </p>
           </div>
-          <Button 
-            onClick={onClose}
-            variant="ghost"
-            size="sm"
-            className="text-white hover:bg-white/20"
-          >
-            <X className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => setShowAttachments(!showAttachments)}
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/20"
+            >
+              <Paperclip className="h-5 w-5" />
+            </Button>
+            <Button 
+              onClick={onClose}
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/20"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
         
         {/* Progress Bar */}
@@ -157,6 +169,18 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
             >
               Termina Allenamento
             </Button>
+          </div>
+        )}
+
+        {/* Sezione Allegati */}
+        {showAttachments && (
+          <div className="mt-6">
+            <WorkoutAttachments 
+              workoutId={workout.id}
+              onAttachmentsChange={() => {
+                // Callback per aggiornamenti degli allegati
+              }}
+            />
           </div>
         )}
       </div>
