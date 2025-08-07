@@ -30,6 +30,8 @@ Implementazione completa della funzionalità di allegati per le schede allenamen
 ### **4. Integrazione UI**
 - ✅ **Scelta metodo creazione:** Inserimento manuale vs caricamento file
 - ✅ **Modal di creazione:** Integrato nel processo "+ NUOVO"
+- ✅ **Banner consenso:** Richiesta accesso ai file del PC
+- ✅ **Sezione impostazioni:** Gestione consenso in Privacy
 - ✅ **Design coerente:** Stile app unificato
 - ✅ **Responsive:** Funziona su mobile e desktop
 - ✅ **UX intuitiva:** Scelta chiara tra i due metodi
@@ -228,15 +230,16 @@ try {
 ```
 1. Utente clicca "+ NUOVO" per creare allenamento
 2. Modal si apre con scelta metodo di creazione
-3. Utente sceglie "Carica File"
-4. Area upload appare con drag & drop
-5. Utente seleziona file (JPEG/PNG/PDF)
-6. Validazione automatica (tipo e dimensione)
-7. Utente clicca "Salva con File" o "Inizia con File"
-8. Allenamento creato + file salvato come allegato
-9. Upload su Supabase Storage
-10. Salvataggio record database
-11. Notifica successo
+3. Utente sceglie "Carica File" (se consenso dato)
+4. Banner consenso appare se non ancora deciso
+5. Area upload appare con drag & drop
+6. Utente seleziona file (JPEG/PNG/PDF)
+7. Validazione automatica (tipo e dimensione)
+8. Utente clicca "Salva con File" o "Inizia con File"
+9. Allenamento creato + file salvato come allegato
+10. Upload su Supabase Storage
+11. Salvataggio record database
+12. Notifica successo
 ```
 
 ### **2. Visualizzazione Allegati:**
@@ -356,4 +359,4 @@ try {
 
 **Data:** 6 Agosto 2025  
 **Status:** ✅ **COMPLETATO** - Funzionalità allegati implementata  
-**Files:** `src/components/workouts/WorkoutAttachments.tsx`, `src/components/schedule/WorkoutCreationModal.tsx`, `src/components/workouts/CustomWorkoutDisplay.tsx`, `supabase/migrations/20250620000000-workout-attachments.sql`, `supabase/migrations/20250620000001-storage-bucket.sql`
+**Files:** `src/components/workouts/WorkoutAttachments.tsx`, `src/components/schedule/WorkoutCreationModal.tsx`, `src/components/workouts/CustomWorkoutDisplay.tsx`, `src/components/ui/file-access-banner.tsx`, `src/hooks/useFileAccess.tsx`, `src/pages/settings/Privacy.tsx`, `src/App.tsx`, `supabase/migrations/20250620000000-workout-attachments.sql`, `supabase/migrations/20250620000001-storage-bucket.sql`

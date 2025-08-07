@@ -8,6 +8,8 @@ import { AuthProvider } from '@/hooks/useAuth';
 import { useAuthListener } from '@/hooks/useAuthListener';
 import { NotificationProvider } from '@/hooks/useNotifications';
 import { NotesProvider } from '@/hooks/useNotes';
+import { FileAccessBanner } from '@/components/ui/file-access-banner';
+import { useFileAccess } from '@/hooks/useFileAccess';
 // import { AnalyticsConsent } from '@/components/ui/AnalyticsConsent';
 // import { analytics } from '@/services/analytics';
 
@@ -66,6 +68,9 @@ const PageTracker = ({ children }: { children: React.ReactNode }) => {
 const App = () => {
   // Monitora cambiamenti stato auth
   useAuthListener();
+  
+  // Hook per gestire il consenso ai file
+  const { showBanner, acceptFileAccess, declineFileAccess } = useFileAccess();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -75,7 +80,7 @@ const App = () => {
             <TooltipProvider>
               <BrowserRouter>
                 <PageTracker>
-              <Routes>
+                  <Routes>
                 {/* HOMEPAGE: Landing page per utenti non autenticati */}
                 <Route path="/" element={<SmartHomePage />} />
                 
@@ -188,6 +193,13 @@ const App = () => {
           <Toaster />
           <Sonner />
           {/* <AnalyticsConsent /> */}
+          
+          {/* Banner per consenso accesso file */}
+          <FileAccessBanner
+            isVisible={showBanner}
+            onAccept={acceptFileAccess}
+            onDecline={declineFileAccess}
+          />
         </TooltipProvider>
         </NotesProvider>
         </NotificationProvider>
