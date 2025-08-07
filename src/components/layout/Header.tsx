@@ -30,11 +30,19 @@ import {
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchUserProfile, UserProfile } from '@/services/userService';
 
+// Interfaccia per le notifiche con stato "read"
+interface Notification {
+  id: number;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
 export const Header = () => {
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: "Nuovo allenamento disponibile", time: "2 ore fa" },
-    { id: 2, message: "Ricordati di completare il tuo obiettivo settimanale", time: "1 giorno fa" },
-    { id: 3, message: "Il tuo piano è stato aggiornato", time: "2 giorni fa" }
+  const [notifications, setNotifications] = useState<Notification[]>([
+    { id: 1, message: "Nuovo allenamento disponibile", time: "2 ore fa", read: false },
+    { id: 2, message: "Ricordati di completare il tuo obiettivo settimanale", time: "1 giorno fa", read: false },
+    { id: 3, message: "Il tuo piano è stato aggiornato", time: "2 giorni fa", read: false }
   ]);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,6 +54,10 @@ export const Header = () => {
   const location = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
+
+  // Calcola le notifiche non lette
+  const unreadNotifications = notifications.filter(notification => !notification.read);
+  const unreadCount = unreadNotifications.length;
 
   const navigationItems = [
     { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
@@ -149,8 +161,26 @@ export const Header = () => {
     }
   };
 
+  // Funzione per rimuovere una notifica
   const removeNotification = (notificationId: number) => {
     setNotifications(notifications.filter(n => n.id !== notificationId));
+  };
+
+  // Funzione per segnare una notifica come letta
+  const markNotificationAsRead = (notificationId: number) => {
+    setNotifications(notifications.map(notification => 
+      notification.id === notificationId 
+        ? { ...notification, read: true }
+        : notification
+    ));
+  };
+
+  // Funzione per segnare tutte le notifiche come lette
+  const markAllNotificationsAsRead = () => {
+    setNotifications(notifications.map(notification => ({
+      ...notification,
+      read: true
+    })));
   };
 
   const handleSearchItemClick = (path: string) => {
@@ -197,29 +227,59 @@ export const Header = () => {
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="sm" className="relative text-text-primary hover:bg-interactive-primary hover:text-background transition-colors">
                   <Bell className="h-5 w-5" />
-                  {notifications.length > 0 && (
+                  {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-interactive-warning text-background text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                      {notifications.length}
+                      {unreadCount}
                     </span>
                   )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80 bg-surface-primary border border-border-primary shadow-lg z-50">
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-brand-primary border-b border-border-primary pb-2">Notifiche</h3>
+                  <div className="flex items-center justify-between border-b border-border-primary pb-2">
+                    <h3 className="font-semibold text-brand-primary">Notifiche</h3>
+                    {unreadCount > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={markAllNotificationsAsRead}
+                        className="text-xs text-interactive-primary hover:bg-interactive-primary/10"
+                      >
+                        Segna tutte come lette
+                      </Button>
+                    )}
+                  </div>
                   {notifications.length > 0 ? (
-                    notifications.map((notification) => (
-                      <div key={notification.id} className="relative p-3 bg-surface-secondary rounded-lg border border-border-secondary group">
-                        <button
-                          onClick={() => removeNotification(notification.id)}
-                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-interactive-danger/20 rounded-full"
+                    <div className="max-h-64 overflow-y-auto space-y-2">
+                      {notifications.map((notification) => (
+                        <div 
+                          key={notification.id} 
+                          className={`relative p-3 rounded-lg border border-border-secondary group transition-all duration-200 ${
+                            notification.read 
+                              ? 'bg-surface-secondary/50 opacity-75' 
+                              : 'bg-surface-secondary'
+                          }`}
+                          onClick={() => markNotificationAsRead(notification.id)}
                         >
-                          <X className="h-3 w-3 text-interactive-danger hover:text-interactive-danger/80" />
-                        </button>
-                        <p className="text-text-primary text-sm pr-6">{notification.message}</p>
-                        <p className="text-text-muted text-xs mt-1">{notification.time}</p>
-                      </div>
-                    ))
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeNotification(notification.id);
+                            }}
+                            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-interactive-danger/20 rounded-full"
+                          >
+                            <X className="h-3 w-3 text-interactive-danger hover:text-interactive-danger/80" />
+                          </button>
+                          <p className={`text-sm pr-6 ${notification.read ? 'text-text-secondary' : 'text-text-primary'}`}>
+                            {notification.message}
+                          </p>
+                          <p className="text-text-muted text-xs mt-1">{notification.time}</p>
+                          {!notification.read && (
+                            <div className="absolute top-2 left-2 w-2 h-2 bg-interactive-warning rounded-full"></div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   ) : (
                     <p className="text-text-muted text-sm py-4 text-center">Non ci sono notifiche al momento</p>
                   )}
