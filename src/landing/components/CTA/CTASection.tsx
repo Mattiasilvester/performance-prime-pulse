@@ -1,15 +1,18 @@
 import React from 'react';
 import QRCode from './QRCode';
+import { useScrollAnimation } from '../../hooks/useScrollAnimation';
 
 interface CTASectionProps {
   onCTAClick: () => void;
 }
 
 const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
+  const ctaRef = useScrollAnimation();
+
   return (
-    <section className="cta-section" style={{ backgroundColor: '#000000' }}>
+    <section className="cta-section" style={{ backgroundColor: '#000000' }} ref={ctaRef}>
       <div className="cta-container">
-        <h2 className="cta-title">Provalo ora gratuitamente</h2>
+        <h2 className="cta-title animate-on-scroll">Provalo ora gratuitamente</h2>
         
         <div className="cta-content">
           <QRCode />
@@ -27,7 +30,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
         </div>
         
         {/* Founders Section - Spostata qui */}
-        <div className="founders-section">
+        <div className="founders-section animate-on-scroll">
           <h3 className="founders-title">I Fondatori</h3>
           <div className="founders-cards">
             <div className="founder-card">

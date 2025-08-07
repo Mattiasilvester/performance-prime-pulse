@@ -21,6 +21,15 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 - ✅ **Layout alternato nero/grigio landing page**
 - ✅ **Sezione founders spostata in CTA**
 - ✅ **Card founders orizzontali su desktop**
+- ✅ **Nuovo contenuto Hero** - Blocco descrittivo aggiunto
+- ✅ **Card features grigie** - "Cosa puoi fare" e "Perché è diversa"
+- ✅ **Spacing ottimizzato** - Ridotto spazio verticale tra elementi
+- ✅ **Social proof rimosso** - Design più pulito
+- ✅ **Animazioni globali** - Fade-in/slide-up implementate
+- ✅ **Linea divisoria oro** - Sostituisce testi specifici
+- ✅ **Tagline allenamenti** - Aggiunta sotto card features
+- ✅ **Card allenamenti dedicata** - Trasformata in card separata
+- ✅ **Posizionamento card** - Centrata sotto Community
 
 ## Architettura Unificata (Nuova)
 ### **App Unificata (performanceprime.it)**
@@ -211,6 +220,15 @@ Se risposta è SÌ a qualsiasi domanda → FERMA e CHIEDI CONFERMA
 - ✅ **Layout alternato landing page** - Nero/grigio implementato
 - ✅ **Sezione founders spostata** - Da Hero a CTA
 - ✅ **Card founders orizzontali** - Layout responsive corretto
+- ✅ **Nuovo contenuto Hero** - Blocco descrittivo aggiunto
+- ✅ **Card features grigie** - "Cosa puoi fare" e "Perché è diversa"
+- ✅ **Spacing ottimizzato** - Ridotto spazio verticale tra elementi
+- ✅ **Social proof rimosso** - Design più pulito
+- ✅ **Animazioni globali** - Fade-in/slide-up implementate
+- ✅ **Linea divisoria oro** - Sostituisce testi specifici
+- ✅ **Tagline allenamenti** - Aggiunta sotto card features
+- ✅ **Card allenamenti dedicata** - Trasformata in card separata
+- ✅ **Posizionamento card** - Centrata sotto Community
 
 ## Flusso Utente Completo
 ```
@@ -276,6 +294,19 @@ Hero Section (NERA) → Features Section (GRIGIA) → CTA Section (NERA) → Foo
 - **Posizione:** CTA Section (sotto bottone "Scansiona e inizia ora")
 - **Layout:** Card orizzontali su desktop/tablet, verticali su mobile
 - **Responsive:** `flex-direction: row` su desktop, `column` su mobile
+
+### **Nuovo Contenuto Hero**
+- **Blocco descrittivo:** Aggiunto sotto tagline principale
+- **Performance Prime:** Titolo con descrizioni
+- **Card grigie:** "Cosa puoi fare" e "Perché è diversa" con sfondo grigio
+- **Spacing ottimizzato:** Ridotto spazio verticale tra elementi
+- **Linea divisoria oro:** Sostituisce testi specifici
+
+### **Card Features**
+- **Tagline allenamenti:** Aggiunta sotto le 6 card features
+- **Card dedicata:** "Scegli il tuo tipo di allenamento" trasformata in card separata
+- **Posizionamento:** Centrata sotto la card "Community"
+- **Styling:** Identico alle altre card con icona e gradient
 
 ### **Zona Sicura per Sviluppo**
 ```
