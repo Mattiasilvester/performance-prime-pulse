@@ -26,10 +26,10 @@ const primaryNavigationItems = [
 ];
 ```
 
-### **2. Floating Action Button per Mobile**
+### **2. Barra di Navigazione Rapida per Desktop**
 ```typescript
-// src/components/layout/FloatingActionButton.tsx
-const quickActions = [
+// src/components/layout/Header.tsx
+const primaryNavigationItems = [
   { id: 'timer', label: 'Timer', icon: Clock, path: '/timer' },
   { id: 'notes', label: 'Note', icon: BookOpen, path: '/notes' },
   { id: 'subscriptions', label: 'Abbonamenti', icon: CreditCard, path: '/subscriptions' },
@@ -71,13 +71,12 @@ const actions = [
 
 ### **File Creati/Modificati:**
 1. **`src/components/layout/Header.tsx`** - Aggiunta barra navigazione rapida
-2. **`src/components/layout/FloatingActionButton.tsx`** - Nuovo FAB per mobile
-3. **`src/components/layout/AppLayout.tsx`** - Integrazione FAB
-4. **`src/components/dashboard/QuickActions.tsx`** - Azioni accessibili
+2. **`src/components/layout/AppLayout.tsx`** - Layout semplificato
+3. **`src/components/dashboard/QuickActions.tsx`** - Azioni accessibili
 
 ### **Caratteristiche Implementate:**
 - ✅ **Desktop:** Barra di navigazione rapida nell'header
-- ✅ **Mobile:** Floating Action Button con azioni rapide
+- ✅ **Mobile:** Bottom navigation con 5 icone principali
 - ✅ **Dashboard:** Azioni rapide accessibili senza overlay
 - ✅ **Responsive:** Design adattivo per tutti i dispositivi
 - ✅ **UX:** Flusso utente semplificato
@@ -92,8 +91,7 @@ Desktop:
 Mobile:
 ├── Header (solo logo e menu utente)
 ├── Main content
-├── Bottom navigation (5 icone principali)
-└── Floating Action Button (Timer, Note, Abbonamenti)
+└── Bottom navigation (5 icone principali)
 ```
 
 ---
@@ -104,7 +102,7 @@ Mobile:
 - ✅ **Funzioni principali:** Accessibili con 1 click
 - ✅ **Menu hamburger:** Solo funzioni secondarie
 - ✅ **Dashboard:** Azioni rapide funzionanti
-- ✅ **Mobile:** FAB per accesso rapido
+- ✅ **Mobile:** Bottom navigation per accesso rapido
 
 ### **Scopribilità:**
 - ✅ **Nuovi utenti:** Funzioni principali visibili
@@ -124,7 +122,6 @@ Mobile:
 ### **Mobile (< lg):**
 - **Header:** Logo + Menu utente (semplificato)
 - **Bottom navigation:** 5 icone principali
-- **FAB:** Timer, Note, Abbonamenti con tap
 
 ### **Breakpoint:**
 ```css
@@ -146,13 +143,13 @@ Mobile:
 ## 🚨 **CASI LIMITE GESTITI**
 
 ### **1. Dispositivi molto piccoli**
-- ✅ FAB posizionato correttamente
-- ✅ Bottom navigation non sovrapposta
+- ✅ Bottom navigation posizionata correttamente
 - ✅ Touch targets appropriati
+- ✅ Layout ottimizzato
 
 ### **2. Orientamento landscape**
 - ✅ Layout adattivo
-- ✅ FAB sempre accessibile
+- ✅ Bottom navigation sempre accessibile
 - ✅ Barra di navigazione responsive
 
 ### **3. Utenti con disabilità**
@@ -178,7 +175,7 @@ Mobile:
 
 ### **🎯 Comportamento Corretto:**
 - **Desktop:** Barra rapida + menu hamburger
-- **Mobile:** Bottom nav + FAB
+- **Mobile:** Bottom navigation
 - **Dashboard:** Azioni rapide accessibili
 - **Responsive:** Design adattivo
 
@@ -221,9 +218,8 @@ src/
 ├── components/
 │   └── layout/
 │       ├── Header.tsx              # ← Barra navigazione rapida
-│       ├── FloatingActionButton.tsx # ← FAB per mobile
 │       ├── BottomNavigation.tsx    # ← 5 icone principali
-│       └── AppLayout.tsx           # ← Integrazione completa
+│       └── AppLayout.tsx           # ← Layout semplificato
 └── dashboard/
     └── QuickActions.tsx            # ← Azioni accessibili
 ```
@@ -250,4 +246,4 @@ src/
 
 **Data:** 6 Agosto 2025  
 **Status:** ✅ **COMPLETATO** - Accessibilità navigazione migliorata  
-**Files:** `src/components/layout/Header.tsx`, `src/components/layout/FloatingActionButton.tsx`, `src/components/layout/AppLayout.tsx`, `src/components/dashboard/QuickActions.tsx`
+**Files:** `src/components/layout/Header.tsx`, `src/components/layout/AppLayout.tsx`, `src/components/dashboard/QuickActions.tsx`

@@ -2,7 +2,6 @@
 import React from 'react';
 import { Header } from './Header';
 import { BottomNavigation } from './BottomNavigation';
-import { FloatingActionButton } from './FloatingActionButton';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -21,9 +20,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       
       {/* Bottom Navigation */}
       <BottomNavigation />
-      
-      {/* Floating Action Button */}
-      <FloatingActionButton />
     </div>
   );
 };
