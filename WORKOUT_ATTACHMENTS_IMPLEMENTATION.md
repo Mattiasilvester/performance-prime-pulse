@@ -30,6 +30,8 @@ Implementazione completa della funzionalità di allegati per le schede allenamen
 ### **4. Integrazione UI**
 - ✅ **Scelta metodo creazione:** Inserimento manuale vs caricamento file
 - ✅ **Modal di creazione:** Integrato nel processo "+ NUOVO"
+- ✅ **Analisi automatica:** OCR per riconoscere esercizi
+- ✅ **Risultati analisi:** Componente per rivedere esercizi estratti
 - ✅ **Banner consenso:** Richiesta accesso ai file del PC
 - ✅ **Sezione impostazioni:** Gestione consenso in Privacy
 - ✅ **Design coerente:** Stile app unificato
@@ -91,9 +93,53 @@ interface WorkoutAttachment {
 
 ### **3. Integrazione:**
 - **`WorkoutCreationModal.tsx`:** Scelta metodo nel modal di creazione
+- **`FileAnalysisResults.tsx`:** Componente per rivedere esercizi estratti
+- **`fileAnalysis.ts`:** Servizio OCR per riconoscimento esercizi
 - **Flusso integrato:** Allegati parte del processo di creazione
 - **Callback:** Aggiornamenti in tempo reale
 - **UX unificata:** Tutto nel processo "+ NUOVO"
+
+---
+
+## 🔍 **ANALISI AUTOMATICA FILE**
+
+### **1. Servizio `FileAnalyzer`:**
+```typescript
+interface ExtractedExercise {
+  name: string;
+  sets?: string;
+  reps?: string;
+  rest?: string;
+  notes?: string;
+}
+
+interface FileAnalysisResult {
+  exercises: ExtractedExercise[];
+  workoutTitle?: string;
+  duration?: string;
+  confidence: number;
+  rawText: string;
+}
+```
+
+### **2. Pattern di Riconoscimento:**
+- **Italiano:** `3 x 12 Push-up`, `3 serie 12 ripetizioni Push-up`
+- **Inglese:** `3 sets 12 reps Push-up`, `Push-up 3 sets 12 reps`
+- **Con riposo:** `3 x 12 Push-up 2 min`
+- **Esercizi comuni:** Database di 50+ esercizi riconosciuti
+
+### **3. Processo OCR:**
+1. **Estrazione testo** da immagini e PDF
+2. **Pattern matching** per riconoscere esercizi
+3. **Pulizia nomi** e normalizzazione
+4. **Calcolo confidenza** basato su numero esercizi
+5. **Estrazione metadati** (titolo, durata)
+
+### **4. Componente Risultati:**
+- **Visualizzazione esercizi** estratti
+- **Indicatore confidenza** (Alta/Media/Bassa)
+- **Azioni:** Accetta/Modifica/Rifiuta
+- **Debug:** Testo estratto per confidenza < 70%
 
 ---
 
@@ -226,7 +272,7 @@ try {
 
 ## 🔄 **FLUSSO UTENTE**
 
-### **1. Caricamento Allegati:**
+### **1. Caricamento e Analisi File:**
 ```
 1. Utente clicca "+ NUOVO" per creare allenamento
 2. Modal si apre con scelta metodo di creazione
@@ -235,11 +281,16 @@ try {
 5. Area upload appare con drag & drop
 6. Utente seleziona file (JPEG/PNG/PDF)
 7. Validazione automatica (tipo e dimensione)
-8. Utente clicca "Salva con File" o "Inizia con File"
-9. Allenamento creato + file salvato come allegato
-10. Upload su Supabase Storage
-11. Salvataggio record database
-12. Notifica successo
+8. Analisi automatica del file (OCR)
+9. Riconoscimento esercizi e informazioni
+10. Utente rivede risultati analisi
+11. Utente accetta/modifica/rifiuta esercizi
+12. Esercizi importati nel modal di creazione
+13. Utente clicca "Salva" o "Inizia Allenamento"
+14. Allenamento creato + file salvato come allegato
+15. Upload su Supabase Storage
+16. Salvataggio record database
+17. Notifica successo
 ```
 
 ### **2. Visualizzazione Allegati:**
@@ -359,4 +410,4 @@ try {
 
 **Data:** 6 Agosto 2025  
 **Status:** ✅ **COMPLETATO** - Funzionalità allegati implementata  
-**Files:** `src/components/workouts/WorkoutAttachments.tsx`, `src/components/schedule/WorkoutCreationModal.tsx`, `src/components/workouts/CustomWorkoutDisplay.tsx`, `src/components/ui/file-access-banner.tsx`, `src/hooks/useFileAccess.tsx`, `src/pages/settings/Privacy.tsx`, `src/App.tsx`, `supabase/migrations/20250620000000-workout-attachments.sql`, `supabase/migrations/20250620000001-storage-bucket.sql`
+**Files:** `src/components/workouts/WorkoutAttachments.tsx`, `src/components/schedule/WorkoutCreationModal.tsx`, `src/components/schedule/FileAnalysisResults.tsx`, `src/components/workouts/CustomWorkoutDisplay.tsx`, `src/components/ui/file-access-banner.tsx`, `src/hooks/useFileAccess.tsx`, `src/pages/settings/Privacy.tsx`, `src/App.tsx`, `src/services/fileAnalysis.ts`, `supabase/migrations/20250620000000-workout-attachments.sql`, `supabase/migrations/20250620000001-storage-bucket.sql`
