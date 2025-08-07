@@ -1,21 +1,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useScrollAnimation } from '../../hooks/useScrollAnimation';
 
 const Footer = () => {
   const navigate = useNavigate();
+  const footerRef = useScrollAnimation();
 
   return (
-    <footer className="footer" style={{ backgroundColor: '#1a1a1a' }}>
+    <footer className="footer" style={{ backgroundColor: '#1a1a1a' }} ref={footerRef}>
       <div className="footer-container">
         <div className="footer-content">
-          <div className="footer-section">
+          <div className="footer-section animate-on-scroll">
             <h3 className="footer-title">Performance Prime</h3>
             <p className="footer-description">
               Oltre ogni limite, verso la tua versione migliore.
             </p>
           </div>
           
-          <div className="footer-section">
+          <div className="footer-section animate-on-scroll">
             <h4 className="footer-subtitle">Link Utili</h4>
             <ul className="footer-links">
               <li>
@@ -45,7 +47,7 @@ const Footer = () => {
             </ul>
           </div>
           
-          <div className="footer-section">
+          <div className="footer-section animate-on-scroll">
             <h4 className="footer-subtitle">Contatti</h4>
             <p className="footer-contact">
               Email: primeassistenza@gmail.com
@@ -57,7 +59,7 @@ const Footer = () => {
         </div>
         
         <div className="footer-bottom">
-          <p className="footer-copyright">
+          <p className="footer-copyright animate-on-scroll">
             © 2025 Performance Prime. Tutti i diritti riservati.
           </p>
         </div>
