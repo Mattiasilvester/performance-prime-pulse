@@ -56,6 +56,60 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_attachments: {
+        Row: {
+          id: string
+          workout_id: string
+          user_id: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          mime_type: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          workout_id: string
+          user_id: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          mime_type: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          workout_id?: string
+          user_id?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          mime_type?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_attachments_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "custom_workouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_attachments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       monthly_workout_stats: {
         Row: {
           created_at: string
