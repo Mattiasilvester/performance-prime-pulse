@@ -1,4 +1,4 @@
-import { Play, Calendar, MessageSquare, Plus, Lock } from 'lucide-react';
+import { Play, Calendar, MessageSquare, Plus, Lock, Clock, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -104,6 +104,25 @@ const QuickActions = () => {
       textColor: 'text-white',
       onClick: handleStartWorkout,
       disabled: isLoading,
+      accessible: true,
+    },
+    {
+      label: 'Timer',
+      description: 'Avvia timer allenamento',
+      icon: Clock,
+      color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
+      textColor: 'text-white',
+      onClick: () => navigate('/timer'),
+      accessible: true,
+    },
+    {
+      label: 'Note',
+      description: 'Gestisci le tue note',
+      icon: BookOpen,
+      color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
+      textColor: 'text-white',
+      onClick: () => navigate('/notes'),
+      accessible: true,
     },
     {
       label: 'Prenota Sessione',
@@ -111,21 +130,7 @@ const QuickActions = () => {
       icon: Calendar,
       color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
       textColor: 'text-white',
-    },
-    {
-      label: 'Chat AI Coach',
-      description: 'Chiedi consiglio',
-      icon: MessageSquare,
-      color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
-      textColor: 'text-white',
-    },
-    {
-      label: 'Nuovo Obiettivo',
-      description: 'Sfida te stesso',
-      icon: Plus,
-      color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
-      textColor: 'text-white',
-      onClick: handleNewObjectiveClick,
+      accessible: false,
     },
   ];
 
@@ -135,34 +140,50 @@ const QuickActions = () => {
 
         <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
         
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 relative">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {actions.map((action) => {
             const Icon = action.icon;
             
-            return (
-              <Button
-                key={action.label}
-                onClick={action.onClick}
-                disabled={action.disabled}
-                className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 hover:scale-105 transition-all duration-200`}
-              >
-                <Icon className="h-6 w-6" />
-                <div className="text-center">
-                  <p className="font-medium text-sm">{action.label}</p>
-                  <p className="text-xs opacity-90">{action.description}</p>
+            if (action.accessible) {
+              return (
+                <Button
+                  key={action.label}
+                  onClick={action.onClick}
+                  disabled={action.disabled}
+                  className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 hover:scale-105 transition-all duration-200`}
+                >
+                  <Icon className="h-6 w-6" />
+                  <div className="text-center">
+                    <p className="font-medium text-sm">{action.label}</p>
+                    <p className="text-xs opacity-90">{action.description}</p>
+                  </div>
+                </Button>
+              );
+            } else {
+              return (
+                <div key={action.label} className="relative">
+                  <Button
+                    disabled
+                    className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 opacity-50`}
+                  >
+                    <Icon className="h-6 w-6" />
+                    <div className="text-center">
+                      <p className="font-medium text-sm">{action.label}</p>
+                      <p className="text-xs opacity-90">{action.description}</p>
+                    </div>
+                  </Button>
+                  
+                  {/* Overlay individuale per azioni bloccate */}
+                  <div className="absolute inset-0 bg-gray-600/40 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">🔒</div>
+                      <p className="text-xs text-gray-200">Prossimamente</p>
+                    </div>
+                  </div>
                 </div>
-              </Button>
-            );
+              );
+            }
           })}
-          
-          {/* Overlay unico su tutta la sezione Azioni Rapide */}
-          <div className="absolute inset-0 bg-gray-600/40 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-4xl mb-4">🔒</div>
-              <h3 className="text-lg font-bold text-white mb-2">Funzionalità in arrivo</h3>
-              <p className="text-sm text-gray-200">Le azioni rapide saranno disponibili presto!</p>
-            </div>
-          </div>
         </div>
       </div>
 

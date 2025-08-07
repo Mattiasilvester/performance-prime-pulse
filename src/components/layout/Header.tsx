@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard, X, Shield, FileText as FileTextIcon } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard, X, Shield, FileText as FileTextIcon, Clock, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -44,14 +44,19 @@ export const Header = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
-  const navigationItems = [
-    { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
+  // Funzioni principali accessibili direttamente
+  const primaryNavigationItems = [
+    { id: 'timer', label: 'Timer', icon: Clock, path: '/timer' },
+    { id: 'notes', label: 'Note', icon: BookOpen, path: '/notes' },
     { id: 'subscriptions', label: 'Abbonamenti', icon: CreditCard, path: '/subscriptions' },
+  ];
+
+  // Funzioni secondarie nel menu hamburger
+  const secondaryNavigationItems = [
+    { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
     { id: 'workouts', label: t('navigation.workouts'), icon: Dumbbell, path: '/workouts' },
     { id: 'schedule', label: t('navigation.schedule'), icon: Calendar, path: '/schedule' },
-    { id: 'timer', label: t('navigation.timer'), icon: Timer, path: '/timer' },
     { id: 'ai-coach', label: t('navigation.aiCoach'), icon: Bot, path: '/ai-coach' },
-    { id: 'notes', label: t('navigation.notes'), icon: FileText, path: '/notes' },
     { id: 'profile', label: t('navigation.profile'), icon: User, path: '/profile' },
   ];
 
@@ -173,6 +178,31 @@ export const Header = () => {
             </div>
           </div>
 
+          {/* Barra di navigazione rapida per desktop */}
+          <div className="hidden lg:flex items-center space-x-2">
+            {primaryNavigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <Button
+                  key={item.id}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(item.path)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? "bg-brand-primary text-background"
+                      : "text-text-primary hover:bg-interactive-primary hover:text-background"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="text-sm font-medium">{item.label}</span>
+                </Button>
+              );
+            })}
+          </div>
+
           {/* User info and actions */}
           <div className="flex items-center space-x-3">
             {user && (
@@ -263,7 +293,7 @@ export const Header = () => {
                 align="end" 
                 className="w-56 bg-surface-primary border border-border-primary shadow-lg"
               >
-                {navigationItems.map((item) => {
+                {secondaryNavigationItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
                   
