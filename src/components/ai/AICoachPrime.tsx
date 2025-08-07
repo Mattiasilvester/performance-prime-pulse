@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ChatInterface } from './ChatInterface';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Target } from 'lucide-react';
+import { Sparkles, Target, X } from 'lucide-react';
 import { Lock } from 'lucide-react';
 
 interface AICoachPrimeProps {
@@ -11,19 +11,25 @@ interface AICoachPrimeProps {
 }
 
 export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatInterfaceRef }) => {
+  const [isFullScreenChat, setIsFullScreenChat] = useState(false);
+
+  const openFullScreenChat = () => {
+    setIsFullScreenChat(true);
+  };
+
+  const closeFullScreenChat = () => {
+    setIsFullScreenChat(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 relative">
-          <ChatInterface ref={chatInterfaceRef} />
-          
-          {/* Overlay unico su tutta la sezione AI Coach Prime */}
-          <div className="absolute inset-0 bg-gray-600/40 backdrop-blur-sm rounded-2xl z-10 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-4xl mb-4">🔒</div>
-              <h3 className="text-lg font-bold text-white mb-2">Funzionalità in arrivo</h3>
-              <p className="text-sm text-gray-200">L'AI Coach sarà disponibile presto!</p>
-            </div>
+          <div 
+            className="cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={openFullScreenChat}
+          >
+            <ChatInterface ref={chatInterfaceRef} />
           </div>
         </div>
         <div className="space-y-4">
@@ -80,6 +86,28 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
           </div>
         </div>
       </div>
+
+      {/* Modal Chat a Tutto Schermo */}
+      {isFullScreenChat && (
+        <div className="fixed inset-0 z-50">
+          {/* Backdrop sfocato con click per chiudere */}
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm transition-all duration-300 ease-in-out cursor-pointer" 
+            onClick={closeFullScreenChat}
+          />
+          
+          {/* Chat Modal centrato */}
+          <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+            <div 
+              className="w-full max-w-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* LA CHAT CARD ESISTENTE - IDENTICA A ORA */}
+              <ChatInterface ref={chatInterfaceRef} onClose={closeFullScreenChat} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

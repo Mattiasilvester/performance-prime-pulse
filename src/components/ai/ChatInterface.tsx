@@ -1,6 +1,6 @@
 
 import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
-import { Send, Bot, User, Copy, Check } from 'lucide-react';
+import { Send, Bot, User, Copy, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -30,7 +30,11 @@ const suggestedQuestions = [
 // Chiave per il localStorage
 const CHAT_STORAGE_KEY = 'ai_coach_chat_messages';
 
-export const ChatInterface = forwardRef((props, ref) => {
+interface ChatInterfaceProps {
+  onClose?: () => void;
+}
+
+export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void }, ChatInterfaceProps>((props, ref) => {
   // Inizializza i messaggi dal localStorage o usa quelli iniziali
   const [messages, setMessages] = useState<Message[]>(() => {
     const savedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
@@ -372,19 +376,31 @@ Fammi sapere come posso aiutarti!`;
     <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] h-[600px] flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-[#EEBA2B] rounded-t-2xl" style={{background: 'linear-gradient(135deg, #000000 0%, #C89116 100%)'}}>
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <Bot className="h-6 w-6 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <Bot className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white">AI Coach Prime</h3>
+              <p className="text-sm text-purple-100">Online • Sempre disponibile</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-white">AI Coach Prime</h3>
-            <p className="text-sm text-purple-100">Online • Sempre disponibile</p>
-          </div>
+          {props.onClose && (
+            <Button
+              onClick={props.onClose}
+              variant="ghost"
+              size="sm"
+              className="text-white hover:text-gray-300"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-300">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -394,7 +410,7 @@ Fammi sapere come posso aiutarti!`;
               className={`max-w-[80%] p-3 rounded-2xl ${
                 message.sender === 'user'
                   ? 'bg-blue-600'
-                  : 'bg-slate-100'
+                  : 'bg-white'
               } relative group`}
             >
               <div className="flex items-start space-x-2">
