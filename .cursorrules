@@ -3,7 +3,7 @@
 ## Contesto del Progetto
 Questo è un'applicazione React/TypeScript unificata per il fitness e il benessere. Include funzionalità di AI coach, tracking dei workout, pianificazione e integrazione con Supabase. 
 
-**Stato Attuale (7 Agosto 2025)**: 
+**Stato Attuale (8 Agosto 2025)**: 
 - ✅ **App unificata funzionante** con deploy stabile su `performanceprime.it`
 - ✅ **Architettura unificata** - Landing + Auth + MVP tutto insieme
 - ✅ **Flusso completo:** Landing → Auth → Dashboard (stessa app)
@@ -37,6 +37,9 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 - ✅ **Componente risultati** - FileAnalysisResults per rivedere esercizi estratti
 - ✅ **Hook useFileAccess** - Gestione stato consenso con localStorage
 - ✅ **Servizio FileAnalyzer** - OCR avanzato con database 50+ esercizi
+- ✅ **Chat PrimeBot Modal Overlay** - Implementazione completa con backdrop sfocato
+- ✅ **UI Chat ottimizzata** - Area messaggi grigia e bubble bot bianchi
+- ✅ **Contrasto migliorato** - Leggibilità ottimizzata per messaggi bot
 
 ## Architettura Unificata (Nuova)
 ### **App Unificata (performanceprime.it)**
@@ -212,7 +215,7 @@ Se risposta è SÌ a qualsiasi domanda → FERMA e CHIEDI CONFERMA
 - **NON toccare file protetti senza permesso esplicito**
 - **MODIFICA SOLO `src/landing/` per landing page**
 
-## Problemi Risolti Recentemente (7 Agosto 2025)
+## Problemi Risolti Recentemente (8 Agosto 2025)
 - ✅ **App unificata** - Landing + Auth + MVP tutto insieme
 - ✅ **Merge incompleto risolto** - Repository pulito
 - ✅ **Configurazione Lovable corretta** - Entry point `index.html`
@@ -243,6 +246,9 @@ Se risposta è SÌ a qualsiasi domanda → FERMA e CHIEDI CONFERMA
 - ✅ **Componente risultati** - FileAnalysisResults per rivedere esercizi estratti
 - ✅ **Hook useFileAccess** - Gestione stato consenso con localStorage
 - ✅ **Servizio FileAnalyzer** - OCR avanzato con database 50+ esercizi
+- ✅ **Chat PrimeBot Modal Overlay** - Implementazione completa con backdrop sfocato
+- ✅ **UI Chat ottimizzata** - Area messaggi grigia e bubble bot bianchi
+- ✅ **Contrasto migliorato** - Leggibilità ottimizzata per messaggi bot
 
 ## Flusso Utente Completo
 ```
@@ -298,6 +304,42 @@ performanceprime.it/
 - **Albo delle medaglie:** Sezione achievement con overlay
 - **Contatto Professionisti:** Prenotazioni premium bloccate
 
+## Chat PrimeBot - Modal Overlay
+### **Funzionalità Implementate:**
+- **Click sulla card AI Coach** → Apertura chat a tutto schermo
+- **Backdrop sfocato** con `bg-black/20 backdrop-blur-sm`
+- **App sfocata dietro** ma visibile
+- **Interazione solo con chat** quando modal è aperta
+- **Click outside per chiudere** - Backdrop interattivo
+- **Pulsante X nell'header** - Solo in modal per chiudere
+
+### **UI Ottimizzata:**
+- **Area messaggi grigia:** `bg-gray-300` per contrasto
+- **Bubble messaggi bot bianchi:** `bg-white` per leggibilità
+- **Design coerente:** Bordi oro, header, layout identico
+- **Responsive:** `max-w-2xl` per dimensioni ottimali
+
+### **Struttura Modal:**
+```typescript
+{isFullScreenChat && (
+  <div className="fixed inset-0 z-50">
+    {/* Backdrop sfocato */}
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={closeFullScreenChat} />
+    
+    {/* Chat Modal centrato */}
+    <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+      <div className="w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
+        <ChatInterface ref={chatInterfaceRef} onClose={closeFullScreenChat} />
+      </div>
+    </div>
+  </div>
+)}
+```
+
+### **Componenti Modificati:**
+- **AICoachPrime.tsx:** Stato modal, funzioni open/close, backdrop
+- **ChatInterface.tsx:** Prop onClose, pulsante X, area messaggi grigia, bubble bianchi
+
 ## Landing Page - Ultime Modifiche
 ### **Layout Alternato**
 ```
@@ -347,4 +389,4 @@ src/landing/                   # ← Landing page (MODIFICABILE)
 ## Motto Operativo
 **"Se funziona, non toccarlo - sviluppa a fianco!"**
 
-Il deploy su `performanceprime.it` è **PERFETTO e FUNZIONANTE** con dominio personalizzato configurato e landing page ottimizzata. Proteggi il codice di produzione e sviluppa nuove features nelle zone sicure. 
+Il deploy su `performanceprime.it` è **PERFETTO e FUNZIONANTE** con dominio personalizzato configurato, landing page ottimizzata e chat PrimeBot con modal overlay implementata. Proteggi il codice di produzione e sviluppa nuove features nelle zone sicure. 
