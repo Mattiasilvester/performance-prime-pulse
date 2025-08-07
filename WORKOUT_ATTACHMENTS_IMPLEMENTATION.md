@@ -28,11 +28,11 @@ Implementazione completa della funzionalità di allegati per le schede allenamen
 - ✅ **Sicurezza:** Solo utente proprietario
 
 ### **4. Integrazione UI**
-- ✅ **Pulsante allegati:** Icona paperclip nella schermata allenamenti
-- ✅ **Sezione espandibile:** Mostra/nasconde allegati
+- ✅ **Scelta metodo creazione:** Inserimento manuale vs caricamento file
+- ✅ **Modal di creazione:** Integrato nel processo "+ NUOVO"
 - ✅ **Design coerente:** Stile app unificato
 - ✅ **Responsive:** Funziona su mobile e desktop
-- ✅ **Posizionamento intuitivo:** Pulsante chiaro e visibile
+- ✅ **UX intuitiva:** Scelta chiara tra i due metodi
 
 ---
 
@@ -88,10 +88,10 @@ interface WorkoutAttachment {
 - **`viewAttachment()`:** Preview immagini/PDF
 
 ### **3. Integrazione:**
-- **`Workouts.tsx`:** Pulsante allegati nella schermata principale
-- **Sezione espandibile:** Mostra/nasconde allegati
+- **`WorkoutCreationModal.tsx`:** Scelta metodo nel modal di creazione
+- **Flusso integrato:** Allegati parte del processo di creazione
 - **Callback:** Aggiornamenti in tempo reale
-- **Posizionamento:** Pulsante chiaro e intuitivo nell'header
+- **UX unificata:** Tutto nel processo "+ NUOVO"
 
 ---
 
@@ -126,18 +126,21 @@ if (!allowedTypes.includes(file.type)) {
 
 ## 📱 **INTERFACCIA UTENTE**
 
-### **1. Pulsante Allegati:**
+### **1. Scelta Metodo Creazione:**
 ```typescript
-<Button
-  onClick={() => {
-    setShowAttachments(!showAttachments);
-    setSelectedWorkoutId(null);
-  }}
-  className="bg-[#EEBA2B] text-black hover:bg-[#EEBA2B]/80 flex items-center gap-2"
->
-  <Paperclip className="h-4 w-4" />
-  Allegati
-</Button>
+// Inserimento Manuale
+<Card onClick={handleManualCreation}>
+  <Edit3 className="h-6 w-6 text-[#c89116]" />
+  <h4>Inserimento Manuale</h4>
+  <p>Crea il tuo allenamento passo dopo passo</p>
+</Card>
+
+// Caricamento File
+<Card onClick={handleFileCreation}>
+  <Upload className="h-6 w-6 text-[#c89116]" />
+  <h4>Carica File</h4>
+  <p>Carica un'immagine o PDF del tuo allenamento</p>
+</Card>
 ```
 
 ### **2. Area Upload:**
@@ -223,16 +226,17 @@ try {
 
 ### **1. Caricamento Allegati:**
 ```
-1. Utente clicca pulsante "Allegati" nella schermata allenamenti
-2. Sezione allegati si espande
-3. Utente avvia un allenamento personalizzato
-4. Utente clicca "Carica File" nella sezione allegati
-5. Selezione file multipli
-6. Validazione automatica
-7. Upload su Supabase Storage
-8. Salvataggio record database
-9. Aggiornamento UI
-10. Notifica successo
+1. Utente clicca "+ NUOVO" per creare allenamento
+2. Modal si apre con scelta metodo di creazione
+3. Utente sceglie "Carica File"
+4. Area upload appare con drag & drop
+5. Utente seleziona file (JPEG/PNG/PDF)
+6. Validazione automatica (tipo e dimensione)
+7. Utente clicca "Salva con File" o "Inizia con File"
+8. Allenamento creato + file salvato come allegato
+9. Upload su Supabase Storage
+10. Salvataggio record database
+11. Notifica successo
 ```
 
 ### **2. Visualizzazione Allegati:**
@@ -352,4 +356,4 @@ try {
 
 **Data:** 6 Agosto 2025  
 **Status:** ✅ **COMPLETATO** - Funzionalità allegati implementata  
-**Files:** `src/components/workouts/WorkoutAttachments.tsx`, `src/components/workouts/Workouts.tsx`, `src/components/workouts/CustomWorkoutDisplay.tsx`, `supabase/migrations/20250620000000-workout-attachments.sql`, `supabase/migrations/20250620000001-storage-bucket.sql`
+**Files:** `src/components/workouts/WorkoutAttachments.tsx`, `src/components/schedule/WorkoutCreationModal.tsx`, `src/components/workouts/CustomWorkoutDisplay.tsx`, `supabase/migrations/20250620000000-workout-attachments.sql`, `supabase/migrations/20250620000001-storage-bucket.sql`
