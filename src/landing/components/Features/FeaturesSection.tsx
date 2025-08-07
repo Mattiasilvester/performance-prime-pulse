@@ -46,7 +46,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onCTAClick }) => {
   ];
 
   return (
-    <section className="features-section">
+    <section className="features-section" style={{ backgroundColor: '#1a1a1a' }}>
       <div className="features-container">
         <div className="features-header">
           <h2 className="features-title">
