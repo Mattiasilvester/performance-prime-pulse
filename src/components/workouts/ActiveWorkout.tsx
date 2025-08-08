@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExerciseCard } from './ExerciseCard';
@@ -63,10 +63,30 @@ interface ActiveWorkoutProps {
 
 export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExercise }: ActiveWorkoutProps) => {
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const { user } = useAuth();
   
   // Usa l'allenamento generato se disponibile, altrimenti usa quello statico
   const currentWorkout = generatedWorkout || workoutData[workoutId as keyof typeof workoutData];
+  
+  useEffect(() => {
+    // Fix per viewport height su mobile
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight);
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    
+    // Initial setup
+    handleResize();
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
   
   if (!currentWorkout) {
     return (
@@ -120,8 +140,23 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
     }
   };
 
+  // Fix per il click del pulsante "TERMINA SESSIONE"
+  const handleTerminateSession = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (navigator.vibrate) {
+      navigator.vibrate([100, 50, 100]); // Pattern per terminazione
+    }
+    
+    console.log('Pulsante TERMINA SESSIONE cliccato');
+    
+    completeWorkout();
+    onClose();
+  };
+
   return (
-    <div className="bg-black rounded-2xl shadow-sm overflow-hidden border-2 border-[#EEBA2B] animate-fade-in">
+    <div className="bg-black rounded-2xl shadow-sm overflow-hidden border-2 border-[#EEBA2B] animate-fade-in" style={{ maxHeight: 'calc(100vh - 120px)' }}>
       <div className="p-6 bg-gradient-to-r from-pp-gold to-yellow-600 animate-slide-in-right">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-black animate-scale-in">{currentWorkout.name}</h2>
@@ -144,7 +179,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
         <p className="text-black mt-2 font-medium animate-fade-in">COMPLETA TUTTI GLI ESERCIZI • {currentWorkout.exercises?.length || 0} ESERCIZI</p>
       </div>
 
-      <div className="p-6 space-y-4 bg-black">
+      <div className="p-6 space-y-4 bg-black overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
         <div className="grid gap-4">
           {currentWorkout.exercises?.map((exercise: any, index: number) => (
             <div key={`${exercise.name}-${index}`} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
@@ -160,15 +195,15 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
         </div>
 
         {completedExercises.length === (currentWorkout.exercises?.length || 0) && currentWorkout.exercises?.length > 0 && (
-          <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4 text-center animate-scale-in">
+          <div className="action-buttons-container bg-green-500/20 border border-green-500/50 rounded-lg p-4 text-center animate-scale-in">
             <CheckCircle className="h-8 w-8 text-green-400 mx-auto mb-2 animate-pulse" />
             <p className="text-green-400 font-semibold uppercase">ALLENAMENTO COMPLETATO! 🎉</p>
             <Button 
-              onClick={() => {
-                completeWorkout();
-                onClose();
-              }}
-              className="mt-3 animate-fade-in"
+              onClick={handleTerminateSession}
+              onTouchEnd={handleTerminateSession}
+              className="btn-termina-sessione mt-3 animate-fade-in min-h-[48px] px-6 py-3 text-base font-semibold"
+              type="button"
+              aria-label="Termina sessione allenamento"
             >
               TERMINA SESSIONE
             </Button>

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, ArrowRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,8 +13,28 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
   const [currentExercise, setCurrentExercise] = useState(0);
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [startTime] = useState(Date.now());
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   
   const exercises = workout.exercises || [];
+  
+  useEffect(() => {
+    // Fix per viewport height su mobile
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight);
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    
+    // Initial setup
+    handleResize();
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
   
   const completeExercise = (index: number) => {
     setCompletedExercises([...completedExercises, index]);
@@ -47,6 +67,32 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
     }
   };
 
+  // Fix per il click del pulsante "Completa"
+  const handleCompleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+    
+    console.log('Pulsante Completa cliccato');
+    completeExercise(currentExercise);
+  };
+
+  // Fix per il click del pulsante "Termina Allenamento"
+  const handleTerminateWorkout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (navigator.vibrate) {
+      navigator.vibrate([100, 50, 100]); // Pattern per terminazione
+    }
+    
+    console.log('Pulsante Termina Allenamento cliccato');
+    handleCompleteWorkout();
+  };
+
   const getHeaderBackground = () => {
     const colorMap: { [key: string]: string } = {
       cardio: '#38B6FF',
@@ -59,7 +105,7 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
   };
   
   return (
-    <div className="cardio-fatburn-section rounded-2xl shadow-sm overflow-hidden" style={{ border: '2px solid #EEBA2B' }}>
+    <div className="cardio-fatburn-section rounded-2xl shadow-sm overflow-hidden" style={{ border: '2px solid #EEBA2B', maxHeight: 'calc(100vh - 120px)' }}>
       <div className="p-6 text-white" style={{ background: getHeaderBackground() }}>
         <div className="flex items-center justify-between">
           <div>
@@ -87,7 +133,7 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
         </div>
       </div>
 
-      <div className="cardio-fatburn-section__container p-6 space-y-4" style={{ backgroundColor: '#000000', border: '2px solid #EEBA2B' }}>
+      <div className="cardio-fatburn-section__container p-6 space-y-4 overflow-y-auto" style={{ backgroundColor: '#000000', border: '2px solid #EEBA2B', maxHeight: 'calc(100vh - 300px)' }}>
         {exercises.map((exercise: any, index: number) => (
           <div
             key={index}
@@ -135,8 +181,12 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
               
               {index === currentExercise && !isCompleted(index) && (
                 <Button
-                  onClick={() => completeExercise(index)}
+                  onClick={handleCompleteClick}
+                  onTouchEnd={handleCompleteClick}
                   style={{ backgroundColor: '#EEBA2B', color: '#000000' }}
+                  className="btn-completa min-h-[44px] px-4 py-2 text-sm font-semibold"
+                  type="button"
+                  aria-label={`Completa ${exercise.name}`}
                 >
                   Completa
                   <ArrowRight className="h-4 w-4 ml-2" />
@@ -147,20 +197,21 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
         ))}
         
         {completedExercises.length === exercises.length && (
-          <div className="text-center p-6 bg-green-50 rounded-xl border-2 border-green-200">
+          <div className="action-buttons-container text-center p-6 bg-green-50 rounded-xl border-2 border-green-200">
             <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-3" />
             <h3 className="text-xl font-bold text-green-800 mb-2">Workout Completato!</h3>
             <p className="text-green-600 mb-4">Ottimo lavoro! Hai completato tutti gli esercizi.</p>
             <Button 
-              onClick={handleCompleteWorkout}
-              className="bg-green-600 hover:bg-green-700"
+              onClick={handleTerminateWorkout}
+              onTouchEnd={handleTerminateWorkout}
+              className="btn-termina-allenamento bg-green-600 hover:bg-green-700 min-h-[48px] px-6 py-3 text-base font-semibold"
+              type="button"
+              aria-label="Termina allenamento"
             >
               Termina Allenamento
             </Button>
           </div>
         )}
-
-
       </div>
     </div>
   );
