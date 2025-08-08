@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getResetPasswordUrl } from '@/shared/config/environments';
 import { analytics } from '@/services/analytics';
+import RegistrationForm from '@/components/auth/RegistrationForm';
+import emailAnalytics from '@/services/emailAnalytics';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -53,53 +55,6 @@ const Auth = () => {
       
       toast({
         title: "Errore durante l'accesso",
-        description: error.message,
-        variant: "destructive",
-        duration: 3000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      // Traccia registrazione riuscita
-      analytics.trackAuth('register');
-      
-      toast({
-        title: "Registrazione completata!",
-        description: "Controlla la tua email per confermare l'account.",
-        duration: 5000,
-      });
-
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      
-      // Traccia errore registrazione
-      analytics.trackError('register_error', {
-        error: error.message,
-        email: email
-      });
-      
-      toast({
-        title: "Errore durante la registrazione",
         description: error.message,
         variant: "destructive",
         duration: 3000,
@@ -214,41 +169,8 @@ const Auth = () => {
             </TabsContent>
             
             <TabsContent value="register" className="space-y-4">
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="register-email" className="text-text-primary">Email</Label>
-                  <Input
-                    id="register-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="la-tua-email@esempio.com"
-                    className="bg-surface-secondary border-border-primary text-text-primary"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-password" className="text-text-primary">Password</Label>
-                  <Input
-                    id="register-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Crea una password sicura"
-                    className="bg-surface-secondary border-border-primary text-text-primary"
-                    required
-                  />
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full bg-brand-primary text-background hover:bg-brand-primary/90"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Registrazione in corso...' : 'Registrati'}
-                </Button>
-              </form>
+              {/* Usa il nuovo RegistrationForm con validazione anti-disposable */}
+              <RegistrationForm />
             </TabsContent>
           </Tabs>
           
