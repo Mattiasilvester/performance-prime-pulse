@@ -1,90 +1,73 @@
-import { Play, Calendar, MessageSquare, Plus, Lock, Clock, BookOpen } from 'lucide-react';
+import { Play, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { ObjectiveModal } from '@/components/profile/ObjectiveModal';
+import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { NewObjectiveCard } from '@/components/profile/NewObjectiveCard';
 
 const QuickActions = () => {
-  const navigate = useNavigate();
   const [todayWorkout, setTodayWorkout] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isObjectiveModalOpen, setIsObjectiveModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     checkTodayWorkout();
-
-    // Listener per gli aggiornamenti in tempo reale
-    const channel = supabase
-      .channel('workout-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'custom_workouts'
-        },
-        () => {
-          // Ricontrolla quando ci sono cambiamenti nella tabella
-          checkTodayWorkout();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const checkTodayWorkout = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    if (!user) return;
 
-      // Ottieni la data di oggi in formato locale YYYY-MM-DD
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const todayString = `${year}-${month}-${day}`;
+    try {
+      const today = new Date().toISOString().split('T')[0];
       
-      console.log('Checking for workout on date:', todayString);
-      
-      const { data, error } = await supabase
-        .from('custom_workouts')
+      const { data: workouts, error } = await supabase
+        .from('workouts')
         .select('*')
         .eq('user_id', user.id)
-        .eq('scheduled_date', todayString) // Controlla SOLO la data odierna
-        .eq('completed', false) // Escludi allenamenti completati
-        .maybeSingle();
+        .gte('created_at', today)
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      
-      // Remove verbose logging in production
-      if (data && !error) {
-        setTodayWorkout(data);
-      } else {
-        setTodayWorkout(null);
+      if (error) {
+        console.error('Errore nel controllo workout di oggi:', error);
+        return;
+      }
+
+      if (workouts && workouts.length > 0) {
+        setTodayWorkout(workouts[0]);
       }
     } catch (error) {
-      // Silent error handling for production
-      setTodayWorkout(null);
+      console.error('Errore nel controllo workout di oggi:', error);
     }
   };
 
   const handleStartWorkout = async () => {
-    setIsLoading(true);
-    
-    if (todayWorkout) {
-      // Se esiste un allenamento per oggi, vai direttamente alla schermata di esecuzione
-      console.log('Starting today workout:', todayWorkout);
-      navigate('/workouts', { state: { startCustomWorkout: todayWorkout.id } });
-    } else {
-      // Se non c'è un allenamento per oggi, vai al calendario con il popup aperto per oggi
-      console.log('No workout for today, opening calendar');
-      navigate('/schedule', { state: { openWorkoutModal: true } });
+    if (!user) {
+      toast.error('Devi essere loggato per iniziare un allenamento');
+      return;
     }
-    
-    setIsLoading(false);
+
+    setIsLoading(true);
+    try {
+      if (todayWorkout) {
+        // Se c'è già un workout per oggi, vai alla pagina allenamenti
+        navigate('/workouts');
+        toast.success('Vai al tuo allenamento di oggi');
+      } else {
+        // Se non c'è un workout per oggi, vai alla creazione
+        navigate('/workouts');
+        toast.success('Crea il tuo allenamento di oggi');
+      }
+    } catch (error) {
+      console.error('Errore nell\'avvio allenamento:', error);
+      toast.error('Errore nell\'avvio dell\'allenamento');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleNewObjectiveClick = () => {
@@ -95,6 +78,8 @@ const QuickActions = () => {
     setIsObjectiveModalOpen(false);
   };
 
+  // RIMOSSO: Timer e Note dalle azioni rapide
+  // Ora le azioni sono focalizzate sulle funzioni essenziali
   const actions = [
     {
       label: 'Inizia Allenamento',
@@ -104,24 +89,6 @@ const QuickActions = () => {
       textColor: 'text-white',
       onClick: handleStartWorkout,
       disabled: isLoading,
-      accessible: true,
-    },
-    {
-      label: 'Timer',
-      description: 'Avvia timer allenamento',
-      icon: Clock,
-      color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
-      textColor: 'text-white',
-      onClick: () => navigate('/timer'),
-      accessible: true,
-    },
-    {
-      label: 'Note',
-      description: 'Gestisci le tue note',
-      icon: BookOpen,
-      color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
-      textColor: 'text-white',
-      onClick: () => navigate('/notes'),
       accessible: true,
     },
     {
@@ -140,7 +107,7 @@ const QuickActions = () => {
 
         <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
         
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-2 gap-4">
           {actions.map((action) => {
             const Icon = action.icon;
             
@@ -187,13 +154,12 @@ const QuickActions = () => {
         </div>
       </div>
 
-      <ObjectiveModal
-        isOpen={isObjectiveModalOpen}
-        onClose={handleObjectiveModalClose}
-        onObjectiveCreated={handleObjectiveModalClose}
-      />
+      {/* Modal per nuovo obiettivo */}
+      {isObjectiveModalOpen && (
+        <NewObjectiveCard onClose={handleObjectiveModalClose} />
+      )}
     </>
   );
 };
 
-export { QuickActions };
+export default QuickActions;

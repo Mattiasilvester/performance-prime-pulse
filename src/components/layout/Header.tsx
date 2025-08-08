@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot, User, FileText, Timer, CreditCard, X, Shield, FileText as FileTextIcon, Clock, BookOpen } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot, User, FileText, X, Shield, FileText as FileTextIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -44,14 +44,10 @@ export const Header = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
-  // Funzioni principali accessibili direttamente
-  const primaryNavigationItems = [
-    { id: 'timer', label: 'Timer', icon: Clock, path: '/timer' },
-    { id: 'notes', label: 'Note', icon: BookOpen, path: '/notes' },
-    { id: 'subscriptions', label: 'Abbonamenti', icon: CreditCard, path: '/subscriptions' },
-  ];
+  // RIMOSSO: Timer, Note e Abbonamenti dalla navigazione principale
+  // Ora la barra di navigazione è pulita e focalizzata sulle funzioni essenziali
 
-  // Funzioni secondarie nel menu hamburger
+  // Funzioni secondarie nel menu hamburger (mantenute per accesso completo)
   const secondaryNavigationItems = [
     { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
     { id: 'workouts', label: t('navigation.workouts'), icon: Dumbbell, path: '/workouts' },
@@ -62,12 +58,9 @@ export const Header = () => {
 
   const searchableItems = [
     { label: t('navigation.dashboard'), path: '/' },
-    { label: 'Abbonamenti', path: '/subscriptions' },
     { label: t('navigation.workouts'), path: '/workouts' },
     { label: t('navigation.schedule'), path: '/schedule' },
-    { label: t('navigation.timer'), path: '/timer' },
     { label: t('navigation.aiCoach'), path: '/ai-coach' },
-    { label: t('navigation.notes'), path: '/notes' },
     { label: t('navigation.profile'), path: '/profile' },
     { label: t('settings.personalInfo'), path: '/profile' },
   ];
@@ -151,8 +144,6 @@ export const Header = () => {
     }
   };
 
-
-
   const handleSearchItemClick = (path: string) => {
     navigate(path);
     setShowSearch(false);
@@ -178,30 +169,8 @@ export const Header = () => {
             </div>
           </div>
 
-          {/* Barra di navigazione rapida per desktop */}
-          <div className="hidden lg:flex items-center space-x-2">
-            {primaryNavigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              
-              return (
-                <Button
-                  key={item.id}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(item.path)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? "bg-brand-primary text-background"
-                      : "text-text-primary hover:bg-interactive-primary hover:text-background"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </Button>
-              );
-            })}
-          </div>
+          {/* RIMOSSO: Barra di navigazione rapida per desktop con Timer, Note e Abbonamenti */}
+          {/* Ora l'header è pulito e focalizzato su logo, search e menu utente */}
 
           {/* User info and actions */}
           <div className="flex items-center space-x-3">
