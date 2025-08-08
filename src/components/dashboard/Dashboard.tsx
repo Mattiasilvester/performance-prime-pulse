@@ -1,6 +1,6 @@
 
 import { StatsOverview } from './StatsOverview';
-import { QuickActions } from './QuickActions';
+import QuickActions from './QuickActions';
 import { RecentActivity } from './RecentActivity';
 import { WeeklyProgress } from './WeeklyProgress';
 import { useState, useEffect } from 'react';
