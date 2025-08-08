@@ -451,7 +451,7 @@ Fammi sapere come posso aiutarti!`;
             <button
               key={index}
               onClick={() => sendMessage(question)}
-              className="text-xs bg-slate-100 hover:bg-slate-200 text-black px-3 py-2 rounded-full transition-colors border border-[#EEBA2B]"
+              className="text-xs bg-white hover:bg-gray-50 text-black px-3 py-2 rounded-full transition-colors border border-[#EEBA2B]"
             >
               {question}
             </button>
@@ -466,11 +466,11 @@ Fammi sapere come posso aiutarti!`;
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && sendMessage(inputText)}
             placeholder="Scrivi la tua domanda..."
-            className="flex-1 px-4 py-2 border border-[#EEBA2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white placeholder-gray-500"
+            className="flex-1 px-4 py-2 border border-[#EEBA2B] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] text-black bg-white placeholder-gray-500"
           />
           <Button 
             onClick={() => sendMessage(inputText)}
-            className="bg-[#EEBA2B] hover:bg-[#EEBA2B] text-black"
+            className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/90 text-black"
             disabled={!inputText.trim()}
           >
             <Send className="h-4 w-4" />

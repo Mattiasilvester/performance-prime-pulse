@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
-import { ChatInterface } from './ChatInterface';
+import PrimeChat from '../PrimeChat';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Target, X } from 'lucide-react';
-import { Lock } from 'lucide-react';
 
 interface AICoachPrimeProps {
   onRequestPlan: () => void;
@@ -29,7 +28,7 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
             className="cursor-pointer hover:opacity-90 transition-opacity"
             onClick={openFullScreenChat}
           >
-            <ChatInterface ref={chatInterfaceRef} />
+            <PrimeChat />
           </div>
         </div>
         <div className="space-y-4">
@@ -99,11 +98,18 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
           {/* Chat Modal centrato */}
           <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
             <div 
-              className="w-full max-w-2xl"
+              className="w-full max-w-2xl relative"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* LA CHAT CARD ESISTENTE - IDENTICA A ORA */}
-              <ChatInterface ref={chatInterfaceRef} onClose={closeFullScreenChat} />
+              {/* Pulsante X per chiudere */}
+              <button
+                onClick={closeFullScreenChat}
+                className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+                title="Chiudi"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <PrimeChat />
             </div>
           </div>
         </div>
