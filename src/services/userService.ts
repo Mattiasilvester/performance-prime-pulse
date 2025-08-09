@@ -29,7 +29,7 @@ export const fetchUserProfile = async (): Promise<UserProfile | null> => {
       .from('profiles')
       .select('*')
       .eq('id', user.id)
-      .maybeSingle(); // Use maybeSingle instead of single to avoid errors if no profile exists
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching profile:', error);
@@ -38,7 +38,6 @@ export const fetchUserProfile = async (): Promise<UserProfile | null> => {
 
     if (!profile) {
       console.log('No profile found, creating default profile...');
-      // Create a default profile if none exists
       const defaultProfile: UserProfile = {
         id: user.id,
         name: user.email?.split('@')[0] || 'Utente',
@@ -51,7 +50,6 @@ export const fetchUserProfile = async (): Promise<UserProfile | null> => {
         birth_date: null
       };
       
-      // Try to insert the default profile
       const { error: insertError } = await supabase
         .from('profiles')
         .insert({
@@ -66,6 +64,7 @@ export const fetchUserProfile = async (): Promise<UserProfile | null> => {
 
       if (insertError) {
         console.error('Error creating default profile:', insertError);
+        return null;
       } else {
         console.log('Default profile created successfully');
       }
@@ -93,6 +92,7 @@ export const fetchUserProfile = async (): Promise<UserProfile | null> => {
 
 export const updateUserProfile = async (formData: { name: string; surname: string; birthPlace: string; phone?: string; birthDate?: string; avatarUrl?: string }) => {
   try {
+    console.log('Updating user profile...');
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -121,6 +121,8 @@ export const updateUserProfile = async (formData: { name: string; surname: strin
       .eq('id', user.id);
 
     if (error) throw error;
+    
+    console.log('Profile updated successfully in Supabase');
   } catch (error) {
     console.error('Error updating user profile:', error);
     throw error;
@@ -129,6 +131,7 @@ export const updateUserProfile = async (formData: { name: string; surname: strin
 
 export const uploadAvatar = async (file: File): Promise<string> => {
   try {
+    console.log('Uploading avatar...');
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -145,6 +148,7 @@ export const uploadAvatar = async (file: File): Promise<string> => {
       .from('avatars')
       .getPublicUrl(fileName);
 
+    console.log('Avatar uploaded successfully to Supabase storage');
     return data.publicUrl;
   } catch (error) {
     console.error('Error uploading avatar:', error);

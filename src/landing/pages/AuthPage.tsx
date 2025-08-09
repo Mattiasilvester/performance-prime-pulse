@@ -1,128 +1,97 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../integrations/supabase/client';
 
 const AuthPage = () => {
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: ''
-  });
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<'login' | 'register'>('register');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
 
   // Controlla se utente già autenticato
   useEffect(() => {
     const checkExistingSession = async () => {
-      if (!supabase) {
-        console.warn('Supabase not available, skipping session check');
-        return;
-      }
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        // Utente già loggato → Vai all'MVP Dashboard
-        redirectToMVPDashboard();
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          console.log('✅ Sessione esistente trovata, redirect alla dashboard');
+          navigate('/dashboard', { replace: true });
+        }
+      } catch (error) {
+        console.error('❌ Errore controllo sessione:', error);
       }
     };
     checkExistingSession();
-  }, []);
-
-  const redirectToMVPDashboard = () => {
-    // IMPORTANTE: Redirect alla dashboard MVP deployata, NON quella in sviluppo
-    const mvpDashboardUrl = 'https://performanceprime.it/app';
-    console.log('✅ Login successful, redirecting to MVP Dashboard:', mvpDashboardUrl);
-    window.location.href = mvpDashboardUrl;
-  };
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // MOCK AUTH PER TEST UI - TEMPORANEO
-    console.log('🔄 Mock auth per test UI');
-    
-    // Simula validazione
-    if (mode === 'register') {
-      if (formData.password !== formData.confirmPassword) {
-        setError('Le password non coincidono');
-        setLoading(false);
-        return;
-      }
-      if (formData.password.length < 6) {
-        setError('La password deve essere di almeno 6 caratteri');
-        setLoading(false);
-        return;
-      }
-    }
-
-    // Simula login/registrazione riuscita
-    setTimeout(() => {
-      console.log('✅ Mock auth successful');
-      redirectToMVPDashboard();
-    }, 1000);
-
-    // CODICE SUPABASE ORIGINALE (COMMENTATO)
-    /*
-    if (!supabase) {
-      setError('Servizio di autenticazione non disponibile');
-      setLoading(false);
-      return;
-    }
-
     try {
       if (mode === 'register') {
-        // Validazione registrazione
+        // Validazione per registrazione
         if (formData.password !== formData.confirmPassword) {
-          throw new Error('Le password non coincidono');
+          setError('Le password non coincidono');
+          setLoading(false);
+          return;
         }
         if (formData.password.length < 6) {
-          throw new Error('La password deve essere di almeno 6 caratteri');
+          setError('La password deve essere di almeno 6 caratteri');
+          setLoading(false);
+          return;
         }
 
-        // Registrazione
+        // Registrazione Supabase
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
             data: {
               first_name: formData.firstName,
-              last_name: formData.lastName,
+              last_name: formData.lastName
             }
           }
         });
 
-        if (error) throw error;
-
-        if (data.user) {
-          console.log('✅ Registration successful');
-          redirectToMVPDashboard();
+        if (error) {
+          setError(error.message);
+          setLoading(false);
+          return;
         }
+
+        console.log('✅ Registrazione riuscita:', data);
       } else {
-        // Login
+        // Login Supabase
         const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
-          password: formData.password,
+          password: formData.password
         });
 
-        if (error) throw error;
-
-        if (data.user) {
-          console.log('✅ Login successful');
-          redirectToMVPDashboard();
+        if (error) {
+          setError(error.message);
+          setLoading(false);
+          return;
         }
+
+        console.log('✅ Login riuscito:', data);
       }
+
+      setLoading(false);
+      navigate('/dashboard', { replace: true });
     } catch (error: any) {
-      console.error('❌ Auth error:', error);
-      setError(error.message);
-    } finally {
+      console.error('❌ Errore autenticazione:', error);
+      setError(error.message || 'Errore durante l\'autenticazione');
       setLoading(false);
     }
-    */
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

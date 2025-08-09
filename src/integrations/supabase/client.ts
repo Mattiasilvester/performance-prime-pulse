@@ -2,17 +2,32 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://kfxoyucatvvcgmqalxsg.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmeG95dWNhdHZ2Y2dtcWFseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDc2NTksImV4cCI6MjA2NTgyMzY1OX0.hQhfOogGGc9kvOGvxjOv6QTKxSysbTa6En-0wG9_DCY";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error('Missing Supabase environment variables: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required');
+}
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    autoRefreshToken: true,      // ✅ Auto refresh
-    persistSession: true,        // ✅ Mantieni sessione
-    detectSessionInUrl: true,    // ✅ Rileva sessione da URL
-    flowType: 'pkce'            // ✅ Sicurezza
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
   }
 });
+
+// Health check non-bloccante per development
+if (import.meta.env.DEV) {
+  supabase.auth.getSession().then(({ data, error }) => {
+    if (error) {
+      console.warn('⚠️ Supabase health check failed:', error.message);
+      console.warn('Please check your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables');
+    } else {
+      console.log('✅ Supabase health check passed');
+    }
+  }).catch((error) => {
+    console.warn('⚠️ Supabase health check error:', error);
+  });
+}

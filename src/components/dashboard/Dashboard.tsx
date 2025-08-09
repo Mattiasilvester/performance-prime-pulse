@@ -6,6 +6,7 @@ import { WeeklyProgress } from './WeeklyProgress';
 import { useState, useEffect } from 'react';
 import { fetchUserProfile, UserProfile } from '@/services/userService';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { OnboardingBot } from '@/components/OnboardingBot';
 
 export const Dashboard = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -20,6 +21,16 @@ export const Dashboard = () => {
 
   const userName = userProfile?.name || 'Utente';
 
+  const handleSendMessage = (message: string) => {
+    // Funzione per inviare messaggi al bot (da implementare se necessario)
+    console.log('Messaggio da inviare al bot:', message);
+  };
+
+  const handleFocusChat = () => {
+    // Funzione per portare focus alla chat (da implementare se necessario)
+    console.log('Focus alla chat');
+  };
+
   return (
     <AppLayout>
       <div className="container mx-auto px-4 py-6 space-y-6">
@@ -29,6 +40,13 @@ export const Dashboard = () => {
             <p className="text-pp-gold/80">Pronto per superare i tuoi limiti oggi?</p>
           </div>
         </div>
+
+        {/* Onboarding Bot per nuovi utenti */}
+        <OnboardingBot 
+          userName={userName}
+          onSendMessage={handleSendMessage}
+          onFocusChat={handleFocusChat}
+        />
 
         <StatsOverview />
         <QuickActions />
