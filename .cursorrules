@@ -1,734 +1,278 @@
-# Cursor Rules per Performance Prime - App Unificata
+# CURSOR RULES - PERFORMANCE PRIME
+# Ultimo aggiornamento: 9 Agosto 2025
 
-## Contesto del Progetto
-Questo è un'applicazione React/TypeScript unificata per il fitness e il benessere. Include funzionalità di AI coach, tracking dei workout, pianificazione e integrazione con Supabase. 
+## 🎯 PROGETTO
+Performance Prime - App React/TypeScript con integrazione Supabase + Voiceflow + Make + Slack
+**Stato:** ✅ SERVER DI SVILUPPO ATTIVO E FUNZIONANTE
+**URL:** http://localhost:8081/ | http://192.168.1.120:8081/
 
-**Stato Attuale (8 Agosto 2025)**: 
-- ✅ **App unificata funzionante** con deploy stabile su `performanceprime.it`
-- ✅ **Architettura unificata** - Landing + Auth + MVP tutto insieme
-- ✅ **Flusso completo:** Landing → Auth → Dashboard (stessa app)
-- ✅ **Autenticazione Supabase** funzionante
-- ✅ **Dashboard protetta** e responsive
-- ✅ **Overlay corretto** - Funzioni premium bloccate con design coerente
-- ✅ **Layout corretto** - Header + Main Content (senza menu laterale)
-- ✅ **Sidebar sinistra completamente rimossa**
-- ✅ **Barra di navigazione inferiore** implementata
-- ✅ **Sezioni complete:** Dashboard, Allenamento, Appuntamenti, Coach AI, Profilo
-- ✅ **Configurazione DNS Aruba completata**
-- ✅ **Dominio personalizzato configurato**
-- ✅ **Problema analytics risolto** - App funzionante in locale
-- ✅ **Analytics Plausible temporaneamente disabilitato** per debugging
-- ✅ **Layout alternato nero/grigio landing page**
-- ✅ **Sezione founders spostata in CTA**
-- ✅ **Card founders orizzontali su desktop**
-- ✅ **Nuovo contenuto Hero** - Blocco descrittivo aggiunto
-- ✅ **Card features grigie** - "Cosa puoi fare" e "Perché è diversa"
-- ✅ **Spacing ottimizzato** - Ridotto spazio verticale tra elementi
-- ✅ **Social proof rimosso** - Design più pulito
-- ✅ **Animazioni globali** - Fade-in/slide-up implementate
-- ✅ **Linea divisoria oro** - Sostituisce testi specifici
-- ✅ **Tagline allenamenti** - Aggiunta sotto card features
-- ✅ **Card allenamenti dedicata** - Trasformata in card separata
-- ✅ **Posizionamento card** - Centrata sotto Community
-- ✅ **Sistema consenso file** - Banner e sezione impostazioni implementati
-- ✅ **Analisi OCR file** - Riconoscimento automatico esercizi da immagini/PDF
-- ✅ **Integrazione allegati** - Caricamento file nel modal creazione allenamento
-- ✅ **Pattern matching** - Riconoscimento formati italiani e inglesi
-- ✅ **Componente risultati** - FileAnalysisResults per rivedere esercizi estratti
-- ✅ **Hook useFileAccess** - Gestione stato consenso con localStorage
-- ✅ **Servizio FileAnalyzer** - OCR avanzato con database 50+ esercizi
-- ✅ **Chat PrimeBot Modal Overlay** - Implementazione completa con backdrop sfocato
-- ✅ **UI Chat ottimizzata** - Area messaggi grigia e bubble bot bianchi
-- ✅ **Contrasto migliorato** - Leggibilità ottimizzata per messaggi bot
-- ✅ **PARSER RIGOROSO** - Sistema che legge SOLO dati reali dal PDF
-- ✅ **Validazione critica** - Verifica esercizi, serie, nomi corretti
-- ✅ **Debug dettagliato** - Log completo di ogni passo del parsing
-- ✅ **Pattern conservativi** - Meglio non parsare che parsare male
-- ✅ **Estrazione testo reale** - Solo quello che c'è nel PDF
-- ✅ **SISTEMA PARSER SICURO** - Eliminazione completa contenuti binari e metadati PDF
-- ✅ **SafeTextExtractor** - Pulizia aggressiva di contenuti binari e filtri intelligenti
-- ✅ **Formato JSON strutturato** - Output esattamente come richiesto
-- ✅ **Correzioni automatiche** - Normalizzazione Unicode, ricostruzione sillabazioni
-- ✅ **Suggerimenti automatici** - Riscaldamento e stretching intelligenti
-- ✅ **Pattern robusti** - Riconoscimento esercizi con pattern avanzati
-- ✅ **Debug completo** - Informazioni dettagliate di processamento
-- ✅ **DESIGN CHAT AGGIORNATO** - Card suggerimenti e campo input con sfondo bianco e scritte nere
-- ✅ **SISTEMA VOICEFLOW CONFERMATO** - Integrazione completa già implementata e funzionante
-- ✅ **HEADER PULITO** - Rimossi Timer, Note, Abbonamenti per UX migliorata
-- ✅ **VALIDAZIONE EMAIL ANTI-DISPOSABLE** - 100+ domini bloccati, 0% email disposable nel database
-## Architettura Unificata (Nuova)
-### **App Unificata (performanceprime.it)**
-- **URL:** `https://performanceprime.it`
-- **Entry:** `index.html` → `src/main.tsx` → `src/App.tsx`
-- **Config:** `vite.config.ts`
-- **Scopo:** App completa con landing + auth + MVP
-
-### **Routing Unificato**
-```typescript
-// src/App.tsx - App unificata
-<Routes>
-  {/* HOMEPAGE: Landing page per utenti non autenticati */}
-  <Route path="/" element={<SmartHomePage />} />
-  
-  {/* AUTH: Pagina di autenticazione unificata */}
-  <Route path="/auth" element={<Auth />} />
-  
-  {/* MVP DASHBOARD: Route protette per utenti autenticati */}
-  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-  <Route path="/workouts" element={<ProtectedRoute><Workouts /></ProtectedRoute>} />
-  <Route path="/schedule" element={<ProtectedRoute><Schedule /></ProtectedRoute>} />
-  <Route path="/ai-coach" element={<ProtectedRoute><AICoach /></ProtectedRoute>} />
-  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-  
-  {/* PAGINE LEGALI: Accessibili a tutti */}
-  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-</Routes>
+## 📁 STRUTTURA PROGETTO
+```
+performance-prime-pulse/
+├── src/
+│   ├── landing/pages/AuthPage.tsx ✅ (Layout ripristinato)
+│   ├── pages/SmartHomePage.tsx ✅ (Conflitti risolti)
+│   ├── integrations/supabase/client.ts ✅ (Client Supabase)
+│   ├── components/ ✅ (Tutti i componenti)
+│   └── services/ ✅ (Servizi e utilities)
+├── package.json ✅ (Versioni allineate)
+├── vite.config.ts ✅ (Porta 8081)
+├── .env ✅ (Variabili configurate)
+└── tailwind.config.ts ✅ (Styling)
 ```
 
-## Tecnologie Principali
-- React 18+ con TypeScript
-- Capacitor per app mobile (iOS/Android)
-- Supabase per backend e autenticazione
-- Tailwind CSS per styling
-- Shadcn/ui per componenti UI
-- Vite come build tool
-- Lovable per deploy
-- Aruba per DNS
-- Plausible Analytics (temporaneamente disabilitato)
-- Zod per validazione schema
-- pdfjs-dist per estrazione PDF (opzionale)
+## 🔧 CONFIGURAZIONE TECNICA
 
-## Convenzioni di Codice
-- Usa TypeScript strict mode
-- Preferisci functional components con hooks
-- Usa named exports invece di default exports
-- Segui la convenzione camelCase per variabili e funzioni
-- Usa PascalCase per componenti React
-- Mantieni i componenti piccoli e focalizzati
+### **Versioni Dipendenze:**
+- **Vite:** 5.4.19 (downgrade per compatibilità)
+- **@vitejs/plugin-react-swc:** ^3.5.0
+- **Node.js:** v22.16.0 (LTS)
+- **React:** ^18.3.1
+- **TypeScript:** ^5.5.3
+- **Tesseract.js:** Aggiunto per OCR
 
-## Struttura del Progetto
-- `/src/App.tsx` - Router principale UNIFICATO
-- `/src/main.tsx` - Entry point UNIFICATO
-- `/src/landing/` - Componenti landing page (ZONA SICURA)
-  - `/src/landing/pages/` - Pagine landing (LandingPage, AuthPage)
-  - `/src/landing/components/` - Componenti landing (Hero, Features, CTA, Footer)
-  - `/src/landing/lib/` - Configurazioni landing (supabase.ts)
-  - `/src/landing/styles/` - Stili landing (landing.css)
-- `/src/pages/` - Pagine MVP (PROTETTE)
-- `/src/components/` - Componenti MVP (PROTETTI)
-- `/src/shared/` - Codice condiviso (config, hooks, ui, integrations)
-- `/src/development/` - Features in sviluppo (ZONA SICURA)
-- `/src/experimental/` - Sperimentazioni (ZONA SICURA)
-- `/src/services/` - Servizi di parsing e processamento (ZONA SICURA)
-  - `/src/services/SafeTextExtractor.ts` - Estrazione testo sicura
-  - `/src/services/SchedaParser.ts` - Parsing scheda allenamento
-  - `/src/services/TextProcessor.ts` - Processamento testo avanzato
-  - `/src/services/FileProcessor.ts` - Gestione file integrata
+### **Server di Sviluppo:**
+- **Porta:** 8081 (fissa)
+- **Host:** true (accesso LAN)
+- **HMR:** ✅ Attivo
+- **Build:** ✅ Funzionante
 
-## Configurazioni Vite
-### **App Unificata**
-- **File:** `vite.config.ts`
-- **Entry:** `index.html` → `src/main.tsx`
-- **Build:** `npm run build:public`
-- **Dev Server:** Porta 8082 (automatica)
+### **Integrazioni:**
+- **Supabase:** ✅ Configurato e funzionante
+- **Voiceflow:** ✅ API key configurata
+- **Make/Slack:** ✅ Escalation flow attivo
 
-## Scripts Package.json
-- `npm run dev` - App unificata (porta 8082)
-- `npm run build:public` - Build produzione
-- `npm run deploy:lovable` - Deploy Lovable
+## 🚀 ULTIMI SVILUPPI (9 AGOSTO 2025)
 
-## Styling
-- Usa Tailwind CSS per lo styling
-- Preferisci componenti Shadcn/ui quando disponibili
-- Mantieni la coerenza con il design system esistente
-- Usa variabili CSS per colori e spacing
-- **Landing page:** Stili in `src/landing/styles/landing.css`
+### ✅ PROBLEMI RISOLTI
 
-## Database e API
-- Usa Supabase per tutte le operazioni di database
-- Implementa proper error handling per le API calls
-- Usa TypeScript types per i dati del database
-- Segui le convenzioni di naming di Supabase
+#### 1. **SERVER DI SVILUPPO NON AVVIABILE**
+- **Problema:** Server Vite non si avviava, errori di connessione
+- **Cause:** Directory errata, conflitti dipendenze, porta occupata
+- **Soluzione:** Pulizia completa, allineamento versioni, porta 8081 fissa
+- **Risultato:** ✅ Server attivo e funzionante
 
-## Mobile (Capacitor)
-- Considera sempre la compatibilità mobile
-- Usa responsive design
-- Testa su dispositivi reali quando possibile
-- Gestisci correttamente le API native di Capacitor
+#### 2. **LAYOUT PAGINA AUTENTICAZIONE**
+- **Problema:** Layout AuthPage.tsx non corrispondeva al design originale
+- **Soluzione:** Ripristino completo del layout con struttura HTML/JSX originale
+- **Modifiche:** Background animation, brand header, toggle buttons, form layout
+- **Risultato:** ✅ UI pulita e funzionale come design originale
 
-## AI e Machine Learning
-- Implementa funzionalità AI in modo sicuro
-- Valida sempre gli input dell'utente
-- Fornisci feedback chiaro per le operazioni AI
-- Mantieni la privacy dell'utente
+#### 3. **CONFLITTI GIT MERGE**
+- **Problema:** Conflitti durante push al repository
+- **File risolti:** package-lock.json, SmartHomePage.tsx, work.md, .cursorrules
+- **Risultato:** ✅ Repository sincronizzato e pulito
 
-## Performance
-- Ottimizza il bundle size
-- Usa lazy loading per i componenti pesanti
-- Implementa caching appropriato
-- Monitora le performance su dispositivi mobili
+#### 4. **DIPENDENZE MANCANTI**
+- **Problema:** Errore import 'tesseract.js'
+- **Soluzione:** npm install tesseract.js
+- **Risultato:** ✅ Dipendenza installata, errori risolti
 
-## Sicurezza
-- Valida sempre gli input dell'utente
-- Usa HTTPS per tutte le comunicazioni
-- Implementa proper authentication
-- Proteggi i dati sensibili
+## 🎯 REGOLE DI SVILUPPO
 
-## Testing
-- Scrivi test per le funzionalità critiche
-- Usa React Testing Library per i test dei componenti
-- Testa le integrazioni con Supabase
-- Verifica la compatibilità mobile
+### **1. WORKING DIRECTORY**
+- **SEMPRE** lavorare da: `/Users/mattiasilvestrelli/Prime-puls-HUB/performance-prime-pulse`
+- **NON** eseguire comandi dalla root del monorepo
+- **VERIFICARE** sempre con `pwd` prima di eseguire comandi
 
-## Documentazione
-- Commenta il codice complesso
-- Mantieni README aggiornato
-- Documenta le API custom
-- Fornisci esempi di utilizzo
+### **2. AVVIO SERVER**
+```bash
+# Comando corretto
+cd /Users/mattiasilvestrelli/Prime-puls-HUB/performance-prime-pulse
+npm run dev
 
-## 🚨 PROTEZIONE CODICE PRODUZIONE
-
-### **File Protetti (NON MODIFICARE)**
-```
-src/App.tsx                    # ← Router principale PROTETTO
-src/main.tsx                   # ← Entry point PROTETTO
-src/pages/                     # ← Pagine MVP PROTETTE
-package.json                   # ← Scripts build PROTETTI
-vite.config.ts                 # ← Config build PROTETTA
-index.html                     # ← HTML entry PROTETTO
+# Se porta occupata
+lsof -ti :8081 | xargs kill -9 || true
+npm run dev -- --port 8081 --host
 ```
 
-### **Zone Sicure per Sviluppo**
-```
-src/landing/                   # ← Landing page (ZONA SICURA)
-├── pages/
-├── components/
-└── styles/
+### **3. GIT WORKFLOW**
+```bash
+# Pull e merge
+git pull origin main
 
-src/services/                  # ← Servizi di parsing (ZONA SICURA)
-├── SafeTextExtractor.ts
-├── SchedaParser.ts
-├── TextProcessor.ts
-└── FileProcessor.ts
+# Se conflitti
+git checkout --ours [file_conflitto]
+git add [file_conflitto]
 
-src/components/                # ← Componenti MVP (ZONA SICURA)
-├── WorkoutUploader.tsx
-├── ManualWorkoutInput.tsx
-└── SchedaView.tsx
+# Commit e push
+git add .
+git commit -m "feat: descrizione modifiche"
+git push origin main
 ```
 
-### **Regole Operative**
-- ✅ **Leggere** i file per reference
-- ✅ **Analizzare** il codice per capire funzionalità
-- ✅ **Copiare** parti per nuove features
-- ✅ **Suggerire** miglioramenti senza modificare
-- ✅ **Modificare** solo `src/landing/` per landing page
-- ✅ **Modificare** `src/services/` per parser e processamento
-- ✅ **Modificare** `src/components/` per componenti MVP
-- ❌ **Modificare** file protetti senza permesso
-- ❌ **Rinominare** file o cartelle protette
-- ❌ **Spostare** componenti protetti
-- ❌ **Cambiare** configurazioni build
+### **4. DIPENDENZE**
+- **NON** modificare versioni senza testare compatibilità
+- **SEMPRE** usare `npm install --legacy-peer-deps` se conflitti
+- **VERIFICARE** che tutte le dipendenze siano installate
 
-### **Controlli di Sicurezza**
-Prima di ogni modifica verifica:
-1. ❓ "Questa modifica tocca file di produzione?"
-2. ❓ "L'utente ha esplicitamente richiesto questo cambio?"
-3. ❓ "Potrebbe rompere il deploy funzionante?"
-4. ❓ "È davvero necessaria o solo un 'miglioramento'?"
+## 🔒 FILE PROTETTI (NON MODIFICARE SENZA AUTORIZZAZIONE)
 
-Se risposta è SÌ a qualsiasi domanda → FERMA e CHIEDI CONFERMA
+### **Configurazione Core:**
+- `package.json` - Versioni dipendenze
+- `vite.config.ts` - Configurazione build
+- `.env` - Variabili d'ambiente
+- `tailwind.config.ts` - Styling system
 
-## Quando Suggerisci Modifiche
-- Mantieni la coerenza con il codice esistente
-- Considera l'impatto sulle performance
-- Verifica la compatibilità mobile
-- Assicurati che le modifiche seguano le convenzioni del progetto
-- Testa sempre l'app unificata
-- Verifica che il flusso Landing → Auth → MVP funzioni correttamente
-- Mantieni aggiornata la documentazione
-- **NON toccare file protetti senza permesso esplicito**
-- **MODIFICA SOLO `src/landing/` per landing page**
-- **MODIFICA SOLO `src/services/` per parser e processamento**
+### **Entry Points:**
+- `src/App.tsx` - Router principale
+- `src/main.tsx` - Entry point
+- `index.html` - HTML template
 
-## Problemi Risolti Recentemente (8 Agosto 2025)
-- ✅ **App unificata** - Landing + Auth + MVP tutto insieme
-- ✅ **Merge incompleto risolto** - Repository pulito
-- ✅ **Configurazione Lovable corretta** - Entry point `index.html`
-- ✅ **Build unificato** - Un solo build per tutto
-- ✅ **Router unificato** - Tutto in `src/App.tsx`
-- ✅ **Deploy stabile** - Funzionante su `performanceprime.it`
-- ✅ **Protezione codice produzione** - File protetti identificati
-- ✅ **Configurazione DNS Aruba** - Record CNAME configurato
-- ✅ **Dominio personalizzato** - `performanceprime.it` attivo
-- ✅ **Problema analytics risolto** - App funzionante in locale
-- ✅ **Analytics Plausible disabilitato** - Per debugging e stabilità
-- ✅ **Layout alternato landing page** - Nero/grigio implementato
-- ✅ **Sezione founders spostata** - Da Hero a CTA
-- ✅ **Card founders orizzontali** - Layout responsive corretto
-- ✅ **Nuovo contenuto Hero** - Blocco descrittivo aggiunto
-- ✅ **Card features grigie** - "Cosa puoi fare" e "Perché è diversa"
-- ✅ **Spacing ottimizzato** - Ridotto spazio verticale tra elementi
-- ✅ **Social proof rimosso** - Design più pulito
-- ✅ **Animazioni globali** - Fade-in/slide-up implementate
-- ✅ **Linea divisoria oro** - Sostituisce testi specifici
-- ✅ **Tagline allenamenti** - Aggiunta sotto card features
-- ✅ **Card allenamenti dedicata** - Trasformata in card separata
-- ✅ **Posizionamento card** - Centrata sotto Community
-- ✅ **Sistema consenso file** - Banner e sezione impostazioni implementati
-- ✅ **Analisi OCR file** - Riconoscimento automatico esercizi da immagini/PDF
-- ✅ **Integrazione allegati** - Caricamento file nel modal creazione allenamento
-- ✅ **Pattern matching** - Riconoscimento formati italiani e inglesi
-- ✅ **Componente risultati** - FileAnalysisResults per rivedere esercizi estratti
-- ✅ **Hook useFileAccess** - Gestione stato consenso con localStorage
-- ✅ **Servizio FileAnalyzer** - OCR avanzato con database 50+ esercizi
-- ✅ **Chat PrimeBot Modal Overlay** - Implementazione completa con backdrop sfocato
-- ✅ **UI Chat ottimizzata** - Area messaggi grigia e bubble bot bianchi
-- ✅ **Contrasto migliorato** - Leggibilità ottimizzata per messaggi bot
-- ✅ **PARSER RIGOROSO** - Sistema che legge SOLO dati reali dal PDF
-- ✅ **Validazione critica** - Verifica esercizi, serie, nomi corretti
-- ✅ **Debug dettagliato** - Log completo di ogni passo del parsing
-- ✅ **Pattern conservativi** - Meglio non parsare che parsare male
-- ✅ **Estrazione testo reale** - Solo quello che c'è nel PDF
-- ✅ **SISTEMA PARSER SICURO** - Eliminazione completa contenuti binari e metadati PDF
-- ✅ **SafeTextExtractor** - Pulizia aggressiva di contenuti binari e filtri intelligenti
-- ✅ **Formato JSON strutturato** - Output esattamente come richiesto
-- ✅ **Correzioni automatiche** - Normalizzazione Unicode, ricostruzione sillabazioni
-- ✅ **Suggerimenti automatici** - Riscaldamento e stretching intelligenti
-- ✅ **Pattern robusti** - Riconoscimento esercizi con pattern avanzati
-- ✅ **Debug completo** - Informazioni dettagliate di processamento
-- ✅ **DESIGN CHAT AGGIORNATO** - Card suggerimenti e campo input con sfondo bianco e scritte nere
-- ✅ **SISTEMA VOICEFLOW CONFERMATO** - Integrazione completa già implementata e funzionante
-- ✅ **HEADER PULITO** - Rimossi Timer, Note, Abbonamenti per UX migliorata
-- ✅ **VALIDAZIONE EMAIL ANTI-DISPOSABLE** - 100+ domini bloccati, 0% email disposable nel database
+### **Autenticazione:**
+- `src/integrations/supabase/client.ts` - Client Supabase
+- `src/landing/pages/AuthPage.tsx` - Layout autenticazione (ripristinato)
 
-## Flusso Utente Completo
-```
-performanceprime.it/
-├── /                    → Landing page (non autenticati)
-├── /auth               → Login/registrazione
-├── /dashboard          → Dashboard MVP (autenticati)
-├── /workouts           → Allenamenti MVP
-├── /schedule           → Appuntamenti MVP
-├── /ai-coach           → Coach AI MVP
-├── /profile            → Profilo MVP
-└── /privacy-policy     → Pagine legali
-```
+## 🎨 DESIGN SYSTEM
 
-## Layout Corretto
-- **Header:** Logo "DD" + "Performance Prime" + menu dropdown utente
-- **Main Content:** Dashboard con metriche, azioni rapide, progressi
-- **Nessuna sidebar sinistra:** Rimossa completamente
-- **Responsive:** Ottimizzato per mobile e desktop
+### **Tema Colori:**
+- **Primario:** Nero (#000000)
+- **Secondario:** Oro (#FFD700)
+- **Sfondo:** Grigio scuro (#1a1a1a)
+- **Testo:** Bianco (#ffffff)
 
-## Overlay Premium
-- **Lucchetto 🔒** al centro per funzioni bloccate
-- **Messaggio:** "Funzionalità in arrivo"
-- **Sottotitolo:** Messaggi specifici per ogni sezione
-- **Opacità:** Contenuto bloccato visibile sotto overlay
+### **Componenti Chat:**
+- **Card suggerimenti:** Sfondo bianco, contorno oro, scritte nere
+- **Campo input:** Sfondo bianco, contorno oro, scritte nere
+- **Layout:** Sfondo nero, contorni oro, area messaggi grigia
 
-## Menu Dropdown
-- **Utente:** Nome utente + icone (search, notifications, menu)
-- **Voci:** Dashboard, Abbonamenti, Allenamento, Appuntamenti, Timer, Coach AI, Note, Profilo, Logout
-- **Legale:** Termini e Condizioni, Privacy Policy (GDPR)
+### **Layout Autenticazione:**
+- **Background:** Animation con shapes
+- **Brand Header:** Logo "DD" + titolo "Performance Prime"
+- **Toggle Buttons:** Icone (🔐/🚀) con stili coerenti
+- **Form:** Classi CSS corrette (`form-input`, `form-row`)
 
-## Barra di Navigazione Inferiore
-- **5 icone:** Dashboard, Allenamento, Appuntamenti, Coach AI, Profilo
-- **Design:** Solo mobile (`lg:hidden`), tema scuro con accenti oro
-- **Funzionalità:** Navigazione completa tra sezioni
+## 🔧 INTEGRAZIONI
 
-## Funzionalità Accessibili
-- **Dashboard:** Metriche personalizzate e statistiche
-- **Allenamento:** Categorie workout e esercizi
-- **Appuntamenti:** Calendario base e gestione
-- **Coach AI:** Chat base, piani personalizzati, suggerimenti AI
-- **Profilo:** Gestione informazioni utente, achievement, progressi, impostazioni
-- **Abbonamenti:** Piani BASIC, ADVANCED, PRO con feature dettagliate
-- **Timer:** Timer countdown per allenamenti con controlli completi
-- **Note:** Creazione, modifica, eliminazione note personali
-- **Pagine Legali:** Termini e Condizioni, Privacy Policy GDPR compliant
+### **Supabase:**
+- **URL:** https://kfxoyucatvvcgmqalxsg.supabase.co
+- **Client:** `src/integrations/supabase/client.ts`
+- **Funzionalità:** Autenticazione, database, storage
 
-## Funzioni Premium (Bloccate)
-- **Azioni Rapide:** "Prenota Sessione" e "Chat AI Coach" con overlay
-- **Prossimi Appuntamenti:** Sezione completa con overlay
-- **Professionisti:** Lista professionisti con overlay
-- **Insights AI:** Analisi avanzata bloccata
-- **Albo delle medaglie:** Sezione achievement con overlay
-- **Contatto Professionisti:** Prenotazioni premium bloccate
+### **Voiceflow:**
+- **API Key:** VFDM.68950f3b3d888b1dd3ae2656.kmWvcOjRYmgvmJnT
+- **Version ID:** 64dbb6696a8fab0013dba194
+- **Funzionalità:** Chat AI, escalation flow
 
-## Chat PrimeBot - Modal Overlay
-### **Funzionalità Implementate:**
-- **Click sulla card AI Coach** → Apertura chat a tutto schermo
-- **Backdrop sfocato** con `bg-black/20 backdrop-blur-sm`
-- **App sfocata dietro** ma visibile
-- **Interazione solo con chat** quando modal è aperta
-- **Click outside per chiudere** - Backdrop interattivo
-- **Pulsante X nell'header** - Solo in modal per chiudere
+### **Make/Slack:**
+- **Escalation:** Voiceflow → Make → Slack
+- **Configurazione:** Automatica tramite webhook
 
-### **UI Ottimizzata:**
-- **Area messaggi grigia:** `bg-gray-300` per contrasto
-- **Bubble messaggi bot bianchi:** `bg-white` per leggibilità
-- **Design coerente:** Bordi oro, header, layout identico
-- **Responsive:** `max-w-2xl` per dimensioni ottimali
+## 🚧 ZONE DI SVILUPPO SICURE
 
-### **Struttura Modal:**
-```typescript
-{isFullScreenChat && (
-  <div className="fixed inset-0 z-50">
-    {/* Backdrop sfocato */}
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={closeFullScreenChat} />
-    
-    {/* Chat Modal centrato */}
-    <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-      <div className="w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
-        <ChatInterface ref={chatInterfaceRef} onClose={closeFullScreenChat} />
-      </div>
-    </div>
-  </div>
-)}
+### **✅ Modifiche Permesse:**
+- `src/components/` - Componenti UI
+- `src/services/` - Servizi e utilities
+- `src/landing/` - Landing page
+- `src/utils/` - Utility functions
+
+### **⚠️ Modifiche con Cautela:**
+- `src/pages/` - Pagine principali
+- `src/hooks/` - Custom hooks
+- `src/lib/` - Librerie
+
+### **🚫 Modifiche Vietate:**
+- `package.json` - Versioni dipendenze
+- `vite.config.ts` - Configurazione build
+- `.env` - Variabili d'ambiente
+- Entry points principali
+
+## 🎯 ACCEPTANCE CRITERIA
+
+### **Server di Sviluppo:**
+- ✅ Server attivo e raggiungibile su localhost:8081
+- ✅ Hot Module Replacement (HMR) funzionante
+- ✅ Accesso LAN disponibile
+- ✅ Nessun errore di dipendenze
+
+### **Layout Autenticazione:**
+- ✅ UI pulita e ordinata come design originale
+- ✅ Campi allineati e tipografia coerente
+- ✅ Pulsanti uniformi con icone
+- ✅ Spaziature corrette e centratura viewport
+- ✅ Tema e colori invariati
+- ✅ Funzionalità login/registrazione Supabase funzionante
+
+### **Repository Git:**
+- ✅ Tutti i conflitti risolti
+- ✅ Push completato con successo
+- ✅ Branch main sincronizzato
+- ✅ Commit history pulita
+
+## 📊 STATISTICHE LAVORO
+
+### **Oggi (9 Agosto):**
+- **Tempo lavorato:** ~4 ore
+- **File modificati:** 30+
+- **Conflitti risolti:** 4
+- **Errori risolti:** 5+
+- **Dipendenze aggiornate:** 3
+
+### **Totale Progetto:**
+- **Commits:** 50+
+- **Branches:** 3
+- **Integrazioni:** 4 (Supabase, Voiceflow, Make, Slack)
+- **Componenti:** 20+
+
+## 🔍 LEZIONI IMPARATE
+
+1. **Working Directory:** Sempre verificare di essere nella cartella corretta
+2. **Versioni Dipendenze:** Allineare sempre le versioni per evitare conflitti
+3. **Git Merge:** Risolvere conflitti prima di continuare lo sviluppo
+4. **Documentazione:** Mantenere aggiornata la documentazione per ogni modifica
+5. **Testing:** Verificare sempre il funzionamento dopo le modifiche
+
+## 🚀 PROSSIMI PASSI
+
+### **Immediati:**
+1. **Test completo funzionalità:**
+   - Verifica registrazione/login
+   - Test navigazione dashboard
+   - Controllo PrimeBot chat
+   - Validazione integrazioni
+
+2. **Ottimizzazione performance:**
+   - Bundle size analysis
+   - Lazy loading components
+   - Image optimization
+
+### **A medio termine:**
+1. **Testing approfondito:**
+   - Cross-browser testing
+   - Mobile responsiveness
+   - Error scenarios
+
+2. **Documentazione:**
+   - API documentation
+   - User guide
+   - Developer guide
+
+## 📝 NOTE IMPORTANTI
+
+### **Comandi Utili:**
+```bash
+# Avvio server
+cd performance-prime-pulse
+npm run dev
+
+# Kill porta occupata
+lsof -ti :8081 | xargs kill -9
+
+# Pull e merge
+git pull origin main
+git add .
+git commit -m "feat: descrizione"
+git push origin main
 ```
 
-### **Componenti Modificati:**
-- **AICoachPrime.tsx:** Stato modal, funzioni open/close, backdrop
-- **ChatInterface.tsx:** Prop onClose, pulsante X, area messaggi grigia, bubble bianchi
+### **URLs Importanti:**
+- **Sviluppo:** http://localhost:8081/
+- **Rete:** http://192.168.1.120:8081/
+- **Supabase:** https://kfxoyucatvvcgmqalxsg.supabase.co
+- **Repository:** https://github.com/Mattiasilvester/performance-prime-pulse
 
-## Landing Page - Ultime Modifiche
-### **Layout Alternato**
-```
-Hero Section (NERA) → Features Section (GRIGIA) → CTA Section (NERA) → Footer (GRIGIO)
-```
+---
 
-### **Sezione Founders**
-- **Posizione:** CTA Section (sotto bottone "Scansiona e inizia ora")
-- **Layout:** Card orizzontali su desktop/tablet, verticali su mobile
-- **Responsive:** `flex-direction: row` su desktop, `column` su mobile
-
-### **Nuovo Contenuto Hero**
-- **Blocco descrittivo:** Aggiunto sotto tagline principale
-- **Performance Prime:** Titolo con descrizioni
-- **Card grigie:** "Cosa puoi fare" e "Perché è diversa" con sfondo grigio
-- **Spacing ottimizzato:** Ridotto spazio verticale tra elementi
-- **Linea divisoria oro:** Sostituisce testi specifici
-
-### **Card Features**
-- **Tagline allenamenti:** Aggiunta sotto le 6 card features
-- **Card dedicata:** "Scegli il tuo tipo di allenamento" trasformata in card separata
-- **Posizionamento:** Centrata sotto la card "Community"
-- **Styling:** Identico alle altre card con icona e gradient
-
-### **Zona Sicura per Sviluppo**
-```
-src/landing/                   # ← Landing page (MODIFICABILE)
-├── pages/
-├── components/
-└── styles/
-```
-
-## Sistema Parser Sicuro - ELIMINAZIONE CONTENUTI BINARI
-### **Funzionalità Implementate:**
-- **SafeTextExtractor** - Sistema completo di estrazione testo sicuro
-- **Pulizia aggressiva** - Rimuove `/BaseFont`, `/Encoding`, `endobj`, `stream`, `xref`, etc.
-- **Filtro righe intelligente** - Elimina righe con solo simboli tecnici
-- **Rilevamento sezioni automatico** - Identifica riscaldamento, scheda giornaliera, stretching
-- **Formato JSON strutturato** - Output esattamente come richiesto
-- **Correzioni automatiche** - Normalizzazione Unicode, ricostruzione sillabazioni
-- **Suggerimenti automatici** - Riscaldamento e stretching intelligenti
-- **Pattern robusti** - Riconoscimento esercizi con pattern avanzati
-- **Debug completo** - Informazioni dettagliate di processamento
-
-### **Principi Chiave del Parser Sicuro:**
-1. **MAI restituire contenuti binari** - Solo testo leggibile dall'utente
-2. **Filtri aggressivi** - Rimuove TUTTI i metadati PDF
-3. **Pattern conservativi** - Meglio non parsare che parsare male
-4. **Validazione rigorosa** - Verifica che i dati siano quelli attesi
-5. **Debug dettagliato** - Mostra esattamente cosa sta leggendo
-
-### **Architettura Parser Sicuro:**
-```typescript
-class SafeTextExtractor {
-  async extractSafeText(file: File): Promise<SafeTextResult> {
-    // STEP 1: Estrazione grezza
-    const rawText = await this.extractRawText(file);
-    
-    // STEP 2: Pulizia aggressiva di contenuti binari
-    const cleanedText = this.cleanBinaryContent(rawText);
-    
-    // STEP 3: Rilevamento sezioni
-    const sections = this.detectSections(cleanedText);
-    
-    // STEP 4: Validazione finale
-    const validation = this.validateExtractedText(cleanedText);
-    
-    return {
-      cleanText: cleanedText,
-      sections,
-      metadata: {
-        hasMultipleDays: sections.detectedDays?.length > 1,
-        detectedDays: sections.detectedDays || [],
-        extractionMethod: validation.extractionMethod,
-        confidence: validation.confidence,
-        warnings: validation.warnings
-      }
-    };
-  }
-}
-```
-
-### **Pulizia Aggressiva Contenuti Binari:**
-```typescript
-private cleanBinaryContent(text: string): string {
-  return text
-    // Rimuovi metadati PDF
-    .replace(/\/[A-Za-z]+\s+[^\n]+/g, '') // /BaseFont, /Encoding, etc.
-    .replace(/endobj\s*\d+/g, '') // endobj
-    .replace(/obj\s*\d+\s*\d+/g, '') // obj
-    .replace(/stream[\s\S]*?endstream/g, '') // stream content
-    .replace(/xref[\s\S]*?trailer/g, '') // xref section
-    .replace(/trailer[\s\S]*?startxref/g, '') // trailer
-    .replace(/startxref\s*\d+/g, '') // startxref
-    .replace(/%%EOF/g, '') // EOF
-    
-    // Rimuovi caratteri di controllo
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-    
-    // Rimuovi sequenze binarie comuni
-    .replace(/[^\x20-\x7E\nàèéìòùÀÈÉÌÒÙ]/g, ' ')
-    
-    // Rimuovi righe con solo simboli tecnici
-    .split('\n')
-    .filter(line => {
-      const trimmed = line.trim();
-      if (!trimmed) return false;
-      
-      // Rimuovi righe con solo simboli tecnici
-      const technicalPatterns = [
-        /^\/[A-Za-z]+/, // /BaseFont, etc.
-        /^obj\s*\d+/, // obj
-        /^endobj/, // endobj
-        /^stream/, // stream
-        /^endstream/, // endstream
-        /^xref/, // xref
-        /^trailer/, // trailer
-        /^startxref/, // startxref
-        /^%%/, // Comments
-        /^\d+\s+\d+\s+obj/, // Object references
-        /^[0-9a-fA-F]{32,}/, // Long hex strings
-        /^[^\w\sàèéìòùÀÈÉÌÒÙ]{10,}/, // Long sequences of symbols
-      ];
-      
-      return !technicalPatterns.some(pattern => pattern.test(trimmed));
-    })
-    .join('\n')
-    
-    // Normalizza spazi
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-```
-
-### **Formato JSON Strutturato:**
-```json
-{
-  "riscaldamento": [
-    {
-      "nome": "Mobilità articolare generale",
-      "serie": 1,
-      "ripetizioni_durata": "5 min",
-      "riposo": null,
-      "note": "Aggiunto automaticamente",
-      "confidence": 0.1
-    }
-  ],
-  "giorno": "Giorno 1",
-  "esercizi": [
-    {
-      "nome": "Squat",
-      "serie": 4,
-      "ripetizioni_durata": "8-10",
-      "riposo": "90s",
-      "note": "Controllato",
-      "confidence": 0.8
-    }
-  ],
-  "stretching": [
-    {
-      "nome": "Stretching generale",
-      "serie": 1,
-      "ripetizioni_durata": "5 min",
-      "riposo": null,
-      "note": "Aggiunto automaticamente",
-      "confidence": 0.1
-    }
-  ]
-}
-```
-
-### **Correzioni Automatiche:**
-```typescript
-// Normalizzazione Unicode
-× → x
-–/— → -
-'/'' → '
-… → ...
-\u00A0 → spazio normale
-Soft hyphen \u00AD → rimuovi
-Legature: ﬀ→ff, ﬁ→fi, ﬂ→fl, ﬃ→ffi, ﬄ→ffl
-
-// Ricostruzione sillabazioni
-([A-Za-z])-\n([a-z]) → $1$2
-riga vuota = separatore sezione
-singolo \n → spazio
-
-// Correzioni OCR
-O↔0, l↔1, S↔5, B↔8 (solo in contesto numerico)
-minuti|min|mins → min
-secondi|sec|s → sec
-```
-
-### **Pattern Robusti per Esercizi:**
-```typescript
-const patterns = {
-  esercizio: [
-    // "Nome: 3x12" o "Nome 3x12"
-    /^(.+?):?\s+(\d+)[x×](\d+(?:-\d+)?)\s*(.*)$/i,
-    // "Nome: 3x30 sec" o "Nome 3x30 secondi"
-    /^(.+?):?\s+(\d+)[x×](\d+)\s*(sec|secondi|min|minuti)\s*(.*)$/i,
-    // "Nome: 3x max reps"
-    /^(.+?):?\s+(\d+)[x×]\s*max\s+reps?\s*(.*)$/i,
-    // "Nome: 3x tempo" (senza specificare unità)
-    /^(.+?):?\s+(\d+)[x×](\d+)\s*(.*)$/i,
-  ],
-  riposo: [
-    /riposo\s*(\d+)\s*(sec|secondi|min|minuti)/i,
-    /(\d+)\s*(sec|secondi|min|minuti)\s*riposo/i,
-  ],
-  note: [
-    /\((.*?)\)/, // Note tra parentesi
-    /\[(.*?)\]/, // Note tra parentesi quadre
-    /note:\s*(.*)/i, // Note esplicite
-  ]
-};
-```
-
-### **Suggerimenti Automatici:**
-```typescript
-// Riscaldamento automatico
-private suggestRiscaldamento(esercizi: ParsedEsercizio[]): ParsedEsercizio[] {
-  const riscaldamento: ParsedEsercizio[] = [
-    {
-      nome: 'Mobilità articolare generale',
-      serie: 1,
-      ripetizioni_durata: '5 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    },
-    {
-      nome: 'Cardio leggero',
-      serie: 1,
-      ripetizioni_durata: '5 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    }
-  ];
-  
-  // Aggiungi riscaldamento specifico per gli esercizi trovati
-  const hasSquat = esercizi.some(e => e.nome.toLowerCase().includes('squat'));
-  const hasPanca = esercizi.some(e => e.nome.toLowerCase().includes('panca'));
-  const hasStacco = esercizi.some(e => e.nome.toLowerCase().includes('stacco'));
-  
-  if (hasSquat || hasPanca || hasStacco) {
-    riscaldamento.push({
-      nome: 'Mobilità spalle e schiena',
-      serie: 1,
-      ripetizioni_durata: '3 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    });
-  }
-  
-  return riscaldamento;
-}
-
-// Stretching automatico
-private suggestStretching(esercizi: ParsedEsercizio[]): ParsedEsercizio[] {
-  const stretching: ParsedEsercizio[] = [
-    {
-      nome: 'Stretching generale',
-      serie: 1,
-      ripetizioni_durata: '5 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    }
-  ];
-  
-  // Aggiungi stretching specifico
-  const hasUpperBody = esercizi.some(e => 
-    e.nome.toLowerCase().includes('panca') || 
-    e.nome.toLowerCase().includes('rematore') ||
-    e.nome.toLowerCase().includes('trazioni')
-  );
-  
-  const hasLowerBody = esercizi.some(e => 
-    e.nome.toLowerCase().includes('squat') || 
-    e.nome.toLowerCase().includes('stacco') ||
-    e.nome.toLowerCase().includes('leg')
-  );
-  
-  if (hasUpperBody) {
-    stretching.push({
-      nome: 'Stretching spalle e braccia',
-      serie: 1,
-      ripetizioni_durata: '3 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    });
-  }
-  
-  if (hasLowerBody) {
-    stretching.push({
-      nome: 'Stretching gambe e schiena',
-      serie: 1,
-      ripetizioni_durata: '3 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    });
-  }
-  
-  return stretching;
-}
-```
-
-## Prossimi Sviluppi
-- 🔄 **Onboarding intelligente** - AI Coach guida nuovi utenti
-- 🔄 **OCR Tesseract.js** - Implementazione completa per immagini
-- 🔄 **Selezione giorni multipli** - UI per scegliere giorno specifico
-- 🔄 **Modal di modifica esercizi** - Interfaccia per modificare esercizi
-- 🔄 **Conferma eliminazione** - Sistema di conferma per eliminare esercizi
-- 🔄 **Ottimizzazioni performance** - Miglioramento velocità parsing
-- 🔄 **Test con PDF reali** - Validazione con file di produzione
-- 🔄 **Ripristino analytics** con error handling migliorato
-- 🔄 **Features sperimentali** in `src/development/`
-- 🔄 **Testing e ottimizzazioni**
-- 🔄 **Analytics e tracking**
-- 🔄 **Mobile app deployment**
-- 🔄 **Advanced AI features**
-- 🔄 **Test dominio personalizzato**
-- 🔄 **Ottimizzazioni landing page**
-- 🔄 **OCR avanzato** - Integrazione Tesseract.js per analisi reale
-- 🔄 **Machine Learning** - Miglioramento riconoscimento esercizi
-- 🔄 **API OCR** - Servizio esterno per analisi più accurate
-- 🔄 **Batch processing** - Analisi multipli file contemporaneamente
-- 🔄 **Test parser rigoroso** - Verifica con PDF reali
-- 🔄 **Ottimizzazioni performance** - Miglioramento velocità parsing
-- 🔄 **UI risultati** - Miglioramento visualizzazione esercizi estratti
-
-## Motto Operativo
-**"Se funziona, non toccarlo - sviluppa a fianco!"**
-
-Il deploy su `performanceprime.it` è **PERFETTO e FUNZIONANTE** con dominio personalizzato configurato, landing page ottimizzata, chat PrimeBot con modal overlay implementata e sistema parser sicuro per analisi file. Proteggi il codice di produzione e sviluppa nuove features nelle zone sicure. 
+**Ultimo aggiornamento:** 9 Agosto 2025, 19:45  
+**Prossima revisione:** 10 Agosto 2025  
+**Stato progetto:** ✅ ATTIVO E FUNZIONANTE 
