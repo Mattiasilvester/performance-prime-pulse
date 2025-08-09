@@ -52,39 +52,59 @@ export const UserProfile = () => {
     if (!profile) return;
     
     try {
+      console.log('🔄 Iniziando salvataggio profilo...');
+      console.log('📝 Dati da salvare:', form);
+      
       let avatarUrl = profile.avatarUrl;
       
       // Upload new avatar if one was selected
       if (imageFile) {
+        console.log('📸 Caricamento avatar...');
         avatarUrl = await uploadAvatar(imageFile);
+        console.log('✅ Avatar caricato come data URL');
+      } else if (profileImage) {
+        // Se non c'è imageFile ma c'è profileImage, usa quello
+        console.log('📸 Usando immagine esistente...');
+        avatarUrl = profileImage;
       }
       
+      console.log('💾 Salvataggio profilo...');
       await updateUserProfile({
         name: form.name,
         surname: form.surname,
         birthPlace: form.birthPlace,
         avatarUrl
       });
+      console.log('✅ Profilo salvato in localStorage');
+      
+      // Ricarica i dati dal localStorage dopo il salvataggio
+      console.log('🔄 Ricaricamento profilo...');
+      const updatedProfile = await fetchUserProfile();
+      console.log('📋 Profilo ricaricato:', updatedProfile);
+      
+      if (updatedProfile) {
+        setProfile(updatedProfile);
+        setForm({
+          name: updatedProfile.name,
+          surname: updatedProfile.surname,
+          birthPlace: updatedProfile.birth_place,
+        });
+        console.log('✅ Stato componente aggiornato');
+      }
       
       setEditing(false);
-      setProfile({
-        ...profile,
-        name: form.name,
-        surname: form.surname,
-        birth_place: form.birthPlace,
-        avatarUrl
-      });
       
       // Reset image states
       setImageFile(null);
       setProfileImage(null);
       
+      console.log('🎉 Salvataggio completato con successo!');
       toast({
         title: "Profilo aggiornato con successo!",
-        duration: 3000,
+        duration: 2000,
       });
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('❌ Errore durante il salvataggio:', error);
       toast({
         title: "Errore nell'aggiornamento del profilo",
         variant: "destructive",
@@ -150,7 +170,7 @@ export const UserProfile = () => {
           <div className="relative w-24 h-24 bg-white rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-4xl overflow-hidden">
             {profileImage ? (
               <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-            ) : profile.avatarUrl && profile.avatarUrl.startsWith('http') ? (
+            ) : profile.avatarUrl && (profile.avatarUrl.startsWith('http') || profile.avatarUrl.startsWith('data:image/')) ? (
               <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               <span>{profile.avatarUrl || '👨‍💼'}</span>

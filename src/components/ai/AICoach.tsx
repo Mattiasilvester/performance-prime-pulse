@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { AICoachPrime } from './AICoachPrime';
 import { AIInsights } from './AIInsights';
 import { CustomPlanModal } from './CustomPlanModal';
@@ -55,41 +55,51 @@ export const AICoach = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-pp-gold">AI Coach Prime</h2>
+          <h2 className="text-2xl font-bold text-pp-gold">PrimeBot</h2>
           <p className="text-white">Il tuo assistente personale per l'allenamento</p>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-[#333333] mb-6">
-          <TabsTrigger 
-            value="prime" 
-            className="text-white data-[state=active]:bg-[#EEBA2B] data-[state=active]:text-black"
+      <div className="w-full">
+        <div className="grid w-full grid-cols-2 bg-[#333333] mb-6 p-1 rounded-lg" style={{ padding: '4px', borderRadius: '8px' }}>
+          <button 
+            onClick={() => setActiveTab('prime')}
+            className={`text-white rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 flex items-center justify-center ${
+              activeTab === 'prime' ? 'bg-[#EEBA2B] text-black' : 'bg-transparent'
+            }`}
+            style={{ borderRadius: '6px', padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            AI Coach Prime
-          </TabsTrigger>
-          <TabsTrigger 
-            value="insights" 
-            className="text-white data-[state=active]:bg-[#EEBA2B] data-[state=active]:text-black relative"
+            PrimeBot
+          </button>
+          <button 
+            onClick={() => setActiveTab('insights')}
+            className={`text-white rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 flex items-center justify-center ${
+              activeTab === 'insights' ? 'bg-[#EEBA2B] text-black' : 'bg-transparent'
+            }`}
+            style={{ borderRadius: '6px', padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            Insights AI
-            <span className="absolute top-1 right-1 text-xs">🔒</span>
-          </TabsTrigger>
-        </TabsList>
+            <span className="flex items-center gap-2">
+              Insights AI
+              <span className="text-xs">🔒</span>
+            </span>
+          </button>
+        </div>
 
-        <TabsContent value="prime">
-          <AICoachPrime 
-            onRequestPlan={() => setPlanModal(true)} 
-            chatInterfaceRef={chatInterfaceRef}
-          />
-        </TabsContent>
+        {activeTab === 'prime' && (
+          <div>
+            <AICoachPrime 
+              onRequestPlan={() => setPlanModal(true)} 
+              chatInterfaceRef={chatInterfaceRef}
+            />
+          </div>
+        )}
 
-        <TabsContent value="insights">
+        {activeTab === 'insights' && (
           <div className="insights-ai">
             <AIInsights />
           </div>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
 
       {/* Modal per Piani Personalizzati */}
       {isPlanModalOpen && (

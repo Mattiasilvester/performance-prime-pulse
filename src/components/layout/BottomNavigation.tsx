@@ -11,7 +11,7 @@ export const BottomNavigation = () => {
     { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/app' },
     { id: 'workouts', label: 'Allenamento', icon: Dumbbell, path: '/workouts' },
     { id: 'schedule', label: 'Appuntamenti', icon: Calendar, path: '/schedule' },
-    { id: 'ai-coach', label: 'Coach AI', icon: Bot, path: '/ai-coach' },
+    { id: 'ai-coach', label: 'PrimeBot', icon: Bot, path: '/ai-coach' },
     { id: 'profile', label: 'Profilo', icon: User, path: '/profile' },
   ];
 

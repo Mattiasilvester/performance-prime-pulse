@@ -3,6 +3,7 @@ import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { Send, Bot, User, Copy, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -48,23 +49,82 @@ export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void },
         }));
       } catch (error) {
         console.error('Errore nel parsing dei messaggi salvati:', error);
-        return initialMessages;
+        return [];
       }
     }
-    return initialMessages;
+    return [];
   });
   
   const [inputText, setInputText] = useState('');
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [isNewUser, setIsNewUser] = useState<boolean>(false);
   const { toast } = useToast();
+
+  // Controlla se è un nuovo utente al mount
+  useEffect(() => {
+    const checkNewUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        const userId = user?.id || 'guest';
+        const userName = (user?.user_metadata as any)?.full_name || user?.email?.split('@')[0] || 'Utente';
+        
+        const userOnboarded = localStorage.getItem(`user_onboarded_${userId}`);
+        const isFirstVisit = !sessionStorage.getItem(`first_visit_${userId}`);
+        
+        if (!userOnboarded && isFirstVisit && messages.length === 0) {
+          setIsNewUser(true);
+          sessionStorage.setItem(`first_visit_${userId}`, 'true');
+          
+          // Messaggio di benvenuto automatico per nuovo utente
+          const welcomeMessage: Message = {
+            id: 'welcome',
+                          text: `Ciao ${userName} 👋\n\nBenvenuto in Performance Prime! Sono il tuo PrimeBot personale e ti guiderò attraverso l'app.\n\n🎯 COSA PUOI FARE:\n• 📊 Dashboard - Monitora i tuoi progressi\n• 💪 Allenamenti - Crea e gestisci workout\n• 📅 Appuntamenti - Prenota sessioni\n• 🤖 PrimeBot - Chiedi consigli personalizzati\n• 👤 Profilo - Gestisci il tuo account\n\nVuoi che ti spieghi una sezione specifica o hai domande?`,
+            sender: 'ai',
+            timestamp: new Date(),
+          };
+          
+          setMessages([welcomeMessage]);
+        } else if (messages.length === 0) {
+          // Utente esistente - messaggio normale
+          setMessages([{
+            id: '1',
+            text: 'Ciao Marco! Sono il tuo AI Coach. Come posso aiutarti oggi con il tuo allenamento?',
+            sender: 'ai',
+            timestamp: new Date(),
+          }]);
+        }
+      } catch (error) {
+        console.error('Errore nel controllo nuovo utente:', error);
+        // Fallback a messaggio normale
+        if (messages.length === 0) {
+          setMessages([{
+            id: '1',
+            text: 'Ciao Marco! Sono il tuo AI Coach. Come posso aiutarti oggi con il tuo allenamento?',
+            sender: 'ai',
+            timestamp: new Date(),
+          }]);
+        }
+      }
+    };
+    
+    checkNewUser();
+  }, []);
 
   // Salva i messaggi nel localStorage ogni volta che cambiano
   useEffect(() => {
     localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
   }, [messages]);
 
-  const sendMessage = (text: string) => {
+  const sendMessage = async (text: string) => {
     if (!text.trim()) return;
+
+    // Marca utente come onboardato dopo la prima interazione
+    if (isNewUser) {
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || 'guest';
+      localStorage.setItem(`user_onboarded_${userId}`, 'true');
+      setIsNewUser(false);
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -372,6 +432,25 @@ Vuoi un piano specifico? Hai domande su nutrizione? Cerchi un workout per oggi?
 Fammi sapere come posso aiutarti!`;
   };
 
+  // Quick replies per onboarding
+  const onboardingQuestions = [
+    'Mostrami la Dashboard',
+    'Come creare un allenamento?',
+    'Spiegami le funzionalità premium',
+    'Come tracciare i progressi?',
+    'Quali sono i prossimi passi?'
+  ];
+
+  // Quick replies normali
+  const normalQuestions = [
+    'Come posso migliorare la mia resistenza?',
+    'Quale workout è meglio per oggi?',
+    'Consigli per la nutrizione pre-allenamento',
+    'Come posso raggiungere i miei obiettivi?'
+  ];
+
+  const questionsToShow = isNewUser ? onboardingQuestions : normalQuestions;
+
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] h-[600px] flex flex-col">
       {/* Header */}
@@ -382,7 +461,7 @@ Fammi sapere come posso aiutarti!`;
               <Bot className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">AI Coach Prime</h3>
+              <h3 className="font-semibold text-white">PrimeBot</h3>
               <p className="text-sm text-purple-100">Online • Sempre disponibile</p>
             </div>
           </div>
@@ -447,7 +526,7 @@ Fammi sapere come posso aiutarti!`;
       {/* Suggested Questions */}
       <div className="p-4 border-t border-[#EEBA2B]">
         <div className="flex flex-wrap gap-2 mb-3">
-          {suggestedQuestions.map((question, index) => (
+          {questionsToShow.map((question, index) => (
             <button
               key={index}
               onClick={() => sendMessage(question)}

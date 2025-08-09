@@ -3,11 +3,11 @@ const environments = {
   development: {
     SUPABASE_URL: "https://kfxoyucatvvcgmqalxsg.supabase.co",
     SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmeG95dWNhdHZ2Y2dtcWFseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyNDc2NTksImV4cCI6MjA2NTgyMzY1OX0.hQhfOogGGc9kvOGvxjOv6QTKxSysbTa6En-0wG9_DCY",
-    APP_URL: "http://localhost:8080",
+    APP_URL: "http://localhost:8081",
     REDIRECT_URLS: [
-      "http://localhost:8080/auth",
-      "http://localhost:8080/reset-password",
-      "http://localhost:8080/dashboard",
+      "http://localhost:8081/auth",
+      "http://localhost:8081/reset-password",
+      "http://localhost:8081/dashboard",
       "http://localhost:8081/auth",
       "http://localhost:8081/reset-password",
       "http://localhost:8081/dashboard",

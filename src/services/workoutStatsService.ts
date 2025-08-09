@@ -8,6 +8,7 @@ export interface WorkoutStats {
 
 export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
   try {
+    console.log('Fetching workout stats...');
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { total_workouts: 0, total_hours: 0 };
 
@@ -21,7 +22,7 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
     if (!statsError && stats) {
       return {
         total_workouts: stats.total_workouts || 0,
-        total_hours: Math.round((stats.total_hours || 0) / 60 * 10) / 10 // Converti minuti in ore
+        total_hours: Math.round((stats.total_hours || 0) / 60 * 10) / 10
       };
     }
 
@@ -41,6 +42,7 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
     const totalMinutes = workouts?.reduce((sum, workout) => sum + (workout.total_duration || 0), 0) || 0;
     const totalHours = Math.round(totalMinutes / 60 * 10) / 10;
 
+    console.log('Real stats calculated:', { totalWorkouts, totalHours });
     return {
       total_workouts: totalWorkouts,
       total_hours: totalHours

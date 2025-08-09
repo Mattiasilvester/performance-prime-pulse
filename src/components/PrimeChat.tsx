@@ -1,17 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { vfPatchState, vfInteract, parseVF } from '@/lib/voiceflow';
+import { fetchUserProfile } from '@/services/userService';
 
 type Msg = { id: string; role: 'user' | 'bot'; text: string };
 
 export default function PrimeChat() {
-  const [msgs, setMsgs] = useState<Msg[]>([
-    {
-      id: 'welcome',
-      role: 'bot',
-      text: 'Ciao Utente! Sono PrimeBot, il tuo AI Coach personale. Come posso aiutarti oggi con il tuo allenamento?'
-    }
-  ]);
+  const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -19,6 +14,7 @@ export default function PrimeChat() {
   const [userId, setUserId] = useState<string>('guest-' + crypto.randomUUID());
   const [userName, setUserName] = useState<string>('Performance Prime User');
   const [userEmail, setUserEmail] = useState<string>('');
+  const [isNewUser, setIsNewUser] = useState<boolean>(false);
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -29,15 +25,40 @@ export default function PrimeChat() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       const id = user?.id || userId;
-      const fullName =
-        (user?.user_metadata as any)?.full_name ||
-        user?.email?.split('@')[0] ||
-        'Performance Prime User';
+      
+      // Usa il servizio userService per ottenere il nome utente
+      const userProfile = await fetchUserProfile();
+      const fullName = userProfile?.name || 'Utente';
       const email = user?.email || '';
 
       setUserId(id);
       setUserName(fullName);
       setUserEmail(email);
+
+      // Controlla se è un nuovo utente
+      const userOnboarded = localStorage.getItem(`user_onboarded_${id}`);
+      const isFirstVisit = !sessionStorage.getItem(`first_visit_${id}`);
+      
+      if (!userOnboarded && isFirstVisit) {
+        setIsNewUser(true);
+        sessionStorage.setItem(`first_visit_${id}`, 'true');
+        
+        // Messaggio di benvenuto automatico per nuovo utente
+        const welcomeMessage: Msg = {
+          id: 'welcome',
+          role: 'bot',
+          text: `Ciao ${fullName} 👋\n\nBenvenuto in Performance Prime! Sono il tuo PrimeBot personale e ti guiderò attraverso l'app.\n\n🎯 COSA PUOI FARE:\n• 📊 Dashboard - Monitora i tuoi progressi\n• 💪 Allenamenti - Crea e gestisci workout\n• 📅 Appuntamenti - Prenota sessioni\n• 🤖 PrimeBot - Chiedi consigli personalizzati\n• 👤 Profilo - Gestisci il tuo account\n\nVuoi che ti spieghi una sezione specifica o hai domande?`
+        };
+        
+        setMsgs([welcomeMessage]);
+      } else {
+        // Utente esistente - messaggio normale
+        setMsgs([{
+          id: 'welcome',
+          role: 'bot',
+          text: `Ciao ${fullName} 👋! Sono PrimeBot, il tuo AI Coach personale. Come posso aiutarti oggi con il tuo allenamento?`
+        }]);
+      }
 
       try {
         await vfPatchState(id, {
@@ -58,6 +79,12 @@ export default function PrimeChat() {
     setMsgs(m => [...m, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
     setInput('');
     setLoading(true);
+
+    // Marca utente come onboardato dopo la prima interazione
+    if (isNewUser) {
+      localStorage.setItem(`user_onboarded_${userId}`, 'true');
+      setIsNewUser(false);
+    }
 
     try {
       const traces = await vfInteract(userId, trimmed);
@@ -84,22 +111,41 @@ export default function PrimeChat() {
     }
   }
 
+  // Quick replies per onboarding
+  const onboardingQuestions = [
+    'Mostrami la Dashboard',
+    'Come creare un allenamento?',
+    'Spiegami le funzionalità premium',
+    'Come tracciare i progressi?',
+    'Quali sono i prossimi passi?'
+  ];
+
+  // Quick replies normali
+  const normalQuestions = [
+    'Come posso migliorare la mia resistenza?',
+    'Quale workout è meglio per oggi?',
+    'Consigli per la nutrizione pre-allenamento',
+    'Come posso raggiungere i miei obiettivi?'
+  ];
+
+  const questionsToShow = isNewUser ? onboardingQuestions : normalQuestions;
+
   return (
     <div className="w-full h-full flex flex-col rounded-2xl border border-[#DAA520] bg-black text-white min-h-[600px]">
       <header className="px-6 py-4 bg-gradient-to-r from-[#DAA520] to-[#B8860B] rounded-t-2xl text-black font-semibold">
-        AI Coach Prime <span className="text-sm">• Online • Sempre disponibile</span>
+        PrimeBot <span className="text-sm">• Online • Sempre disponibile</span>
       </header>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-300 min-h-[400px]">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-300 min-h-[400px] max-h-[400px]">
         {msgs.map(m => (
-          <div
-            key={m.id}
-            className={`max-w-[85%] px-4 py-3 rounded-2xl ${
-              m.role === 'user' ? 'ml-auto bg-yellow-600 text-black' : 'mr-auto bg-white text-black'
-            }`}
-          >
-            {m.text}
-          </div>
+                      <div
+              key={m.id}
+              className={`max-w-[85%] px-4 py-3 rounded-2xl ${
+                m.role === 'user' ? 'ml-auto bg-yellow-600 text-black' : 'mr-auto bg-white text-black'
+              }`}
+            >
+              <div className="whitespace-pre-wrap">{m.text}</div>
+            </div>
         ))}
         {loading && (
           <div className="mr-auto px-4 py-3 rounded-2xl bg-white animate-pulse text-black">
@@ -110,12 +156,7 @@ export default function PrimeChat() {
 
       <div className="p-6 border-t border-[#DAA520]">
         <div className="grid grid-cols-2 gap-3 mb-4">
-          {[
-            'Come posso migliorare la mia resistenza?',
-            'Quale workout è meglio per oggi?',
-            'Consigli per la nutrizione pre-allenamento',
-            'Come posso raggiungere i miei obiettivi?'
-          ].map(q => (
+          {questionsToShow.map(q => (
             <button
               key={q}
               onClick={() => send(q)}
