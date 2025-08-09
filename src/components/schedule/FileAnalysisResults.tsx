@@ -1,221 +1,220 @@
-import { useState } from 'react';
-import { X, Check, AlertTriangle, Edit3, FileText, Flame, Dumbbell, Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileAnalysisResult, ExtractedExercise, WorkoutSection } from '@/services/fileAnalysis';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { 
+  Dumbbell, 
+  Clock, 
+  Repeat, 
+  Coffee, 
+  FileText, 
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  Calendar
+} from 'lucide-react';
+import { FileAnalysisResult, ExtractedExercise, WorkoutSection } from '../../services/fileAnalysis';
+import { DebugPanel } from './DebugPanel';
 
 interface FileAnalysisResultsProps {
   result: FileAnalysisResult;
-  onAccept: (exercises: ExtractedExercise[], title?: string, duration?: string) => void;
-  onReject: () => void;
-  onEdit: () => void;
+  onClose?: () => void;
 }
 
-export const FileAnalysisResults = ({ result, onAccept, onReject, onEdit }: FileAnalysisResultsProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleAccept = () => {
-    setIsLoading(true);
-    // Combina tutti gli esercizi da tutte le sezioni
-    const allExercises = result.sections.flatMap(section => section.exercises);
-    onAccept(allExercises, result.workoutTitle, result.duration);
-    setIsLoading(false);
-  };
-
-  const confidenceColor = result.confidence > 0.7 ? 'text-green-400' : 
-                         result.confidence > 0.5 ? 'text-yellow-400' : 'text-red-400';
-
-  const confidenceText = result.confidence > 0.7 ? 'Alta' :
-                        result.confidence > 0.5 ? 'Media' : 'Bassa';
-
-  const getSectionIcon = (type: string) => {
-    switch (type) {
-      case 'warmup':
-        return <Flame className="h-4 w-4 text-orange-400" />;
-      case 'workout':
-        return <Dumbbell className="h-4 w-4 text-[#c89116]" />;
-      case 'cooldown':
-        return <Heart className="h-4 w-4 text-green-400" />;
+export const FileAnalysisResults: React.FC<FileAnalysisResultsProps> = ({ 
+  result, 
+  onClose 
+}) => {
+  const getSectionIcon = (sectionName: string) => {
+    switch (sectionName.toLowerCase()) {
+      case 'riscaldamento':
+        return <Clock className="h-4 w-4" />;
+      case 'esercizi principali':
+        return <Dumbbell className="h-4 w-4" />;
+      case 'stretching':
+        return <Coffee className="h-4 w-4" />;
       default:
-        return <Dumbbell className="h-4 w-4 text-gray-400" />;
+        return <FileText className="h-4 w-4" />;
     }
   };
 
-  const getSectionColor = (type: string) => {
-    switch (type) {
-      case 'warmup':
-        return 'border-orange-500/30 bg-orange-950/20';
-      case 'workout':
-        return 'border-[#c89116]/30 bg-[#c89116]/10';
-      case 'cooldown':
-        return 'border-green-500/30 bg-green-950/20';
+  const getSectionColor = (sectionName: string) => {
+    switch (sectionName.toLowerCase()) {
+      case 'riscaldamento':
+        return 'bg-blue-100 text-blue-800';
+      case 'esercizi principali':
+        return 'bg-green-100 text-green-800';
+      case 'stretching':
+        return 'bg-purple-100 text-purple-800';
       default:
-        return 'border-gray-500/30 bg-gray-950/20';
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const totalExercises = result.sections.reduce((sum, section) => sum + section.exercises.length, 0);
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 80) return 'bg-green-100 text-green-800';
+    if (confidence >= 60) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+  };
+
+  const renderExercise = (exercise: ExtractedExercise, index: number) => (
+    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+      <div className="flex-1">
+        <div className="font-medium text-gray-900">{exercise.name}</div>
+        <div className="text-sm text-gray-600 flex items-center gap-4 mt-1">
+          <span className="flex items-center gap-1">
+            <Repeat className="h-3 w-3" />
+            {exercise.sets} x {exercise.reps}
+          </span>
+          {exercise.rest && (
+            <span className="flex items-center gap-1">
+              <Coffee className="h-3 w-3" />
+              {exercise.rest}
+            </span>
+          )}
+        </div>
+        {exercise.notes && (
+          <div className="text-xs text-gray-500 mt-1 italic">
+            {exercise.notes}
+          </div>
+        )}
+      </div>
+      <Badge className={getConfidenceColor(exercise.confidence)}>
+        {exercise.confidence}%
+      </Badge>
+    </div>
+  );
+
+  const renderSection = (section: WorkoutSection) => (
+    <Card key={section.name} className="mb-4">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          {getSectionIcon(section.name)}
+          <span>{section.name}</span>
+          <Badge className={getSectionColor(section.name)}>
+            {section.exercises.length} esercizi
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {section.exercises.map((exercise, index) => renderExercise(exercise, index))}
+      </CardContent>
+    </Card>
+  );
+
+  // Controlla se ci sono warnings critici
+  const hasCriticalWarnings = result.metadata.warnings.some(warning => 
+    warning.includes('PDF non contiene testo') || 
+    warning.includes('Regex non hanno trovato match')
+  );
 
   return (
     <div className="space-y-4">
-      {/* Header con informazioni */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-[#c89116]" />
-          <h3 className="text-white font-medium">Risultati Analisi</h3>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-gray-400 text-sm">Confidenza:</span>
-          <span className={`text-sm font-medium ${confidenceColor}`}>
-            {confidenceText} ({Math.round(result.confidence * 100)}%)
-          </span>
-        </div>
-      </div>
-
-      {/* Informazioni workout */}
-      {(result.workoutTitle || result.duration) && (
-        <Card className="bg-black border border-[#c89116]/30">
-          <CardContent className="p-4">
-            <div className="space-y-2">
-              {result.workoutTitle && (
-                <div>
-                  <span className="text-gray-400 text-sm">Titolo: </span>
-                  <span className="text-white font-medium">{result.workoutTitle}</span>
-                </div>
-              )}
-              {result.duration && (
-                <div>
-                  <span className="text-gray-400 text-sm">Durata: </span>
-                  <span className="text-white font-medium">{result.duration} minuti</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Sezioni trovate */}
-      <Card className="bg-black border border-[#c89116]/30">
+      {/* Header con informazioni principali */}
+      <Card>
         <CardHeader>
-          <CardTitle className="text-[#c89116] text-lg">
-            Sezioni Riconosciute ({result.sections.length}) - {totalExercises} Esercizi
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              {result.workoutTitle}
+            </div>
+            <Badge className={getConfidenceColor(result.metadata.confidence)}>
+              {result.metadata.confidence}% accuratezza
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {result.sections.length > 0 ? (
-            <div className="space-y-4">
-              {result.sections.map((section, sectionIndex) => (
-                <div key={sectionIndex} className={`border rounded-lg p-4 ${getSectionColor(section.type)}`}>
-                  {/* Header sezione */}
-                  <div className="flex items-center gap-2 mb-3">
-                    {getSectionIcon(section.type)}
-                    <h4 className="text-white font-medium">{section.title}</h4>
-                    <span className="text-gray-400 text-sm">({section.exercises.length} esercizi)</span>
-                    {section.time && (
-                      <span className="text-orange-400 text-sm">• {section.time}</span>
-                    )}
-                  </div>
-                  
-                  {/* Lista esercizi della sezione */}
-                  {section.exercises.length > 0 ? (
-                    <div className="space-y-2">
-                      {section.exercises.map((exercise, exerciseIndex) => (
-                        <div key={exerciseIndex} className="flex items-center justify-between p-2 bg-gray-900/50 rounded">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[#c89116] font-medium">{exerciseIndex + 1}.</span>
-                              <span className="text-white font-medium">{exercise.name}</span>
-                            </div>
-                            <div className="flex gap-4 text-sm text-gray-400">
-                              {exercise.sets && (
-                                <span>Serie: {exercise.sets}</span>
-                              )}
-                              {exercise.reps && (
-                                <span>Ripetizioni: {exercise.reps}</span>
-                              )}
-                              {exercise.repeats && (
-                                <span>Ripetute: {exercise.repeats}</span>
-                              )}
-                              {exercise.time && (
-                                <span>Tempo: {exercise.time}</span>
-                              )}
-                              {exercise.rest && (
-                                <span>Riposo: {exercise.rest}</span>
-                              )}
-                              {exercise.notes && (
-                                <span>Note: {exercise.notes}</span>
-                              )}
-                            </div>
-                          </div>
-                          <Check className="h-4 w-4 text-green-400" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-2">
-                      <p className="text-gray-400 text-sm">Nessun esercizio riconosciuto in questa sezione</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-gray-500" />
+              <span>Durata stimata: {result.duration}</span>
             </div>
-          ) : (
-            <div className="text-center py-6">
-              <AlertTriangle className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
-              <p className="text-gray-400">Nessuna sezione riconosciuta</p>
-              <p className="text-gray-500 text-sm">Il file potrebbe non contenere sezioni o il formato non è riconosciuto</p>
+            <div className="flex items-center gap-2">
+              <Dumbbell className="h-4 w-4 text-gray-500" />
+              <span>{result.exercises.length} esercizi totali</span>
+            </div>
+          </div>
+          
+          {/* Multi-giorno info */}
+          {result.multiDay && result.daysFound && result.daysFound.length > 0 && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="h-4 w-4 text-blue-600" />
+                <span className="font-medium text-blue-800">Multi-Giorno Rilevato</span>
+              </div>
+              <div className="text-sm text-blue-700">
+                <p>Giorni trovati nel file:</p>
+                <ul className="list-disc list-inside mt-1">
+                  {result.daysFound.map((day, index) => (
+                    <li key={index}>{day}</li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-blue-600">
+                  <strong>Nota:</strong> Viene mostrato solo il primo giorno. Per visualizzare altri giorni, 
+                  carica il file specifico per quel giorno.
+                </p>
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Testo estratto (debug) */}
-      {result.confidence < 0.7 && (
-        <Card className="bg-black border border-yellow-500/30">
-          <CardHeader>
-            <CardTitle className="text-yellow-400 text-sm flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Testo Estratto (Debug)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-gray-900 p-3 rounded text-xs text-gray-300 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto">
-              {result.rawText}
+      {/* Warnings critici */}
+      {hasCriticalWarnings && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            <div className="space-y-1">
+              {result.metadata.warnings
+                .filter(warning => 
+                  warning.includes('PDF non contiene testo') || 
+                  warning.includes('Regex non hanno trovato match')
+                )
+                .map((warning, index) => (
+                  <div key={index} className="text-sm">• {warning}</div>
+                ))}
             </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Warnings non critici */}
+      {result.metadata.warnings.length > 0 && !hasCriticalWarnings && (
+        <Alert className="border-yellow-200 bg-yellow-50">
+          <Info className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="text-yellow-800">
+            <div className="space-y-1">
+              {result.metadata.warnings.map((warning, index) => (
+                <div key={index} className="text-sm">• {warning}</div>
+              ))}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Sezioni esercizi */}
+      {result.sections.length > 0 ? (
+        <div className="space-y-4">
+          {result.sections.map(renderSection)}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="text-center py-8">
+            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">Nessun esercizio trovato nel file</p>
           </CardContent>
         </Card>
       )}
 
-      {/* Azioni */}
-      <div className="flex gap-3">
-        <Button
-          onClick={handleAccept}
-          disabled={isLoading || totalExercises === 0}
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-        >
-          {isLoading ? 'Caricamento...' : 'Accetta Esercizi'}
-        </Button>
-        
-        <Button
-          onClick={onEdit}
-          disabled={isLoading}
-          variant="outline"
-          className="border-[#c89116] text-[#c89116] hover:bg-[#c89116]/10"
-        >
-          <Edit3 className="h-4 w-4 mr-2" />
-          Modifica
-        </Button>
-        
-        <Button
-          onClick={onReject}
-          disabled={isLoading}
-          variant="outline"
-          className="border-gray-600 text-gray-300 hover:bg-gray-800"
-        >
-          <X className="h-4 w-4 mr-2" />
-          Rifiuta
-        </Button>
-      </div>
+      {/* Debug Panel (solo se DEBUG_ANALYSIS è attivo) */}
+      {result.metadata.debug && (
+        <DebugPanel
+          debugInfo={result.metadata.debug}
+          warnings={result.metadata.warnings}
+          confidence={result.metadata.confidence}
+          extractionSource={result.metadata.source}
+        />
+      )}
     </div>
   );
 };

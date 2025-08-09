@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useFileAccess } from '@/hooks/useFileAccess';
-import { FileAnalyzer, FileAnalysisResult, ExtractedExercise } from '@/services/fileAnalysis';
+import { FileAnalyzer, FileAnalysisResult, ExtractedExercise } from '../../services/fileAnalysis';
 import { FileAnalysisResults } from './FileAnalysisResults';
 
 interface Exercise {
