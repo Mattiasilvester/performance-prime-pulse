@@ -52,6 +52,16 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 - ✅ **Suggerimenti automatici** - Riscaldamento e stretching intelligenti
 - ✅ **Pattern robusti** - Riconoscimento esercizi con pattern avanzati
 - ✅ **Debug completo** - Informazioni dettagliate di processamento
+- ✅ **PARSER AVANZATO COMPLETATO** - AdvancedWorkoutAnalyzer con estrazione PDF/OCR
+- ✅ **Sistema Debug Implementato** - Log dettagliato con flag DEBUG_ANALYSIS
+- ✅ **Regex Avanzate** - 6 pattern con named groups per parsing preciso
+- ✅ **Gestione Multi-Giorno** - Rilevamento automatico giorni multipli
+- ✅ **Confidence Scoring** - Punteggio accuratezza parsing
+- ✅ **Test Suite Completa** - Validazione completa funzionalità
+- ✅ **Componenti UI Aggiornati** - DebugPanel e FileAnalysisResults
+- ✅ **Browser Compatibility** - Risolti errori pdf-parse con pdfjs-dist
+- ✅ **Import Errors Risolti** - Ricreato fileAnalysis.ts con nuovo parser
+- ✅ **Linter Errors Risolti** - TypeScript compliant
 
 ## Architettura Unificata (Nuova)
 ### **App Unificata (performanceprime.it)**
@@ -93,7 +103,8 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 - Aruba per DNS
 - Plausible Analytics (temporaneamente disabilitato)
 - Zod per validazione schema
-- pdfjs-dist per estrazione PDF (opzionale)
+- pdfjs-dist per estrazione testo PDF sicura
+- tesseract.js per OCR immagini e scansioni
 
 ## Convenzioni di Codice
 - Usa TypeScript strict mode
@@ -117,20 +128,19 @@ Questo è un'applicazione React/TypeScript unificata per il fitness e il benesse
 - `/src/development/` - Features in sviluppo (ZONA SICURA)
 - `/src/experimental/` - Sperimentazioni (ZONA SICURA)
 - `/src/services/` - Servizi di parsing e processamento (ZONA SICURA)
-  - `/src/services/SafeTextExtractor.ts` - Estrazione testo sicura
-  - `/src/services/SchedaParser.ts` - Parsing scheda allenamento
-  - `/src/services/TextProcessor.ts` - Processamento testo avanzato
-  - `/src/services/FileProcessor.ts` - Gestione file integrata
+  - `/src/services/AdvancedWorkoutAnalyzer.ts` - Parser avanzato con PDF/OCR
+  - `/src/services/fileAnalysis.ts` - Adattatore per UI
+  - `/src/services/AdvancedWorkoutAnalyzer.test.ts` - Test suite completa
 
 ## Configurazioni Vite
 ### **App Unificata**
 - **File:** `vite.config.ts`
 - **Entry:** `index.html` → `src/main.tsx`
 - **Build:** `npm run build:public`
-- **Dev Server:** Porta 8082 (automatica)
+- **Dev Server:** Porta 8080 (automatica)
 
 ## Scripts Package.json
-- `npm run dev` - App unificata (porta 8082)
+- `npm run dev` - App unificata (porta 8080)
 - `npm run build:public` - Build produzione
 - `npm run deploy:lovable` - Deploy Lovable
 
@@ -203,15 +213,15 @@ src/landing/                   # ← Landing page (ZONA SICURA)
 └── styles/
 
 src/services/                  # ← Servizi di parsing (ZONA SICURA)
-├── SafeTextExtractor.ts
-├── SchedaParser.ts
-├── TextProcessor.ts
-└── FileProcessor.ts
+├── AdvancedWorkoutAnalyzer.ts
+├── fileAnalysis.ts
+└── AdvancedWorkoutAnalyzer.test.ts
 
 src/components/                # ← Componenti MVP (ZONA SICURA)
-├── WorkoutUploader.tsx
-├── ManualWorkoutInput.tsx
-└── SchedaView.tsx
+├── schedule/
+│   ├── DebugPanel.tsx
+│   └── FileAnalysisResults.tsx
+└── WorkoutUploader.tsx
 ```
 
 ### **Regole Operative**
@@ -294,6 +304,16 @@ Se risposta è SÌ a qualsiasi domanda → FERMA e CHIEDI CONFERMA
 - ✅ **Suggerimenti automatici** - Riscaldamento e stretching intelligenti
 - ✅ **Pattern robusti** - Riconoscimento esercizi con pattern avanzati
 - ✅ **Debug completo** - Informazioni dettagliate di processamento
+- ✅ **PARSER AVANZATO COMPLETATO** - AdvancedWorkoutAnalyzer con estrazione PDF/OCR
+- ✅ **Sistema Debug Implementato** - Log dettagliato con flag DEBUG_ANALYSIS
+- ✅ **Regex Avanzate** - 6 pattern con named groups per parsing preciso
+- ✅ **Gestione Multi-Giorno** - Rilevamento automatico giorni multipli
+- ✅ **Confidence Scoring** - Punteggio accuratezza parsing
+- ✅ **Test Suite Completa** - Validazione completa funzionalità
+- ✅ **Componenti UI Aggiornati** - DebugPanel e FileAnalysisResults
+- ✅ **Browser Compatibility** - Risolti errori pdf-parse con pdfjs-dist
+- ✅ **Import Errors Risolti** - Ricreato fileAnalysis.ts con nuovo parser
+- ✅ **Linter Errors Risolti** - TypeScript compliant
 
 ## Flusso Utente Completo
 ```
@@ -417,294 +437,114 @@ src/landing/                   # ← Landing page (MODIFICABILE)
 └── styles/
 ```
 
-## Sistema Parser Sicuro - ELIMINAZIONE CONTENUTI BINARI
+## Sistema Parser Avanzato - IMPLEMENTAZIONE COMPLETA
 ### **Funzionalità Implementate:**
-- **SafeTextExtractor** - Sistema completo di estrazione testo sicuro
-- **Pulizia aggressiva** - Rimuove `/BaseFont`, `/Encoding`, `endobj`, `stream`, `xref`, etc.
-- **Filtro righe intelligente** - Elimina righe con solo simboli tecnici
-- **Rilevamento sezioni automatico** - Identifica riscaldamento, scheda giornaliera, stretching
-- **Formato JSON strutturato** - Output esattamente come richiesto
-- **Correzioni automatiche** - Normalizzazione Unicode, ricostruzione sillabazioni
-- **Suggerimenti automatici** - Riscaldamento e stretching intelligenti
-- **Pattern robusti** - Riconoscimento esercizi con pattern avanzati
-- **Debug completo** - Informazioni dettagliate di processamento
+- **AdvancedWorkoutAnalyzer** - Parser principale con estrazione PDF/OCR
+- **Sistema Debug** - Log dettagliato con flag `NEXT_PUBLIC_DEBUG_ANALYSIS=1`
+- **Regex Avanzate** - 6 pattern con named groups per parsing preciso
+- **Gestione Multi-Giorno** - Rilevamento automatico giorni multipli
+- **Confidence Scoring** - Punteggio accuratezza parsing
+- **Test Suite** - Validazione completa funzionalità
 
-### **Principi Chiave del Parser Sicuro:**
-1. **MAI restituire contenuti binari** - Solo testo leggibile dall'utente
-2. **Filtri aggressivi** - Rimuove TUTTI i metadati PDF
-3. **Pattern conservativi** - Meglio non parsare che parsare male
-4. **Validazione rigorosa** - Verifica che i dati siano quelli attesi
-5. **Debug dettagliato** - Mostra esattamente cosa sta leggendo
-
-### **Architettura Parser Sicuro:**
+### **Architettura Parser Avanzato:**
 ```typescript
-class SafeTextExtractor {
-  async extractSafeText(file: File): Promise<SafeTextResult> {
-    // STEP 1: Estrazione grezza
-    const rawText = await this.extractRawText(file);
+class AdvancedWorkoutAnalyzer {
+  async analyzeWorkoutFile(file: File | string): Promise<ParsedWorkoutResult> {
+    // STEP 1: Gestione input (file o URL Supabase)
+    const fileUrl = await this.handleInput(file);
     
-    // STEP 2: Pulizia aggressiva di contenuti binari
-    const cleanedText = this.cleanBinaryContent(rawText);
+    // STEP 2: Estrazione testo (PDF o OCR)
+    const extractedText = await this.extractText(fileUrl);
     
-    // STEP 3: Rilevamento sezioni
-    const sections = this.detectSections(cleanedText);
+    // STEP 3: Normalizzazione testo
+    const normalizedText = this.normalizeText(extractedText.text);
     
-    // STEP 4: Validazione finale
-    const validation = this.validateExtractedText(cleanedText);
+    // STEP 4: Parsing struttura
+    const parsedStructure = await this.parseWorkoutStructure(normalizedText);
+    
+    // STEP 5: Calcolo confidence e warnings
+    const confidence = this.calculateConfidence(parsedStructure);
+    const warnings = this.generateWarnings(extractedText, parsedStructure);
     
     return {
-      cleanText: cleanedText,
-      sections,
+      ...parsedStructure,
       metadata: {
-        hasMultipleDays: sections.detectedDays?.length > 1,
-        detectedDays: sections.detectedDays || [],
-        extractionMethod: validation.extractionMethod,
-        confidence: validation.confidence,
-        warnings: validation.warnings
+        confidence,
+        warnings,
+        debug: DEBUG_ANALYSIS ? {
+          textPreview: extractedText.text.slice(0, 600),
+          extractionSource: extractedText.source,
+          extractionStatus: extractedText.extractionStatus
+        } : undefined
       }
     };
   }
 }
 ```
 
-### **Pulizia Aggressiva Contenuti Binari:**
+### **Regex Patterns Implementate:**
 ```typescript
-private cleanBinaryContent(text: string): string {
-  return text
-    // Rimuovi metadati PDF
-    .replace(/\/[A-Za-z]+\s+[^\n]+/g, '') // /BaseFont, /Encoding, etc.
-    .replace(/endobj\s*\d+/g, '') // endobj
-    .replace(/obj\s*\d+\s*\d+/g, '') // obj
-    .replace(/stream[\s\S]*?endstream/g, '') // stream content
-    .replace(/xref[\s\S]*?trailer/g, '') // xref section
-    .replace(/trailer[\s\S]*?startxref/g, '') // trailer
-    .replace(/startxref\s*\d+/g, '') // startxref
-    .replace(/%%EOF/g, '') // EOF
-    
-    // Rimuovi caratteri di controllo
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-    
-    // Rimuovi sequenze binarie comuni
-    .replace(/[^\x20-\x7E\nàèéìòùÀÈÉÌÒÙ]/g, ' ')
-    
-    // Rimuovi righe con solo simboli tecnici
-    .split('\n')
-    .filter(line => {
-      const trimmed = line.trim();
-      if (!trimmed) return false;
-      
-      // Rimuovi righe con solo simboli tecnici
-      const technicalPatterns = [
-        /^\/[A-Za-z]+/, // /BaseFont, etc.
-        /^obj\s*\d+/, // obj
-        /^endobj/, // endobj
-        /^stream/, // stream
-        /^endstream/, // endstream
-        /^xref/, // xref
-        /^trailer/, // trailer
-        /^startxref/, // startxref
-        /^%%/, // Comments
-        /^\d+\s+\d+\s+obj/, // Object references
-        /^[0-9a-fA-F]{32,}/, // Long hex strings
-        /^[^\w\sàèéìòùÀÈÉÌÒÙ]{10,}/, // Long sequences of symbols
-      ];
-      
-      return !technicalPatterns.some(pattern => pattern.test(trimmed));
-    })
-    .join('\n')
-    
-    // Normalizza spazi
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-```
-
-### **Formato JSON Strutturato:**
-```json
-{
-  "riscaldamento": [
-    {
-      "nome": "Mobilità articolare generale",
-      "serie": 1,
-      "ripetizioni_durata": "5 min",
-      "riposo": null,
-      "note": "Aggiunto automaticamente",
-      "confidence": 0.1
-    }
-  ],
-  "giorno": "Giorno 1",
-  "esercizi": [
-    {
-      "nome": "Squat",
-      "serie": 4,
-      "ripetizioni_durata": "8-10",
-      "riposo": "90s",
-      "note": "Controllato",
-      "confidence": 0.8
-    }
-  ],
-  "stretching": [
-    {
-      "nome": "Stretching generale",
-      "serie": 1,
-      "ripetizioni_durata": "5 min",
-      "riposo": null,
-      "note": "Aggiunto automaticamente",
-      "confidence": 0.1
-    }
-  ]
-}
-```
-
-### **Correzioni Automatiche:**
-```typescript
-// Normalizzazione Unicode
-× → x
-–/— → -
-'/'' → '
-… → ...
-\u00A0 → spazio normale
-Soft hyphen \u00AD → rimuovi
-Legature: ﬀ→ff, ﬁ→fi, ﬂ→fl, ﬃ→ffi, ﬄ→ffl
-
-// Ricostruzione sillabazioni
-([A-Za-z])-\n([a-z]) → $1$2
-riga vuota = separatore sezione
-singolo \n → spazio
-
-// Correzioni OCR
-O↔0, l↔1, S↔5, B↔8 (solo in contesto numerico)
-minuti|min|mins → min
-secondi|sec|s → sec
-```
-
-### **Pattern Robusti per Esercizi:**
-```typescript
-const patterns = {
-  esercizio: [
-    // "Nome: 3x12" o "Nome 3x12"
-    /^(.+?):?\s+(\d+)[x×](\d+(?:-\d+)?)\s*(.*)$/i,
-    // "Nome: 3x30 sec" o "Nome 3x30 secondi"
-    /^(.+?):?\s+(\d+)[x×](\d+)\s*(sec|secondi|min|minuti)\s*(.*)$/i,
-    // "Nome: 3x max reps"
-    /^(.+?):?\s+(\d+)[x×]\s*max\s+reps?\s*(.*)$/i,
-    // "Nome: 3x tempo" (senza specificare unità)
-    /^(.+?):?\s+(\d+)[x×](\d+)\s*(.*)$/i,
-  ],
-  riposo: [
-    /riposo\s*(\d+)\s*(sec|secondi|min|minuti)/i,
-    /(\d+)\s*(sec|secondi|min|minuti)\s*riposo/i,
-  ],
-  note: [
-    /\((.*?)\)/, // Note tra parentesi
-    /\[(.*?)\]/, // Note tra parentesi quadre
-    /note:\s*(.*)/i, // Note esplicite
-  ]
+const RX = {
+  setsReps1: /^(?<name>.+?):?\s+(?<sets>\d+)[x×](?<reps>\d+(?:-\d+)?)\s*(?<rest>rec\s*\d+\s*(?:sec|min|s))?\s*(?<notes>.*)$/i,
+  setsReps2: /^(?<name>.+?):?\s+(?<sets>\d+)[x×](?<reps>\d+(?:-\d+)?)\s*(?<rest>riposo\s*\d+\s*(?:sec|min|s))?\s*(?<notes>.*)$/i,
+  setsTime: /^(?<name>.+?):?\s+(?<sets>\d+)[x×](?<duration>\d+)\s*(sec|min|secondi|minuti)\s*(?<rest>rec\s*\d+\s*(?:sec|min|s))?\s*(?<notes>.*)$/i,
+  timeOnly: /^(?<name>.+?):?\s+(?<duration>\d+)\s*(sec|min|secondi|minuti)\s*(?<notes>.*)$/i,
+  repsLoose: /^(?<name>.+?):?\s+(?<reps>\d+(?:-\d+)?)\s*(?<notes>.*)$/i,
+  restOnly: /^(?<rest_val>\d+)\s*(?<rest_unit>sec|min|s|")\s*(?<notes>.*)$/i
 };
 ```
 
-### **Suggerimenti Automatici:**
+### **Sistema Debug Implementato:**
 ```typescript
-// Riscaldamento automatico
-private suggestRiscaldamento(esercizi: ParsedEsercizio[]): ParsedEsercizio[] {
-  const riscaldamento: ParsedEsercizio[] = [
-    {
-      nome: 'Mobilità articolare generale',
-      serie: 1,
-      ripetizioni_durata: '5 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    },
-    {
-      nome: 'Cardio leggero',
-      serie: 1,
-      ripetizioni_durata: '5 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    }
-  ];
-  
-  // Aggiungi riscaldamento specifico per gli esercizi trovati
-  const hasSquat = esercizi.some(e => e.nome.toLowerCase().includes('squat'));
-  const hasPanca = esercizi.some(e => e.nome.toLowerCase().includes('panca'));
-  const hasStacco = esercizi.some(e => e.nome.toLowerCase().includes('stacco'));
-  
-  if (hasSquat || hasPanca || hasStacco) {
-    riscaldamento.push({
-      nome: 'Mobilità spalle e schiena',
-      serie: 1,
-      ripetizioni_durata: '3 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    });
-  }
-  
-  return riscaldamento;
-}
-
-// Stretching automatico
-private suggestStretching(esercizi: ParsedEsercizio[]): ParsedEsercizio[] {
-  const stretching: ParsedEsercizio[] = [
-    {
-      nome: 'Stretching generale',
-      serie: 1,
-      ripetizioni_durata: '5 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    }
-  ];
-  
-  // Aggiungi stretching specifico
-  const hasUpperBody = esercizi.some(e => 
-    e.nome.toLowerCase().includes('panca') || 
-    e.nome.toLowerCase().includes('rematore') ||
-    e.nome.toLowerCase().includes('trazioni')
-  );
-  
-  const hasLowerBody = esercizi.some(e => 
-    e.nome.toLowerCase().includes('squat') || 
-    e.nome.toLowerCase().includes('stacco') ||
-    e.nome.toLowerCase().includes('leg')
-  );
-  
-  if (hasUpperBody) {
-    stretching.push({
-      nome: 'Stretching spalle e braccia',
-      serie: 1,
-      ripetizioni_durata: '3 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    });
-  }
-  
-  if (hasLowerBody) {
-    stretching.push({
-      nome: 'Stretching gambe e schiena',
-      serie: 1,
-      ripetizioni_durata: '3 min',
-      riposo: null,
-      note: 'Aggiunto automaticamente',
-      confidence: 0.1
-    });
-  }
-  
-  return stretching;
+// Log dettagliato delle righe normalizzate
+if (DEBUG) {
+  console.log("========== [DEBUG LINES - NORMALIZED TEXT] ==========");
+  lines.forEach((line, idx) => {
+    console.log(`${idx + 1}: "${line}"`);
+  });
+  console.log("====================================================");
 }
 ```
 
+### **Struttura Output:**
+```typescript
+interface ParsedDay {
+  riscaldamento: ParsedExercise[];
+  scheda: ParsedExercise[];
+  stretching: ParsedExercise[];
+  multiDay: boolean;
+  daysFound: string[];
+  metadata?: {
+    linesTried: number;
+    matches: number;
+    reasons: string[];
+    debug?: {
+      textPreview: string;
+      extractionSource: string;
+      extractionStatus: string;
+      confidence: number;
+      warnings: string[];
+    }
+  };
+}
+```
+
+### **Componenti UI Aggiornati:**
+- **DebugPanel.tsx:** Pannello collapsible per info debug
+- **FileAnalysisResults.tsx:** Integrazione debug + multi-giorno
+- **fileAnalysis.ts:** Adattatore per nuovo parser
+
+### **Test Suite Completa:**
+- **AdvancedWorkoutAnalyzer.test.ts:** Test per regex, multi-day, logging, confidence
+
 ## Prossimi Sviluppi
-- 🔄 **OCR Tesseract.js** - Implementazione completa per immagini
-- 🔄 **Selezione giorni multipli** - UI per scegliere giorno specifico
-- 🔄 **Modal di modifica esercizi** - Interfaccia per modificare esercizi
-- 🔄 **Conferma eliminazione** - Sistema di conferma per eliminare esercizi
-- 🔄 **Ottimizzazioni performance** - Miglioramento velocità parsing
-- 🔄 **Test con PDF reali** - Validazione con file di produzione
-- 🔄 **Ripristino analytics** con error handling migliorato
+- 🔄 **Test con PDF Reali** - Validazione parser con file produzione
+- 🔄 **Ottimizzazione Regex** - Basata su debug output
+- 🔄 **UI Multi-Giorno** - Selezione giorno per utente
+- 🔄 **Performance Optimization** - Miglioramento velocità parsing
+- 🔄 **Error Handling** - Gestione errori più robusta
+- 🔄 **Analytics Integration** - Tracking utilizzo parser
+- 🔄 **Mobile Optimization** - Parsing ottimizzato mobile
 - 🔄 **Features sperimentali** in `src/development/`
 - 🔄 **Testing e ottimizzazioni**
 - 🔄 **Analytics e tracking**
@@ -723,4 +563,4 @@ private suggestStretching(esercizi: ParsedEsercizio[]): ParsedEsercizio[] {
 ## Motto Operativo
 **"Se funziona, non toccarlo - sviluppa a fianco!"**
 
-Il deploy su `performanceprime.it` è **PERFETTO e FUNZIONANTE** con dominio personalizzato configurato, landing page ottimizzata, chat PrimeBot con modal overlay implementata e sistema parser sicuro per analisi file. Proteggi il codice di produzione e sviluppa nuove features nelle zone sicure. 
+Il deploy su `performanceprime.it` è **PERFETTO e FUNZIONANTE** con dominio personalizzato configurato, landing page ottimizzata, chat PrimeBot con modal overlay implementata e sistema parser avanzato completo con debug. Proteggi il codice di produzione e sviluppa nuove features nelle zone sicure. 
