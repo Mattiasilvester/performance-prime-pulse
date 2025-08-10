@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Variabili d'Ambiente - Performance Prime</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .env-var { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; }
+        .key { color: #0066cc; font-weight: bold; }
+        .value { color: #333; }
+        .undefined { color: #cc0000; }
+        .truncated { color: #ff6600; }
+        button { background: #0066cc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 10px 5px; }
+        button:hover { background: #0052a3; }
+        .results { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 4px; }
+        .error { color: #cc0000; }
+        .success { color: #006600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Test Variabili d'Ambiente - Performance Prime</h1>
+        
+        <h2>📋 Variabili d'Ambiente Caricate:</h2>
+        <div id="env-vars"></div>
+        
+        <h2>🧪 Test di Integrazione:</h2>
+        <button onclick="runTests()">Esegui Test Completi</button>
+        <button onclick="testSupabaseOnly()">Test Solo Supabase</button>
+        <button onclick="clearResults()">Pulisci Risultati</button>
+        
+        <div id="results" class="results"></div>
+    </div>
+
+    <script type="module">
+        // Importa i test di integrazione
+        import { runIntegrationTests } from './src/utils/integration-test.ts';
+        
+        // Mostra le variabili d'ambiente
+        function displayEnvVars() {
+            const envVars = document.getElementById('env-vars');
+            
+            const vars = [
+                { key: 'VITE_SUPABASE_URL', value: import.meta.env.VITE_SUPABASE_URL },
+                { key: 'VITE_SUPABASE_ANON_KEY', value: import.meta.env.VITE_SUPABASE_ANON_KEY },
+                { key: 'VITE_VF_API_KEY', value: import.meta.env.VITE_VF_API_KEY },
+                { key: 'VITE_VF_VERSION_ID', value: import.meta.env.VITE_VF_VERSION_ID },
+                { key: 'VITE_ENABLE_PRIMEBOT', value: import.meta.env.VITE_ENABLE_PRIMEBOT },
+                { key: 'VITE_APP_MODE', value: import.meta.env.VITE_APP_MODE }
+            ];
+            
+            envVars.innerHTML = vars.map(v => {
+                let status = '';
+                let valueClass = 'value';
+                
+                if (!v.value) {
+                    status = '❌ UNDEFINED';
+                    valueClass = 'undefined';
+                } else if (v.key === 'VITE_SUPABASE_ANON_KEY' && v.value.length < 150) {
+                    status = '⚠️ TRUNCATA';
+                    valueClass = 'truncated';
+                } else {
+                    status = '✅ OK';
+                }
+                
+                const displayValue = v.key === 'VITE_SUPABASE_ANON_KEY' && v.value ? 
+                    v.value.substring(0, 50) + '...' + v.value.substring(v.value.length - 20) : 
+                    v.value;
+                
+                return `
+                    <div class="env-var">
+                        <span class="key">${v.key}:</span> 
+                        <span class="${valueClass}">${displayValue || 'UNDEFINED'}</span>
+                        <span style="float: right;">${status}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Esegui tutti i test
+        window.runTests = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>🧪 Esecuzione test completi...</h3>';
+            
+            try {
+                const testResults = await runIntegrationTests();
+                displayTestResults(testResults);
+            } catch (error) {
+                results.innerHTML += `<div class="error">❌ Errore durante i test: ${error.message}</div>`;
+                console.error('Errore test:', error);
+            }
+        };
+        
+        // Test solo Supabase
+        window.testSupabaseOnly = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>🔍 Test solo Supabase...</h3>';
+            
+            try {
+                // Test diretto Supabase
+                const { createClient } = await import('./src/integrations/supabase/client.ts');
+                const supabase = createClient(
+                    import.meta.env.VITE_SUPABASE_URL,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY
+                );
+                
+                // Test connessione
+                const { data, error } = await supabase.auth.getSession();
+                if (error) {
+                    results.innerHTML += `<div class="error">❌ Errore connessione Supabase: ${error.message}</div>`;
+                } else {
+                    results.innerHTML += `<div class="success">✅ Connessione Supabase OK</div>`;
+                }
+                
+                // Test tabelle
+                const tables = ['profiles', 'custom_workouts', 'user_workout_stats'];
+                for (const table of tables) {
+                    try {
+                        const { data: tableData, error: tableError } = await supabase
+                            .from(table)
+                            .select('id', { count: 'exact' })
+                            .limit(1);
+                        
+                        if (tableError) {
+                            results.innerHTML += `<div class="error">❌ Tabella ${table}: ${tableError.message}</div>`;
+                        } else {
+                            results.innerHTML += `<div class="success">✅ Tabella ${table}: accessibile (count: ${tableData?.length || 0})</div>`;
+                        }
+                    } catch (err) {
+                        results.innerHTML += `<div class="error">❌ Errore critico tabella ${table}: ${err.message}</div>`;
+                    }
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<div class="error">❌ Errore test Supabase: ${error.message}</div>`;
+                console.error('Errore test Supabase:', error);
+            }
+        };
+        
+        // Pulisci risultati
+        window.clearResults = function() {
+            document.getElementById('results').innerHTML = '';
+        };
+        
+        // Mostra risultati test
+        function displayTestResults(testResults) {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>📊 Risultati Test:</h3>';
+            
+            testResults.forEach(result => {
+                const emoji = result.status === 'PASS' ? '✅' : '❌';
+                const colorClass = result.status === 'PASS' ? 'success' : 'error';
+                
+                results.innerHTML += `
+                    <div class="${colorClass}">
+                        ${emoji} ${result.test}: ${result.message}
+                        ${result.details ? `<br><small>Dettagli: ${JSON.stringify(result.details)}</small>` : ''}
+                    </div>
+                `;
+            });
+        }
+        
+        // Inizializza
+        displayEnvVars();
+    </script>
+</body>
+</html>
