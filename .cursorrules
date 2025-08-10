@@ -1,16 +1,17 @@
 # Performance Prime - Cursor Rules
-# Ultimo aggiornamento: 10 Agosto 2025 - 21:00
+# Ultimo aggiornamento: 10 Agosto 2025 - 21:30
 
 ## 🎯 **PROGETTO**
 Performance Prime è un'applicazione React/TypeScript per la gestione di allenamenti e performance fisiche, integrata con Supabase.
 
-## 🚀 **STATO ATTUALE (10 Agosto 2025 - 21:00)**
+## 🚀 **STATO ATTUALE (10 Agosto 2025 - 21:30)**
 - **Completamento**: 90%
 - **Integrazione Supabase**: ✅ 100% funzionante
 - **Dashboard**: ✅ 100% funzionante
 - **Test**: ✅ 7/7 test passati (100% success rate)
 - **Sistema Notifiche**: ✅ 100% implementato
 - **UI Components**: ✅ 100% funzionanti
+- **App Principale**: ✅ 100% attiva (landing vecchia eliminata)
 
 ## 🔧 **PROBLEMI RISOLTI OGGI (10 Agosto 2025)**
 1. ✅ **useNotifications Provider**: Aggiunto NotificationProvider in main.tsx
@@ -21,6 +22,8 @@ Performance Prime è un'applicazione React/TypeScript per la gestione di allenam
 6. ✅ **Dashboard Rendering**: Completamente funzionante
 7. ✅ **Console Browser**: Pulita da errori e warning
 8. ✅ **Header Visibility**: Ora visibile e funzionale
+9. ✅ **Pulizia Landing**: Eliminati tutti i file di landing vecchi
+10. ✅ **App Principale**: Ripristinata e funzionante al 100%
 
 ## 📁 **STRUTTURA PROGETTO AGGIORNATA**
 ```
@@ -33,6 +36,7 @@ performance-prime-pulse/
 │   └── integrations/supabase/      ← Client e configurazione
 ├── .env                            ← Variabili ambiente configurate
 ├── vite.config.ts                  ← Configurazione Vite (porta 8081)
+├── index.html                      ← APP PRINCIPALE (unica entry point)
 └── tailwind.config.ts              ← Palette colori definita
 ```
 
@@ -42,6 +46,7 @@ performance-prime-pulse/
 - **Responsive**: Mobile-first design
 - **Tema**: Dark mode con accenti oro (pp-gold)
 - **UI**: Header, navigazione, dashboard completamente funzionanti
+- **Entry Point**: Solo app principale (landing vecchia eliminata)
 
 ## 🚨 **ATTENZIONE - PROBLEMI RISOLTI OGGI**
 - ~~useNotifications provider mancante~~ ✅ RISOLTO
@@ -51,6 +56,8 @@ performance-prime-pulse/
 - ~~Dashboard non si carica~~ ✅ RISOLTO
 - ~~Header non visibile~~ ✅ RISOLTO
 - ~~Console browser con errori~~ ✅ RISOLTO
+- ~~File landing interferenti~~ ✅ RISOLTO
+- ~~App principale non caricata~~ ✅ RISOLTO
 
 ## 📋 **REGOLE DI SVILUPPO AGGIORNATE**
 
@@ -58,6 +65,7 @@ performance-prime-pulse/
 - Usa sempre la directory `performance-prime-pulse/` per comandi npm
 - Mantieni la struttura di cartelle esistente
 - Segui le convenzioni TypeScript/React
+- **NON creare file landing separati** - usa solo l'app principale
 
 ### **2. Styling**
 - **NON usare** classi generiche come `bg-surface-primary`, `text-brand-primary`
@@ -80,6 +88,11 @@ performance-prime-pulse/
 - **Notifiche**: useNotifications hook per notifiche
 - **Locale**: localStorage per persistenza dati
 - **Globale**: React Context per stato condiviso
+
+### **6. Entry Point**
+- **UNICA ENTRY POINT**: `index.html` → `src/main.tsx`
+- **NON creare** file landing separati
+- **MANTIENI** solo l'app principale Performance Prime
 
 ## 🔍 **DEBUGGING E TROUBLESHOOTING AGGIORNATO**
 
@@ -104,6 +117,11 @@ performance-prime-pulse/
 2. Controlla che non ci siano classi generiche
 3. Verifica che il componente sia renderizzato correttamente
 
+### **Se Si Carica la Landing Vecchia**
+1. ✅ **RISOLTO**: Tutti i file landing sono stati eliminati
+2. Verifica che `index.html` punti a `src/main.tsx`
+3. Controlla che non ci siano redirect o configurazioni landing
+
 ## 📚 **DOCUMENTAZIONE AGGIORNATA**
 - `DOCUMENTATION_UPDATE_10AGUSTO2025.md` - Documentazione completa aggiornata
 - `NOTIFICATION_GLOBAL_STATE_FIX.md` - Fix notifiche
@@ -113,18 +131,23 @@ performance-prime-pulse/
 
 ## 🎯 **PROSSIMI PASSI AGGIORNATI**
 1. ✅ **Dashboard**: Completamente funzionante
-2. **Test Utente**: Validazione esperienza utente
-3. **Ottimizzazioni**: Performance e rendering
-4. **Documentazione**: Guide utente finali
-5. **Deploy**: Preparazione per produzione
+2. ✅ **App Principale**: Ripristinata e funzionante
+3. ✅ **Pulizia Landing**: File vecchi eliminati
+4. **Test Utente**: Validazione esperienza utente
+5. **Ottimizzazioni**: Performance e rendering
+6. **Documentazione**: Guide utente finali
+7. **Deploy**: Preparazione per produzione
 
 ## ⚠️ **IMPORTANTE - AGGIORNATO**
 - ✅ **Provider**: NotificationProvider e AuthProvider sono ora correttamente configurati
 - ✅ **CSS**: Tutte le classi sono ora Tailwind standard
 - ✅ **Routing**: Dashboard funziona correttamente su `/dashboard`
 - ✅ **Console**: Nessun errore critico rimane
+- ✅ **Landing**: Tutti i file vecchi eliminati
+- ✅ **App Principale**: Unica entry point funzionante
 - **MANTIENI** la struttura di autenticazione esistente
 - **TESTA** sempre dopo modifiche ai provider o al routing
+- **NON creare** file landing separati
 
 ## 🔗 **RISORSE UTILI**
 - Supabase Dashboard: https://supabase.com/dashboard
@@ -140,8 +163,10 @@ performance-prime-pulse/
 - **Notifiche**: ✅ 100% Sistema completo
 - **Dashboard**: ✅ 100% Rendering e funzionalità
 - **Test**: ✅ 100% 7/7 test passati
+- **App Principale**: ✅ 100% Attiva e funzionante
+- **Landing**: ✅ 100% Pulita (file vecchi eliminati)
 
 ---
-*Regole aggiornate il 10 Agosto 2025 - 21:00*
-*Stato: Progetto 90% completato, dashboard 100% funzionante*
-*Tutti i problemi critici risolti* 
+*Regole aggiornate il 10 Agosto 2025 - 21:30*
+*Stato: Progetto 90% completato, dashboard 100% funzionante, app principale ripristinata*
+*Tutti i problemi critici risolti, landing vecchia eliminata* 
