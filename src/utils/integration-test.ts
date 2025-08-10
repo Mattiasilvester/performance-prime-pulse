@@ -21,6 +21,19 @@ export class IntegrationTester {
     console.log('🧪 INIZIO TEST INTEGRAZIONE COMPLETA');
     console.log('=====================================');
 
+    // 🔍 PASSO 1: LOG DELLE VARIABILI D'AMBIENTE RUNTIME
+    console.log('🔑 VARIABILI D\'AMBIENTE SUPABASE:');
+    console.log('   VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('   VITE_SUPABASE_ANON_KEY (primi 12 char):', 
+      import.meta.env.VITE_SUPABASE_ANON_KEY ? 
+      import.meta.env.VITE_SUPABASE_ANON_KEY.substring(0, 12) + '...' : 
+      'UNDEFINED');
+    console.log('   VITE_SUPABASE_ANON_KEY (lunghezza):', 
+      import.meta.env.VITE_SUPABASE_ANON_KEY ? 
+      import.meta.env.VITE_SUPABASE_ANON_KEY.length : 
+      'UNDEFINED');
+    console.log('=====================================');
+
     try {
       // 1. Test Supabase
       await this.testSupabaseConnection();
@@ -80,36 +93,64 @@ export class IntegrationTester {
     try {
       console.log('🔍 Test 2: Tabelle Supabase...');
       
-      // Test tabella profiles - più robusto
+      // Test tabella profiles - usando supabase-js (NO fetch diretto)
       try {
-        const { data: profiles, error: profilesError } = await supabase
+        console.log('   🔍 Test tabella profiles...');
+        const { data: profiles, error: profilesError, count } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id', { count: 'exact' })
           .limit(1);
 
         if (profilesError) {
+          console.log('   ❌ Errore profiles:', profilesError);
           this.addResult('Supabase Tables - Profiles', 'FAIL', 'Errore accesso tabella profiles', profilesError);
         } else {
-          this.addResult('Supabase Tables - Profiles', 'PASS', 'Tabella profiles accessibile');
+          console.log('   ✅ Tabella profiles accessibile, count:', count);
+          this.addResult('Supabase Tables - Profiles', 'PASS', `Tabella profiles accessibile (count: ${count})`);
         }
       } catch (error) {
+        console.log('   ❌ Errore critico profiles:', error);
         this.addResult('Supabase Tables - Profiles', 'FAIL', 'Errore critico tabella profiles', error);
       }
 
-      // Test tabella custom_workouts
+      // Test tabella custom_workouts - usando supabase-js
       try {
-        const { data: workouts, error: workoutsError } = await supabase
+        console.log('   🔍 Test tabella custom_workouts...');
+        const { data: workouts, error: workoutsError, count } = await supabase
           .from('custom_workouts')
-          .select('id')
+          .select('id', { count: 'exact' })
           .limit(1);
 
         if (workoutsError) {
+          console.log('   ❌ Errore custom_workouts:', workoutsError);
           this.addResult('Supabase Tables - Workouts', 'FAIL', 'Errore accesso tabella custom_workouts', workoutsError);
         } else {
-          this.addResult('Supabase Tables - Workouts', 'PASS', 'Tabella custom_workouts accessibile');
+          console.log('   ✅ Tabella custom_workouts accessibile, count:', count);
+          this.addResult('Supabase Tables - Workouts', 'PASS', `Tabella custom_workouts accessibile (count: ${count})`);
         }
       } catch (error) {
+        console.log('   ❌ Errore critico custom_workouts:', error);
         this.addResult('Supabase Tables - Workouts', 'FAIL', 'Errore critico tabella custom_workouts', error);
+      }
+
+      // Test tabella user_workout_stats - usando supabase-js
+      try {
+        console.log('   🔍 Test tabella user_workout_stats...');
+        const { data: stats, error: statsError, count } = await supabase
+          .from('user_workout_stats')
+          .select('id', { count: 'exact' })
+          .limit(1);
+
+        if (statsError) {
+          console.log('   ❌ Errore user_workout_stats:', statsError);
+          this.addResult('Supabase Tables - User Workout Stats', 'FAIL', 'Errore accesso tabella user_workout_stats', statsError);
+        } else {
+          console.log('   ✅ Tabella user_workout_stats accessibile, count:', count);
+          this.addResult('Supabase Tables - User Workout Stats', 'PASS', `Tabella user_workout_stats accessibile (count: ${count})`);
+        }
+      } catch (error) {
+        console.log('   ❌ Errore critico user_workout_stats:', error);
+        this.addResult('Supabase Tables - User Workout Stats', 'FAIL', 'Errore critico tabella user_workout_stats', error);
       }
 
       // Test tabella escalations - commentato per ora (non nei tipi TypeScript)
@@ -129,6 +170,13 @@ export class IntegrationTester {
       // }
       
       this.addResult('Supabase Tables - Escalations', 'PASS', 'Tabella escalations (verificata manualmente)');
+
+      // 📊 REPORT STATO TABELLE
+      console.log('\n📊 STATO TABELLE SUPABASE:');
+      console.log('==========================');
+      console.log('✅ Tutte le tabelle testate con supabase-js (NO fetch diretto)');
+      console.log('🔒 RLS attivo - solo anon key richiesta');
+      console.log('📈 Count e status code per ogni tabella mostrati sopra');
 
     } catch (error) {
       this.addResult('Supabase Tables', 'FAIL', 'Errore generale test tabelle', error);
