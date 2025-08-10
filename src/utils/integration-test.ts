@@ -2,7 +2,6 @@
 // Questo file verifica che tutti i componenti funzionino correttamente insieme
 
 import { supabase } from '@/integrations/supabase/client';
-import { vfInteract, vfPatchState } from '@/lib/voiceflow';
 import { fetchUserProfile } from '@/services/userService';
 import { fetchWorkoutStats } from '@/services/workoutStatsService';
 
@@ -16,6 +15,44 @@ interface TestResult {
 export class IntegrationTester {
   private results: TestResult[] = [];
   private testUserId = 'test-user-' + Date.now();
+
+  // Funzioni locali per Voiceflow via proxy
+  private async vfPatchState(userId: string, vars: Record<string, any>) {
+    const res = await fetch(`http://localhost:8099/api/voiceflow/${userId}/state`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ variables: vars })
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`VF state patch failed: ${res.status} ${text}`);
+    }
+  }
+
+  private async vfInteract(userId: string, text: string): Promise<any[]> {
+    const res = await fetch(`http://localhost:8099/api/voiceflow/${userId}/interact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        request: { type: 'text', payload: text },
+        config: { tts: false, stopAll: true, stripSSML: true }
+      })
+    });
+    if (!res.ok) throw new Error(`VF interact failed: ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data?.trace) ? data.trace : [];
+  }
+
+  private async ensureDevLogin() {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) return data.session.user;
+      const email = 'dev@performanceprime.local';
+  const password = 'dev123';
+  if (!email || !password) throw new Error('Missing VITE_DEV_TEST_EMAIL/PASSWORD');
+    const res = await supabase.auth.signInWithPassword({ email, password });
+    if (res.error) throw res.error;
+    return res.data.user!;
+  }
 
   async runAllTests(): Promise<TestResult[]> {
     console.log('🧪 INIZIO TEST INTEGRAZIONE COMPLETA');
@@ -35,9 +72,14 @@ export class IntegrationTester {
     console.log('=====================================');
 
     try {
+      // 0. Login dev per RLS
+      const user = await this.ensureDevLogin();
+      const uid = user.id;
+      console.log('🔐 Login dev completato:', user.email);
+
       // 1. Test Supabase
       await this.testSupabaseConnection();
-      await this.testSupabaseTables();
+      await this.testSupabaseTables(uid);
       await this.testSupabaseRLS();
 
       // 2. Test PrimeBot
@@ -89,16 +131,17 @@ export class IntegrationTester {
     }
   }
 
-  private async testSupabaseTables(): Promise<void> {
+  private async testSupabaseTables(uid: string): Promise<void> {
     try {
-      console.log('🔍 Test 2: Tabelle Supabase...');
+      console.log('🔍 Test 2: Tabelle Supabase (filtro utente)...');
       
       // Test tabella profiles - usando supabase-js (NO fetch diretto)
       try {
         console.log('   🔍 Test tabella profiles...');
         const { data: profiles, error: profilesError, count } = await supabase
           .from('profiles')
-          .select('id', { count: 'exact' })
+          .select('*', { count: 'exact' })
+          .eq('id', uid)
           .limit(1);
 
         if (profilesError) {
@@ -118,8 +161,9 @@ export class IntegrationTester {
         console.log('   🔍 Test tabella custom_workouts...');
         const { data: workouts, error: workoutsError, count } = await supabase
           .from('custom_workouts')
-          .select('id', { count: 'exact' })
-          .limit(1);
+          .select('*', { count: 'exact' })
+          .eq('user_id', uid)
+          .limit(5);
 
         if (workoutsError) {
           console.log('   ❌ Errore custom_workouts:', workoutsError);
@@ -138,8 +182,9 @@ export class IntegrationTester {
         console.log('   🔍 Test tabella user_workout_stats...');
         const { data: stats, error: statsError, count } = await supabase
           .from('user_workout_stats')
-          .select('id', { count: 'exact' })
-          .limit(1);
+          .select('*', { count: 'exact' })
+          .eq('user_id', uid)
+          .limit(5);
 
         if (statsError) {
           console.log('   ❌ Errore user_workout_stats:', statsError);
@@ -270,7 +315,7 @@ export class IntegrationTester {
 
       // Simula patch state a Voiceflow
       try {
-        await vfPatchState(this.testUserId, mockContext);
+        await this.vfPatchState(this.testUserId, mockContext);
         this.addResult('PrimeBot User Context', 'PASS', 'Contesto utente inviato a Voiceflow');
       } catch (error) {
         this.addResult('PrimeBot User Context', 'FAIL', 'Errore invio contesto a Voiceflow', error);
@@ -289,7 +334,7 @@ export class IntegrationTester {
       const testMessage = 'Ciao';
       
       try {
-        const traces = await vfInteract(this.testUserId, testMessage);
+        const traces = await this.vfInteract(this.testUserId, testMessage);
         
         if (traces && Array.isArray(traces)) {
           this.addResult('Voiceflow Connection', 'PASS', 'Connessione Voiceflow OK');
@@ -313,7 +358,7 @@ export class IntegrationTester {
       const escalationMessage = 'voglio parlare con un umano';
       
       try {
-        const traces = await vfInteract(this.testUserId, escalationMessage);
+        const traces = await this.vfInteract(this.testUserId, escalationMessage);
         
         // Verifica che Voiceflow raccolga i dati necessari
         const hasEscalationData = traces.some((trace: any) => 

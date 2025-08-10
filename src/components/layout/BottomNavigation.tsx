@@ -8,7 +8,7 @@ export const BottomNavigation = () => {
   const { t } = useTranslation();
 
   const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/app' },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
     { id: 'workouts', label: 'Allenamento', icon: Dumbbell, path: '/workouts' },
     { id: 'schedule', label: 'Appuntamenti', icon: Calendar, path: '/schedule' },
     { id: 'ai-coach', label: 'PrimeBot', icon: Bot, path: '/ai-coach' },

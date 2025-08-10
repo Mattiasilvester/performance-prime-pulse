@@ -1,6 +1,8 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
+import { AuthProvider } from './hooks/useAuth'
+import { NotificationProvider } from './hooks/useNotifications'
 
 // Debug: stampa la modalità
 console.log('🚀 Performance Prime - Caricamento app...');
@@ -20,8 +22,14 @@ const loadApp = async () => {
     console.log('✅ Root element trovato, creando React app...');
     const root = createRoot(rootElement);
     
-    console.log('🎨 Rendering App component...');
-    root.render(<App />);
+    console.log('🎨 Rendering App component con AuthProvider...');
+    root.render(
+      <AuthProvider>
+        <NotificationProvider>
+          <App />
+        </NotificationProvider>
+      </AuthProvider>
+    );
     
     console.log('✅ App caricata con successo!');
   } catch (error) {

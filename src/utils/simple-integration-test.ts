@@ -13,11 +13,31 @@ interface TestResult {
 export class SimpleIntegrationTester {
   private results: TestResult[] = [];
 
+  private async ensureDevLogin() {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) return data.session.user;
+    
+    const email = import.meta.env.VITE_DEV_TEST_EMAIL;
+    const password = import.meta.env.VITE_DEV_TEST_PASSWORD;
+    
+    if (!email || !password) throw new Error('Missing VITE_DEV_TEST_EMAIL/PASSWORD');
+    
+    console.log('🔐 Tentativo login con:', email);
+    const res = await supabase.auth.signInWithPassword({ email, password });
+    if (res.error) throw res.error;
+    return res.data.user!;
+  }
+
   async runSimpleTests(): Promise<TestResult[]> {
     console.log('🧪 INIZIO TEST INTEGRAZIONE SEMPLIFICATO');
     console.log('========================================');
 
     try {
+      // 0. Login dev per RLS
+      const user = await this.ensureDevLogin();
+      const uid = user.id;
+      console.log('🔐 Login dev completato:', user.email);
+
       // 1. Test Supabase Environment
       await this.testSupabaseEnvironment();
       
@@ -25,7 +45,7 @@ export class SimpleIntegrationTester {
       await this.testSupabaseConnection();
       
       // 3. Test Supabase Tables
-      await this.testSupabaseTables();
+      await this.testSupabaseTables(uid);
       
       // 4. Test PrimeBot Components
       await this.testPrimeBotComponents();
@@ -85,15 +105,16 @@ export class SimpleIntegrationTester {
     }
   }
 
-  private async testSupabaseTables(): Promise<void> {
+  private async testSupabaseTables(uid: string): Promise<void> {
     try {
-      console.log('🔍 Test 3: Tabelle Supabase...');
+      console.log('🔍 Test 3: Tabelle Supabase (filtro utente)...');
       
       // Test tabella profiles
       try {
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id')
+          .eq('id', uid)
           .limit(1);
 
         if (profilesError) {
@@ -110,6 +131,7 @@ export class SimpleIntegrationTester {
         const { data: workouts, error: workoutsError } = await supabase
           .from('custom_workouts')
           .select('id')
+          .eq('user_id', uid)
           .limit(1);
 
         if (workoutsError) {
@@ -126,6 +148,7 @@ export class SimpleIntegrationTester {
         const { data: stats, error: statsError } = await supabase
           .from('user_workout_stats')
           .select('id')
+          .eq('user_id', uid)
           .limit(1);
 
         if (statsError) {

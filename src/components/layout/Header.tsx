@@ -151,12 +151,12 @@ export const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-surface-primary shadow-lg border-b-2 border-brand-primary z-50">
+    <header className="fixed top-0 left-0 right-0 bg-black shadow-lg border-b-2 border-pp-gold z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-surface-secondary rounded-xl flex items-center justify-center overflow-hidden border border-border-primary">
+            <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center overflow-hidden border border-pp-gold">
               <img 
                 src="/lovable-uploads/689d57c4-e221-4d98-91fb-b40567d2e305.png" 
                 alt="Performance Prime Logo" 
@@ -164,8 +164,8 @@ export const Header = () => {
               />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-sm lg:text-xl font-bold text-brand-primary leading-tight">Performance Prime</h1>
-              <p className="text-xs text-text-secondary leading-tight">Oltre ogni limite</p>
+              <h1 className="text-sm lg:text-xl font-bold text-pp-gold leading-tight">Performance Prime</h1>
+              <p className="text-xs text-gray-300 leading-tight">Oltre ogni limite</p>
             </div>
           </div>
 
@@ -175,39 +175,39 @@ export const Header = () => {
           {/* User info and actions */}
           <div className="flex items-center space-x-3">
             {user && (
-              <span className="text-sm text-text-secondary hidden sm:block">
+              <span className="text-sm text-gray-300 hidden sm:block">
                 {userProfile?.name || user.email}
               </span>
             )}
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-text-primary hover:bg-interactive-primary hover:text-background transition-colors"
+              className="text-white hover:bg-gray-800 hover:text-pp-gold transition-colors"
               onClick={handleSearch}
             >
               <Search className="h-5 w-5" />
             </Button>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="relative text-text-primary hover:bg-interactive-primary hover:text-background transition-colors">
+                <Button variant="ghost" size="sm" className="relative text-white hover:bg-gray-800 hover:text-pp-gold transition-colors">
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-interactive-warning text-background text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                       {unreadCount}
                     </span>
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 bg-surface-primary border border-border-primary shadow-lg z-50">
+              <PopoverContent className="w-80 bg-gray-800 border border-gray-600 shadow-lg z-50">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between border-b border-border-primary pb-2">
-                    <h3 className="font-semibold text-brand-primary">Notifiche</h3>
+                  <div className="flex items-center justify-between border-b border-gray-600 pb-2">
+                    <h3 className="font-semibold text-pp-gold">Notifiche</h3>
                     {unreadCount > 0 && (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={markAllAsRead}
-                        className="text-xs text-interactive-primary hover:bg-interactive-primary/10"
+                        className="text-xs text-blue-400 hover:bg-blue-400/10"
                       >
                         Segna tutte come lette
                       </Button>
@@ -218,10 +218,10 @@ export const Header = () => {
                       {notifications.map((notification) => (
                         <div 
                           key={notification.id} 
-                          className={`relative p-3 rounded-lg border border-border-secondary group transition-all duration-200 ${
+                          className={`relative p-3 rounded-lg border border-gray-600 group transition-all duration-200 ${
                             notification.read 
-                              ? 'bg-surface-secondary/50 opacity-75' 
-                              : 'bg-surface-secondary'
+                              ? 'bg-gray-700/50 opacity-75' 
+                              : 'bg-gray-700'
                           }`}
                           onClick={() => markAsRead(notification.id)}
                         >
@@ -230,72 +230,61 @@ export const Header = () => {
                               e.stopPropagation();
                               removeNotification(notification.id);
                             }}
-                            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-interactive-danger/20 rounded-full"
+                            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-500/20 rounded-full"
                           >
-                            <X className="h-3 w-3 text-interactive-danger hover:text-interactive-danger/80" />
+                            <X className="h-3 w-3 text-red-400 hover:text-red-300" />
                           </button>
-                          <p className={`text-sm pr-6 ${notification.read ? 'text-text-secondary' : 'text-text-primary'}`}>
+                          <p className={`text-sm pr-6 ${notification.read ? 'text-gray-400' : 'text-white'}`}>
                             {notification.message}
                           </p>
-                          <p className="text-text-muted text-xs mt-1">{notification.time}</p>
+                          <p className="text-gray-500 text-xs mt-1">{notification.time}</p>
                           {!notification.read && (
-                            <div className="absolute top-2 left-2 w-2 h-2 bg-interactive-warning rounded-full"></div>
+                            <div className="absolute top-2 left-2 w-2 h-2 bg-orange-500 rounded-full"></div>
                           )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-text-muted text-sm py-4 text-center">Non ci sono notifiche al momento</p>
+                    <p className="text-gray-400 text-sm py-4 text-center">Non ci sono notifiche al momento</p>
                   )}
                 </div>
               </PopoverContent>
             </Popover>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-text-primary hover:bg-interactive-primary hover:text-background transition-colors">
+                <Button variant="ghost" size="sm" className="text-white hover:bg-gray-800 hover:text-pp-gold transition-colors">
                   <Menu className="h-5 w-5" />
-                  <ChevronDown className="h-4 w-4 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="end" 
-                className="w-56 bg-surface-primary border border-border-primary shadow-lg"
-              >
+              <DropdownMenuContent className="w-56 bg-gray-800 border border-gray-600 shadow-lg z-50">
+                {/* User Info */}
+                <div className="px-4 py-3 border-b border-gray-600">
+                  <p className="text-sm font-medium text-white">{userProfile?.name || user?.email}</p>
+                  <p className="text-xs text-gray-400">Utente Premium</p>
+                </div>
+                
+                {/* Navigation Items */}
                 {secondaryNavigationItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = location.pathname === item.path;
-                  
                   return (
                     <DropdownMenuItem
                       key={item.id}
                       onClick={() => navigate(item.path)}
-                      className={`flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors ${
-                        isActive
-                          ? "bg-interactive-primary text-background"
-                          : "text-text-primary hover:bg-surface-secondary hover:text-text-primary"
-                      }`}
+                      className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-white hover:bg-gray-700 hover:text-white"
                     >
                       <Icon className="h-5 w-5" />
                       <span className="font-medium">{item.label}</span>
                     </DropdownMenuItem>
                   );
                 })}
-                <DropdownMenuItem
-                  onClick={openLogoutDialog}
-                  className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-text-primary hover:bg-surface-secondary hover:text-text-primary"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span className="font-medium">Logout</span>
-                </DropdownMenuItem>
                 
                 {/* Separatore */}
-                <div className="border-t border-border-primary my-2"></div>
+                <div className="border-t border-gray-600 my-2"></div>
                 
                 {/* Termini e Condizioni */}
                 <DropdownMenuItem
                   onClick={() => navigate('/terms-and-conditions')}
-                  className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-text-primary hover:bg-surface-secondary hover:text-text-primary"
+                  className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-white hover:bg-gray-700 hover:text-white"
                 >
                   <FileTextIcon className="h-5 w-5" />
                   <span className="font-medium">Termini e Condizioni</span>
@@ -304,7 +293,7 @@ export const Header = () => {
                 {/* GDPR */}
                 <DropdownMenuItem
                   onClick={() => navigate('/privacy-policy')}
-                  className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-text-primary hover:bg-surface-secondary hover:text-text-primary"
+                  className="flex items-center space-x-3 px-4 py-3 cursor-pointer transition-colors text-white hover:bg-gray-700 hover:text-white"
                 >
                   <Shield className="h-5 w-5" />
                   <span className="font-medium">Privacy Policy</span>
@@ -317,23 +306,23 @@ export const Header = () => {
 
       {/* Search Overlay */}
       {showSearch && (
-        <div className="absolute top-16 left-0 right-0 bg-surface-primary border-b-2 border-brand-primary shadow-lg z-50" ref={searchRef}>
+        <div className="absolute top-16 left-0 right-0 bg-black border-b-2 border-pp-gold shadow-lg z-50" ref={searchRef}>
           <div className="container mx-auto px-4 py-4">
             <div className="relative max-w-md mx-auto">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-text-secondary" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 id="search-input"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cerca allenamenti, esercizi…"
-                className="w-full pl-10 pr-10 py-2 bg-surface-secondary border border-border-primary rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors"
+                className="w-full pl-10 pr-10 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pp-gold transition-colors"
               />
               <Button
                 onClick={() => setShowSearch(false)}
                 variant="ghost"
                 size="sm"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-text-secondary hover:bg-interactive-primary hover:text-background transition-colors"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -341,19 +330,19 @@ export const Header = () => {
             
             {/* Search Results */}
             {searchQuery && (
-              <div className="max-w-md mx-auto mt-2 bg-surface-primary border border-border-primary rounded-lg shadow-lg">
+              <div className="max-w-md mx-auto mt-2 bg-gray-800 border border-gray-600 rounded-lg shadow-lg">
                 {filteredItems.length > 0 ? (
                   filteredItems.map((item, index) => (
                     <button
                       key={index}
                       onClick={() => handleSearchItemClick(item.path)}
-                      className="w-full px-4 py-2 text-left text-text-primary hover:bg-surface-secondary hover:text-text-primary transition-colors border-b border-border-primary last:border-b-0"
+                      className="w-full px-4 py-2 text-left text-white hover:bg-gray-700 hover:text-white transition-colors border-b border-gray-600 last:border-b-0"
                     >
                       {item.label}
                     </button>
                   ))
                 ) : (
-                  <div className="px-4 py-2 text-text-muted">Nessun risultato trovato</div>
+                  <div className="px-4 py-2 text-gray-400">Nessun risultato trovato</div>
                 )}
               </div>
             )}
@@ -363,22 +352,22 @@ export const Header = () => {
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="bg-surface-primary border-2 border-border-primary max-w-md">
+        <AlertDialogContent className="bg-gray-800 border-2 border-pp-gold max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-brand-primary text-xl font-bold">
+            <AlertDialogTitle className="text-pp-gold text-xl font-bold">
               Conferma Logout
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-text-secondary">
+            <AlertDialogDescription className="text-gray-300">
               Sei sicuro di voler effettuare il logout? Verrai reindirizzato alla pagina di accesso.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel className="bg-transparent border border-border-primary text-text-primary hover:bg-surface-secondary hover:text-text-primary transition-colors">
+            <AlertDialogCancel className="bg-transparent border border-gray-600 text-white hover:bg-gray-700 hover:text-white transition-colors">
               Annulla
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmLogout}
-              className="bg-interactive-primary text-background hover:bg-interactive-primary/90 transition-colors"
+              className="bg-pp-gold text-black hover:bg-yellow-400 transition-colors"
             >
               Conferma Logout
             </AlertDialogAction>
