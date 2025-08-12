@@ -7,13 +7,10 @@ export default defineConfig(({ mode }) => {
   // Carica esplicitamente le variabili d'ambiente
   const env = loadEnv(mode, process.cwd(), '')
   
-  const isLanding = env.VITE_APP_MODE === 'landing';
-  
   console.log('Vite mode:', mode);
   console.log('VITE_APP_MODE:', env.VITE_APP_MODE);
   console.log('VITE_DEV_TEST_EMAIL:', env.VITE_DEV_TEST_EMAIL);
   console.log('VITE_DEV_TEST_PASSWORD:', env.VITE_DEV_TEST_PASSWORD ? 'PRESENTE' : 'MISSING');
-  console.log('Is Landing:', isLanding);
   
   return {
     plugins: [react()],
