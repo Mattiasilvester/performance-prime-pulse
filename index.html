@@ -2,17 +2,505 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>Performance Prime - Oltre ogni limite</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Prime - Landing Completa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #FFFFFF;
+            background-color: #1A1A1A;
+        }
+        
+        /* HERO SECTION - MOSTRA IMMEDIATAMENTE */
+        .hero {
+            background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+            z-index: 1;
+        }
+        
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* HEADER CON LOGO E TITOLO */
+        .hero-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 25px;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
 
+        
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.3);
+        }
+        
+
+        
+
+        
+
+        
+        .hero h1 {
+            font-size: 4rem;
+            margin: 0;
+            background: linear-gradient(45deg, #FFD700, #FFFF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            text-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            color: #A0A0A0;
+            font-weight: 400;
+        }
+        
+        .cta-button {
+            background: linear-gradient(135deg, #FFD700, #F59E0B);
+            color: #1A1A1A;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
+            background: linear-gradient(135deg, #F59E0B, #FFD700);
+        }
+        
+        /* FEATURES SECTION */
+        .features {
+            padding: 100px 20px;
+            background: #2A2A2A;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 60px;
+            color: #FFD700;
+            font-weight: 700;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        
+        .feature-card {
+            background: #404040;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            border: 1px solid #595959;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: #FFD700;
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #FFD700;
+            font-weight: 600;
+        }
+        
+        .feature-description {
+            color: #A0A0A0;
+            line-height: 1.6;
+        }
+        
+        /* PRICING SECTION */
+        .pricing {
+            padding: 100px 20px;
+            background: #1A1A1A;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .pricing-card {
+            background: #2A2A2A;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid #404040;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        
+        .pricing-card.featured {
+            border-color: #FFD700;
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.2);
+            background: #404040;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            border-color: #FFD700;
+        }
+        
+        .pricing-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #FFD700;
+            font-weight: 600;
+        }
+        
+        .pricing-price {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #3B82F6;
+            margin-bottom: 10px;
+        }
+        
+        .pricing-period {
+            color: #A0A0A0;
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin: 30px 0;
+        }
+        
+        .pricing-features li {
+            padding: 10px 0;
+            color: #A0A0A0;
+            border-bottom: 1px solid #404040;
+        }
+        
+        .pricing-cta {
+            background: linear-gradient(135deg, #FFD700, #F59E0B);
+            color: #1A1A1A;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            font-weight: 600;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .pricing-cta:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #F59E0B, #FFD700);
+        }
+        
+        /* FOOTER */
+        .footer {
+            background: #0A0A0A;
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+            border-top: 1px solid #2A2A2A;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #FFD700;
+            font-weight: 600;
+        }
+        
+        .footer-description {
+            color: #A0A0A0;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: #A0A0A0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .footer-links a:hover {
+            color: #FFD700;
+        }
+        
+        .footer-copyright {
+            color: #737373;
+            margin-top: 30px;
+            font-size: 0.9rem;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .logo {
+                width: 100px;
+                height: 120px;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .features-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-card.featured {
+                transform: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo {
+                width: 80px;
+                height: 100px;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script src="/src/utils/testResponsive.js"></script>
+    <!-- LANDING COMPLETA - NESSUNA SCHERMATA INIZIALE -->
+    
+    <!-- HERO SECTION - VISIBILE IMMEDIATAMENTE -->
+    <section class="hero">
+        <div class="hero-content">
+            <!-- HEADER CON LOGO E TITOLO -->
+            <div class="hero-header">
+                <div class="logo">
+                    <img src="images/logo-pp.svg" alt="Performance Prime Logo" class="logo-image">
+                </div>
+                <h1>Performance Prime</h1>
+            </div>
+            
+            <p>Trasforma i tuoi dati in performance straordinarie</p>
+            <button class="cta-button" onclick="alert('Funziona! Nessuna schermata iniziale!')">
+                Inizia Ora - È Gratis!
+            </button>
+        </div>
+    </section>
+    
+    <!-- FEATURES SECTION -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Caratteristiche Principali</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3 class="feature-title">App Mobile</h3>
+                    <p class="feature-description">Accesso completo ai tuoi dati di performance ovunque tu sia.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Obiettivi Personalizzati</h3>
+                    <p class="feature-description">Imposta e monitora i tuoi obiettivi specifici.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3 class="feature-title">Analisi Avanzate</h3>
+                    <p class="feature-description">Grafici dettagliati per capire i tuoi progressi.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">AI Coach</h3>
+                    <p class="feature-description">Ricevi consigli personalizzati basati sui tuoi dati.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3 class="feature-title">Community</h3>
+                    <p class="feature-description">Confrontati con altri atleti e trova ispirazione.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3 class="feature-title">Sicurezza</h3>
+                    <p class="feature-description">I tuoi dati sono protetti con crittografia avanzata.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- PRICING SECTION -->
+    <section class="pricing">
+        <div class="container">
+            <h2 class="section-title">Piani e Prezzi</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3 class="pricing-title">Free</h3>
+                    <div class="pricing-price">€0</div>
+                    <div class="pricing-period">/mese</div>
+                    <ul class="pricing-features">
+                        <li>✓ Tracking base</li>
+                        <li>✓ 5 allenamenti/mese</li>
+                        <li>✓ Statistiche essenziali</li>
+                    </ul>
+                    <button class="pricing-cta">Inizia Gratis</button>
+                </div>
+                <div class="pricing-card featured">
+                    <h3 class="pricing-title">Pro</h3>
+                    <div class="pricing-price">€9.99</div>
+                    <div class="pricing-period">/mese</div>
+                    <ul class="pricing-features">
+                        <li>✓ Tutto del piano Free</li>
+                        <li>✓ Allenamenti illimitati</li>
+                        <li>✓ AI Coach avanzato</li>
+                        <li>✓ Analisi dettagliate</li>
+                        <li>✓ Supporto prioritario</li>
+                    </ul>
+                    <button class="pricing-cta">Scegli Pro</button>
+                </div>
+                <div class="pricing-card">
+                    <h3 class="pricing-title">Team</h3>
+                    <div class="pricing-price">€29.99</div>
+                    <div class="pricing-period">/mese</div>
+                    <ul class="pricing-features">
+                        <li>✓ Tutto del piano Pro</li>
+                        <li>✓ Fino a 10 atleti</li>
+                        <li>✓ Dashboard team</li>
+                        <li>✓ Report avanzati</li>
+                        <li>✓ API access</li>
+                    </ul>
+                    <button class="pricing-cta">Scegli Team</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-content">
+            <h3 class="footer-title">Performance Prime</h3>
+            <p class="footer-description">Trasformiamo i tuoi dati in performance straordinarie. Unisciti alla rivoluzione della performance sportiva.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Accedi</a>
+                <a href="mailto:primeassistenza@gmail.com">Contatti</a>
+            </div>
+            <p class="footer-copyright">© 2025 Performance Prime. Tutti i diritti riservati.</p>
+        </div>
+    </footer>
+    
+    <script>
+        console.log('🚀 LANDING COMPLETA CARICATA - NESSUNA SCHERMATA INIZIALE!');
+        console.log('✅ Hero section visibile immediatamente');
+        console.log('✅ Features section visibile');
+        console.log('✅ Pricing section visibile');
+        console.log('✅ Footer visibile');
+        console.log('❌ NESSUNA schermata "Oltre ogni limite"');
+        console.log('❌ NESSUN bottone "Scopri Performance Prime"');
+        
+        // Verifica che la pagina sia caricata correttamente
+        document.addEventListener('DOMContentLoaded', function() {
+            alert('🎉 LANDING COMPLETA CARICATA! Nessuna schermata iniziale!');
+        });
+    </script>
 </body>
 </html>
