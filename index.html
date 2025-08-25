@@ -15,34 +15,21 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
             color: #FFFFFF;
-            background-color: #1A1A1A;
+            background-color: #000000;
         }
         
         /* HERO SECTION - MOSTRA IMMEDIATAMENTE */
         .hero {
-            background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
-            color: white;
-            padding: 100px 20px;
+            background: #000000;
+            padding: 80px 20px 100px 20px;
             text-align: center;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            min-height: auto;
+            display: block;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
         
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 30% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
-            z-index: 1;
-        }
+
         
         .hero-content {
             max-width: 1200px;
@@ -56,20 +43,29 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             gap: 25px;
+            position: relative;
+            top: 0;
+            padding-top: 20px;
         }
         
         .logo {
-            width: 120px;
-            height: 140px;
+            width: 71px;
+            height: 89px;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
+            overflow: visible;
         }
         
-
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
         
         .logo-image {
             width: 100%;
@@ -86,7 +82,7 @@
 
         
         .hero h1 {
-            font-size: 4rem;
+            font-size: 1.34rem;
             margin: 0;
             background: linear-gradient(45deg, #FFD700, #FFFF00);
             -webkit-background-clip: text;
@@ -102,6 +98,215 @@
             margin-bottom: 40px;
             color: #A0A0A0;
             font-weight: 400;
+        }
+        
+        .highlight-gold {
+            color: #FFD700;
+            font-weight: 600;
+        }
+        
+        .gold-line {
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #FFD700, transparent);
+            margin: 72px auto 0;
+            border-radius: 1px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+        }
+        
+        /* FEATURES INTRO SECTION */
+        .features-section {
+            margin-top: 60px;
+            text-align: center;
+            padding: 0 20px;
+            margin-bottom: 60px;
+        }
+        
+        .intro-text p {
+            font-size: 1.3rem;
+            color: #A0A0A0;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .features-card {
+            background: #1A1A1A;
+            border: 1px solid #FFD700;
+            border-radius: 15px;
+            padding: 40px;
+            margin-top: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+            overflow: visible;
+        }
+        
+        .features-title {
+            color: #FFD700;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        
+        .features-list li {
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.5;
+        }
+        
+        .features-list li:before {
+            content: "•";
+            color: #FFD700;
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+        
+        /* NUOVE SEZIONI */
+        .why-different-card {
+            background: #1A1A1A;
+            border: 1px solid #FFD700;
+            border-radius: 15px;
+            padding: 40px;
+            margin-top: 70px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+        
+        .why-different-title {
+            color: #FFD700;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .why-different-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        
+        .why-different-list li {
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.5;
+        }
+        
+        .why-different-list li:before {
+            content: "•";
+            color: #FFD700;
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+        
+        .try-now-card {
+            background: #241F12;
+            border: 1px solid #B8860B;
+            border-radius: 15px;
+            padding: 25px 40px;
+            margin-top: 70px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+        
+        .try-now-title {
+            color: #FFD700;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .try-now-text {
+            color: #FFFFFF !important;
+            font-size: 0.9rem;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .try-now-special {
+            color: #EEBA2B !important;
+            font-size: 0.9rem;
+            font-style: italic;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+        
+        .bottom-features {
+            margin-top: 90px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 20px;
+        }
+        
+        .bottom-feature-card {
+            background: #241F12;
+            border: 1px solid #FFD700;
+            border-radius: 15px;
+            padding: 25px 20px;
+            text-align: left;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .bottom-feature-icon {
+            font-size: 2.5rem;
+            display: block;
+            flex-shrink: 0;
+        }
+        
+        .bottom-feature-text {
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .hero-subtitle {
+            font-size: 4.9rem;
+            font-weight: 700;
+            margin: 20px 0 15px 0;
+            text-align: center;
+            background: linear-gradient(45deg, #FFFFFF, #FFD700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
         }
         
         .cta-button {
@@ -186,7 +391,7 @@
         /* PRICING SECTION */
         .pricing {
             padding: 100px 20px;
-            background: #1A1A1A;
+            background: #000000;
         }
         
         .pricing-grid {
@@ -324,14 +529,19 @@
         
         /* RESPONSIVE */
         @media (max-width: 768px) {
+            .hero {
+                padding: 60px 15px 80px 15px;
+            }
+            
             .hero-header {
                 flex-direction: column;
                 gap: 20px;
+                margin-bottom: 30px;
             }
             
             .logo {
-                width: 100px;
-                height: 120px;
+                width: 60px;
+                height: 75px;
             }
             
             .hero h1 {
@@ -346,6 +556,37 @@
                 font-size: 2rem;
             }
             
+            .features-section {
+                margin-top: 40px;
+                padding: 0 15px;
+            }
+            
+            .features-card {
+                padding: 30px 20px;
+                margin-top: 30px;
+            }
+            
+            .why-different-card {
+                padding: 30px 20px;
+                margin-top: 40px;
+            }
+            
+            .bottom-features {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                margin-top: 60px;
+                padding: 0 15px;
+            }
+            
+            .bottom-feature-card {
+                padding: 20px 15px;
+                gap: 12px;
+            }
+            
+            .bottom-feature-icon {
+                font-size: 2.2rem;
+            }
+            
             .features-grid,
             .pricing-grid {
                 grid-template-columns: 1fr;
@@ -357,12 +598,47 @@
         }
         
         @media (max-width: 480px) {
+            .hero {
+                padding: 50px 10px 70px 10px;
+            }
+            
             .logo {
-                width: 80px;
-                height: 100px;
+                width: 50px;
+                height: 62px;
             }
             
             .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .features-section {
+                margin-top: 30px;
+                padding: 0 10px;
+            }
+            
+            .features-card {
+                padding: 25px 15px;
+                margin-top: 25px;
+            }
+            
+            .why-different-card {
+                padding: 25px 15px;
+                margin-top: 30px;
+            }
+            
+            .bottom-features {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin-top: 50px;
+                padding: 0 10px;
+            }
+            
+            .bottom-feature-card {
+                padding: 18px 12px;
+                gap: 10px;
+            }
+            
+            .bottom-feature-icon {
                 font-size: 2rem;
             }
         }
@@ -377,15 +653,70 @@
             <!-- HEADER CON LOGO E TITOLO -->
             <div class="hero-header">
                 <div class="logo">
-                    <img src="images/logo-pp.svg" alt="Performance Prime Logo" class="logo-image">
+                    <img src="android/Architettura MVP/Logo PP senza sfondo.jpg" alt="Performance Prime Logo" class="logo-image">
                 </div>
                 <h1>Performance Prime</h1>
             </div>
             
-            <p>Trasforma i tuoi dati in performance straordinarie</p>
-            <button class="cta-button" onclick="alert('Funziona! Nessuna schermata iniziale!')">
-                Inizia Ora - È Gratis!
-            </button>
+            <h2 class="hero-subtitle">Oltre ogni limite</h2>
+            
+            <p>L'app che trasforma i tuoi dati in <span class="highlight-gold">performance straordinarie</span></p>
+            <div class="gold-line"></div>
+            
+            <!-- Sezione Features Intro -->
+            <div class="features-section">
+                <div class="intro-text">
+                    <p>Performance Prime è la prima app creata da atleti per atleti, amatori e performer che vogliono evolversi davvero.</p>
+                    <p>Allenamento, nutrizione, routine e progressi: tutto in un'unica piattaforma intelligente, personalizzata e motivante.</p>
+                </div>
+                
+                <div class="features-card">
+                    <h3 class="features-title">✅ Cosa puoi fare:</h3>
+                    <ul class="features-list">
+                        <li>Trova palestre e professionisti vicino a te</li>
+                        <li>Ricevi piani su misura con l'AI Coach</li>
+                        <li>Organizza tutto con calendario, note, timer e promemoria</li>
+                        <li>Tieni traccia di peso, forza, cardio, progressi</li>
+                        <li>Accedi al nostro e-commerce sportivo integrato</li>
+                        <li>Entra in una community reale e motivante</li>
+                    </ul>
+                </div>
+                
+                <!-- Card "Perché è diversa:" -->
+                <div class="why-different-card">
+                    <h3 class="why-different-title">🚀 Perché è diversa:</h3>
+                    <ul class="why-different-list">
+                        <li>Niente piani standard: tutto è su misura per te</li>
+                        <li>AI Coach + professionisti reali: scegli tu come essere seguito</li>
+                        <li>Creato da atleti veri: Nicholas (judo) e Mattia (atletica)</li>
+                        <li>Focus su performance, costanza e risultati, non solo estetica</li>
+                        <li>Design semplice, intuitivo, senza distrazioni</li>
+                    </ul>
+                </div>
+                
+                <!-- Card "Provala ora" -->
+                <div class="try-now-card">
+                    <h3 class="try-now-title">👇 Provala ora</h3>
+                    <p class="try-now-text">Accedi al nostro MVP gratuito, lasciaci un feedback e unisciti alla waiting list per l'app completa.</p>
+                    <p class="try-now-special">Siete i primi. Siete speciali.</p>
+                </div>
+                
+                <!-- Tre card features in basso -->
+                <div class="bottom-features">
+                    <div class="bottom-feature-card">
+                        <span class="bottom-feature-icon">🏃‍♂️</span>
+                        <div class="bottom-feature-text">Tracking Avanzato</div>
+                    </div>
+                    <div class="bottom-feature-card">
+                        <span class="bottom-feature-icon">🤖</span>
+                        <div class="bottom-feature-text">AI Coach</div>
+                    </div>
+                    <div class="bottom-feature-card">
+                        <span class="bottom-feature-icon">📊</span>
+                        <div class="bottom-feature-text">Analisi Dettagliate</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
     
@@ -497,10 +828,7 @@
         console.log('❌ NESSUNA schermata "Oltre ogni limite"');
         console.log('❌ NESSUN bottone "Scopri Performance Prime"');
         
-        // Verifica che la pagina sia caricata correttamente
-        document.addEventListener('DOMContentLoaded', function() {
-            alert('🎉 LANDING COMPLETA CARICATA! Nessuna schermata iniziale!');
-        });
+
     </script>
 </body>
 </html>

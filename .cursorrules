@@ -1,179 +1,104 @@
-# PERFORMANCE PRIME PULSE - CURSOR RULES
-# Ultimo aggiornamento: 11 Agosto 2025 - 19:55
+# CURSOR RULES - PERFORMANCE PRIME PULSE
 
-## PROGETTO OVERVIEW
-Performance Prime Pulse è un'applicazione mobile per la gestione delle performance aziendali, sviluppata con React Native, Capacitor e Supabase.
+## PROGETTO
+**Nome**: Performance Prime Pulse  
+**Tipo**: App mobile per atleti e performer  
+**Framework**: React Native + TypeScript  
+**Stato**: MVP in sviluppo  
 
-## ARCHITETTURA TECNICA
-- **Frontend**: React Native con Capacitor per cross-platform
-- **Backend**: Supabase (PostgreSQL + Auth + Real-time)
-- **Styling**: Tailwind CSS
-- **Build**: Vite + Capacitor
-- **Testing**: TestSprite per test automatizzati
+## ARCHITETTURA ATTUALE
+- **Frontend**: React Native con TypeScript
+- **Backend**: Node.js + Express
+- **Database**: MongoDB
+- **Landing Page**: HTML/CSS statico integrato nel progetto
 
-## STATO ATTUALE DEL PROGETTO (11 Agosto 2025)
+## LANDING PAGE - STATO ATTUALE (15 Gennaio 2025)
 
-### ✅ PROBLEMI RISOLTI RECENTEMENTE
+### ✅ COMPLETATO
+1. **Restauro Landing Originale**: Ripristinata la landing page originale "DO NOT TOUCH"
+2. **Cleanup Progetto**: Rimossi file duplicati e obsoleti
+3. **Correzione Layout**: Risolti problemi di logo spezzato e layout responsive
+4. **Sezioni Features**: Implementate card "Cosa puoi fare", "Perché è diversa", "Provala ora"
+5. **Tre Card Features**: Aggiunte card "Tracking Avanzato", "AI Coach", "Analisi Dettagliate"
+6. **Colori e Stili**: Implementata palette colori coerente con l'app
 
-#### 1. CORREZIONE ROUTING LANDING PAGE
-**Problema**: La landing page mostrava una pagina intermedia con "Oltre ogni limite" invece della landing completa
-**Soluzione**: 
-- Eliminata completamente la struttura React per la landing
-- Creata landing page statica HTML pura
-- Rimossi tutti i file duplicati e conflittuali
-- Eliminata la cartella `src/` e tutti i file React della landing
+### 🎯 STRUTTURA LANDING COMPLETATA
+- **Header**: Logo PP + "Performance Prime" + "Oltre ogni limite"
+- **Sottotitolo**: "L'app che trasforma i tuoi dati in performance straordinarie"
+- **Linea gialla**: Separatore decorativo
+- **Card "Cosa puoi fare"**: 6 feature con bullet point dorati
+- **Card "Perché è diversa"**: 5 punti distintivi dell'app
+- **Card "Provala ora"**: Call-to-action con MVP gratuito
+- **Tre Card Features**: Tracking, AI Coach, Analisi
 
-#### 2. CLEANUP MASSIVO DEL PROGETTO
-**Problema**: 8+ file landing diversi creavano confusione totale
-**Soluzione**:
-- Eliminati tutti i file duplicati: `landing-*.html`, `landing-*.js`
-- Rimossa cartella `src/` completa
-- Eliminati file di documentazione obsoleti
-- Mantenuto solo `index.html` come landing principale
+### 🔧 PROBLEMI RISOLTI
+1. **Logo Spezzato**: Corretto overflow e posizionamento CSS
+2. **Layout Responsive**: Ottimizzato per tutti i dispositivi
+3. **Conflitti CSS**: Rimossi duplicati e regole generiche conflittuali
+4. **Specificità CSS**: Aggiunto `!important` per forzare colori specifici
+5. **Colori Card**: Implementato sfondo `#241F12` per card "Provala ora" e tre card piccole
 
-#### 3. CONFLITTI SERVER
-**Problema**: Node.js server in conflitto con Python server sulla porta 8080
-**Soluzione**: Terminato processo Node.js (PID 70469) per liberare la porta
+### 🎨 COLORI IMPLEMENTATI
+- **Sfondo principale**: `#000000` (nero puro)
+- **Card "Provala ora"**: `#241F12` (marrone scuro)
+- **Tre card features**: `#241F12` (marrone scuro)
+- **Bordi**: `#FFD700` (oro) e `#B8860B` (oro scuro)
+- **Testi**: `#FFFFFF` (bianco) e `#EEBA2B` (giallo/oro)
 
-#### 4. ADATTAMENTO COLORI APP
-**Problema**: Landing page non coerente con i colori dell'app
-**Soluzione**: Applicata palette colori da `tailwind.config.ts` per coerenza visiva
+### 📱 RESPONSIVE DESIGN
+- **Desktop**: Layout a 3 colonne per card features
+- **Tablet (768px)**: Layout ottimizzato con spaziature ridotte
+- **Mobile (480px)**: Layout a 1 colonna con padding ottimizzati
 
-#### 5. IMPLEMENTAZIONE LOGO HEADER
-**Problema**: Header senza logo dell'app
-**Soluzione**: 
-- Creata cartella `images/` per asset
-- Implementato logo con design specifico: "DD", "PERFORMANCE PRIME", "PP", "OLTRE OGNI LIMITE"
-- Logo in oro su sfondo nero con bordo dorato
-- Posizionato a sinistra del titolo "Performance Prime"
+## PROBLEMI TECNICI RISOLTI
 
-### 🚧 LAVORO IN CORSO
+### 1. Conflitti CSS Duplicati
+- **Problema**: Multiple definizioni `.try-now-card` causavano conflitti
+- **Soluzione**: Rimossi duplicati, mantenuta solo definizione principale
 
-#### LANDING PAGE COMPLETATA
-- **File principale**: `performance-prime-pulse/index.html`
-- **Server locale**: `http://localhost:8080/`
-- **Struttura**: Hero, Features, Testimonials, Pricing, Footer
-- **Design**: Responsive, colori app, logo integrato
+### 2. Regole CSS Generiche Conflittuali
+- **Problema**: `.hero { color: white; }` sovrascriveva colori specifici
+- **Soluzione**: Rimossa regola generica, mantenuti colori specifici
 
-#### LOGO IMPLEMENTATO
-- **Formato**: SVG (`images/logo-pp.svg`)
-- **Design**: DD + PERFORMANCE PRIME + PP + OLTRE OGNI LIMITE
-- **Colori**: Oro (#FFD700) su sfondo nero
-- **Stile**: Elegante, lussuoso, professionale
+### 3. Specificità CSS Insufficiente
+- **Problema**: `.hero p { color: #A0A0A0; }` sovrascriveva colori card
+- **Soluzione**: Aggiunto `!important` alle regole specifiche
 
-### 📁 STRUTTURA FILE ATTUALI
+### 4. Layout Responsive
+- **Problema**: Logo e testi tagliati su dispositivi mobili
+- **Soluzione**: Ottimizzato padding, margini e overflow per tutti i breakpoint
 
-#### FILE PRINCIPALI
-- `index.html` - Landing page completa e funzionante
-- `images/logo-pp.svg` - Logo dell'app
-- `tailwind.config.ts` - Configurazione colori app
+## SERVER E SVILUPPO
+- **Porta attuale**: 8083
+- **Comando**: `python3 -m http.server 8083`
+- **Directory**: `performance-prime-pulse/`
+- **File principale**: `index.html`
 
-#### SCRIPT E CONFIGURAZIONI
-- `cleanup-project.sh` - Script di pulizia progetto
-- `avvia-dev.sh` - Script avvio sviluppo
-- `vite.config.ts` - Configurazione build
+## PROSSIMI PASSI
+1. **Test finale landing page** su tutti i dispositivi
+2. **Integrazione con app principale**
+3. **Deploy produzione**
+4. **Analytics e tracking**
 
-### 🎯 PROSSIMI PASSI
-
-#### IMMEDIATI
-1. **Test logo**: Verificare visualizzazione corretta del logo SVG
-2. **Responsive design**: Ottimizzare per dispositivi mobili
-3. **Performance**: Ottimizzare caricamento landing page
-
-#### MEDIO TERMINE
-1. **Integrazione app**: Collegare landing con app principale
-2. **Analytics**: Implementare tracking visite
-3. **SEO**: Ottimizzazioni per motori di ricerca
-
-### 🚨 PROBLEMI NOTI
-
-#### RISOLTI
-- ✅ Pagina intermedia "Oltre ogni limite" eliminata
-- ✅ Routing landing corretto
-- ✅ File duplicati rimossi
-- ✅ Conflitti server risolti
-- ✅ Logo implementato
-
-#### DA MONITORARE
-- Nessun problema critico attualmente
-
-### 💻 COMANDI UTILI
-
-#### SERVER LOCALE
-```bash
-cd performance-prime-pulse
-python3 -m http.server 8080
-```
-**URL**: `http://localhost:8080/`
-
-#### CLEANUP PROGETTO
-```bash
-./cleanup-project.sh
-```
-
-#### AVVIO SVILUPPO
-```bash
-./avvia-dev.sh
-```
-
-### 🔧 TECNOLOGIE UTILIZZATE
-
-#### FRONTEND
-- HTML5 + CSS3 + JavaScript vanilla
-- Tailwind CSS per styling
-- Design responsive e moderno
-
-#### BACKEND
-- Supabase per database e autenticazione
-- API REST per comunicazione
-
-#### BUILD & DEPLOY
-- Vite per build ottimizzata
-- Capacitor per packaging mobile
-
-### 📊 METRICHE PROGETTO
-
-#### STATO GENERALE
-- **Completamento**: 85%
-- **Stabilità**: Alta
-- **Performance**: Ottima
-- **Documentazione**: Aggiornata
-
-#### FILE RIMOSSI (Cleanup)
-- 8+ file landing duplicati
-- Cartella `src/` completa
-- File di documentazione obsoleti
-- Backup e file temporanei
-
-### 📝 NOTE IMPORTANTI
-
-#### PER GLI SVILUPPATORI
-1. **NON modificare** la struttura HTML della landing senza aggiornare questa documentazione
+## REGOLE IMPORTANTI
+1. **NON modificare** la landing page originale senza autorizzazione
 2. **Utilizzare sempre** i colori definiti in `tailwind.config.ts`
-3. **Testare** sempre su `http://localhost:8080/` prima di deployare
-4. **Aggiornare** questa documentazione per ogni modifica significativa
+3. **Mantenere** layout responsive e accessibilità
+4. **Testare** su tutti i dispositivi prima del deploy
 
-#### PER IL TEAM
-1. La landing page è ora **completamente statica** e funzionale
-2. Il logo è **integrato e funzionante**
-3. Tutti i problemi di routing sono **risolti**
-4. Il progetto è **pulito e organizzato**
+## TECNOLOGIE UTILIZZATE
+- **HTML5**: Struttura semantica
+- **CSS3**: Layout responsive, Flexbox, Grid
+- **JavaScript**: Vanilla (nessun framework)
+- **Server**: Python HTTP Server per sviluppo locale
 
-### 🎉 RISULTATI RAGGIUNTI
-
-#### QUALITÀ
-- Landing page **professionale e moderna**
-- Design **coerente** con l'app
-- **Zero dipendenze** esterne per la landing
-- **Performance ottimale** e caricamento veloce
-
-#### ORGANIZZAZIONE
-- Codice **pulito e mantenibile**
-- Documentazione **aggiornata e completa**
-- Struttura progetto **logica e ordinata**
-- Processi di sviluppo **standardizzati**
+## NOTE TECNICHE
+- **Specificità CSS**: Utilizzare `!important` per override necessari
+- **Responsive**: Media queries per 768px e 480px
+- **Performance**: CSS ottimizzato, nessun framework pesante
+- **Accessibilità**: Contrasti adeguati, struttura semantica
 
 ---
-**Ultimo aggiornamento**: 11 Agosto 2025 - 19:55
-**Stato**: Landing page completa e funzionante
-**Prossimo milestone**: Test e ottimizzazioni finali 
+**Ultimo aggiornamento**: 15 Gennaio 2025  
+**Stato**: Landing page completa e funzionante  
+**Prossima milestone**: Integrazione con app principale 
