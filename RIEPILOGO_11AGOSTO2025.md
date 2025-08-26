@@ -62,3 +62,4 @@
 **Team**: Assistente AI + Utente  
 **Data**: 11 Agosto 2025 - 19:55
 
+

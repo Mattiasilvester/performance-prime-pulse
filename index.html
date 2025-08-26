@@ -134,7 +134,7 @@
         
         .features-card {
             background: #1A1A1A;
-            border: 1px solid #FFD700;
+            border: 1px solid #B8860B; /* oro più tenue, coerente con la card "Provala ora" */
             border-radius: 15px;
             padding: 40px;
             margin-top: 40px;
@@ -167,6 +167,7 @@
             padding-left: 25px;
             position: relative;
             line-height: 1.5;
+            padding-top: 0.5em; /* abbassa di più il testo per centrare meglio */
         }
         
         .features-list li:before {
@@ -175,13 +176,13 @@
             font-size: 1.5rem;
             position: absolute;
             left: 0;
-            top: -2px;
+            top: 0.15em; /* centrato alla prima lettera della frase */
         }
         
         /* NUOVE SEZIONI */
         .why-different-card {
             background: #1A1A1A;
-            border: 1px solid #FFD700;
+            border: 1px solid #B8860B; /* oro più tenue */
             border-radius: 15px;
             padding: 40px;
             margin-top: 70px;
@@ -213,6 +214,7 @@
             padding-left: 25px;
             position: relative;
             line-height: 1.5;
+            padding-top: 0.5em; /* abbassa di più il testo per centrare meglio */
         }
         
         .why-different-list li:before {
@@ -221,16 +223,18 @@
             font-size: 1.5rem;
             position: absolute;
             left: 0;
-            top: -2px;
+            top: 0.15em; /* centrato alla prima lettera della frase */
         }
         
         .try-now-card {
             background: #241F12;
             border: 1px solid #B8860B;
             border-radius: 15px;
-            padding: 25px 40px;
+            padding: 18px 28px;
             margin-top: 70px;
-            max-width: 500px;
+            /* più respiro orizzontale su desktop, ma limitata su mobile */
+            max-width: 560px;
+            width: min(560px, 92vw);
             margin-left: auto;
             margin-right: auto;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
@@ -240,16 +244,32 @@
             color: #FFD700;
             font-size: 1.6rem;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
         }
         
         .try-now-text {
             color: #FFFFFF !important;
-            font-size: 0.9rem;
+            /* font responsivo: scende appena su mobile per restare in 2 righe intere */
+            font-size: clamp(0.9rem, 2.2vw, 1rem);
             text-align: center;
-            line-height: 1.5;
-            margin-bottom: 15px;
+            line-height: 1.35;
+            margin-bottom: 10px;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+            /* niente clamp (niente ellissi) */
+            display: block;
+            overflow: visible;
+            white-space: normal;
+            word-break: normal;
+            overflow-wrap: break-word;
+        }
+
+        /* ogni riga è un blocco singolo che non va a capo al suo interno */
+        .try-now-text .line {
+            display: block;
+            white-space: nowrap; /* su desktop: 2 righe fisse */
         }
         
         .try-now-special {
@@ -258,8 +278,8 @@
             font-style: italic;
             font-weight: 600;
             text-align: center;
-            line-height: 1.5;
-            margin-top: 8px;
+            line-height: 1.4;
+            margin-top: 5px;
         }
         
         .bottom-features {
@@ -267,7 +287,9 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 30px;
-            max-width: 800px;
+            /* più spazio orizzontale per tenere il testo su una riga */
+            max-width: 960px;
+            width: min(960px, 95vw);
             margin-left: auto;
             margin-right: auto;
             padding: 0 20px;
@@ -295,6 +317,8 @@
             color: white;
             font-size: 1rem;
             font-weight: 600;
+            /* non andare a capo: una sola riga */
+            white-space: nowrap;
         }
         
         .hero-subtitle {
@@ -625,6 +649,12 @@
                 padding: 25px 15px;
                 margin-top: 30px;
             }
+            /* Mobile-only: allinea la card "Provala ora" allo schermo
+               e allinea i bullet al baseline della prima riga */
+            .try-now-card { width: 100%; padding: 16px 18px; }
+            .try-now-text .line { white-space: normal; } /* permette 3-4 righe su mobile */
+            .features-list li:before,
+            .why-different-list li:before { top: 0.15em; }
             
             .bottom-features {
                 grid-template-columns: 1fr;
@@ -697,7 +727,10 @@
                 <!-- Card "Provala ora" -->
                 <div class="try-now-card">
                     <h3 class="try-now-title">👇 Provala ora</h3>
-                    <p class="try-now-text">Accedi al nostro MVP gratuito, lasciaci un feedback e unisciti alla waiting list per l'app completa.</p>
+                    <p class="try-now-text">
+                      <span class="line">Accedi al nostro MVP gratuito: lascia un feedback</span>
+                      <span class="line">e unisciti alla waiting list per l'app completa.</span>
+                    </p>
                     <p class="try-now-special">Siete i primi. Siete speciali.</p>
                 </div>
                 
