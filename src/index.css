@@ -1,0 +1,723 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;  
+@tailwind utilities;
+
+/* CSS Variables per viewport height su mobile */
+:root {
+  --vh: 1vh;
+}
+
+/* Fix per viewport height su mobile */
+html, body {
+  height: 100%;
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+/* 1. FIX GLOBALE PER PULSANTI FLOATING */
+.action-buttons-container,
+.workout-actions,
+.exercise-actions {
+  /* Reset positioning sicuro */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  
+  /* Safe area per notch iPhone e navbar Android */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: constant(safe-area-inset-bottom, 0); /* iOS < 11.2 */
+  
+  /* Sfondo e shadow per visibilità */
+  background: linear-gradient(to top, 
+    rgba(255,255,255,1) 0%, 
+    rgba(255,255,255,0.95) 90%,
+    rgba(255,255,255,0) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  
+  /* Z-index alto per stare sopra tutto */
+  z-index: 999;
+  
+  /* Padding interno */
+  padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+}
+
+/* 2. FIX PER I PULSANTI */
+.btn-avvia,
+.btn-completato,
+.btn-termina-sessione,
+.btn-termina-allenamento,
+.btn-completa,
+.workout-action-btn {
+  /* Dimensioni responsive */
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  display: block;
+  
+  /* Altezza minima per touch target (48px standard mobile) */
+  min-height: 48px;
+  padding: 12px 24px;
+  
+  /* Testo leggibile */
+  font-size: 16px; /* Previene zoom su iOS */
+  font-weight: 600;
+  
+  /* Stili visuali */
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation; /* Previene delay su mobile */
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Transizioni smooth */
+  transition: all 0.2s ease;
+}
+
+/* 3. STATI DEI PULSANTI */
+.btn-avvia {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-avvia:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-avvia:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-avvia:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-completato {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+}
+
+.btn-completato:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+}
+
+.btn-completato:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-termina-sessione,
+.btn-termina-allenamento {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+  color: white;
+}
+
+.btn-termina-sessione:hover:not(:disabled),
+.btn-termina-allenamento:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
+}
+
+.btn-completa {
+  background: linear-gradient(135deg, #EEBA2B 0%, #c89116 100%);
+  color: #000000;
+}
+
+.btn-completa:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(238, 186, 43, 0.4);
+}
+
+/* 4. FIX PER IL CONTENUTO SCROLLABILE */
+.workout-content,
+.exercise-list,
+.main-content {
+  /* Aggiungi padding bottom per evitare sovrapposizione */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0));
+  
+  /* Scroll smooth */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  
+  /* Altezza massima */
+  max-height: calc(100vh - 60px); /* 60px per header */
+}
+
+/* 5. MEDIA QUERIES PER DISPOSITIVI SPECIFICI */
+
+/* iPhone SE, iPhone 8 e simili */
+@media (max-width: 375px) {
+  .action-buttons-container {
+    padding: 12px;
+  }
+  
+  .btn-avvia,
+  .btn-completato,
+  .btn-termina-sessione,
+  .btn-termina-allenamento,
+  .btn-completa {
+    font-size: 14px;
+    min-height: 44px;
+  }
+}
+
+/* iPad e Tablet */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .action-buttons-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 16px 16px 0 0;
+  }
+  
+  .btn-avvia,
+  .btn-completato,
+  .btn-termina-sessione,
+  .btn-termina-allenamento,
+  .btn-completa {
+    max-width: 500px;
+  }
+}
+
+/* Landscape mode */
+@media (orientation: landscape) and (max-height: 500px) {
+  .action-buttons-container {
+    position: sticky;
+    padding: 8px;
+  }
+  
+  .btn-avvia,
+  .btn-completato,
+  .btn-termina-sessione,
+  .btn-termina-allenamento,
+  .btn-completa {
+    min-height: 40px;
+    padding: 8px 20px;
+  }
+}
+
+/* 6. FIX PER NOTCH E SAFE AREAS */
+@supports (padding: max(0px)) {
+  .action-buttons-container {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* 7. FIX PER PULSANTI NEI CARD */
+.cardio-fatburn-card .btn-completa,
+.ExerciseCard .btn-avvia,
+.ExerciseCard .btn-completato {
+  /* Override per pulsanti nei card */
+  position: relative;
+  z-index: 10;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 8. FIX PER OVERFLOW E POSIZIONAMENTO */
+.cardio-fatburn-section,
+.ExerciseCard {
+  /* Assicura che i pulsanti siano sempre visibili */
+  position: relative;
+  overflow: visible;
+}
+
+/* 9. FIX PER TOUCH TARGET */
+button[type="button"],
+.btn-avvia,
+.btn-completato,
+.btn-termina-sessione,
+.btn-termina-allenamento,
+.btn-completa {
+  /* Touch target minimo per mobile */
+  min-height: 44px;
+  min-width: 44px;
+  
+  /* Previene zoom su iOS */
+  font-size: 16px;
+  
+  /* Feedback tattile */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 10. FIX PER ACCESSIBILITÀ */
+.btn-avvia:focus,
+.btn-completato:focus,
+.btn-termina-sessione:focus,
+.btn-termina-allenamento:focus,
+.btn-completa:focus {
+  outline: 2px solid #EEBA2B;
+  outline-offset: 2px;
+}
+
+/* 11. FIX PER ANIMAZIONI */
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* 12. FIX PER DEBUG */
+.debug-button-position {
+  border: 2px solid red !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+}
+
+/* 13. FIX PER VIEWPORT HEIGHT SU MOBILE */
+@media screen and (max-width: 768px) {
+  .cardio-fatburn-section,
+  .ExerciseCard {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+  
+  .cardio-fatburn-section__container {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0));
+  }
+}
+
+/* 14. FIX PER SAFE AREAS SU IPHONE */
+@supports (padding: max(0px)) {
+  .action-buttons-container {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* 15. FIX PER ORIENTATION CHANGE */
+@media (orientation: landscape) {
+  .action-buttons-container {
+    position: sticky;
+    bottom: 0;
+  }
+}
+
+/* 16. FIX PER Z-INDEX */
+.action-buttons-container {
+  z-index: 9999;
+}
+
+.btn-avvia,
+.btn-completato,
+.btn-termina-sessione,
+.btn-termina-allenamento,
+.btn-completa {
+  z-index: 10000;
+  position: relative;
+}
+
+/* 17. FIX PER PERFORMANCE */
+.btn-avvia,
+.btn-completato,
+.btn-termina-sessione,
+.btn-termina-allenamento,
+.btn-completa {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* 18. FIX PER BROWSER SPECIFICI */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari */
+  .btn-avvia,
+  .btn-completato,
+  .btn-termina-sessione,
+  .btn-termina-allenamento,
+  .btn-completa {
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* 19. FIX PER ANDROID CHROME */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .btn-avvia,
+  .btn-completato,
+  .btn-termina-sessione,
+  .btn-termina-allenamento,
+  .btn-completa {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* 20. FIX PER FIREFOX */
+@-moz-document url-prefix() {
+  .btn-avvia,
+  .btn-completato,
+  .btn-termina-sessione,
+  .btn-termina-allenamento,
+  .btn-completa {
+    -moz-user-select: none;
+  }
+}
+
+/* ——— Colore di sfondo globale ——— */
+html,
+body {
+  background: #1A1A1A;         /* grigio scuro invece di nero puro */
+  color-scheme: dark;       /* status-bar e controlli di sistema in versione dark */
+}
+
+@layer base {
+  :root {
+    /* Nuova palette colori con migliore contrasto e gerarchia */
+    
+    /* Background colors */
+    --background: 0 0% 10%;           /* #1A1A1A - Sfondo principale */
+    --background-secondary: 0 0% 16%; /* #2A2A2A - Sfondo secondario */
+    --background-tertiary: 0 0% 25%;  /* #404040 - Sfondo terziario */
+    
+    /* Text colors */
+    --text-primary: 0 0% 100%;        /* #FFFFFF - Testo principale */
+    --text-secondary: 0 0% 63%;       /* #A0A0A0 - Testo secondario */
+    --text-muted: 0 0% 45%;           /* #737373 - Testo attenuato */
+    
+    /* Brand colors */
+    --brand-primary: 51 100% 50%;     /* #FFD700 - Oro principale */
+    --brand-secondary: 217 91% 60%;   /* #3B82F6 - Blu secondario */
+    --brand-accent: 142 76% 36%;      /* #16A34A - Verde accent */
+    
+    /* Interactive colors */
+    --interactive-primary: 51 100% 50%;    /* #FFD700 - Bottoni principali */
+    --interactive-secondary: 217 91% 60%;  /* #3B82F6 - Bottoni secondari */
+    --interactive-danger: 0 84% 60%;       /* #EF4444 - Pericolo/errore */
+    --interactive-success: 142 76% 36%;    /* #16A34A - Successo */
+    --interactive-warning: 38 92% 50%;     /* #F59E0B - Avviso */
+    
+    /* Surface colors */
+    --surface-primary: 0 0% 16%;      /* #2A2A2A - Card principali */
+    --surface-secondary: 0 0% 25%;    /* #404040 - Card secondarie */
+    --surface-tertiary: 0 0% 35%;     /* #595959 - Card terziarie */
+    
+    /* Border colors */
+    --border-primary: 0 0% 25%;       /* #404040 - Bordi principali */
+    --border-secondary: 0 0% 35%;     /* #595959 - Bordi secondari */
+    --border-accent: 51 100% 50%;     /* #FFD700 - Bordi accent */
+    
+    /* Legacy support for shadcn/ui - AGGIORNATO PER CONTRASTO */
+    --foreground: 0 0% 100%;          /* #FFFFFF - Testo sempre visibile */
+    --card: 0 0% 16%;
+    --card-foreground: 0 0% 100%;     /* #FFFFFF - Testo card sempre visibile */
+    --popover: 0 0% 16%;
+    --popover-foreground: 0 0% 100%;  /* #FFFFFF - Testo popover sempre visibile */
+    --primary: 51 100% 50%;
+    --primary-foreground: 0 0% 0%;    /* #000000 - Testo su oro */
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF - Testo su blu */
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 63%;     /* #A0A0A0 - Testo attenuato ma leggibile */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;   /* #FFFFFF - Testo su accent */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF - Testo su rosso */
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 51 100% 50%;
+    --radius: 0.5rem;
+
+    /* Performance Prime legacy colors */
+    --pp-gold: 51 100% 50%;
+    --pp-black: 0 0% 10%;
+    --pp-gray: 0 0% 20%;
+  }
+
+  .dark {
+    /* Dark mode - già configurato sopra */
+    --background: 0 0% 10%;
+    --foreground: 0 0% 100%;          /* #FFFFFF - Testo sempre visibile */
+    --card: 0 0% 16%;
+    --card-foreground: 0 0% 100%;     /* #FFFFFF - Testo card sempre visibile */
+    --popover: 0 0% 16%;
+    --popover-foreground: 0 0% 100%;  /* #FFFFFF - Testo popover sempre visibile */
+    --primary: 51 100% 50%;
+    --primary-foreground: 0 0% 0%;    /* #000000 - Testo su oro */
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF - Testo su blu */
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 63%;     /* #A0A0A0 - Testo attenuato ma leggibile */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;   /* #FFFFFF - Testo su accent */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF - Testo su rosso */
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 51 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Utility classes per la nuova palette */
+@layer utilities {
+  /* Background utilities */
+  .bg-surface-primary { background-color: hsl(var(--surface-primary)); }
+  .bg-surface-secondary { background-color: hsl(var(--surface-secondary)); }
+  .bg-surface-tertiary { background-color: hsl(var(--surface-tertiary)); }
+  
+  /* Text utilities */
+  .text-primary { color: hsl(var(--text-primary)); }
+  .text-secondary { color: hsl(var(--text-secondary)); }
+  .text-muted { color: hsl(var(--text-muted)); }
+  
+  /* Brand utilities */
+  .text-brand-primary { color: hsl(var(--brand-primary)); }
+  .text-brand-secondary { color: hsl(var(--brand-secondary)); }
+  .text-brand-accent { color: hsl(var(--brand-accent)); }
+  
+  /* Interactive utilities */
+  .bg-interactive-primary { background-color: hsl(var(--interactive-primary)); }
+  .bg-interactive-secondary { background-color: hsl(var(--interactive-secondary)); }
+  .bg-interactive-danger { background-color: hsl(var(--interactive-danger)); }
+  .bg-interactive-success { background-color: hsl(var(--interactive-success)); }
+  .bg-interactive-warning { background-color: hsl(var(--interactive-warning)); }
+  
+  /* Border utilities */
+  .border-primary { border-color: hsl(var(--border-primary)); }
+  .border-secondary { border-color: hsl(var(--border-secondary)); }
+  .border-accent { border-color: hsl(var(--border-accent)); }
+}
+
+/* Custom classes for better responsive design */
+@media (max-width: 640px) {
+  .notes-preview-card {
+    max-width: calc(100vw - 160px);
+  }
+  
+  .mobile-timer-controls {
+    gap: 0.25rem;
+  }
+  
+  .mobile-timer-controls input {
+    width: 2.5rem;
+    height: 2rem;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-timer-controls button {
+    height: 2rem;
+    width: 2.5rem;
+    padding: 0;
+  }
+}
+
+/* Calendario panel styling - aggiornato con nuova palette */
+.calendar-panel {
+  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--surface-primary)) 100%);
+  border: 2px solid hsl(var(--brand-primary));
+  border-radius: 1rem;
+  padding: 1.5rem;
+  color: hsl(var(--text-primary));
+}
+
+.calendar-panel__title {
+  color: hsl(var(--brand-primary));
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.calendar-panel__weekday {
+  color: hsl(var(--text-secondary));
+}
+
+.calendar-panel__day {
+  color: hsl(var(--text-primary));
+}
+
+.calendar-panel__new-button {
+  background: hsl(var(--brand-primary));
+  color: hsl(var(--background));
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.calendar-panel__new-button:hover {
+  background: hsl(var(--brand-primary) / 0.9);
+}
+
+/* Search functionality - aggiornato con nuova palette */
+.search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: hsl(var(--background) / 0.8);
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+}
+
+.search-container {
+  background: hsl(var(--surface-primary));
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px hsl(var(--background) / 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 400px;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border-primary));
+}
+
+.search-input {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  border-bottom: 1px solid hsl(var(--border-primary));
+  background: hsl(var(--surface-primary));
+  color: hsl(var(--text-primary));
+}
+
+.search-results {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid hsl(var(--border-primary));
+  cursor: pointer;
+  transition: background 0.2s;
+  color: hsl(var(--text-primary));
+}
+
+.search-result-item:hover {
+  background: hsl(var(--surface-secondary));
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.header {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 1000;
+  background: inherit;
+  display: flex;
+  align-items: center;
+}
+
+body, #root, .app-container {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
+}
+
+/* Stili per SmartHomePage - aggiornato con nuova palette */
+.homepage-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--surface-primary)) 100%);
+  color: hsl(var(--text-primary));
+}
+
+.loading-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid hsl(var(--brand-primary) / 0.3);
+  border-top: 3px solid hsl(var(--brand-primary));
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+.loading-subtitle {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-top: 10px;
+  color: hsl(var(--text-secondary));
+}
+
+.debug-info {
+  font-size: 0.8rem;
+  opacity: 0.5;
+  margin-top: 15px;
+  font-family: monospace;
+  color: hsl(var(--text-muted));
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Stili per ProtectedRoute - aggiornato con nuova palette */
+.protected-route-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--surface-primary)) 100%);
+  color: hsl(var(--text-primary));
+}
+
+.protected-route-loading .loading-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.protected-route-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 2px solid hsl(var(--brand-primary) / 0.3);
+  border-top: 2px solid hsl(var(--brand-primary));
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
