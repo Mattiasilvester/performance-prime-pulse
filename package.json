@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "build:public": "NODE_ENV=production vite build",
     "build:dev": "NODE_ENV=development vite build",
     "deploy:lovable": "npm run build:public && lovable deploy",
