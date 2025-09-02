@@ -789,6 +789,20 @@
   overflow: hidden;
   border: 1px solid rgba(238, 186, 43, 0.3);
   background: rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+
+/* Indicatore giallo che si muove sopra i pulsanti */
+.toggle-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 32px;
+  left: 4px;
+  width: calc(50% - 8px);
+  background: linear-gradient(135deg, #EEBA2B, #FFD700);
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+  z-index: 1;
 }
 
 .toggle-btn {
@@ -807,8 +821,10 @@
 }
 
 .toggle-btn.active {
-  background: linear-gradient(135deg, #EEBA2B, #FFD700);
+  background: transparent;
   color: #000;
+  z-index: 2;
+  position: relative;
 }
 
 .toggle-btn:hover:not(.active) {

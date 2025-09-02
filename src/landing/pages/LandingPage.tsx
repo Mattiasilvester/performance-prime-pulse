@@ -4,6 +4,7 @@ import HeroSection from '../components/Hero/HeroSection';
 import FeaturesSection from '../components/Features/FeaturesSection';
 import CTASection from '../components/CTA/CTASection';
 import Footer from '../components/Footer/Footer';
+import '../styles/landing.css';
 
 const LandingPage = () => {
   const navigate = useNavigate();

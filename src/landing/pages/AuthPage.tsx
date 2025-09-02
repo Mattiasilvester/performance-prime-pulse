@@ -132,15 +132,23 @@ const AuthPage = () => {
 
         {/* Toggle Login/Register */}
         <div className="auth-toggle">
+          {/* Indicatore giallo che si muove */}
+          <div 
+            className="toggle-indicator"
+            style={{
+              transform: `translateX(${mode === 'login' ? '0px' : '50%'})`
+            }}
+          ></div>
+          
           <button
-            className={`toggle-btn ${mode === 'login' ? 'active' : ''}`}
+            className="toggle-btn"
             onClick={() => setMode('login')}
           >
             <span className="toggle-icon">🔐</span>
             <span>Accedi</span>
           </button>
           <button
-            className={`toggle-btn ${mode === 'register' ? 'active' : ''}`}
+            className="toggle-btn"
             onClick={() => setMode('register')}
           >
             <span className="toggle-icon">🚀</span>

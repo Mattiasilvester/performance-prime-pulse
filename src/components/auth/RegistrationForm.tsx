@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import emailValidation from '../../services/emailValidation';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import './RegistrationForm.css';
 
 const RegistrationForm = () => {
@@ -15,12 +16,15 @@ const RegistrationForm = () => {
   const [emailWarning, setEmailWarning] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [validationScore, setValidationScore] = useState(0);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
   
   const { signUp } = useAuth();
+  const navigate = useNavigate();
   
   // Debounced validation
   const validateEmailDebounced = useCallback(
@@ -110,18 +114,39 @@ const RegistrationForm = () => {
       }
       
       // Procedi con la registrazione
-      const success = await signUp(email, password);
+      const result = await signUp(email, password, `${firstName} ${lastName}`);
       
-      if (success) {
-        toast.success('Registrazione completata con successo!');
-        // Redirect automatico gestito da useAuth
+      if (result.success) {
+        toast.success(result.message);
+        
+        // Se l'utente ha una sessione, naviga alla dashboard
+        if (result.message.includes('accesso effettuato')) {
+          navigate('/dashboard');
+        } else {
+          // Altrimenti, rimani nella pagina per confermare email
+          toast.info('Controlla la tua email per confermare l\'account prima di accedere.');
+        }
       } else {
-        toast.error('Errore durante la registrazione');
+        toast.error(result.message || 'Errore durante la registrazione. Riprova più tardi.');
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Errore registrazione:', error);
-      toast.error('Errore durante la registrazione');
+      
+      // Gestione errori di rete o sistema
+      if (error?.message) {
+        if (error.message.includes('network') || error.message.includes('fetch')) {
+          toast.error('Problema di connessione. Verifica la tua connessione internet.');
+        } else if (error.message.includes('timeout')) {
+          toast.error('Timeout della richiesta. Riprova più tardi.');
+        } else if (error.message.includes('supabase')) {
+          toast.error('Errore del servizio. Riprova più tardi.');
+        } else {
+          toast.error(`Errore imprevisto: ${error.message}`);
+        }
+      } else {
+        toast.error('Errore imprevisto durante la registrazione. Riprova più tardi.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -158,6 +183,34 @@ const RegistrationForm = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="firstName" className="text-sm font-medium">
+              Nome *
+            </label>
+            <Input
+              type="text"
+              id="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              placeholder="nome"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label htmlFor="lastName" className="text-sm font-medium">
+              Cognome *
+            </label>
+            <Input
+              type="text"
+              id="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              placeholder="cognome"
+            />
+          </div>
+          
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
               Email *
@@ -261,7 +314,7 @@ const RegistrationForm = () => {
           
           <Button
             type="submit"
-            disabled={isSubmitting || isValidating || !!emailError || !email || !password || !confirmPassword || password !== confirmPassword}
+            disabled={isSubmitting || isValidating || !!emailError || !email || !firstName || !lastName || !password || !confirmPassword || password !== confirmPassword}
             className="w-full"
           >
             {isSubmitting ? (

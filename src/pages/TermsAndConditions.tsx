@@ -1,29 +1,31 @@
 import React from 'react';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const TermsAndConditions = () => {
   const navigate = useNavigate();
+
+  // Scroll to top when component mounts
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleBack = () => {
     navigate(-1);
   };
 
   return (
-    <AppLayout>
+    <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-6 space-y-6">
         <div className="mb-6 -mt-2 -ml-2">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={handleBack}
-            className="text-pp-gold hover:bg-pp-gold/10"
+            className="flex items-center text-pp-gold hover:bg-pp-gold/10 px-3 py-2 rounded-lg transition-colors"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
             Indietro
-          </Button>
+          </button>
         </div>
 
         <div className="bg-black border-2 border-pp-gold rounded-2xl p-6">
@@ -130,7 +132,7 @@ const TermsAndConditions = () => {
           </div>
         </div>
       </div>
-    </AppLayout>
+    </div>
   );
 };
 
