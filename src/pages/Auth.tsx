@@ -20,6 +20,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [resetEmail, setResetEmail] = useState('');
+  const [activeTab, setActiveTab] = useState('login');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,13 +121,23 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-surface-secondary">
-              <TabsTrigger value="login" className="text-text-primary data-[state=active]:bg-brand-primary data-[state=active]:text-background">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-surface-secondary h-12 relative">
+              <TabsTrigger 
+                value="login" 
+                className="text-text-primary data-[state=active]:bg-brand-primary data-[state=active]:text-background h-full flex items-center justify-center transition-all duration-200 relative"
+              >
                 Accedi
+                {/* Indicatore personalizzato per Accedi */}
+                <div className="absolute top-4 bottom-8 left-4 right-4 bg-brand-primary rounded-md opacity-0 data-[state=active]:opacity-100 transition-opacity duration-200"></div>
               </TabsTrigger>
-              <TabsTrigger value="register" className="text-text-primary data-[state=active]:bg-brand-primary data-[state=active]:text-background">
+              <TabsTrigger 
+                value="register" 
+                className="text-text-primary data-[state=active]:bg-brand-primary data-[state=active]:text-background h-full flex items-center justify-center transition-all duration-200 relative"
+              >
                 Registrati
+                {/* Indicatore personalizzato per Registrati */}
+                <div className="absolute top-4 bottom-8 left-4 right-4 bg-brand-primary rounded-md opacity-0 data-[state=active]:opacity-100 transition-opacity duration-200"></div>
               </TabsTrigger>
             </TabsList>
             
@@ -166,6 +177,32 @@ const Auth = () => {
                   {isLoading ? 'Accesso in corso...' : 'Accedi'}
                 </Button>
               </form>
+              
+              <div className="mt-4 pt-4 border-t border-border-primary">
+                <form onSubmit={handlePasswordReset} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email" className="text-text-primary">Reset Password</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="Email per il reset"
+                      className="bg-surface-secondary border-border-primary text-text-primary"
+                      required
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    variant="outline"
+                    className="w-full border-border-primary text-text-primary hover:bg-surface-secondary"
+                    disabled={isResetLoading}
+                  >
+                    {isResetLoading ? 'Invio in corso...' : 'Invia email di reset'}
+                  </Button>
+                </form>
+              </div>
             </TabsContent>
             
             <TabsContent value="register" className="space-y-4">
@@ -173,32 +210,6 @@ const Auth = () => {
               <RegistrationForm />
             </TabsContent>
           </Tabs>
-          
-          <div className="mt-6 pt-6 border-t border-border-primary">
-            <form onSubmit={handlePasswordReset} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reset-email" className="text-text-primary">Reset Password</Label>
-                <Input
-                  id="reset-email"
-                  type="email"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  placeholder="Email per il reset"
-                  className="bg-surface-secondary border-border-primary text-text-primary"
-                  required
-                />
-              </div>
-              
-              <Button 
-                type="submit" 
-                variant="outline"
-                className="w-full border-border-primary text-text-primary hover:bg-surface-secondary"
-                disabled={isResetLoading}
-              >
-                {isResetLoading ? 'Invio in corso...' : 'Invia email di reset'}
-              </Button>
-            </form>
-          </div>
         </CardContent>
       </Card>
     </div>

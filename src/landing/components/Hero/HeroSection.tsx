@@ -23,15 +23,18 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTAClick }) => {
           <div className="hero-brand">
             <div className="brand-logo">
               <img 
-                src="/logo-pp.jpg" 
+                src="/images/logo-pp-no-bg.jpg" 
                 alt="Performance Prime Logo"
                 className="logo-image"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  // Fallback al testo PP se l'immagine non si carica
+                  const fallbackText = document.createElement('span');
+                  fallbackText.textContent = 'PP';
+                  fallbackText.className = 'logo-fallback';
+                  e.currentTarget.parentNode?.appendChild(fallbackText);
                 }}
               />
-              <span className="logo-fallback hidden">PP</span>
             </div>
             <span className="brand-text">Performance Prime</span>
           </div>
