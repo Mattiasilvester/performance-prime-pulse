@@ -9,8 +9,8 @@ const QRCode = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      // URL della pagina di login/registrazione
-      const loginUrl = 'https://performanceprime.it/app';
+      // URL della pagina di autenticazione
+      const loginUrl = `${window.location.origin}/auth`;
       
       try {
         // Genera QR code reale
@@ -23,7 +23,7 @@ const QRCode = () => {
           }
         });
       } catch (error) {
-        console.error('Errore nella generazione del QR code:', error);
+        // Errore nella generazione del QR code
       }
     };
 
@@ -31,8 +31,8 @@ const QRCode = () => {
   }, []);
 
   const handleQRClick = () => {
-    // Apri la pagina di login in una nuova tab
-    window.open('https://performanceprime.it/app', '_blank');
+    // Apri la pagina di autenticazione in una nuova tab
+    window.open(`${window.location.origin}/auth`, '_blank');
   };
 
   return (
@@ -41,6 +41,7 @@ const QRCode = () => {
         ref={canvasRef} 
         className="qr-code-canvas"
         onClick={handleQRClick}
+        aria-label="Scansiona il QR code per accedere a Performance Prime"
         style={{ 
           width: '180px', 
           height: '180px',

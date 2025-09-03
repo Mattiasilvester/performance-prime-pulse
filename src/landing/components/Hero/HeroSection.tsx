@@ -23,9 +23,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTAClick }) => {
           <div className="hero-brand">
             <div className="brand-logo">
               <img 
-                src="/images/logo-pp-no-bg.jpg" 
+                src="../images/logo-pp-no-bg.jpg" 
                 alt="Performance Prime Logo"
                 className="logo-image"
+                loading="lazy"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   // Fallback al testo PP se l'immagine non si carica
@@ -94,12 +95,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTAClick }) => {
               <p className="cta-description">
                 Accedi al nostro MVP gratuito, lasciaci un feedback e unisciti alla waiting list per l'app completa.
               </p>
-              <p className="cta-special">Siete i primi. Siete speciali.</p>
+                            <p className="cta-special">Siete i primi. Siete speciali.</p>
               
               {/* Bottone CTA diretto */}
               <button 
                 onClick={onCTAClick}
                 className="hero-cta-button"
+                aria-label="Inizia ora con Performance Prime"
                 style={{
                   background: '#FFD700',
                   color: '#000',

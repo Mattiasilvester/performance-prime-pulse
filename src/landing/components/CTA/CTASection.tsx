@@ -20,6 +20,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
             <button 
               onClick={onCTAClick}
               className="cta-button primary large"
+              aria-label="Inizia ora con Performance Prime"
             >
               🚀 INIZIA ORA - È GRATIS!
             </button>
@@ -36,8 +37,9 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
             <div className="founder-card">
               <div className="founder-image">
                 <img 
-                  src="/images/mattia-silvestrelli-real.jpg" 
-                  alt="Mattia Silvestrelli"
+                  src="../images/mattia-silvestrelli-real.jpg" 
+                  alt="Mattia Silvestrelli - CEO e Co-Founder di Performance Prime, atleta della Nazionale Italiana"
+                  loading="lazy"
                   onError={(e) => {
                     e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjM0I0QjVCIi8+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjN0M4QzlBIi8+CjxyZWN0IHg9IjM1IiB5PSI3MCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjN0M4QzlBIi8+Cjwvc3ZnPgo=';
                   }}
@@ -55,11 +57,11 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
             <div className="founder-card">
               <div className="founder-image">
                 <img 
-                  src="/images/nicholas-capponi-real.jpg" 
-                  alt="Nicholas Capponi - CTO & Co-Founder"
+                  src="../images/nicholas-capponi-real.jpg" 
+                  alt="Nicholas Capponi - CTO e Co-Founder di Performance Prime, atleta e sviluppatore software"
+                  loading="lazy"
                   onError={(e) => {
-                    console.log('Image failed to load:', e.currentTarget.src);
-                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjM0I0QjVCIi8+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjN0M4QzlBIi8+CjxyZWN0IHg9IjM1IiB5PSI3MCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjN0M4QzlBIi8+Cjwvc3ZnPgo=';
+                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjM0I0QjVCIi8+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjN0M4QzlBIi8+CjxyZWN0IHg9IjM1IiB5PSI3MCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjN0M4QzlAIi8+Cjwvc3ZnPgo=';
                   }}
                 />
               </div>
