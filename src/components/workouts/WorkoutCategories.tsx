@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { StartTodayButton } from './StartTodayButton';
 import { DurationSelector } from './DurationSelector';
 import { useState } from 'react';
+import { generateFilteredStrengthWorkout, generateFilteredHIITWorkout } from '@/services/workoutGenerator';
 
 const categories = [
   {
@@ -48,22 +49,54 @@ const categories = [
 ];
 
 interface WorkoutCategoriesProps {
-  onStartWorkout: (workoutId: string, duration?: number) => void;
+  onStartWorkout: (workoutId: string, duration?: number, generatedWorkout?: any) => void;
 }
 
 export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) => {
   const [selectedCategory, setSelectedCategory] = useState<typeof categories[0] | null>(null);
   const [showDurationSelector, setShowDurationSelector] = useState(false);
+  
+  // Stati per i filtri
+  const [showFilters, setShowFilters] = useState<{ [key: string]: boolean }>({});
+  const [muscleGroupFilter, setMuscleGroupFilter] = useState<string>('Tutti');
+  const [equipmentFilter, setEquipmentFilter] = useState<string>('Tutte');
+  const [durationFilter, setDurationFilter] = useState<string>('Tutte');
+  const [levelFilter, setLevelFilter] = useState<string>('Tutti');
 
   const handleCategoryClick = (category: typeof categories[0]) => {
-    setSelectedCategory(category);
-    setShowDurationSelector(true);
+    // Se è Forza o HIIT, mostra i filtri invece del DurationSelector
+    if (category.id === 'strength' || category.id === 'hiit') {
+      setShowFilters(prev => ({
+        ...prev,
+        [category.id]: !prev[category.id]
+      }));
+    } else {
+      // Per Cardio e Mobilità, usa il flusso normale
+      setSelectedCategory(category);
+      setShowDurationSelector(true);
+    }
   };
 
   const handleDurationConfirm = (duration: number) => {
     if (selectedCategory) {
       onStartWorkout(selectedCategory.id, duration);
     }
+  };
+
+  // Funzione per avviare allenamento FORZA con filtri
+  const handleStartFilteredStrengthWorkout = () => {
+    const workout = generateFilteredStrengthWorkout(muscleGroupFilter, equipmentFilter, 45);
+    onStartWorkout('strength', 45, workout);
+    // Reset filtri dopo l'avvio
+    setShowFilters(prev => ({ ...prev, strength: false }));
+  };
+
+  // Funzione per avviare allenamento HIIT con filtri
+  const handleStartFilteredHIITWorkout = () => {
+    const workout = generateFilteredHIITWorkout(durationFilter, levelFilter, 45);
+    onStartWorkout('hiit', 45, workout);
+    // Reset filtri dopo l'avvio
+    setShowFilters(prev => ({ ...prev, hiit: false }));
   };
   return (
     <div className="space-y-6">
@@ -88,6 +121,110 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                 <div className="mb-4">
                   <h3 className="text-xl font-bold text-pp-gold mb-2">{category.name}</h3>
                   <p className="text-white text-sm mb-3">{category.description}</p>
+                  
+                  {/* Filtri per FORZA */}
+                  {category.id === 'strength' && showFilters[category.id] && (
+                    <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-600">
+                      <div className="space-y-3">
+                        <div>
+                          <h4 className="text-white font-semibold mb-2 text-sm">Gruppo Muscolare</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {['Tutti', 'Petto', 'Schiena', 'Spalle', 'Braccia', 'Gambe', 'Core'].map((group) => (
+                              <button
+                                key={group}
+                                onClick={() => setMuscleGroupFilter(group)}
+                                className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                                  muscleGroupFilter === group
+                                    ? 'bg-[#EEBA2B] text-black'
+                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                }`}
+                              >
+                                {group}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-semibold mb-2 text-sm">Attrezzatura</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {['Tutte', 'Corpo libero', 'Manubri', 'Bilanciere', 'Elastici', 'Kettlebell'].map((equipment) => (
+                              <button
+                                key={equipment}
+                                onClick={() => setEquipmentFilter(equipment)}
+                                className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                                  equipmentFilter === equipment
+                                    ? 'bg-[#EEBA2B] text-black'
+                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                }`}
+                              >
+                                {equipment}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-gray-600">
+                          <Button 
+                            onClick={handleStartFilteredStrengthWorkout}
+                            className="w-full bg-[#EEBA2B] hover:bg-[#D4A017] text-black font-semibold"
+                          >
+                            AVVIA ALLENAMENTO FORZA
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Filtri per HIIT */}
+                  {category.id === 'hiit' && showFilters[category.id] && (
+                    <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-600">
+                      <div className="space-y-3">
+                        <div>
+                          <h4 className="text-white font-semibold mb-2 text-sm">Durata</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {['Tutte', '5-10 min', '15-20 min', '25-30 min'].map((duration) => (
+                              <button
+                                key={duration}
+                                onClick={() => setDurationFilter(duration)}
+                                className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                                  durationFilter === duration
+                                    ? 'bg-[#EEBA2B] text-black'
+                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                }`}
+                              >
+                                {duration}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-semibold mb-2 text-sm">Livello</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {['Tutti', 'Principiante', 'Intermedio', 'Avanzato'].map((level) => (
+                              <button
+                                key={level}
+                                onClick={() => setLevelFilter(level)}
+                                className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                                  levelFilter === level
+                                    ? 'bg-[#EEBA2B] text-black'
+                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                }`}
+                              >
+                                {level}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-gray-600">
+                          <Button 
+                            onClick={handleStartFilteredHIITWorkout}
+                            className="w-full bg-[#EEBA2B] hover:bg-[#D4A017] text-black font-semibold"
+                          >
+                            AVVIA ALLENAMENTO HIIT
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-white/80">{category.duration}</span>

@@ -101,6 +101,18 @@
 - **Touch Event Handler** - Risoluzione conflitto tipi eventi MouseEvent vs TouchEvent
 - **Coerenza Traduzioni** - Verifica applicazione traduzioni in tutti i file coinvolti
 
+### **STEP 8: SISTEMA FILTRI E GENERAZIONE ALLENAMENTI DINAMICI (3 SETTEMBRE 2025)** ✅
+- **Filtri Interattivi** - Implementazione filtri per FORZA (Gruppo Muscolare + Attrezzatura) e HIIT (Durata + Livello)
+- **Posizionamento Filtri** - Filtri integrati direttamente nelle card WorkoutCategories, sotto le frasi descrittive
+- **Trigger Filtri** - Filtri appaiono quando l'utente clicca "INIZIA" nelle card Forza e HIIT
+- **Database Esercizi Dettagliato** - 40+ esercizi FORZA e 20+ esercizi HIIT categorizzati per filtri
+- **Generazione Dinamica** - Funzioni generateFilteredStrengthWorkout() e generateFilteredHIITWorkout()
+- **Allenamenti Personalizzati** - Creazione automatica allenamenti basati sui filtri selezionati
+- **Durata Estesa** - Allenamenti da 45 minuti (30-60 min range) con minimo 8 esercizi
+- **Nomi Dinamici** - Es. "Forza Petto - Corpo libero (45 min)", "HIIT Intermedio - 15-20 min (45 min)"
+- **Integrazione Completa** - WorkoutCategories → Workouts → ActiveWorkout con flusso seamless
+- **Pulsanti Avvio** - "AVVIA ALLENAMENTO FORZA" e "AVVIA ALLENAMENTO HIIT" con generazione automatica
+
 ---
 
 ## 🛡️ **PROTEZIONI IMPLEMENTATE**
@@ -162,6 +174,30 @@
 - **Soluzione**: Rimozione prop non supportate e conflitti tipi eventi
 - **Risultato**: Tutti i file senza errori di linting
 - **File**: src/landing/pages/LandingPage.tsx, src/components/workouts/ActiveWorkout.tsx
+
+### **9. Sistema Filtri e Generazione Allenamenti**
+- **Problema**: Mancanza di filtri personalizzati per allenamenti FORZA e HIIT
+- **Soluzione**: Implementazione sistema filtri completo con generazione dinamica allenamenti
+- **Risultato**: Filtri interattivi che generano allenamenti personalizzati basati su selezione utente
+- **File**: src/services/workoutGenerator.ts, src/components/workouts/WorkoutCategories.tsx, src/components/workouts/Workouts.tsx
+
+### **10. Posizionamento Filtri nelle Card**
+- **Problema**: Filtri inizialmente posizionati in ActiveWorkout.tsx, non visibili all'utente
+- **Soluzione**: Spostamento filtri direttamente nelle card WorkoutCategories sotto le frasi descrittive
+- **Risultato**: Filtri visibili e accessibili quando l'utente clicca "INIZIA" nelle card
+- **File**: src/components/workouts/WorkoutCategories.tsx, src/components/workouts/ActiveWorkout.tsx
+
+### **11. Database Esercizi Limitato**
+- **Problema**: Database esercizi insufficiente per generare allenamenti variati
+- **Soluzione**: Creazione database dettagliato con 40+ esercizi FORZA e 20+ esercizi HIIT categorizzati
+- **Risultato**: Database completo con esercizi per tutti i gruppi muscolari, attrezzature e livelli
+- **File**: src/services/workoutGenerator.ts
+
+### **12. Durata Allenamenti Breve**
+- **Problema**: Allenamenti troppo brevi (20-30 min) con pochi esercizi (4)
+- **Soluzione**: Estensione durata a 45 minuti con minimo 8 esercizi per allenamento
+- **Risultato**: Allenamenti completi e soddisfacenti per l'utente
+- **File**: src/services/workoutGenerator.ts, src/components/workouts/WorkoutCategories.tsx
 
 ### **4. Flusso Email e Conferma Account**
 - **Problema**: Email di benvenuto non inviate automaticamente
@@ -387,5 +423,5 @@ python3 -m http.server 8083
 
 *Ultimo aggiornamento: 3 Settembre 2025*
 *Stato: IN SVILUPPO ATTIVO 🔄*
-*Versione: 1.2 - Traduzione Esercizi e Fix TypeScript*
+*Versione: 1.3 - Sistema Filtri e Generazione Allenamenti Dinamici*
 *Autore: Mattia Silvestrelli + AI Assistant* 

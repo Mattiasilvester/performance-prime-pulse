@@ -1,10 +1,37 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, X } from 'lucide-react';
+import { CheckCircle, X, Play, Pause, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExerciseCard } from './ExerciseCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+
+// Helper function per convertire stringhe tempo in numeri
+const parseTimeToSeconds = (timeStr: string): number => {
+  if (timeStr.includes('min')) {
+    return parseInt(timeStr) * 60;
+  } else if (timeStr.includes('s')) {
+    return parseInt(timeStr);
+  }
+  return 30; // default
+};
+
+// Helper function per convertire secondi in formato MM:SS
+const formatTime = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+// Interface per stato timer di ogni esercizio
+interface ExerciseTimerState {
+  isActive: boolean;
+  isResting: boolean;
+  timeRemaining: number;
+  totalWorkTime: number;
+  totalRestTime: number;
+  isCompleted: boolean;
+}
 
 const workoutData = {
   cardio: {
@@ -66,8 +93,15 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const { user } = useAuth();
   
+
+  
+  // Stati per i timer di ogni esercizio
+  const [exerciseTimers, setExerciseTimers] = useState<Record<number, ExerciseTimerState>>({});
+  
   // Usa l'allenamento generato se disponibile, altrimenti usa quello statico
   const currentWorkout = generatedWorkout || workoutData[workoutId as keyof typeof workoutData];
+  
+
   
   useEffect(() => {
     // Fix per viewport height su mobile
@@ -87,6 +121,51 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
       window.removeEventListener('orientationchange', handleResize);
     };
   }, []);
+
+  // useEffect per gestire il countdown automatico dei timer
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setExerciseTimers(prev => {
+        const updated = { ...prev };
+        
+        Object.keys(updated).forEach(key => {
+          const index = parseInt(key);
+          const timer = updated[index];
+          
+          if (timer && timer.isActive && timer.timeRemaining > 0) {
+            updated[index] = {
+              ...timer,
+              timeRemaining: timer.timeRemaining - 1
+            };
+          } else if (timer && timer.isActive && timer.timeRemaining === 0) {
+            if (!timer.isResting) {
+              // Fine esercizio, inizia recupero
+              updated[index] = {
+                ...timer,
+                isResting: true,
+                timeRemaining: timer.totalRestTime
+              };
+            } else {
+              // Fine recupero, esercizio completato
+              updated[index] = {
+                ...timer,
+                isActive: false,
+                isCompleted: true
+              };
+              // Auto-completa l'esercizio
+              if (!completedExercises.includes(index)) {
+                setCompletedExercises(prev => [...prev, index]);
+              }
+            }
+          }
+        });
+        
+        return updated;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [completedExercises]);
   
   if (!currentWorkout) {
     return (
@@ -104,6 +183,55 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
       setCompletedExercises([...completedExercises, index]);
     }
   };
+
+  // Funzione per avviare il timer di un esercizio
+  const startExerciseTimer = (index: number, exercise: any) => {
+    const workTime = parseTimeToSeconds(exercise.duration);
+    const restTime = parseTimeToSeconds(exercise.rest);
+    
+    setExerciseTimers(prev => ({
+      ...prev,
+      [index]: {
+        isActive: true,
+        isResting: false,
+        timeRemaining: workTime,
+        totalWorkTime: workTime,
+        totalRestTime: restTime,
+        isCompleted: false
+      }
+    }));
+  };
+
+  // Funzione per pausare/riprendere il timer
+  const toggleTimer = (index: number) => {
+    setExerciseTimers(prev => ({
+      ...prev,
+      [index]: {
+        ...prev[index],
+        isActive: !prev[index]?.isActive
+      }
+    }));
+  };
+
+  // Funzione per resettare il timer
+  const resetTimer = (index: number, exercise: any) => {
+    const workTime = parseTimeToSeconds(exercise.duration);
+    const restTime = parseTimeToSeconds(exercise.rest);
+    
+    setExerciseTimers(prev => ({
+      ...prev,
+      [index]: {
+        isActive: false,
+        isResting: false,
+        timeRemaining: workTime,
+        totalWorkTime: workTime,
+        totalRestTime: restTime,
+        isCompleted: false
+      }
+    }));
+  };
+
+
 
   // Funzione per completare l'allenamento e aggiornare le statistiche
   const completeWorkout = async () => {
@@ -179,19 +307,62 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
         <p className="text-black mt-2 font-medium animate-fade-in">COMPLETA TUTTI GLI ESERCIZI • {currentWorkout.exercises?.length || 0} ESERCIZI</p>
       </div>
 
+
+
       <div className="p-6 space-y-4 bg-black overflow-y-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
         <div className="grid gap-4 pb-8">
-          {currentWorkout.exercises?.map((exercise: any, index: number) => (
-            <div key={`${exercise.name}-${index}`} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-              <ExerciseCard
-                exercise={exercise}
-                index={index}
-                isCompleted={completedExercises.includes(index)}
-                onToggleComplete={toggleExerciseComplete}
-                onStart={() => onStartExercise(exercise.duration, exercise.rest)}
-              />
-            </div>
-          )) || <p className="text-white animate-fade-in">NESSUN ESERCIZIO DISPONIBILE</p>}
+          {currentWorkout.exercises?.map((exercise: any, index: number) => {
+            const timer = exerciseTimers[index];
+            const isTimerActive = timer?.isActive || false;
+            const isResting = timer?.isResting || false;
+            const timeRemaining = timer?.timeRemaining || 0;
+            const isCompleted = timer?.isCompleted || completedExercises.includes(index);
+            
+            return (
+              <div key={`${exercise.name}-${index}`} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                {/* Timer Display */}
+                {isTimerActive && (
+                  <div className="mb-3 p-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-center">
+                    <div className="text-white font-bold text-2xl mb-1">
+                      {formatTime(timeRemaining)}
+                    </div>
+                    <div className="text-white/80 text-sm">
+                      {isResting ? 'RECUPERO' : 'ESERCIZIO'}
+                    </div>
+                    <div className="flex justify-center gap-2 mt-2">
+                      <Button
+                        onClick={() => toggleTimer(index)}
+                        size="sm"
+                        variant="outline"
+                        className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+                      >
+                        {timer?.isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        onClick={() => resetTimer(index, exercise)}
+                        size="sm"
+                        variant="outline"
+                        className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                <ExerciseCard
+                  exercise={exercise}
+                  index={index}
+                  isCompleted={isCompleted}
+                  onToggleComplete={toggleExerciseComplete}
+                  onStart={() => startExerciseTimer(index, exercise)}
+                />
+              </div>
+            );
+          })}
+          {(!currentWorkout.exercises || currentWorkout.exercises.length === 0) && (
+            <p className="text-white animate-fade-in text-center py-8">NESSUN ESERCIZIO DISPONIBILE</p>
+          )}
         </div>
 
         {completedExercises.length === (currentWorkout.exercises?.length || 0) && currentWorkout.exercises?.length > 0 && (
