@@ -41,7 +41,7 @@ const testFiles = {
     
     Warm-up:
     • Arm circles 2x10 (per braccio)
-    • Push-ups 1x5
+    • Flessioni 1x5
     
     Main:
     • Bench Press: 4x8 (riposo: 2 min)

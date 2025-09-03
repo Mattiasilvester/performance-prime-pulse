@@ -65,7 +65,6 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
         localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(defaultNotifications));
       }
     } catch (error) {
-      console.error('Errore nel caricamento notifiche:', error);
       setNotifications([]);
     } finally {
       setIsLoading(false);
@@ -77,7 +76,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     try {
       localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(newNotifications));
     } catch (error) {
-      console.error('Errore nel salvataggio notifiche:', error);
+      // Errore nel salvataggio notifiche
     }
   }, []);
 
@@ -143,7 +142,6 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     try {
       // Qui puoi implementare la sincronizzazione con Supabase o altro backend
       // Per ora usiamo solo localStorage
-      console.log('Sincronizzazione notifiche con backend...');
       
       // Esempio di chiamata API (da implementare)
       // const { data, error } = await supabase
@@ -151,7 +149,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       //   .upsert(notifications.map(n => ({ ...n, user_id: user.id })));
       
     } catch (error) {
-      console.error('Errore sincronizzazione notifiche:', error);
+      // Errore sincronizzazione notifiche
     }
   }, [user, notifications]);
 

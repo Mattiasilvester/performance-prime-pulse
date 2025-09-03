@@ -62,21 +62,15 @@ const FEATURE_DETAILS = {
 };
 
 const FeaturesSection = () => {
-  const [selectedFeature, setSelectedFeature] = useState<FeatureKey | null>(null);
   const [flippingCard, setFlippingCard] = useState<number | null>(null);
+  const [selectedFeature, setSelectedFeature] = useState<FeatureKey | null>(null);
 
   const handleFeatureClick = (feature: FeatureKey, index: number) => {
-    // Previeni click multipli durante l'animazione
-    if (flippingCard !== null) return;
-    
-    // Inizia animazione flip
-    setFlippingCard(index);
-    
-    // Dopo 600ms (durata flip), apri il modal
-    setTimeout(() => {
-      setSelectedFeature(feature);
-      setFlippingCard(null); // Reset animazione
-    }, 600);
+    if (flippingCard === index) {
+      setFlippingCard(null); // Torna al fronte
+    } else {
+      setFlippingCard(index); // Gira la card
+    }
   };
 
   const features = [
@@ -107,22 +101,69 @@ const FeaturesSection = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                onClick={() => handleFeatureClick(feature.key, index)}
-                className={`feature-card relative overflow-hidden rounded-2xl bg-gray-900/50 backdrop-blur-sm border border-gray-800 p-8 hover:border-brand-primary/50 ${
-                  flippingCard === index ? 'flipping' : ''
-                }`}
-                style={{
-                  transformStyle: 'preserve-3d',
-                  transition: 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  transform: flippingCard === index ? 'rotateY(360deg) scale(1.05)' : 'none'
+                className="relative cursor-pointer"
+                style={{ 
+                  perspective: '1000px',
+                  width: '100%',
+                  height: '280px'
                 }}
+                onClick={() => handleFeatureClick(feature.key, index)}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500" />
-                <feature.icon className="w-12 h-12 text-brand-primary mb-4 relative z-10" />
-                <h3 className="text-xl font-bold text-white mb-2 relative z-10">{feature.title}</h3>
-                <p className="text-gray-400 relative z-10">{feature.desc}</p>
+                <div
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    transformStyle: 'preserve-3d',
+                    transition: 'transform 0.7s',
+                    transform: flippingCard === index ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                  }}
+                >
+                  {/* FRONTE */}
+                  <div 
+                    className="absolute w-full h-full rounded-2xl bg-gray-900/50 backdrop-blur-sm border border-gray-800 p-8 hover:border-brand-primary/50"
+                    style={{
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0
+                    }}
+                  >
+                    <feature.icon className="w-12 h-12 text-brand-primary mb-4" />
+                    <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                    <p className="text-gray-400">{feature.desc}</p>
+                  </div>
+
+                  {/* RETRO */}
+                  <div 
+                    className="absolute w-full h-full rounded-2xl bg-gradient-to-br from-brand-primary/20 to-gray-900 border border-brand-primary/50 p-6"
+                    style={{
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
+                      transform: 'rotateY(180deg)',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0
+                    }}
+                  >
+                    <h3 className="text-lg font-bold text-brand-primary mb-3">{feature.title}</h3>
+                    <ul className="space-y-2 text-sm text-gray-300">
+                      {FEATURE_DETAILS[feature.key].bullets.slice(0, 3).map((bullet, i) => (
+                        <li key={i}>• {bullet}</li>
+                      ))}
+                    </ul>
+                    <button 
+                      className="mt-4 text-brand-primary font-semibold hover:underline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = '/auth';
+                      }}
+                    >
+                      Inizia Ora! →
+                    </button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

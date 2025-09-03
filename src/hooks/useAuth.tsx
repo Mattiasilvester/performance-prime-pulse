@@ -32,7 +32,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('Auth hook initializing...');
     let mounted = true;
     
     // Set up auth state listener FIRST
@@ -40,7 +39,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       (event, session) => {
         if (!mounted) return;
         
-        console.log('Auth state change:', event, session?.user?.id || 'no user');
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -51,12 +49,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (!mounted) return;
       
-      console.log('Initial session check:', session?.user?.id || 'no user', error);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     }).catch((error) => {
-      console.error('Session error:', error);
       if (mounted) {
         setLoading(false);
       }
@@ -68,22 +64,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  const signUp = async (email: string, password: string): Promise<{ success: boolean; message: string }> => {
+  const signUp = async (email: string, password: string, fullName?: string): Promise<{ success: boolean; message: string }> => {
     try {
+      // Parse fullName into first_name and last_name
+      let first_name = '';
+      let last_name = '';
+      
+      if (fullName && fullName.trim()) {
+        const nameParts = fullName.trim().split(' ');
+        first_name = nameParts[0] || '';
+        last_name = nameParts.slice(1).join(' ') || '';
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            first_name,
+            last_name
+          }
         }
       });
       
       if (error) {
-        console.error('SignUp error:', error);
         return { success: false, message: error.message };
       }
-      
-      console.log('SignUp success:', data);
       
       // Verifica se l'utente è già confermato o se serve conferma email
       if (data.user && data.session) {
@@ -96,7 +103,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { success: false, message: 'Errore durante la registrazione' };
       }
     } catch (error) {
-      console.error('SignUp exception:', error);
       return { success: false, message: 'Errore imprevisto durante la registrazione' };
     }
   };
@@ -109,14 +115,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (error) {
-        console.error('SignIn error:', error);
         return false;
       }
-      
-      console.log('SignIn success:', data);
       return true;
     } catch (error) {
-      console.error('SignIn exception:', error);
       return false;
     }
   };
@@ -126,14 +128,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('SignOut error:', error);
         return false;
       }
-      
-      console.log('SignOut success');
       return true;
     } catch (error) {
-      console.error('SignOut exception:', error);
       return false;
     }
   };

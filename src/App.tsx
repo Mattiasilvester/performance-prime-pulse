@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AuthProvider } from './hooks/useAuth'
+import { NotificationProvider } from './hooks/useNotifications'
 
 // Import componenti
 import LandingPage from '@/landing/pages/LandingPage'
@@ -12,8 +13,14 @@ import Dashboard from '@/pages/Dashboard'
 import TermsAndConditions from '@/pages/TermsAndConditions'
 import PrivacyPolicy from '@/pages/PrivacyPolicy'
 import Auth from '@/pages/Auth'
+import Workouts from '@/pages/Workouts'
+import Timer from '@/pages/Timer'
+import Schedule from '@/pages/Schedule'
+import AICoach from '@/pages/AICoach'
+import Subscriptions from '@/pages/Subscriptions'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
+import BottomNavigation from '@/components/layout/BottomNavigation'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -43,32 +50,60 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <Router>
-          <Routes>
-            {/* ROUTE PUBBLICHE */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/auth/login" element={
-              session ? <Navigate to="/dashboard" /> : <LoginPage />
-            } />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/register" element={
-              session ? <Navigate to="/dashboard" /> : <RegisterPage />
-            } />
-            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            
-            {/* ROUTE PROTETTE */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute session={session}>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </Router>
-        <Toaster />
+        <NotificationProvider>
+          <Router>
+            <Routes>
+              {/* ROUTE PUBBLICHE */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/auth/login" element={
+                session ? <Navigate to="/dashboard" /> : <LoginPage />
+              } />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/register" element={
+                session ? <Navigate to="/dashboard" /> : <RegisterPage />
+              } />
+              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              
+              {/* ROUTE PROTETTE */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute session={session}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/workouts" element={
+                <ProtectedRoute session={session}>
+                  <Workouts />
+                </ProtectedRoute>
+              } />
+              <Route path="/timer" element={
+                <ProtectedRoute session={session}>
+                  <Timer />
+                </ProtectedRoute>
+              } />
+              <Route path="/schedule" element={
+                <ProtectedRoute session={session}>
+                  <Schedule />
+                </ProtectedRoute>
+              } />
+              <Route path="/ai-coach" element={
+                <ProtectedRoute session={session}>
+                  <AICoach />
+                </ProtectedRoute>
+              } />
+              <Route path="/subscriptions" element={
+                <ProtectedRoute session={session}>
+                  <Subscriptions />
+                </ProtectedRoute>
+              } />
+              
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+            {session && <BottomNavigation />}
+          </Router>
+          <Toaster />
+        </NotificationProvider>
       </AuthProvider>
     </ErrorBoundary>
   )

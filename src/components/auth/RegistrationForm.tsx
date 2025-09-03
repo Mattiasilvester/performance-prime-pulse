@@ -131,7 +131,6 @@ const RegistrationForm = () => {
       }
       
     } catch (error: any) {
-      console.error('Errore registrazione:', error);
       
       // Gestione errori di rete o sistema
       if (error?.message) {

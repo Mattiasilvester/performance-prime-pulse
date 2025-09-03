@@ -14,7 +14,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <Header />
       
       {/* Main Content */}
-      <main className="pb-20 lg:pb-6">
+      <main className="pb-24">
         {children}
       </main>
       

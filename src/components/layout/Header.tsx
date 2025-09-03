@@ -125,7 +125,6 @@ export const Header = () => {
       toast.success('Logout effettuato con successo');
       navigate('/auth');
     } catch (error: any) {
-      console.error('Errore durante il logout:', error);
       toast.error('Errore durante il logout');
     } finally {
       setShowLogoutDialog(false);
