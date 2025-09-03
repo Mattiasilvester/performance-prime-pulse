@@ -129,7 +129,7 @@ const Auth = () => {
               >
                 Accedi
                 {/* Indicatore personalizzato per Accedi */}
-                <div className="absolute top-4 bottom-8 left-4 right-4 bg-brand-primary rounded-md opacity-0 data-[state=active]:opacity-100 transition-opacity duration-200"></div>
+                <div className="absolute top-4 bottom-12 left-4 right-4 bg-brand-primary rounded-md opacity-0 data-[state=active]:opacity-100 transition-opacity duration-200"></div>
               </TabsTrigger>
               <TabsTrigger 
                 value="register" 
@@ -137,7 +137,8 @@ const Auth = () => {
               >
                 Registrati
                 {/* Indicatore personalizzato per Registrati */}
-                <div className="absolute top-4 bottom-8 left-4 right-4 bg-brand-primary rounded-md opacity-0 data-[state=active]:opacity-100 transition-opacity duration-200"></div>
+                <div className="absolute top-4 bottom-12 left-4 right-4 bg-brand-primary rounded-md opacity-0 data-[state=active]:opacity-100 transition-opacity duration-200"></div>
+              
               </TabsTrigger>
             </TabsList>
             

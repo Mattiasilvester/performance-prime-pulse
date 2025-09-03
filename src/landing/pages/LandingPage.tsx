@@ -10,9 +10,8 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   const handleCTAClick = () => {
-    // Vai alla pagina di registrazione
-    navigate('/auth/register');
-    console.log('🚀 Landing CTA: Navigating to register page');
+    // Vai alla pagina di autenticazione
+    navigate('/auth');
   };
 
   return (
