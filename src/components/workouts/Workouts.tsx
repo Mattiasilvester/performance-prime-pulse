@@ -70,8 +70,12 @@ export const Workouts = () => {
     setTimerAutoRest(null);
   };
 
-  const handleStartWorkout = (workoutId: string, duration?: number) => {
-    if (workoutId === 'recommended') {
+  const handleStartWorkout = (workoutId: string, duration?: number, generatedWorkout?: any) => {
+    if (generatedWorkout) {
+      // Se viene passato un allenamento generato (con filtri), usalo direttamente
+      setGeneratedWorkout(generatedWorkout);
+      setActiveWorkout('generated');
+    } else if (workoutId === 'recommended') {
       const workout = generateRecommendedWorkout();
       setGeneratedWorkout(workout);
       setActiveWorkout('generated');

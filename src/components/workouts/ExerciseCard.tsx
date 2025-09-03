@@ -4,6 +4,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ExerciseExplanation } from './ExerciseExplanation';
 import { useEffect, useState } from 'react';
 
+interface ExerciseTimerState {
+  isActive: boolean;
+  isResting: boolean;
+  timeRemaining: number;
+  totalWorkTime: number;
+  totalRestTime: number;
+  isCompleted: boolean;
+}
+
 interface ExerciseCardProps {
   exercise: {
     name: string;
@@ -15,9 +24,10 @@ interface ExerciseCardProps {
   onToggleComplete: (index: number) => void;
   isCompleted: boolean;
   index: number;
+  timer?: ExerciseTimerState;
 }
 
-export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted, index }: ExerciseCardProps) => {
+export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted, index, timer }: ExerciseCardProps) => {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   
   useEffect(() => {
