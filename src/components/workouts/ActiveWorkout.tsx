@@ -11,17 +11,17 @@ const workoutData = {
     name: 'Cardio Brucia Grassi',
     exercises: [
       { name: 'Jumping Jacks', duration: '30s', rest: '10s' },
-      { name: 'High Knees', duration: '30s', rest: '10s' },
+      { name: 'Saltelli Laterali', duration: '30s', rest: '10s' },
       { name: 'Burpees', duration: '30s', rest: '15s' },
-      { name: 'Mountain Climbers', duration: '30s', rest: '10s' },
+      { name: 'Scalatori', duration: '30s', rest: '10s' },
     ],
   },
   strength: {
     name: 'Forza Upper Body',
     exercises: [
-      { name: 'Push-ups', duration: '45s', rest: '15s' },
+      { name: 'Flessioni', duration: '45s', rest: '15s' },
       { name: 'Plank', duration: '60s', rest: '20s' },
-      { name: 'Pike Push-ups', duration: '45s', rest: '15s' },
+      { name: 'Pike Flessioni', duration: '45s', rest: '15s' },
       { name: 'Tricep Dips', duration: '45s', rest: '15s' },
     ],
   },
@@ -30,8 +30,8 @@ const workoutData = {
     exercises: [
       { name: 'Squat Jumps', duration: '45s', rest: '15s' },
       { name: 'Push-up to T', duration: '45s', rest: '15s' },
-      { name: 'Plank Jacks', duration: '45s', rest: '15s' },
-      { name: 'Lunge Jumps', duration: '45s', rest: '15s' },
+      { name: 'Saltelli in Plank', duration: '45s', rest: '15s' },
+      { name: 'Affondi Saltati', duration: '45s', rest: '15s' },
     ],
   },
   hiit: {
@@ -40,16 +40,16 @@ const workoutData = {
       { name: 'Sprint sul posto', duration: '30s', rest: '10s' },
       { name: 'Jump Squats', duration: '30s', rest: '10s' },
       { name: 'Burpees esplosivi', duration: '30s', rest: '15s' },
-      { name: 'High Knees', duration: '30s', rest: '10s' },
+      { name: 'Saltelli Laterali', duration: '30s', rest: '10s' },
     ],
   },
   mobility: {
     name: 'Mobilità e Stretching',
     exercises: [
-      { name: 'Cat-Cow Stretch', duration: '60s', rest: '10s' },
-      { name: 'Hip Circles', duration: '45s', rest: '10s' },
-      { name: 'Shoulder Rolls', duration: '45s', rest: '10s' },
-      { name: 'Leg Swings', duration: '60s', rest: '15s' },
+      { name: 'Gatto e Mucca', duration: '60s', rest: '10s' },
+      { name: 'Cerchi con i Fianchi', duration: '45s', rest: '10s' },
+      { name: 'Rotazioni delle Spalle', duration: '45s', rest: '10s' },
+      { name: 'Oscillazioni delle Gambe', duration: '60s', rest: '15s' },
     ],
   },
 };
@@ -179,8 +179,8 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
         <p className="text-black mt-2 font-medium animate-fade-in">COMPLETA TUTTI GLI ESERCIZI • {currentWorkout.exercises?.length || 0} ESERCIZI</p>
       </div>
 
-      <div className="p-6 space-y-4 bg-black overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
-        <div className="grid gap-4">
+      <div className="p-6 space-y-4 bg-black overflow-y-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
+        <div className="grid gap-4 pb-8">
           {currentWorkout.exercises?.map((exercise: any, index: number) => (
             <div key={`${exercise.name}-${index}`} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
               <ExerciseCard
@@ -200,7 +200,6 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
             <p className="text-green-400 font-semibold uppercase">ALLENAMENTO COMPLETATO! 🎉</p>
             <Button 
               onClick={handleTerminateSession}
-              onTouchEnd={handleTerminateSession}
               className="btn-termina-sessione mt-3 animate-fade-in min-h-[48px] px-6 py-3 text-base font-semibold"
               type="button"
               aria-label="Termina sessione allenamento"

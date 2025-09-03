@@ -19,7 +19,6 @@ interface ExerciseCardProps {
 
 export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted, index }: ExerciseCardProps) => {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
-  const [isSticky, setIsSticky] = useState(false);
   
   useEffect(() => {
     // Fix per viewport height su mobile
@@ -28,14 +27,7 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
       document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     };
     
-    // Gestione scroll per sticky behavior
-    const handleScroll = () => {
-      const scrolled = window.scrollY > 100;
-      setIsSticky(scrolled);
-    };
-    
     window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleScroll);
     window.addEventListener('orientationchange', handleResize);
     
     // Initial setup
@@ -43,7 +35,6 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
     
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('orientationchange', handleResize);
     };
   }, []);
@@ -85,7 +76,7 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
   };
 
   return (
-    <Card className="bg-black border-2 border-[#EEBA2B] relative">
+    <Card className="bg-black border-2 border-[#EEBA2B] rounded-lg overflow-hidden">
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-4 min-h-[80px]">
           <div className="flex items-start space-x-3 flex-1 min-w-0">
@@ -110,7 +101,7 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
               onClick={handleStartClick}
               onTouchEnd={handleStartClick} // Fallback per touch devices
               size="sm"
-              className="btn-avvia animate-scale-in hover-scale min-h-[44px] px-4 py-2 text-sm font-semibold"
+              className="btn-avvia animate-scale-in hover-scale min-h-[44px] px-4 py-2 text-sm font-semibold bg-purple-600 hover:bg-purple-700 text-white"
               type="button"
               aria-label={`Avvia ${exercise.name}`}
             >
@@ -123,7 +114,7 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
               className={`btn-completato animate-scale-in hover-scale min-h-[44px] px-4 py-2 text-sm font-semibold ${
                 isCompleted 
                   ? 'bg-green-500 hover:bg-green-600 text-white border-green-500' 
-                  : ''
+                  : 'bg-green-500 hover:bg-green-600 text-white'
               }`}
               type="button"
               aria-label={`Completa ${exercise.name}`}

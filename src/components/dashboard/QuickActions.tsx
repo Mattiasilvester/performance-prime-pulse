@@ -1,4 +1,4 @@
-import { Play, Calendar } from 'lucide-react';
+import { Play, Calendar, Clock, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -78,8 +78,19 @@ const QuickActions = () => {
     setIsObjectiveModalOpen(false);
   };
 
-  // RIMOSSO: Timer e Note dalle azioni rapide
-  // Ora le azioni sono focalizzate sulle funzioni essenziali
+  const handleTimerClick = () => {
+    navigate('/timer');
+  };
+
+  const handleScheduleClick = () => {
+    navigate('/schedule');
+  };
+
+  const handlePrimeBotClick = () => {
+    navigate('/ai-coach');
+  };
+
+  // Azioni rapide aggiornate con Timer, Calendario e PrimeBot
   const actions = [
     {
       label: 'Inizia Allenamento',
@@ -92,12 +103,31 @@ const QuickActions = () => {
       accessible: true,
     },
     {
-      label: 'Prenota Sessione',
-      description: 'Con un professionista',
-      icon: Calendar,
+      label: 'Timer',
+      description: 'Timer per allenamenti',
+      icon: Clock,
       color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
       textColor: 'text-white',
-      accessible: false,
+      onClick: handleTimerClick,
+      accessible: true,
+    },
+    {
+      label: 'Calendario',
+      description: 'Prenota appuntamenti',
+      icon: Calendar,
+      color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
+      textColor: 'text-white',
+      onClick: handleScheduleClick,
+      accessible: true,
+    },
+    {
+      label: 'PrimeBot',
+      description: 'AI Coach personale',
+      icon: Bot,
+      color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
+      textColor: 'text-white',
+      onClick: handlePrimeBotClick,
+      accessible: true,
     },
   ];
 
@@ -107,7 +137,7 @@ const QuickActions = () => {
 
         <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
         
-        <div className="grid grid-cols-2 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {actions.map((action) => {
             const Icon = action.icon;
             

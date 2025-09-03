@@ -21,11 +21,10 @@ const AuthPage = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          console.log('✅ Sessione esistente trovata, redirect alla dashboard');
           navigate('/dashboard', { replace: true });
         }
       } catch (error) {
-        console.error('❌ Errore controllo sessione:', error);
+        // Errore controllo sessione
       }
     };
     checkExistingSession();
@@ -68,7 +67,7 @@ const AuthPage = () => {
           return;
         }
 
-        console.log('✅ Registrazione riuscita:', data);
+
       } else {
         // Login Supabase
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -82,13 +81,12 @@ const AuthPage = () => {
           return;
         }
 
-        console.log('✅ Login riuscito:', data);
+
       }
 
       setLoading(false);
       navigate('/dashboard', { replace: true });
     } catch (error: any) {
-      console.error('❌ Errore autenticazione:', error);
       setError(error.message || 'Errore durante l\'autenticazione');
       setLoading(false);
     }

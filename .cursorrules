@@ -1,6 +1,16 @@
 # PERFORMANCE PRIME PULSE - REGOLE DI SVILUPPO
 # 3 Settembre 2025 - PROGETTO IN SVILUPPO ATTIVO
 
+## ⚠️ CRITICAL VITE COMPATIBILITY RULE
+- This project uses Vite and is NOT compatible with styled-jsx
+- NEVER use <style jsx> or styled-jsx syntax
+- NEVER suggest styled-jsx solutions
+- Use ONLY:
+  * Inline styles with style={{}}
+  * Tailwind CSS classes
+  * Separate .css files
+  * CSS modules (.module.css)
+
 ## 🎯 **STATO ATTUALE: PROGETTO IN SVILUPPO ATTIVO**
 
 **Performance Prime Pulse** è un'applicazione React in sviluppo attivo con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata e feature modal 3D. Ultimi sviluppi: 3 Settembre 2025.
@@ -79,6 +89,18 @@
 - **Gestione Stato Animazione** - Prevenzione click multipli durante flip
 - **CSS 3D Transforms** - Transform-style preserve-3d e transizioni smooth
 
+### **STEP 7: TRADUZIONE ESERCIZI FITNESS E FIX ERRORI TYPESCRIPT (3 SETTEMBRE 2025)** ✅
+- **Traduzione Esercizi Fitness** - Completamento traduzione da inglese a italiano
+- **Sezione FORZA** - 5/12 esercizi tradotti (Push-ups → Flessioni, Pike Push-ups → Pike Flessioni, Chair Dip → Dip sulla Sedia)
+- **Sezione MOBILITÀ** - 2/2 esercizi completati (Neck Rotations → Rotazioni del Collo, Ankle Circles → Cerchi con le Caviglie)
+- **Metodologia Traduzione** - Ricerca accurata in tutti i file, sostituzione con replace_all per coerenza
+- **File Coinvolti** - ActiveWorkout.tsx, exerciseDescriptions.ts, workoutGenerator.ts, AdvancedWorkoutAnalyzer.test.ts
+- **Fix Errori TypeScript** - Risoluzione errori di linting in LandingPage.tsx e ActiveWorkout.tsx
+- **Analisi Completa** - Verifica stato traduzioni e coerenza in tutti i file del progetto
+- **Prop TypeScript** - Risoluzione conflitto prop FeaturesSection non supportata
+- **Touch Event Handler** - Risoluzione conflitto tipi eventi MouseEvent vs TouchEvent
+- **Coerenza Traduzioni** - Verifica applicazione traduzioni in tutti i file coinvolti
+
 ---
 
 ## 🛡️ **PROTEZIONI IMPLEMENTATE**
@@ -128,6 +150,18 @@
 - **Soluzione**: Loading lazy per immagini e attributi accessibilità completi
 - **Risultato**: Landing page accessibile e performante
 - **File**: Tutti i componenti landing page
+
+### **7. Traduzione Esercizi Fitness**
+- **Problema**: Esercizi in inglese non tradotti in italiano
+- **Soluzione**: Metodologia step-by-step con ricerca accurata e replace_all
+- **Risultato**: 5/13 esercizi tradotti, sezione MOBILITÀ completata
+- **File**: ActiveWorkout.tsx, exerciseDescriptions.ts, workoutGenerator.ts, AdvancedWorkoutAnalyzer.test.ts
+
+### **8. Errori TypeScript Linting**
+- **Problema**: File con errori di linting (LandingPage.tsx, ActiveWorkout.tsx)
+- **Soluzione**: Rimozione prop non supportate e conflitti tipi eventi
+- **Risultato**: Tutti i file senza errori di linting
+- **File**: src/landing/pages/LandingPage.tsx, src/components/workouts/ActiveWorkout.tsx
 
 ### **4. Flusso Email e Conferma Account**
 - **Problema**: Email di benvenuto non inviate automaticamente
@@ -351,7 +385,7 @@ python3 -m http.server 8083
 
 ---
 
-*Ultimo aggiornamento: 11 Agosto 2025*
+*Ultimo aggiornamento: 3 Settembre 2025*
 *Stato: IN SVILUPPO ATTIVO 🔄*
-*Versione: 1.1 - Sistema Autenticazione*
+*Versione: 1.2 - Traduzione Esercizi e Fix TypeScript*
 *Autore: Mattia Silvestrelli + AI Assistant* 

@@ -13,10 +13,10 @@ interface WorkoutPlan {
 const exerciseDatabase = {
   cardio: {
     exercises: [
-      'Jumping Jacks', 'High Knees', 'Burpees', 'Mountain Climbers',
-      'Sprint sul posto', 'Jump Squats', 'Plank Jacks', 'Skater Hops',
-      'Cross Trainers', 'Butt Kickers', 'Lateral Shuffles', 'Tuck Jumps',
-      'Box Steps', 'Bear Crawl', 'Frog Jumps', 'Power Knees'
+      'Jumping Jacks', 'Saltelli Laterali', 'Burpees', 'Scalatori',
+      'Sprint sul posto', 'Jump Squats', 'Saltelli in Plank', 'Saltelli da Pattinatore',
+      'Movimento Incrociato', 'Calci ai Glutei', 'Passi Laterali', 'Saltelli al Petto',
+      'Box Steps', 'Camminata dell\'Orso', 'Saltelli a Rana', 'Ginocchia al Petto'
     ],
     durations: {
       short: { work: '20s', rest: '10s' },
@@ -26,10 +26,10 @@ const exerciseDatabase = {
   },
   strength: {
     exercises: [
-      'Push-ups', 'Plank', 'Pike Push-ups', 'Tricep Dips',
-      'Squats', 'Lunges', 'Wall Sit', 'Glute Bridges',
-      'Superman', 'Dead Bug', 'Russian Twists', 'Single Leg Deadlift',
-      'Chair Dip', 'Calf Raises', 'Side Plank', 'Reverse Fly'
+      'Flessioni', 'Plank', 'Pike Flessioni', 'Tricep Dips',
+      'Squats', 'Affondi', 'Sedia al Muro', 'Glute Bridges',
+      'Superman', 'Controllo Core', 'Russian Twists', 'Single Leg Deadlift',
+      'Dip sulla Sedia', 'Calf Raises', 'Side Plank', 'Apertura Inversa'
     ],
     durations: {
       short: { work: '30s', rest: '15s' },
@@ -39,10 +39,10 @@ const exerciseDatabase = {
   },
   hiit: {
     exercises: [
-      'Sprint sul posto', 'Jump Squats', 'Burpees esplosivi', 'High Knees',
-      'Mountain Climbers', 'Plank Jacks', 'Tuck Jumps', 'Squat Thrusts',
-      'Fast Feet', 'Explosive Push-ups', 'Jump Lunges', 'Star Jumps',
-      'Speed Skaters', 'Power Punches', 'Quick Steps', 'Battle Ropes Motion'
+      'Sprint sul posto', 'Jump Squats', 'Burpees esplosivi', 'Saltelli Laterali',
+      'Scalatori', 'Saltelli in Plank', 'Saltelli al Petto', 'Spinte in Squat',
+      'Passi Veloce', 'Explosive Flessioni', 'Affondi Saltati', 'Saltelli a Stella',
+      'Pattinatori Veloce', 'Power Punches', 'Passi Rapidi', 'Onde con le Braccia'
     ],
     durations: {
       short: { work: '20s', rest: '10s' },
@@ -52,10 +52,10 @@ const exerciseDatabase = {
   },
   mobility: {
     exercises: [
-      'Cat-Cow Stretch', 'Hip Circles', 'Shoulder Rolls', 'Leg Swings',
-      'Arm Circles', 'Neck Rotations', 'Ankle Circles', 'Spinal Twist',
-      'Hamstring Stretch', 'Quad Stretch', 'Chest Opener', 'Side Bend',
-      'Forward Fold', 'Child\'s Pose', 'Cobra Stretch', 'Pigeon Pose'
+      'Gatto e Mucca', 'Cerchi con i Fianchi', 'Rotazioni delle Spalle', 'Oscillazioni delle Gambe',
+      'Cerchi con le Braccia', 'Rotazioni del Collo', 'Cerchi con le Caviglie', 'Giro del Busto',
+      'Allungamento Posteriori', 'Allungamento Quadricipiti', 'Apertura del Petto', 'Flessione Laterale',
+      'Piegamento in Avanti', 'Posizione del Bambino', 'Posizione del Cobra', 'Allungamento Fianchi'
     ],
     durations: {
       short: { work: '45s', rest: '10s' },
