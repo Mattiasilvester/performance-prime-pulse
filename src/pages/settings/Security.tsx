@@ -101,7 +101,7 @@ const Security = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black p-6">
+    <div className="min-h-screen bg-black p-6 pb-24">
       <div className="max-w-md mx-auto">
         <div className="flex items-center mb-6">
           <Button
@@ -115,7 +115,7 @@ const Security = () => {
           </Button>
         </div>
         
-        <div className="bg-black border-2 border-[#EEBA2B] rounded-2xl p-6">
+        <div className="bg-surface-primary border-2 border-[#EEBA2B] rounded-2xl p-6 mb-6">
           <h2 className="text-xl font-semibold text-[#EEBA2B] mb-6">Password e sicurezza</h2>
           
           <div className="space-y-4">
@@ -124,7 +124,7 @@ const Security = () => {
               <Input
                 id="email"
                 type="email"
-                className="bg-black border-gray-500 text-white"
+                className="bg-surface-secondary border-gray-500 text-white"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
@@ -136,7 +136,7 @@ const Security = () => {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  className="bg-black border-gray-500 text-white pr-10"
+                  className="bg-surface-secondary border-gray-500 text-white pr-10"
                   placeholder="Inserisci nuova password"
                   value={formData.password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
@@ -167,7 +167,7 @@ const Security = () => {
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
-                    className="bg-black border-gray-500 text-white pr-10"
+                    className="bg-surface-secondary border-gray-500 text-white pr-10"
                     placeholder="Conferma la nuova password"
                     value={formData.confirmPassword}
                     onChange={(e) => handleConfirmPasswordChange(e.target.value)}

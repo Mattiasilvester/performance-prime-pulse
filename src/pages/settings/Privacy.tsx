@@ -63,7 +63,7 @@ const Privacy = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black p-6">
+    <div className="min-h-screen bg-black p-6 pb-24">
       <div className="max-w-md mx-auto">
         <div className="flex items-center mb-6">
           <Button
@@ -77,7 +77,7 @@ const Privacy = () => {
           </Button>
         </div>
         
-        <div className="bg-black border-2 border-[#EEBA2B] rounded-2xl p-6">
+        <div className="bg-surface-primary border-2 border-[#EEBA2B] rounded-2xl p-6">
           <h2 className="text-xl font-semibold text-[#EEBA2B] mb-6">Privacy</h2>
           
           <div className="space-y-6">
@@ -197,19 +197,29 @@ const Privacy = () => {
               </div>
             </div>
             
-            {/* Privacy Policy Link */}
+            {/* Privacy Policy and Terms Links */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-[#EEBA2B]" />
                 <h3 className="text-lg font-medium text-white">Documenti Privacy</h3>
               </div>
               
-              <Button
-                onClick={() => navigate('/settings/privacy-policy')}
-                className="w-full bg-[#EEBA2B] hover:bg-[#d4a61a] text-black"
-              >
-                Informativa sulla privacy
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => navigate('/privacy-policy')}
+                  className="w-full bg-[#EEBA2B] hover:bg-[#d4a61a] text-black"
+                >
+                  Informativa sulla privacy
+                </Button>
+                
+                <Button
+                  onClick={() => navigate('/terms-and-conditions')}
+                  variant="outline"
+                  className="w-full border-[#EEBA2B] text-[#EEBA2B] hover:bg-[#EEBA2B] hover:text-black"
+                >
+                  Termini e condizioni
+                </Button>
+              </div>
             </div>
             
             {/* Save Button */}

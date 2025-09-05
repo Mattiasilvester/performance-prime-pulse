@@ -1,9 +1,8 @@
 import { Heart, Dumbbell, Zap, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StartTodayButton } from './StartTodayButton';
-import { DurationSelector } from './DurationSelector';
 import { useState } from 'react';
-import { generateFilteredStrengthWorkout, generateFilteredHIITWorkout } from '@/services/workoutGenerator';
+import { generateFilteredStrengthWorkout, generateFilteredHIITWorkout, generateWorkout } from '@/services/workoutGenerator';
 
 const categories = [
   {
@@ -53,35 +52,36 @@ interface WorkoutCategoriesProps {
 }
 
 export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) => {
-  const [selectedCategory, setSelectedCategory] = useState<typeof categories[0] | null>(null);
-  const [showDurationSelector, setShowDurationSelector] = useState(false);
-  
   // Stati per i filtri
   const [showFilters, setShowFilters] = useState<{ [key: string]: boolean }>({});
   const [muscleGroupFilter, setMuscleGroupFilter] = useState<string>('Tutti');
   const [equipmentFilter, setEquipmentFilter] = useState<string>('Tutte');
   const [durationFilter, setDurationFilter] = useState<string>('Tutte');
   const [levelFilter, setLevelFilter] = useState<string>('Tutti');
+  
+  // AGGIUNGI questi stati se non esistono già
+  const [userLevel, setUserLevel] = useState('INTERMEDIO');
+  const [quickMode, setQuickMode] = useState(false);
 
   const handleCategoryClick = (category: typeof categories[0]) => {
-    // Se è Forza o HIIT, mostra i filtri invece del DurationSelector
-    if (category.id === 'strength' || category.id === 'hiit') {
+    // Se è Forza, HIIT, CARDIO o MOBILITÀ, mostra i filtri
+    if (category.id === 'strength' || category.id === 'hiit' || category.id === 'cardio' || category.id === 'mobility') {
       setShowFilters(prev => ({
         ...prev,
         [category.id]: !prev[category.id]
       }));
+      
+      // Resetta stati quando apri i filtri per mobility
+      if (category.id === 'mobility') {
+        setUserLevel('INTERMEDIO');
+        setQuickMode(false);
+      }
     } else {
-      // Per Cardio e Mobilità, usa il flusso normale
-      setSelectedCategory(category);
-      setShowDurationSelector(true);
+      // Per altre categorie, usa il comportamento normale
+      onStartWorkout(category.id);
     }
   };
 
-  const handleDurationConfirm = (duration: number) => {
-    if (selectedCategory) {
-      onStartWorkout(selectedCategory.id, duration);
-    }
-  };
 
   // Funzione per avviare allenamento FORZA con filtri
   const handleStartFilteredStrengthWorkout = () => {
@@ -97,6 +97,30 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
     onStartWorkout('hiit', 45, workout);
     // Reset filtri dopo l'avvio
     setShowFilters(prev => ({ ...prev, hiit: false }));
+  };
+
+  // Funzione per avviare allenamento CARDIO con filtri
+  const handleStartCardioWorkout = (level: string, quick: boolean) => {
+    const duration = quick ? 10 : 20;
+    onStartWorkout('cardio', duration, undefined, level, quick);
+    setShowFilters({});
+  };
+
+  // Funzione per avviare allenamento MOBILITÀ con filtri
+  const handleStartMobilityWorkout = (level: string, quick: boolean) => {
+    // Usa valori di default se undefined
+    const selectedLevel = level || 'INTERMEDIO';
+    const isQuickMode = quick !== undefined ? quick : false;
+    const duration = isQuickMode ? 10 : 15;
+    
+    console.log('Mobility workout starting:', {
+      level: selectedLevel,
+      quick: isQuickMode,
+      duration: duration
+    });
+    
+    onStartWorkout('mobility', duration, undefined, selectedLevel, isQuickMode);
+    setShowFilters({});
   };
   return (
     <div className="space-y-6">
@@ -236,6 +260,127 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                   </Button>
                 </div>
               </div>
+
+              {/* Filtri per CARDIO - stesso stile di FORZA */}
+              {category.id === 'cardio' && showFilters[category.id] && (
+                <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-600">
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="text-white font-semibold mb-2 text-sm">Livello</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {['Principiante', 'Intermedio', 'Avanzato'].map((level) => (
+                          <button
+                            key={level}
+                            onClick={() => setUserLevel(level.toUpperCase())}
+                            className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                              userLevel === level.toUpperCase()
+                                ? 'bg-[#EEBA2B] text-black'
+                                : 'bg-gray-700 text-white hover:bg-gray-600'
+                            }`}
+                          >
+                            {level}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold mb-2 text-sm">Modalità</h4>
+                      <div className="flex flex-wrap gap-1">
+                        <button
+                          onClick={() => setQuickMode(false)}
+                          className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                            !quickMode
+                              ? 'bg-[#EEBA2B] text-black'
+                              : 'bg-gray-700 text-white hover:bg-gray-600'
+                          }`}
+                        >
+                          ⏱️ Standard
+                        </button>
+                        <button
+                          onClick={() => setQuickMode(true)}
+                          className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                            quickMode
+                              ? 'bg-[#EEBA2B] text-black'
+                              : 'bg-gray-700 text-white hover:bg-gray-600'
+                          }`}
+                        >
+                          ⚡ Quick 10min
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-gray-600">
+                      <Button 
+                        onClick={() => handleStartCardioWorkout(userLevel, quickMode)}
+                        className="w-full bg-[#EEBA2B] hover:bg-[#D4A017] text-black font-semibold"
+                      >
+                        AVVIA ALLENAMENTO CARDIO
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Filtri per MOBILITÀ - stesso stile di FORZA/CARDIO */}
+              {category.id === 'mobility' && showFilters[category.id] && (
+                <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-600">
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="text-white font-semibold mb-2 text-sm">Livello</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {['Principiante', 'Intermedio', 'Avanzato'].map((level) => (
+                          <button
+                            key={level}
+                            onClick={() => setUserLevel(level.toUpperCase())}
+                            className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                              userLevel === level.toUpperCase()
+                                ? 'bg-[#EEBA2B] text-black'
+                                : 'bg-gray-700 text-white hover:bg-gray-600'
+                            }`}
+                          >
+                            {level}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold mb-2 text-sm">Modalità</h4>
+                      <div className="flex flex-wrap gap-1">
+                        <button
+                          onClick={() => setQuickMode(false)}
+                          className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                            !quickMode
+                              ? 'bg-[#EEBA2B] text-black'
+                              : 'bg-gray-700 text-white hover:bg-gray-600'
+                          }`}
+                        >
+                          ⏱️ Standard
+                        </button>
+                        <button
+                          onClick={() => setQuickMode(true)}
+                          className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                            quickMode
+                              ? 'bg-[#EEBA2B] text-black'
+                              : 'bg-gray-700 text-white hover:bg-gray-600'
+                          }`}
+                        >
+                          ⚡ Quick 10min
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-gray-600">
+                      <Button 
+                        onClick={() => {
+                          console.log('Button clicked with:', userLevel, quickMode);
+                          handleStartMobilityWorkout(userLevel, quickMode);
+                        }}
+                        className="w-full bg-[#EEBA2B] hover:bg-[#D4A017] text-black font-semibold"
+                      >
+                        AVVIA ALLENAMENTO MOBILITÀ
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}
@@ -260,17 +405,6 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
         </div>
       </div>
 
-      {selectedCategory && (
-        <DurationSelector
-          isOpen={showDurationSelector}
-          onClose={() => {
-            setShowDurationSelector(false);
-            setSelectedCategory(null);
-          }}
-          onConfirm={handleDurationConfirm}
-          category={selectedCategory}
-        />
-      )}
     </div>
   );
 };

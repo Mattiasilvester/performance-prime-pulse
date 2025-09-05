@@ -14,12 +14,12 @@ const PrivacyPolicy = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white pb-24">
       <div className="container mx-auto px-4 py-6 space-y-6">
         <div className="mb-6 -mt-2 -ml-2">
           <button
             onClick={handleBack}
-            className="flex items-center text-pp-gold hover:bg-pp-gold/10 px-3 py-2 rounded-lg transition-colors"
+            className="flex items-center text-[#EEBA2B] hover:bg-[#EEBA2B]/10 px-3 py-2 rounded-lg transition-colors"
           >
             <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -28,8 +28,8 @@ const PrivacyPolicy = () => {
           </button>
         </div>
 
-        <div className="bg-black border-2 border-pp-gold rounded-2xl p-6">
-          <h1 className="text-2xl font-bold text-pp-gold mb-6">Informativa sulla Privacy per Performance Prime</h1>
+        <div className="bg-surface-primary border-2 border-[#EEBA2B] rounded-2xl p-6">
+          <h1 className="text-2xl font-bold text-[#EEBA2B] mb-6">Informativa sulla Privacy per Performance Prime</h1>
           
           <div className="space-y-6 text-white">
             <p className="text-gray-300">
@@ -45,14 +45,14 @@ const PrivacyPolicy = () => {
             </p>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">Interpretazione e Definizioni</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">Interpretazione e Definizioni</h2>
               
-              <h3 className="text-lg font-medium text-pp-gold mb-2">Interpretazione</h3>
+              <h3 className="text-lg font-medium text-[#EEBA2B] mb-2">Interpretazione</h3>
               <p className="text-gray-300 leading-relaxed mb-4">
                 Le parole di cui la lettera iniziale è maiuscola hanno significati definiti nelle seguenti condizioni. Le seguenti definizioni avranno lo stesso significato indipendentemente dal fatto che appaiano al singolare o al plurale.
               </p>
 
-              <h3 className="text-lg font-medium text-pp-gold mb-2">Definizioni</h3>
+              <h3 className="text-lg font-medium text-[#EEBA2B] mb-2">Definizioni</h3>
               <p className="text-gray-300 leading-relaxed mb-3">
                 Ai fini di questa Informativa sulla Privacy:
               </p>
@@ -73,11 +73,11 @@ const PrivacyPolicy = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">Raccolta e Utilizzo dei tuoi Dati Personali</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">Raccolta e Utilizzo dei tuoi Dati Personali</h2>
               
-              <h3 className="text-lg font-medium text-pp-gold mb-2">Tipi di Dati Raccolti</h3>
+              <h3 className="text-lg font-medium text-[#EEBA2B] mb-2">Tipi di Dati Raccolti</h3>
               
-              <h4 className="text-md font-medium text-pp-gold mb-2">Dati Personali</h4>
+              <h4 className="text-md font-medium text-[#EEBA2B] mb-2">Dati Personali</h4>
               <p className="text-gray-300 leading-relaxed mb-3">
                 Durante l'utilizzo del nostro Servizio, potremmo chiederti di fornirci determinate informazioni personali identificabili che possono essere utilizzate per contattarti o identificarti. Le informazioni personali identificabili possono includere, ma non sono limitate a:
               </p>
@@ -87,7 +87,7 @@ const PrivacyPolicy = () => {
                 <li>Dati di Utilizzo</li>
               </ul>
 
-              <h4 className="text-md font-medium text-pp-gold mb-2">Dati di Utilizzo</h4>
+              <h4 className="text-md font-medium text-[#EEBA2B] mb-2">Dati di Utilizzo</h4>
               <p className="text-gray-300 leading-relaxed mb-3">
                 I Dati di Utilizzo vengono raccolti automaticamente durante l'utilizzo del Servizio.
               </p>
@@ -101,7 +101,7 @@ const PrivacyPolicy = () => {
                 Potremmo anche raccogliere informazioni che il tuo browser invia ogni volta che visiti il nostro Servizio o quando accedi al Servizio tramite o attraverso un dispositivo mobile.
               </p>
 
-              <h3 className="text-lg font-medium text-pp-gold mb-2">Utilizzo dei tuoi Dati Personali</h3>
+              <h3 className="text-lg font-medium text-[#EEBA2B] mb-2">Utilizzo dei tuoi Dati Personali</h3>
               <p className="text-gray-300 leading-relaxed mb-3">
                 La Società può utilizzare i Dati Personali per i seguenti scopi:
               </p>
@@ -128,7 +128,7 @@ const PrivacyPolicy = () => {
                 <li><strong>Con il tuo consenso</strong>: Potremmo divulgare le tue informazioni personali per qualsiasi altro scopo con il tuo consenso.</li>
               </ul>
 
-              <h3 className="text-lg font-medium text-pp-gold mb-2">Conservazione dei tuoi Dati Personali</h3>
+              <h3 className="text-lg font-medium text-[#EEBA2B] mb-2">Conservazione dei tuoi Dati Personali</h3>
               <p className="text-gray-300 leading-relaxed mb-4">
                 La Società conserverà i tuoi Dati Personali solo per il tempo necessario agli scopi stabiliti in questa Informativa sulla Privacy. Conserveremo e utilizzeremo i tuoi Dati Personali nella misura necessaria per rispettare i nostri obblighi legali (ad esempio, se siamo tenuti a conservare i tuoi dati per rispettare le leggi applicabili), risolvere controversie e far rispettare i nostri accordi legali e le nostre politiche.
               </p>
@@ -136,7 +136,7 @@ const PrivacyPolicy = () => {
                 La Società conserverà anche i Dati di Utilizzo per scopi di analisi interna. I Dati di Utilizzo sono generalmente conservati per un periodo di tempo più breve, tranne quando questi dati vengono utilizzati per rafforzare la sicurezza o per migliorare la funzionalità del nostro Servizio, o siamo legalmente obbligati a conservare questi dati per periodi di tempo più lunghi.
               </p>
 
-              <h3 className="text-lg font-medium text-pp-gold mb-2">Trasferimento dei tuoi Dati Personali</h3>
+              <h3 className="text-lg font-medium text-[#EEBA2B] mb-2">Trasferimento dei tuoi Dati Personali</h3>
               <p className="text-gray-300 leading-relaxed mb-4">
                 Le tue informazioni, inclusi i Dati Personali, vengono elaborate negli uffici operativi della Società e in qualsiasi altro luogo dove si trovano le parti coinvolte nell'elaborazione. Significa che queste informazioni potrebbero essere trasferite a — e mantenute su — computer situati al di fuori del tuo stato, provincia, paese o altra giurisdizione governativa dove le leggi sulla protezione dei dati potrebbero differire da quelle della tua giurisdizione.
               </p>
@@ -147,7 +147,7 @@ const PrivacyPolicy = () => {
                 La Società adotterà tutti i passi ragionevolmente necessari per garantire che i tuoi dati siano trattati in modo sicuro e in conformità con questa Informativa sulla Privacy e nessun trasferimento dei tuoi Dati Personali avrà luogo a un'organizzazione o a un paese a meno che non ci siano controlli adeguati in atto inclusa la sicurezza dei tuoi dati e altre informazioni personali.
               </p>
 
-              <h3 className="text-lg font-medium text-pp-gold mb-2">Eliminare i tuoi Dati Personali</h3>
+              <h3 className="text-lg font-medium text-[#EEBA2B] mb-2">Eliminare i tuoi Dati Personali</h3>
               <p className="text-gray-300 leading-relaxed mb-4">
                 Hai il diritto di eliminare o richiedere che ti assistiamo nell'eliminare i Dati Personali che abbiamo raccolto su di te.
               </p>
@@ -161,19 +161,19 @@ const PrivacyPolicy = () => {
                 Tieni presente, tuttavia, che potremmo dover conservare determinate informazioni quando abbiamo un obbligo legale o una base legale per farlo.
               </p>
 
-              <h3 className="text-lg font-medium text-pp-gold mb-2">Divulgazione dei tuoi Dati Personali</h3>
+              <h3 className="text-lg font-medium text-[#EEBA2B] mb-2">Divulgazione dei tuoi Dati Personali</h3>
               
-              <h4 className="text-md font-medium text-pp-gold mb-2">Transazioni aziendali</h4>
+              <h4 className="text-md font-medium text-[#EEBA2B] mb-2">Transazioni aziendali</h4>
               <p className="text-gray-300 leading-relaxed mb-4">
                 Se la Società è coinvolta in una fusione, acquisizione o vendita di asset, i tuoi Dati Personali potrebbero essere trasferiti. Forniremo un preavviso prima che i tuoi Dati Personali vengano trasferiti e diventino soggetti a una diversa Informativa sulla Privacy.
               </p>
 
-              <h4 className="text-md font-medium text-pp-gold mb-2">Forze dell'ordine</h4>
+              <h4 className="text-md font-medium text-[#EEBA2B] mb-2">Forze dell'ordine</h4>
               <p className="text-gray-300 leading-relaxed mb-4">
                 In determinate circostanze, la Società potrebbe essere tenuta a divulgare i tuoi Dati Personali se richiesto dalla legge o in risposta a richieste valide da parte di autorità pubbliche (ad es. un tribunale o un'agenzia governativa).
               </p>
 
-              <h4 className="text-md font-medium text-pp-gold mb-2">Altri requisiti legali</h4>
+              <h4 className="text-md font-medium text-[#EEBA2B] mb-2">Altri requisiti legali</h4>
               <p className="text-gray-300 leading-relaxed mb-3">
                 La Società potrebbe divulgare i tuoi Dati Personali nella buona fede che tale azione sia necessaria per:
               </p>
@@ -185,14 +185,14 @@ const PrivacyPolicy = () => {
                 <li>Proteggere dalla responsabilità legale</li>
               </ul>
 
-              <h3 className="text-lg font-medium text-pp-gold mb-2">Sicurezza dei tuoi Dati Personali</h3>
+              <h3 className="text-lg font-medium text-[#EEBA2B] mb-2">Sicurezza dei tuoi Dati Personali</h3>
               <p className="text-gray-300 leading-relaxed mb-4">
                 La sicurezza dei tuoi Dati Personali è importante per noi, ma ricorda che nessun metodo di trasmissione su Internet, o metodo di archiviazione elettronica è sicuro al 100%. Mentre ci sforziamo di utilizzare mezzi commercialmente accettabili per proteggere i tuoi Dati Personali, non possiamo garantire la loro sicurezza assoluta.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">Privacy dei Minori</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">Privacy dei Minori</h2>
               <p className="text-gray-300 leading-relaxed mb-4">
                 Il nostro Servizio non si rivolge a nessuno di età inferiore ai 13 anni. Non raccogliamo consapevolmente informazioni personali identificabili da nessuno di età inferiore ai 13 anni. Se sei un genitore o un tutore e sei consapevole che tuo figlio ci ha fornito Dati Personali, contattaci. Se diventiamo consapevoli di aver raccolto Dati Personali da chiunque di età inferiore ai 13 anni senza verifica del consenso dei genitori, adottiamo misure per rimuovere tali informazioni dai nostri server.
               </p>
@@ -202,7 +202,7 @@ const PrivacyPolicy = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">Link ad Altri Siti Web</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">Link ad Altri Siti Web</h2>
               <p className="text-gray-300 leading-relaxed mb-4">
                 Il nostro Servizio potrebbe contenere link ad altri siti web che non sono gestiti da noi. Se clicchi su un link di terze parti, sarai diretto al sito di quella terza parte. Ti consigliamo vivamente di rivedere l'Informativa sulla Privacy di ogni sito che visiti.
               </p>
@@ -212,7 +212,7 @@ const PrivacyPolicy = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">Modifiche a questa Informativa sulla Privacy</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">Modifiche a questa Informativa sulla Privacy</h2>
               <p className="text-gray-300 leading-relaxed mb-4">
                 Potremmo aggiornare la nostra Informativa sulla Privacy di tanto in tanto. Ti informeremo di eventuali modifiche pubblicando la nuova Informativa sulla Privacy su questa pagina.
               </p>
@@ -225,7 +225,7 @@ const PrivacyPolicy = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">Contattaci</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">Contattaci</h2>
               <p className="text-gray-300 leading-relaxed mb-3">
                 Se hai domande su questa Informativa sulla Privacy, puoi contattarci:
               </p>

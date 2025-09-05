@@ -93,7 +93,6 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const { user } = useAuth();
   
-
   
   // Stati per i timer di ogni esercizio
   const [exerciseTimers, setExerciseTimers] = useState<Record<number, ExerciseTimerState>>({});
@@ -297,6 +296,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
             <X className="h-5 w-5" />
           </Button>
         </div>
+        
         
         <div className="mt-4 bg-black/20 rounded-full h-2 animate-fade-in">
           <div 

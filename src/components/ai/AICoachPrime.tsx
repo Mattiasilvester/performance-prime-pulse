@@ -28,7 +28,7 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
             className="cursor-pointer hover:opacity-90 transition-opacity"
             onClick={openFullScreenChat}
           >
-            <PrimeChat />
+            <PrimeChat isModal={false} />
           </div>
         </div>
         <div className="space-y-4">
@@ -109,7 +109,7 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
               >
                 <X className="h-5 w-5" />
               </button>
-              <PrimeChat />
+              <PrimeChat isModal={true} />
             </div>
           </div>
         </div>

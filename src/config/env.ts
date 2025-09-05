@@ -26,7 +26,9 @@ export const validateEnv = () => {
   const missing = required.filter(key => !import.meta.env[key]);
   
   if (missing.length > 0) {
-    throw new Error(`❌ Variabili d'ambiente mancanti: ${missing.join(', ')}`);
+    console.error(`❌ Variabili d'ambiente mancanti: ${missing.join(', ')}`);
+    console.error('Verifica che il file .env sia presente e contenga le variabili corrette');
+    return false;
   }
   
   console.log('✅ Tutte le variabili d\'ambiente sono configurate correttamente');

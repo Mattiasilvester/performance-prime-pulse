@@ -309,7 +309,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-black border-2 border-[#c89116] rounded-2xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-black border-2 border-[#c89116] rounded-2xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto mb-24" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-pp-gold">Crea Allenamento</h3>
           <button onClick={onClose} className="text-white hover:text-pp-gold">

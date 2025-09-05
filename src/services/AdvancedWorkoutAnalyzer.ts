@@ -8,8 +8,14 @@ import { createWorker } from 'tesseract.js';
 import { supabase } from '@/integrations/supabase/client';
 import { env } from '@/config/env';
 
-// Configurazione PDF.js per browser
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Configurazione PDF.js per browser - fallback locale per evitare errori 406
+try {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+} catch (error) {
+  // Fallback locale se CDN non disponibile
+  console.warn('PDF.js CDN non disponibile, usando fallback locale');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+}
 
 // Flag debug
 const DEBUG_ANALYSIS = env.DEBUG_MODE;

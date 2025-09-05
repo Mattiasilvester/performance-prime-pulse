@@ -29,11 +29,22 @@ class Analytics {
 
     // Carica script Plausible ufficiale in modo asincrono
     if (!this.scriptLoaded) {
-      // Script principale Plausible
+      // Script principale Plausible con fallback per errori 406
       const script = document.createElement('script');
       script.defer = true;
       script.setAttribute('data-domain', this.domain);
       script.src = 'https://plausible.io/js/script.outbound-links.js';
+      
+      // Gestione errori per evitare 406
+      script.onerror = () => {
+        console.warn('Plausible script non disponibile, analytics disabilitate');
+        this.scriptLoaded = false;
+      };
+      
+      script.onload = () => {
+        this.scriptLoaded = true;
+      };
+      
       document.head.appendChild(script);
 
       // Inizializza funzione plausible

@@ -18,6 +18,13 @@ import Timer from '@/pages/Timer'
 import Schedule from '@/pages/Schedule'
 import AICoach from '@/pages/AICoach'
 import Subscriptions from '@/pages/Subscriptions'
+import Profile from '@/pages/Profile'
+import PersonalInfo from '@/pages/settings/PersonalInfo'
+import Security from '@/pages/settings/Security'
+import Notifications from '@/pages/settings/Notifications'
+import Language from '@/pages/settings/Language'
+import Privacy from '@/pages/settings/Privacy'
+import Help from '@/pages/settings/Help'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
 import BottomNavigation from '@/components/layout/BottomNavigation'
@@ -94,6 +101,41 @@ function App() {
               <Route path="/subscriptions" element={
                 <ProtectedRoute session={session}>
                   <Subscriptions />
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute session={session}>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings/personal-info" element={
+                <ProtectedRoute session={session}>
+                  <PersonalInfo />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings/security" element={
+                <ProtectedRoute session={session}>
+                  <Security />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings/notifications" element={
+                <ProtectedRoute session={session}>
+                  <Notifications />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings/language" element={
+                <ProtectedRoute session={session}>
+                  <Language />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings/privacy" element={
+                <ProtectedRoute session={session}>
+                  <Privacy />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings/help" element={
+                <ProtectedRoute session={session}>
+                  <Help />
                 </ProtectedRoute>
               } />
               

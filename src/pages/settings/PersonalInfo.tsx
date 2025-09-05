@@ -142,7 +142,7 @@ const PersonalInfo = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black p-6">
+    <div className="min-h-screen bg-black p-6 pb-24">
       <div className="max-w-md mx-auto">
         <div className="flex items-center mb-6">
           <Button
@@ -156,7 +156,7 @@ const PersonalInfo = () => {
           </Button>
         </div>
         
-        <div className="bg-black border-2 border-[#EEBA2B] rounded-2xl p-6">
+        <div className="bg-surface-primary border-2 border-[#EEBA2B] rounded-2xl p-6 mb-6">
           <h2 className="text-xl font-semibold text-[#EEBA2B] mb-6">Informazioni personali</h2>
           
           <div className="space-y-4">
