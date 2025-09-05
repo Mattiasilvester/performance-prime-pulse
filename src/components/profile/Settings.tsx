@@ -34,10 +34,12 @@ export const Settings = () => {
   useEffect(() => {
     const savedScrollPosition = sessionStorage.getItem('settingsScrollPosition');
     if (savedScrollPosition) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         window.scrollTo(0, parseInt(savedScrollPosition));
         sessionStorage.removeItem('settingsScrollPosition');
       }, 100);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, []);
 

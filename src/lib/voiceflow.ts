@@ -9,10 +9,7 @@ const headers: Record<string, string> = {
 };
 
 // DEBUG: Verifica variabili d'ambiente
-console.log('🔍 DEBUG ENV VARIABLES:');
-console.log('VF_VERSION_ID:', VF_VERSION_ID);
-console.log('VF_API_KEY:', import.meta.env.VITE_VF_API_KEY ? 'Present' : 'Missing');
-console.log('VF_BASE:', VF_BASE);
+// DEBUG: '🔍 DEBUG ENV VARIABLES:');
 
 export async function vfPatchState(userId: string, vars: Record<string, any>) {
   // PROVA FORMATO A - Solo user ID (senza /v2/)
@@ -25,17 +22,12 @@ export async function vfPatchState(userId: string, vars: Record<string, any>) {
     'sessionID': userId
   };
   
-  console.log('🔍 DEBUG VOICEFLOW PATCH STATE:');
-  console.log('URL completo:', url);
-  console.log('Version ID:', VF_VERSION_ID);
-  console.log('User ID:', userId);
-  console.log('Headers:', { 
+  console.log('🔍 DEBUG VOICEFLOW PATCH STATE:', {
     'Authorization': dynamicHeaders.Authorization ? 'Present' : 'Missing',
     'Content-Type': dynamicHeaders['Content-Type'],
     'versionID': dynamicHeaders.versionID,
     'sessionID': dynamicHeaders.sessionID
   });
-  console.log('Variables:', vars);
   
   try {
     const res = await fetch(url, {
@@ -43,10 +35,7 @@ export async function vfPatchState(userId: string, vars: Record<string, any>) {
       headers: dynamicHeaders,
       body: JSON.stringify({ variables: vars })
     });
-    
-    console.log('Response status:', res.status);
-    console.log('Response headers:', Object.fromEntries(res.headers.entries()));
-    
+
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       console.error('Error response:', text);
@@ -54,7 +43,6 @@ export async function vfPatchState(userId: string, vars: Record<string, any>) {
     }
     
     const responseData = await res.json();
-    console.log('Success response:', responseData);
     return responseData;
   } catch (error) {
     console.error('Fetch error:', error);
@@ -82,20 +70,11 @@ export async function vfInteract(userId: string, text: string, retries = 1): Pro
     'sessionID': userId
   };
 
-  console.log('🔍 DEBUG VOICEFLOW INTERACT:');
-  console.log('URL completo:', url);
-  console.log('Version ID:', VF_VERSION_ID);
-  console.log('User ID:', userId);
-  console.log('Text:', text);
-  console.log('Body:', body);
-  console.log('Headers:', dynamicHeaders);
+  // DEBUG: '🔍 DEBUG VOICEFLOW INTERACT:');
 
   try {
     const res = await fetch(url, { method: 'POST', headers: dynamicHeaders, body: JSON.stringify(body) });
-    
-    console.log('Interact response status:', res.status);
-    console.log('Interact response headers:', Object.fromEntries(res.headers.entries()));
-    
+
     if (!res.ok) {
       const errorText = await res.text().catch(() => '');
       console.error('Interact error response:', errorText);
@@ -103,7 +82,6 @@ export async function vfInteract(userId: string, text: string, retries = 1): Pro
     }
     
     const data = await res.json();
-    console.log('Interact success data:', data);
     return Array.isArray(data?.trace) ? (data.trace as VFTrace[]) : [];
   } catch (err) {
     console.error('Interact fetch error:', err);

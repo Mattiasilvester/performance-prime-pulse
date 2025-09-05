@@ -26,7 +26,6 @@ class EmailAnalytics {
     
     // Log per monitoring
     if (!result.valid) {
-      console.warn('Email validation failed:', {
         email: email.split('@')[1], // Log solo dominio per privacy
         errors: result.errors,
         score: result.score
@@ -83,7 +82,6 @@ class EmailAnalytics {
     this.blockedAttempts = blocked;
     
     // Log per monitoring
-    console.warn('Tentativo registrazione bloccato:', {
       domain: domain,
       timestamp: new Date(timestamp).toISOString(),
       reason: 'Email disposable o non valida'
@@ -270,7 +268,6 @@ class EmailAnalytics {
     });
     localStorage.setItem('email_validation_stats', JSON.stringify(filteredStats));
     
-    console.log('Pulizia dati analytics completata');
   }
 }
 

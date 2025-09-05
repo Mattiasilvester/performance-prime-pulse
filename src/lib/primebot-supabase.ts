@@ -259,11 +259,9 @@ export async function initializePrimeBotTables(): Promise<void> {
     const { error: preferencesError } = await supabase.rpc('create_primebot_preferences_table');
 
     if (interactionsError) {
-      console.warn('PrimeBot interactions table might already exist:', interactionsError);
     }
     
     if (preferencesError) {
-      console.warn('PrimeBot preferences table might already exist:', preferencesError);
     }
   } catch (error) {
     console.error('Error initializing PrimeBot tables:', error);

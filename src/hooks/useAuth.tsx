@@ -2,6 +2,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { sendWelcomeEmail } from '@/services/emailService';
 
 interface AuthContextType {
   user: User | null;
@@ -95,9 +96,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Verifica se l'utente è già confermato o se serve conferma email
       if (data.user && data.session) {
         // Utente confermato e sessione creata
+        // Invia email di benvenuto (non bloccante)
+        if (data.user) {
+          sendWelcomeEmail(data.user).catch(error => {
+            console.error('Errore invio email benvenuto:', error);
+          });
+        }
         return { success: true, message: 'Registrazione completata e accesso effettuato!' };
       } else if (data.user && !data.session) {
         // Utente creato ma serve conferma email
+        // Invia email di benvenuto anche se serve conferma (non bloccante)
+        if (data.user) {
+          sendWelcomeEmail(data.user).catch(error => {
+            console.error('Errore invio email benvenuto:', error);
+          });
+        }
         return { success: true, message: 'Registrazione completata! Controlla la tua email per confermare l\'account.' };
       } else {
         return { success: false, message: 'Errore durante la registrazione' };

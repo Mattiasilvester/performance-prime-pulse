@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExerciseExplanation } from './ExerciseExplanation';
+import { ExerciseGifLink } from './ExerciseGifLink';
 import { useEffect, useState } from 'react';
 
 interface ExerciseTimerState {
@@ -60,7 +61,6 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
     }
     
     // Log per debug
-    console.log('Pulsante AVVIA cliccato per esercizio:', exercise.name);
     
     // Chiama la funzione solo se definita
     if (typeof onStart === 'function') {
@@ -77,9 +77,7 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
     if (navigator.vibrate) {
       navigator.vibrate([50, 50, 50]); // Pattern per completamento
     }
-    
-    console.log('Pulsante COMPLETA cliccato per esercizio:', exercise.name);
-    
+
     if (typeof onToggleComplete === 'function') {
       onToggleComplete(index);
     }
@@ -94,9 +92,12 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
               {index + 1}
             </div>
             <div className="flex-1 min-w-0 flex flex-col justify-center">
-              <h4 className="font-bold text-white text-lg leading-tight truncate mb-1">
-                {exercise.name}
-              </h4>
+              <div className="flex items-center gap-2 mb-1">
+                <h4 className="font-bold text-white text-lg leading-tight truncate">
+                  {exercise.name}
+                </h4>
+                <ExerciseGifLink exerciseName={exercise.name} />
+              </div>
               <p className="text-sm text-white/70 truncate mb-2">
                 {exercise.duration}
               </p>

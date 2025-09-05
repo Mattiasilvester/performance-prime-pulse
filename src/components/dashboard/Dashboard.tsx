@@ -9,7 +9,7 @@ import { OnboardingBot } from '@/components/OnboardingBot';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
-
+import { BottomNavigation } from '@/components/layout/BottomNavigation';
 
 export const Dashboard = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -39,9 +39,9 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black pb-20">
       <Header />
-      <div className="container mx-auto px-4 py-6 space-y-6 pt-20 pb-20">
+      <div className="container mx-auto px-4 py-6 space-y-6 pt-20">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-pp-gold">Ciao, {userName}!</h2>
@@ -70,6 +70,7 @@ export const Dashboard = () => {
           <RecentActivity />
         </div>
       </div>
+      <BottomNavigation />
     </div>
   );
 };

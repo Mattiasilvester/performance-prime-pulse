@@ -67,7 +67,6 @@ const AuthPage = () => {
           return;
         }
 
-
       } else {
         // Login Supabase
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -80,7 +79,6 @@ const AuthPage = () => {
           setLoading(false);
           return;
         }
-
 
       }
 

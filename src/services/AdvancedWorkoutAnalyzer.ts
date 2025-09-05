@@ -99,7 +99,7 @@ export class AdvancedWorkoutAnalyzer {
     const startTime = Date.now();
     
     // Log iniziale
-    this.log('[ANALYSIS]', `File ricevuto → ${typeof file === 'string' ? 'URL' : 'File'}: ${typeof file === 'string' ? file : file.name} (${file.size} bytes)`);
+    this.log('[ANALYSIS]', `File ricevuto → ${typeof file === 'string' ? 'URL' : 'File'}: ${typeof file === 'string' ? file : file.name} (${typeof file === 'string' ? 'N/A' : file.size} bytes)`);
     
     try {
       // 1. Gestione input (file o URL)
@@ -128,7 +128,7 @@ export class AdvancedWorkoutAnalyzer {
       // 5. Costruzione risultato finale
       const result: ParsedWorkoutResult = {
         riscaldamento: parsedResult.riscaldamento,
-        giorno: this.detectDay(extractedText.text),
+        giorno: this.detectDayNumber(extractedText.text),
         esercizi: parsedResult.scheda,
         stretching: parsedResult.stretching,
         multiDay: parsedResult.multiDay,
@@ -282,7 +282,7 @@ export class AdvancedWorkoutAnalyzer {
   private static async extractOCRText(fileUrl: string): Promise<{ text: string; confidence: number }> {
     try {
       const worker = await createWorker('ita+eng', 1, {
-        logger: DEBUG_ANALYSIS ? m => this.log('[OCR]', m) : () => {}
+        logger: DEBUG_ANALYSIS ? (m: any) => this.log('[OCR]', typeof m === 'string' ? m : JSON.stringify(m)) : () => {}
       });
       
       const { data: { text, confidence } } = await worker.recognize(fileUrl);
@@ -347,11 +347,9 @@ export class AdvancedWorkoutAnalyzer {
 
     // Step 2: LOG righe normalizzate (solo in debug mode)
     if (DEBUG) {
-      console.log("========== [DEBUG LINES - NORMALIZED TEXT] ==========");
+      // DEBUG: "========== [DEBUG LINES - NORMALIZED TEXT] ==========");
       lines.forEach((line, idx) => {
-        console.log(`${idx + 1}: "${line}"`);
       });
-      console.log("====================================================");
     }
 
     // Preprocessamento righe (logica esistente)
@@ -524,6 +522,20 @@ export class AdvancedWorkoutAnalyzer {
   }
 
   /**
+   * Rilevamento numero giorno (per compatibilità tipo)
+   */
+  private static detectDayNumber(text: string): number {
+    const dayMatch = this.detectDay(text);
+    if (dayMatch) {
+      const numberMatch = dayMatch.match(/\d+/);
+      if (numberMatch) {
+        return parseInt(numberMatch[0], 10);
+      }
+    }
+    return 1; // Default al giorno 1
+  }
+
+  /**
    * Parsing singola riga esercizio
    */
   private static parseExerciseLine(line: string): ParsedExercise | null {
@@ -690,7 +702,6 @@ export class AdvancedWorkoutAnalyzer {
    */
   private static log(prefix: string, message: string) {
     if (DEBUG_ANALYSIS) {
-      console.log(`${prefix} ${message}`);
     }
   }
 }

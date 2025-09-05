@@ -134,12 +134,13 @@ export const Header = () => {
   const handleSearch = () => {
     setShowSearch(!showSearch);
     if (!showSearch) {
-      setTimeout(() => {
+      // Use requestAnimationFrame instead of setTimeout for better performance
+      requestAnimationFrame(() => {
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
           searchInput.focus();
         }
-      }, 100);
+      });
     }
   };
 

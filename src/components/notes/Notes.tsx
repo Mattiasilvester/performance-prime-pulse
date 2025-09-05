@@ -29,7 +29,6 @@ const Notes = () => {
   };
 
   const handleNoteDeleted = (noteId: string) => {
-    console.log('Removing note from local state:', noteId);
     setSelectedNote(null);
     setIsCreating(false);
   };

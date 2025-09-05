@@ -82,10 +82,9 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
     }
   };
 
-
   // Funzione per avviare allenamento FORZA con filtri
   const handleStartFilteredStrengthWorkout = () => {
-    const workout = generateFilteredStrengthWorkout(muscleGroupFilter, equipmentFilter, 45);
+    const workout = generateFilteredStrengthWorkout(muscleGroupFilter, equipmentFilter, 45, userLevel as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO');
     onStartWorkout('strength', 45, workout);
     // Reset filtri dopo l'avvio
     setShowFilters(prev => ({ ...prev, strength: false }));
@@ -93,7 +92,7 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
 
   // Funzione per avviare allenamento HIIT con filtri
   const handleStartFilteredHIITWorkout = () => {
-    const workout = generateFilteredHIITWorkout(durationFilter, levelFilter, 45);
+    const workout = generateFilteredHIITWorkout(durationFilter, levelFilter, 45, userLevel as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO');
     onStartWorkout('hiit', 45, workout);
     // Reset filtri dopo l'avvio
     setShowFilters(prev => ({ ...prev, hiit: false }));
@@ -113,7 +112,7 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
     const isQuickMode = quick !== undefined ? quick : false;
     const duration = isQuickMode ? 10 : 15;
     
-    console.log('Mobility workout starting:', {
+    console.log('Avvio workout mobility con parametri:', {
       level: selectedLevel,
       quick: isQuickMode,
       duration: duration
@@ -370,7 +369,6 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                     <div className="mt-4 pt-3 border-t border-gray-600">
                       <Button 
                         onClick={() => {
-                          console.log('Button clicked with:', userLevel, quickMode);
                           handleStartMobilityWorkout(userLevel, quickMode);
                         }}
                         className="w-full bg-[#EEBA2B] hover:bg-[#D4A017] text-black font-semibold"
