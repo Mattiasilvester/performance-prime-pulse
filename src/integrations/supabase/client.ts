@@ -22,12 +22,11 @@ if (env.IS_DEV) {
     .getSession()
     .then(({ data, error }) => {
       if (error) {
-        console.warn('⚠️ Errore health check Supabase:', error.message);
-        console.warn(
+        console.error(
           'Verifica che VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY siano corretti nel file .env'
         );
       } else {
-        console.log('✅ Connessione a Supabase riuscita');
+        console.log('✅ Supabase client inizializzato correttamente');
       }
     })
     .catch((err) => {

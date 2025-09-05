@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { X, Send, Bot, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertCircle } from 'lucide-react';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { ErrorFallback } from '@/components/ui/ErrorFallback';
 
 interface PrimeBotChatProps {
   onClose?: () => void;
@@ -53,6 +55,12 @@ export const PrimeBotChat: React.FC<PrimeBotChatProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [connectionStatus, setConnectionStatus] = useState<'testing' | 'connected' | 'error'>('testing');
   const [isUsingFallback, setIsUsingFallback] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Error handling
+  const { handleError, handleNetworkError } = useErrorHandler({
+    context: { component: 'PrimeBotChat' }
+  });
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -69,6 +77,15 @@ export const PrimeBotChat: React.FC<PrimeBotChatProps> = ({
     };
     testConn();
   }, [testConnection]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   // Controlla se è un nuovo utente al mount
   useEffect(() => {
@@ -96,7 +113,7 @@ export const PrimeBotChat: React.FC<PrimeBotChatProps> = ({
           setMessages([welcomeMessage]);
         }
       } catch (error) {
-        console.error('Errore nel controllo nuovo utente:', error);
+        handleError(error, { action: 'checkNewUser' });
       }
     };
     
@@ -125,8 +142,13 @@ export const PrimeBotChat: React.FC<PrimeBotChatProps> = ({
     setInputText('');
     setIsLoading(true);
 
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     // Simulate AI response
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         text: generateAIResponse(text),
@@ -136,6 +158,7 @@ export const PrimeBotChat: React.FC<PrimeBotChatProps> = ({
 
       setMessages(prev => [...prev, aiResponse]);
       setIsLoading(false);
+      timeoutRef.current = null;
     }, 1000);
   };
 
@@ -398,14 +421,14 @@ Fammi sapere come posso aiutarti!`;
               </div>
             </div>
           ) : error ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                <p className="text-red-600 mb-4">{error}</p>
-                <Button onClick={initializeChat} variant="outline">
-                  Riprova
-                </Button>
-              </div>
+            <div className="flex items-center justify-center h-full p-4">
+              <ErrorFallback
+                type="network"
+                message={error}
+                onRetry={handleRetryConnection}
+                onGoHome={() => window.location.href = '/'}
+                className="max-w-md"
+              />
             </div>
           ) : messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">

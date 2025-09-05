@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
+import { ErrorFallback } from '@/components/ui/ErrorFallback'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -8,11 +10,27 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { handleAuthError, handleValidationError } = useErrorHandler({
+    context: { component: 'LoginPage' }
+  })
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
+
+    // Validazione input
+    if (!email || !password) {
+      setError('Compila tutti i campi obbligatori')
+      setLoading(false)
+      return
+    }
+
+    if (!email.includes('@')) {
+      setError('Inserisci un indirizzo email valido')
+      setLoading(false)
+      return
+    }
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -25,22 +43,8 @@ export default function LoginPage() {
       // Success
       navigate('/dashboard')
     } catch (error) {
-      console.error('Login error:', error)
-      
-      // Gestione errori user-friendly
-      if (error instanceof Error) {
-        if (error.message.includes('Invalid login')) {
-          setError('Email o password non corretti')
-        } else if (error.message.includes('Network') || error.message.includes('fetch')) {
-          setError('Problema di connessione. Riprova più tardi.')
-        } else if (error.message.includes('rate limit')) {
-          setError('Troppi tentativi. Riprova tra qualche minuto.')
-        } else {
-          setError(error.message)
-        }
-      } else {
-        setError('Si è verificato un errore. Riprova.')
-      }
+      const errorInfo = handleAuthError(error, { action: 'signIn' })
+      setError(errorInfo.userMessage)
     } finally {
       setLoading(false)
     }

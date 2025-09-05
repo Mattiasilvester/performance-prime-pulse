@@ -25,7 +25,7 @@ import Notifications from '@/pages/settings/Notifications'
 import Language from '@/pages/settings/Language'
 import Privacy from '@/pages/settings/Privacy'
 import Help from '@/pages/settings/Help'
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import ProtectedRoute from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
 import BottomNavigation from '@/components/layout/BottomNavigation'
 
@@ -142,7 +142,6 @@ function App() {
               {/* Fallback */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
-            {session && <BottomNavigation />}
           </Router>
           <Toaster />
         </NotificationProvider>

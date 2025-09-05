@@ -25,20 +25,16 @@ export interface ParsedWorkoutResult {
  * Parsing principale del file di allenamento
  */
 export async function parseWorkoutFile(file: File): Promise<ParsedWorkoutResult> {
-  console.log('🔍 WorkoutParser: Inizio parsing file:', file.name);
   
   try {
     // Estrazione testo dal file
     const text = await extractTextFromFile(file);
-    console.log('✅ Testo estratto:', text.length, 'caratteri');
     
     // Pulizia del testo
     const cleanedText = cleanText(text);
-    console.log('✅ Testo pulito:', cleanedText.length, 'caratteri');
     
     // Parsing della struttura
     const result = parseWorkoutStructure(cleanedText);
-    console.log('✅ Struttura parsata:', result);
     
     return result;
   } catch (error) {
@@ -66,7 +62,7 @@ async function extractTextFromFile(file: File): Promise<string> {
  * Pulizia del testo rimuovendo contenuti binari e metadati
  */
 function cleanText(text: string): string {
-  console.log('🧹 Pulizia testo...');
+  // DEBUG: '🧹 Pulizia testo...');
   
   return text
     .split('\n')
@@ -120,7 +116,6 @@ function normalizeUnicode(text: string): string {
  * Parsing della struttura del workout
  */
 function parseWorkoutStructure(text: string): ParsedWorkoutResult {
-  console.log('🏗️ Parsing struttura workout...');
   
   const lines = text.split('\n').filter(line => line.trim());
   const result: ParsedWorkoutResult = {

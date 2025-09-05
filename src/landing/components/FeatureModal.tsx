@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface FeatureModalProps {
   open: boolean;
@@ -19,6 +19,7 @@ export const FeatureModal: React.FC<FeatureModalProps> = ({
   ctaText = "Inizia Ora - È Gratis!",
   cardPosition
 }) => {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -32,6 +33,11 @@ export const FeatureModal: React.FC<FeatureModalProps> = ({
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
+      
+      // Cleanup timeout on unmount
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, [open, onClose]);
 
@@ -40,8 +46,15 @@ export const FeatureModal: React.FC<FeatureModalProps> = ({
   const handleCtaClick = () => {
     onClose();
     window.scrollTo(0, 0);
-    setTimeout(() => {
+    
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    timeoutRef.current = setTimeout(() => {
       window.location.href = '/auth';
+      timeoutRef.current = null;
     }, 100);
   };
 

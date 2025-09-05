@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, ArrowRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ExerciseGifLink } from './ExerciseGifLink';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CustomWorkoutDisplayProps {
@@ -76,7 +77,18 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
       navigator.vibrate(50);
     }
     
-    console.log('Pulsante Completa cliccato');
+    completeExercise(currentExercise);
+  };
+
+  // Fix per il touch del pulsante "Completa"
+  const handleCompleteTouch = (e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+    
     completeExercise(currentExercise);
   };
 
@@ -89,7 +101,18 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
       navigator.vibrate([100, 50, 100]); // Pattern per terminazione
     }
     
-    console.log('Pulsante Termina Allenamento cliccato');
+    handleCompleteWorkout();
+  };
+
+  // Fix per il touch del pulsante "Termina Allenamento"
+  const handleTerminateTouch = (e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (navigator.vibrate) {
+      navigator.vibrate([100, 50, 100]); // Pattern per terminazione
+    }
+    
     handleCompleteWorkout();
   };
 
@@ -168,9 +191,12 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
                   )}
                 </div>
                 <div>
-                  <h4 className="cardio-fatburn-card__title font-semibold text-white">
-                    {exercise.name}
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="cardio-fatburn-card__title font-semibold text-white">
+                      {exercise.name}
+                    </h4>
+                    <ExerciseGifLink exerciseName={exercise.name} />
+                  </div>
                   <p className="cardio-fatburn-card__subtitle text-sm text-gray-400">
                     {exercise.sets && `${exercise.sets} serie`}
                     {exercise.reps && ` • ${exercise.reps} rip.`}
@@ -182,7 +208,7 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
               {index === currentExercise && !isCompleted(index) && (
                 <Button
                   onClick={handleCompleteClick}
-                  onTouchEnd={handleCompleteClick}
+                  onTouchEnd={handleCompleteTouch}
                   style={{ backgroundColor: '#EEBA2B', color: '#000000' }}
                   className="btn-completa min-h-[44px] px-4 py-2 text-sm font-semibold"
                   type="button"
@@ -203,7 +229,7 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
             <p className="text-green-600 mb-4">Ottimo lavoro! Hai completato tutti gli esercizi.</p>
             <Button 
               onClick={handleTerminateWorkout}
-              onTouchEnd={handleTerminateWorkout}
+              onTouchEnd={handleTerminateTouch}
               className="btn-termina-allenamento bg-green-600 hover:bg-green-700 min-h-[48px] px-6 py-3 text-base font-semibold"
               type="button"
               aria-label="Termina allenamento"

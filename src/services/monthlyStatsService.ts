@@ -74,6 +74,5 @@ const addMonthlyNotification = async (userId: string, monthName: string, workout
 export const getMonthlyStats = async (userId: string, year?: number) => {
   // Temporarily return empty array until types are updated
   // TODO: Re-enable when monthly_workout_stats table is available in types
-  console.log(`Monthly stats requested for user ${userId}, year ${year || 'current'}`);
   return [];
 };

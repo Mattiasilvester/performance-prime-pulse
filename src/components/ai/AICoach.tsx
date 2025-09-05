@@ -12,7 +12,6 @@ export const AICoach = () => {
   const chatInterfaceRef = useRef<any>(null);
 
   const handleSavePlan = (planData: any) => {
-    console.log('Generating plan for:', planData);
     
     // Genera il messaggio per l'AI
     const aiMessage = generateAIPlan(planData);

@@ -97,7 +97,6 @@ export const Workouts = () => {
         </div>
       </div>
 
-
       {activeWorkout === 'custom' && customWorkout ? (
         <div className="space-y-6">
           <WorkoutTimer 

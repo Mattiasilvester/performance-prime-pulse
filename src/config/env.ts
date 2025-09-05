@@ -31,6 +31,5 @@ export const validateEnv = () => {
     return false;
   }
   
-  console.log('✅ Tutte le variabili d\'ambiente sono configurate correttamente');
   return true;
 };

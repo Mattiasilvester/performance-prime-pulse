@@ -11,6 +11,7 @@ import { getResetPasswordUrl } from '@/shared/config/environments';
 import { analytics } from '@/services/analytics';
 import RegistrationForm from '@/components/auth/RegistrationForm';
 import emailAnalytics from '@/services/emailAnalytics';
+import { sendPasswordResetEmail } from '@/services/emailService';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -77,6 +78,12 @@ const Auth = () => {
       if (error) {
         throw error;
       }
+
+      // Invia email personalizzata tramite n8n (non bloccante)
+      const resetLink = `${getResetPasswordUrl()}?access_token=TOKEN&refresh_token=TOKEN&type=recovery`;
+      sendPasswordResetEmail(resetEmail, resetLink).catch(error => {
+        console.error('Errore invio email reset personalizzata:', error);
+      });
 
       // Traccia richiesta reset password
       analytics.trackAuth('password_reset');

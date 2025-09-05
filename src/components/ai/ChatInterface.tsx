@@ -1,5 +1,5 @@
 
-import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
+import { useState, forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
 import { Send, Bot, User, Copy, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -36,6 +36,8 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void }, ChatInterfaceProps>((props, ref) => {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Inizializza i messaggi dal localStorage o usa quelli iniziali
   const [messages, setMessages] = useState<Message[]>(() => {
     const savedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
@@ -59,6 +61,15 @@ export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void },
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
   const { toast } = useToast();
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   // Controlla se è un nuovo utente al mount
   useEffect(() => {
@@ -158,7 +169,15 @@ export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void },
         title: "Messaggio copiato!",
         description: "Il messaggio è stato copiato negli appunti.",
       });
-      setTimeout(() => setCopiedMessageId(null), 2000);
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      timeoutRef.current = setTimeout(() => {
+        setCopiedMessageId(null);
+        timeoutRef.current = null;
+      }, 2000);
     } catch (err) {
       toast({
         title: "Errore",

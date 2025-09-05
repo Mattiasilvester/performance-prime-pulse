@@ -54,7 +54,6 @@ const RegistrationForm = () => {
         setValidationScore(result.score);
         
         // Log per debug
-        console.log('Validazione email:', result);
         
       } catch (error) {
         console.error('Errore validazione:', error);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,8 +18,18 @@ const ResetPassword = () => {
   const [hasValidToken, setHasValidToken] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const navigate = useNavigate();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   // Verifica se l'utente ha un token valido per il reset
   useEffect(() => {
@@ -28,9 +38,7 @@ const ResetPassword = () => {
       const accessToken = searchParams.get('access_token');
       const refreshToken = searchParams.get('refresh_token');
       const type = searchParams.get('type');
-      
-      console.log('Reset password URL params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
-      
+
       if (accessToken && refreshToken && type === 'recovery') {
         try {
           // Imposta la sessione usando i token dall'URL
@@ -44,7 +52,6 @@ const ResetPassword = () => {
             throw error;
           }
           
-          console.log('Sessione impostata con successo per reset password');
           setHasValidToken(true);
         } catch (error) {
           console.error('Errore durante l\'impostazione della sessione:', error);
@@ -115,9 +122,15 @@ const ResetPassword = () => {
           description: "Password aggiornata con successo! Sarai reindirizzato al login.",
         });
         
+        // Clear any existing timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        
         // Reindirizza al login dopo un breve delay
-        setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
           navigate('/auth');
+          timeoutRef.current = null;
         }, 2000);
       }
     } catch (error: any) {

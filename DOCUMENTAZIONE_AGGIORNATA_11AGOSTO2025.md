@@ -16,6 +16,10 @@
 - ✅ **PrimeBot Ottimizzato** - Chat AI con distinzione modal/normale
 - ✅ **Voiceflow API** - Corretti bug critici e creato configurazione completa
 - ✅ **Layout Componenti** - Risolti problemi posizionamento e attaccamento al footer
+- ✅ **Sistema Link GIF Esercizi** - Modal interattivo per visualizzazione esercizi con descrizioni
+- ✅ **Database GIF Completo** - 145+ URL placeholder per tutti gli esercizi categorizzati
+- ✅ **Fix Z-Index Modal** - Risolto problema sovrapposizione bottoni esercizio
+- ✅ **Gestione Errori GIF** - Fallback per GIF non disponibili
 
 ### **✅ COMPONENTI ATTIVI E FUNZIONANTI**
 1. **Landing Page** - Porta 8080 (Python HTTP Server) ✅
@@ -156,7 +160,7 @@
 
 ### **4. Flusso Email e Conferma Account**
 - **Problema**: Email di benvenuto non inviate automaticamente
-- **Soluzione**: Integrazione con Supabase SMTP (Resend) per email automatiche
+- **Soluzione**: Integrazione con Supabase SMTP (DEPRECATED - Migrare a n8n) per email automatiche
 - **Risultato**: Flusso completo di conferma account e benvenuto
 - **File**: `src/components/auth/RegistrationForm.tsx`
 

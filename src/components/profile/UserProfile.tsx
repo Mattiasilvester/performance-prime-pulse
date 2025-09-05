@@ -18,11 +18,9 @@ export const UserProfile = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      console.log('Loading profile data...');
       setLoading(true);
       try {
         const profileData = await fetchUserProfile();
-        console.log('Profile data received:', profileData);
         if (profileData) {
           setProfile(profileData);
           setForm({
@@ -31,11 +29,9 @@ export const UserProfile = () => {
             birthPlace: profileData.birth_place,
           });
         } else {
-          console.log('No profile data received');
         }
 
         const statsData = await fetchWorkoutStats();
-        console.log('Stats data received:', statsData);
         setStats(statsData);
       } catch (error) {
         console.error('Error loading profile data:', error);
@@ -52,35 +48,26 @@ export const UserProfile = () => {
     if (!profile) return;
     
     try {
-      console.log('🔄 Iniziando salvataggio profilo...');
-      console.log('📝 Dati da salvare:', form);
       
       let avatarUrl = profile.avatarUrl;
       
       // Upload new avatar if one was selected
       if (imageFile) {
-        console.log('📸 Caricamento avatar...');
         avatarUrl = await uploadAvatar(imageFile);
-        console.log('✅ Avatar caricato come data URL');
       } else if (profileImage) {
         // Se non c'è imageFile ma c'è profileImage, usa quello
-        console.log('📸 Usando immagine esistente...');
         avatarUrl = profileImage;
       }
       
-      console.log('💾 Salvataggio profilo...');
       await updateUserProfile({
         name: form.name,
         surname: form.surname,
         birthPlace: form.birthPlace,
         avatarUrl
       });
-      console.log('✅ Profilo salvato in localStorage');
       
       // Ricarica i dati dal localStorage dopo il salvataggio
-      console.log('🔄 Ricaricamento profilo...');
       const updatedProfile = await fetchUserProfile();
-      console.log('📋 Profilo ricaricato:', updatedProfile);
       
       if (updatedProfile) {
         setProfile(updatedProfile);
@@ -89,7 +76,6 @@ export const UserProfile = () => {
           surname: updatedProfile.surname,
           birthPlace: updatedProfile.birth_place,
         });
-        console.log('✅ Stato componente aggiornato');
       }
       
       setEditing(false);
@@ -98,7 +84,6 @@ export const UserProfile = () => {
       setImageFile(null);
       setProfileImage(null);
       
-      console.log('🎉 Salvataggio completato con successo!');
       toast({
         title: "Profilo aggiornato con successo!",
         duration: 2000,

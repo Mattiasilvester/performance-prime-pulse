@@ -92,16 +92,13 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const { user } = useAuth();
-  
-  
+
   // Stati per i timer di ogni esercizio
   const [exerciseTimers, setExerciseTimers] = useState<Record<number, ExerciseTimerState>>({});
   
   // Usa l'allenamento generato se disponibile, altrimenti usa quello statico
   const currentWorkout = generatedWorkout || workoutData[workoutId as keyof typeof workoutData];
-  
 
-  
   useEffect(() => {
     // Fix per viewport height su mobile
     const handleResize = () => {
@@ -230,8 +227,6 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
     }));
   };
 
-
-
   // Funzione per completare l'allenamento e aggiornare le statistiche
   const completeWorkout = async () => {
     if (!user || !currentWorkout.exercises) return;
@@ -275,9 +270,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
     if (navigator.vibrate) {
       navigator.vibrate([100, 50, 100]); // Pattern per terminazione
     }
-    
-    console.log('Pulsante TERMINA SESSIONE cliccato');
-    
+
     completeWorkout();
     onClose();
   };
@@ -296,8 +289,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
             <X className="h-5 w-5" />
           </Button>
         </div>
-        
-        
+
         <div className="mt-4 bg-black/20 rounded-full h-2 animate-fade-in">
           <div 
             className="bg-black rounded-full h-2 transition-all duration-500 animate-scale-in"
@@ -306,8 +298,6 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
         </div>
         <p className="text-black mt-2 font-medium animate-fade-in">COMPLETA TUTTI GLI ESERCIZI • {currentWorkout.exercises?.length || 0} ESERCIZI</p>
       </div>
-
-
 
       <div className="p-6 space-y-4 bg-black overflow-y-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
         <div className="grid gap-4 pb-8">

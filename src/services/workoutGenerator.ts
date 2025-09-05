@@ -91,21 +91,54 @@ const detailedExerciseDatabase = {
     { name: 'Flessioni Declinate', muscleGroup: 'Petto', equipment: 'Corpo libero', level: 'Avanzato' },
     { name: 'Panca Piana', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Panca Inclinata', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Panca Declinata', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Bench Press', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Incline Bench Press', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Decline Bench Press', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Dumbbell Press', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Cable Crossover', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Chest Press', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Aperture', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Chest Press Inclinato', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Chest Press Declinato', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Aperture Inclinate', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Aperture Declinate', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Pullover', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Chest Fly', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
     
     // SCHIENA
     { name: 'Superman', muscleGroup: 'Schiena', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Remata', muscleGroup: 'Schiena', equipment: 'Elastici', level: 'Intermedio' },
     { name: 'Pull-ups', muscleGroup: 'Schiena', equipment: 'Corpo libero', level: 'Avanzato' },
     { name: 'Lat Machine', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Remata con Bilanciere', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Remata Inclinata', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'T-Bar Row', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Pulldown', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Principiante' },
+    { name: 'Cable Row', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Deadlift', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Avanzato' },
+    { name: 'Bent Over Row', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Remata con Manubri', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Remata Inclinata con Manubri', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Remata Unilaterale', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Remata Piegata', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Reverse Fly con Manubri', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Principiante' },
+    { name: 'T-Raises', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'W-Raises', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Remata Alta', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
     
     // SPALLE
     { name: 'Alzate Laterali', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
     { name: 'Alzate Frontali', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
     { name: 'Military Press', muscleGroup: 'Spalle', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Arnold Press', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Shoulder Press con Manubri', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Alzate Laterali Inclinate', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Alzate Posteriori', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
+    { name: 'Lateral Raises', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
+    { name: 'Front Raises', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
+    { name: 'Upright Row con Manubri', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Shrugs con Manubri', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
     
     // BRACCIA
     { name: 'Tricep Dips', muscleGroup: 'Braccia', equipment: 'Corpo libero', level: 'Intermedio' },
@@ -113,16 +146,37 @@ const detailedExerciseDatabase = {
     { name: 'Curl con Manubri', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
     { name: 'French Press', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Hammer Curl', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
+    { name: 'Curl Concentrato', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Curl a Martello', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
+    { name: 'Curl Alternato', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
+    { name: 'Curl 21', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Tricep Extension', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Tricep Kickback', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Overhead Tricep Extension', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Intermedio' },
     
     // GAMBE
     { name: 'Squats', muscleGroup: 'Gambe', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Affondi', muscleGroup: 'Gambe', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Squat con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Stacchi', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Squat con Bilanciere', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Front Squat', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Avanzato' },
+    { name: 'Overhead Squat', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Avanzato' },
+    { name: 'Sumo Deadlift', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Romanian Deadlift', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Lunges con Bilanciere', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Bulgarian Split Squat', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Single Leg Deadlift', muscleGroup: 'Gambe', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Calf Raises', muscleGroup: 'Gambe', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Goblet Squat', muscleGroup: 'Gambe', equipment: 'Kettlebell', level: 'Intermedio' },
     { name: 'Swing', muscleGroup: 'Gambe', equipment: 'Kettlebell', level: 'Intermedio' },
+    { name: 'Affondi con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Affondi Laterali con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Affondi Camminando', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Stacchi Rumeni con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Step-up con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Bulgarian Split Squat', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Calf Raises con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Principiante' },
     
     // CORE
     { name: 'Plank', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' },
@@ -281,18 +335,34 @@ export const generateWorkout = (
     }
   }
   
-  // Genera workout con nuove regole
-  const selectedExercises = [];
+  // Genera workout con nuove regole e varietà
   const shuffledExercises = shuffleArray([...availableExercises]);
+  const selectedExercises = [];
+  let currentIndex = 0;
+  let repetitionCount = 0;
+  const maxRepetitionsPerExercise = 2; // Massimo 2 ripetizioni dello stesso esercizio
   
   for (let i = 0; i < numExercises && i < shuffledExercises.length; i++) {
-    const exercise = shuffledExercises[i];
+    if (currentIndex >= shuffledExercises.length) {
+      currentIndex = 0; // Ricomincia dall'inizio se abbiamo finito gli esercizi
+      repetitionCount++;
+    }
+    
+    // Se abbiamo ripetuto troppo lo stesso esercizio, passa al successivo
+    if (repetitionCount >= maxRepetitionsPerExercise && shuffledExercises.length > 1) {
+      currentIndex = (currentIndex + 1) % shuffledExercises.length;
+      repetitionCount = 0;
+    }
+    
+    const exercise = shuffledExercises[currentIndex];
     selectedExercises.push({
       name: exercise,
       duration: `${duration}s`,
       rest: `${rest}s`,
       sets: quickMode ? 1 : rules.sets[userLevel]
     });
+    
+    currentIndex++;
   }
   
   // Nome personalizzato basato su categoria e durata
@@ -322,7 +392,8 @@ export const generateWorkout = (
 export const generateFilteredStrengthWorkout = (
   muscleGroup: string,
   equipment: string,
-  totalMinutes: number = 45
+  totalMinutes: number = 45,
+  userLevel: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO' = 'INTERMEDIO'
 ): WorkoutPlan => {
   let filteredExercises = detailedExerciseDatabase.strength;
   
@@ -359,22 +430,67 @@ export const generateFilteredStrengthWorkout = (
   const totalTimePerExercise = workTime + restTime;
   const targetExercises = Math.floor((totalMinutes * 60) / totalTimePerExercise);
   
-  // Assicurati che ci siano abbastanza esercizi (minimo 8, massimo disponibili)
-  const exerciseCount = Math.max(8, Math.min(targetExercises, filteredExercises.length));
+  // Calcola il numero di esercizi basato sul livello utente e durata
+  // Limita il numero massimo di esercizi per evitare allenamenti troppo lunghi
+  const maxExercisesByLevel = {
+    PRINCIPIANTE: Math.min(8, Math.ceil(totalMinutes / 6)),   // Max 8, ~1 ogni 6 min
+    INTERMEDIO: Math.min(12, Math.ceil(totalMinutes / 4)),    // Max 12, ~1 ogni 4 min  
+    AVANZATO: Math.min(15, Math.ceil(totalMinutes / 3))       // Max 15, ~1 ogni 3 min
+  };
+  
+  const maxExercises = maxExercisesByLevel[userLevel] || 10;
+  const targetExercisesLimited = Math.min(targetExercises, maxExercises);
+  
+  let exerciseCount;
+  if (filteredExercises.length >= targetExercisesLimited) {
+    // Abbastanza esercizi disponibili
+    exerciseCount = Math.min(targetExercisesLimited, filteredExercises.length);
+  } else {
+    // Pochi esercizi disponibili - limita le ripetizioni
+    const maxRepetitions = Math.min(3, Math.ceil(targetExercisesLimited / filteredExercises.length));
+    exerciseCount = Math.min(maxRepetitions * filteredExercises.length, targetExercisesLimited);
+  }
+  
+  // Assicurati di avere almeno 1 esercizio
+  exerciseCount = Math.max(1, exerciseCount);
   
   // Seleziona esercizi casuali
   const shuffledExercises = shuffleArray(filteredExercises);
   const selectedExercises = shuffledExercises.slice(0, exerciseCount);
   
+  // Se ci sono meno esercizi di quelli necessari, ripetili in modo intelligente
+  const finalExercises = [];
+  let currentIndex = 0;
+  let repetitionCount = 0;
+  const maxRepetitionsPerExercise = 2; // Massimo 2 ripetizioni dello stesso esercizio
+  
+  for (let i = 0; i < exerciseCount; i++) {
+    if (currentIndex >= selectedExercises.length) {
+      currentIndex = 0; // Ricomincia dall'inizio se abbiamo finito gli esercizi
+      repetitionCount++;
+    }
+    
+    // Se abbiamo ripetuto troppo lo stesso esercizio, passa al successivo
+    if (repetitionCount >= maxRepetitionsPerExercise && selectedExercises.length > 1) {
+      currentIndex = (currentIndex + 1) % selectedExercises.length;
+      repetitionCount = 0;
+    }
+    
+    const exercise = selectedExercises[currentIndex];
+    finalExercises.push({
+      name: exercise.name,
+      duration: durations.work,
+      rest: durations.rest,
+      muscleGroup: exercise.muscleGroup,
+      equipment: exercise.equipment,
+      level: exercise.level
+    });
+    
+    currentIndex++;
+  }
+  
   // Crea gli esercizi con le durate appropriate
-  const exercises: Exercise[] = selectedExercises.map(ex => ({
-    name: ex.name,
-    duration: durations.work,
-    rest: durations.rest,
-    muscleGroup: ex.muscleGroup,
-    equipment: ex.equipment,
-    level: ex.level
-  }));
+  const exercises: Exercise[] = finalExercises;
   
   // Nome personalizzato basato sui filtri
   const muscleGroupName = muscleGroup === 'Tutti' ? 'Total Body' : muscleGroup;
@@ -390,7 +506,8 @@ export const generateFilteredStrengthWorkout = (
 export const generateFilteredHIITWorkout = (
   duration: string,
   level: string,
-  totalMinutes: number = 45
+  totalMinutes: number = 45,
+  userLevel: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO' = 'INTERMEDIO'
 ): WorkoutPlan => {
   let filteredExercises = detailedExerciseDatabase.hiit;
   
@@ -427,20 +544,65 @@ export const generateFilteredHIITWorkout = (
   const totalTimePerExercise = workTime + restTime;
   const targetExercises = Math.floor((totalMinutes * 60) / totalTimePerExercise);
   
-  // Assicurati che ci siano abbastanza esercizi (minimo 8, massimo disponibili)
-  const exerciseCount = Math.max(8, Math.min(targetExercises, filteredExercises.length));
+  // Calcola il numero di esercizi basato sul livello utente e durata
+  // Limita il numero massimo di esercizi per evitare allenamenti troppo lunghi
+  const maxExercisesByLevel = {
+    PRINCIPIANTE: Math.min(6, Math.ceil(totalMinutes / 8)),   // Max 6, ~1 ogni 8 min
+    INTERMEDIO: Math.min(8, Math.ceil(totalMinutes / 6)),     // Max 8, ~1 ogni 6 min  
+    AVANZATO: Math.min(10, Math.ceil(totalMinutes / 4))       // Max 10, ~1 ogni 4 min
+  };
+  
+  const maxExercises = maxExercisesByLevel[userLevel] || 8;
+  const targetExercisesLimited = Math.min(targetExercises, maxExercises);
+  
+  let exerciseCount;
+  if (filteredExercises.length >= targetExercisesLimited) {
+    // Abbastanza esercizi disponibili
+    exerciseCount = Math.min(targetExercisesLimited, filteredExercises.length);
+  } else {
+    // Pochi esercizi disponibili - limita le ripetizioni
+    const maxRepetitions = Math.min(3, Math.ceil(targetExercisesLimited / filteredExercises.length));
+    exerciseCount = Math.min(maxRepetitions * filteredExercises.length, targetExercisesLimited);
+  }
+  
+  // Assicurati di avere almeno 1 esercizio
+  exerciseCount = Math.max(1, exerciseCount);
   
   // Seleziona esercizi casuali
   const shuffledExercises = shuffleArray(filteredExercises);
   const selectedExercises = shuffledExercises.slice(0, exerciseCount);
   
+  // Se ci sono meno esercizi di quelli necessari, ripetili in modo intelligente
+  const finalExercises = [];
+  let currentIndex = 0;
+  let repetitionCount = 0;
+  const maxRepetitionsPerExercise = 2; // Massimo 2 ripetizioni dello stesso esercizio
+  
+  for (let i = 0; i < exerciseCount; i++) {
+    if (currentIndex >= selectedExercises.length) {
+      currentIndex = 0; // Ricomincia dall'inizio se abbiamo finito gli esercizi
+      repetitionCount++;
+    }
+    
+    // Se abbiamo ripetuto troppo lo stesso esercizio, passa al successivo
+    if (repetitionCount >= maxRepetitionsPerExercise && selectedExercises.length > 1) {
+      currentIndex = (currentIndex + 1) % selectedExercises.length;
+      repetitionCount = 0;
+    }
+    
+    const exercise = selectedExercises[currentIndex];
+    finalExercises.push({
+      name: exercise.name,
+      duration: durations.work,
+      rest: durations.rest,
+      level: exercise.level
+    });
+    
+    currentIndex++;
+  }
+  
   // Crea gli esercizi con le durate appropriate
-  const exercises: Exercise[] = selectedExercises.map(ex => ({
-    name: ex.name,
-    duration: durations.work,
-    rest: durations.rest,
-    level: ex.level
-  }));
+  const exercises: Exercise[] = finalExercises;
   
   // Nome personalizzato basato sui filtri
   const levelName = level === 'Tutti' ? 'Misto' : level;

@@ -16,17 +16,14 @@ const SmartHomePage = () => {
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
       try {
-        console.log('🔍 Homepage: Controllo stato autenticazione...');
         setDebugInfo('Controllo autenticazione in corso...');
         
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          console.log('✅ Utente autenticato, redirect alla dashboard');
           setDebugInfo('Utente autenticato, redirect...');
           navigate('/dashboard', { replace: true });
         } else {
-          console.log('❌ Utente non autenticato, mostra landing page');
           setDebugInfo('Utente non autenticato');
           setShowLanding(true);
         }
