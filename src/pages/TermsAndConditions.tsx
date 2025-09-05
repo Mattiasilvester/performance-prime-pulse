@@ -14,12 +14,12 @@ const TermsAndConditions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white pb-24">
       <div className="container mx-auto px-4 py-6 space-y-6">
         <div className="mb-6 -mt-2 -ml-2">
           <button
             onClick={handleBack}
-            className="flex items-center text-pp-gold hover:bg-pp-gold/10 px-3 py-2 rounded-lg transition-colors"
+            className="flex items-center text-[#EEBA2B] hover:bg-[#EEBA2B]/10 px-3 py-2 rounded-lg transition-colors"
           >
             <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -28,12 +28,12 @@ const TermsAndConditions = () => {
           </button>
         </div>
 
-        <div className="bg-black border-2 border-pp-gold rounded-2xl p-6">
-          <h1 className="text-2xl font-bold text-pp-gold mb-6">Termini e Condizioni</h1>
+        <div className="bg-surface-primary border-2 border-[#EEBA2B] rounded-2xl p-6">
+          <h1 className="text-2xl font-bold text-[#EEBA2B] mb-6">Termini e Condizioni</h1>
           
           <div className="space-y-6 text-white">
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">1. Accettazione dei Termini</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">1. Accettazione dei Termini</h2>
               <p className="text-gray-300 leading-relaxed">
                 Utilizzando l'applicazione Performance Prime Pulse, accetti di essere vincolato da questi Termini e Condizioni. 
                 Se non accetti questi termini, non utilizzare l'applicazione.
@@ -41,7 +41,7 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">2. Descrizione del Servizio</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">2. Descrizione del Servizio</h2>
               <p className="text-gray-300 leading-relaxed">
                 Performance Prime Pulse è un'applicazione per il fitness e il benessere che offre:
               </p>
@@ -55,7 +55,7 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">3. Account Utente</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">3. Account Utente</h2>
               <p className="text-gray-300 leading-relaxed">
                 Per utilizzare l'applicazione, devi creare un account. Sei responsabile di:
               </p>
@@ -68,7 +68,7 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">4. Uso Accettabile</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">4. Uso Accettabile</h2>
               <p className="text-gray-300 leading-relaxed">
                 Ti impegni a utilizzare l'applicazione solo per scopi legittimi e in conformità con questi termini. 
                 È vietato:
@@ -82,11 +82,11 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">5. Privacy e Dati</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">5. Privacy e Dati</h2>
               <p className="text-gray-300 leading-relaxed">
                 La raccolta e l'utilizzo dei tuoi dati personali sono regolati dalla nostra 
                 <span 
-                  className="text-pp-gold cursor-pointer hover:underline"
+                  className="text-[#EEBA2B] cursor-pointer hover:underline"
                   onClick={() => navigate('/privacy-policy')}
                 >
                   {" "}Informativa sulla Privacy
@@ -95,7 +95,7 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">6. Limitazioni di Responsabilità</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">6. Limitazioni di Responsabilità</h2>
               <p className="text-gray-300 leading-relaxed">
                 Performance Prime Pulse non si assume responsabilità per:
               </p>
@@ -108,7 +108,7 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">7. Modifiche ai Termini</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">7. Modifiche ai Termini</h2>
               <p className="text-gray-300 leading-relaxed">
                 Ci riserviamo il diritto di modificare questi termini in qualsiasi momento. 
                 Le modifiche saranno comunicate tramite l'applicazione o email. 
@@ -117,10 +117,10 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-pp-gold mb-3">8. Contatti</h2>
+              <h2 className="text-xl font-semibold text-[#EEBA2B] mb-3">8. Contatti</h2>
               <p className="text-gray-300 leading-relaxed">
                 Per domande sui Termini e Condizioni, contattaci all'indirizzo: 
-                <span className="text-pp-gold"> primeassistenza@gmail.com</span>
+                <span className="text-[#EEBA2B]"> primeassistenza@gmail.com</span>
               </p>
             </section>
 

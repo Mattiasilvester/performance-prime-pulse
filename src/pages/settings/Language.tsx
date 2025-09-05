@@ -36,7 +36,7 @@ const Language = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black p-6">
+    <div className="min-h-screen bg-black p-6 pb-24">
       <div className="max-w-md mx-auto">
         <div className="flex items-center mb-6">
           <Button
@@ -50,7 +50,7 @@ const Language = () => {
           </Button>
         </div>
         
-        <div className="bg-black border-2 border-[#EEBA2B] rounded-2xl p-6">
+        <div className="bg-surface-primary border-2 border-[#EEBA2B] rounded-2xl p-6">
           <h2 className="text-xl font-semibold text-[#EEBA2B] mb-6">{t('settings.language')}</h2>
           
           <div className="space-y-6">
@@ -58,10 +58,10 @@ const Language = () => {
               <div>
                 <Label htmlFor="language" className="text-white">Lingua / Language</Label>
                 <Select value={language} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="bg-black border-gray-500 text-white">
+                  <SelectTrigger className="bg-surface-secondary border-gray-500 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-black border-gray-500">
+                  <SelectContent className="bg-surface-secondary border-gray-500">
                     <SelectItem value="it" className="text-white hover:bg-gray-800 focus:bg-gray-800">
                       Italiano
                     </SelectItem>
@@ -77,7 +77,7 @@ const Language = () => {
                 <input
                   id="region"
                   type="text"
-                  className="w-full h-10 px-3 py-2 bg-black border border-gray-500 text-white rounded-md"
+                  className="w-full h-10 px-3 py-2 bg-surface-secondary border border-gray-500 text-white rounded-md"
                   value={language === 'it' ? 'Italia' : 'Italy'}
                   readOnly
                 />

@@ -35,7 +35,7 @@ const Help = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black p-6">
+    <div className="min-h-screen bg-black p-6 pb-24">
       <div className="max-w-md mx-auto">
         <div className="flex items-center mb-6">
           <Button
@@ -49,11 +49,11 @@ const Help = () => {
           </Button>
         </div>
         
-        <div className="bg-black border-2 border-[#EEBA2B] rounded-2xl p-6">
+        <div className="bg-surface-primary border-2 border-[#EEBA2B] rounded-2xl p-6">
           <h2 className="text-xl font-semibold text-[#EEBA2B] mb-6">Centro assistenza</h2>
           
           <div className="space-y-4">
-            <div className="flex items-center space-x-3 p-4 bg-gray-900 rounded-lg">
+            <div className="flex items-center space-x-3 p-4 bg-surface-secondary rounded-lg">
               <Mail className="h-5 w-5 text-[#EEBA2B]" />
               <div>
                 <p className="text-white text-sm">Contattaci via email:</p>

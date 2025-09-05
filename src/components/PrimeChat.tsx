@@ -5,7 +5,11 @@ import { fetchUserProfile } from '@/services/userService';
 
 type Msg = { id: string; role: 'user' | 'bot'; text: string };
 
-export default function PrimeChat() {
+interface PrimeChatProps {
+  isModal?: boolean;
+}
+
+export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -131,7 +135,7 @@ export default function PrimeChat() {
   const questionsToShow = isNewUser ? onboardingQuestions : normalQuestions;
 
   return (
-    <div className="w-full h-full flex flex-col rounded-2xl border border-[#DAA520] bg-black text-white min-h-[600px]">
+    <div className={`w-full h-full flex flex-col rounded-2xl border border-[#DAA520] bg-black text-white ${isModal ? 'min-h-[700px]' : 'min-h-[600px] mb-4 pb-2'}`}>
       <header className="px-6 py-4 bg-gradient-to-r from-[#DAA520] to-[#B8860B] rounded-t-2xl text-black font-semibold">
         PrimeBot <span className="text-sm">• Online • Sempre disponibile</span>
       </header>
@@ -160,14 +164,14 @@ export default function PrimeChat() {
             <button
               key={q}
               onClick={() => send(q)}
-              className="text-sm px-4 py-3 rounded-2xl border border-[#DAA520] hover:bg-gray-50 bg-white text-black"
+              className={`border border-[#DAA520] hover:bg-gray-50 bg-white text-black ${isModal ? 'text-xs px-2 py-2 rounded-lg' : 'text-sm px-4 py-3 rounded-2xl'}`}
             >
               {q}
             </button>
           ))}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 sticky bottom-0 z-50 bg-black p-2 rounded-lg border-t-2 border-[#DAA520]">
           <input
             aria-label="Scrivi la tua domanda"
             value={input}

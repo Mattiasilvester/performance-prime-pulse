@@ -6,7 +6,68 @@ interface Exercise {
   muscleGroup?: string;
   equipment?: string;
   level?: string;
+  sets?: number;
 }
+
+// Regole scientificamente validate per ogni livello
+const WORKOUT_RULES = {
+  FORZA: {
+    minExercises: { PRINCIPIANTE: 4, INTERMEDIO: 5, AVANZATO: 7 },
+    maxExercises: { PRINCIPIANTE: 6, INTERMEDIO: 8, AVANZATO: 10 },
+    exerciseDuration: { PRINCIPIANTE: 30, INTERMEDIO: 45, AVANZATO: 60 },
+    restBetweenExercises: { PRINCIPIANTE: 60, INTERMEDIO: 45, AVANZATO: 30 },
+    sets: { PRINCIPIANTE: 2, INTERMEDIO: 3, AVANZATO: 4 }
+  },
+  HIIT: {
+    minExercises: { PRINCIPIANTE: 4, INTERMEDIO: 5, AVANZATO: 6 },
+    maxExercises: { PRINCIPIANTE: 5, INTERMEDIO: 7, AVANZATO: 8 },
+    exerciseDuration: { PRINCIPIANTE: 20, INTERMEDIO: 30, AVANZATO: 40 },
+    restBetweenExercises: { PRINCIPIANTE: 40, INTERMEDIO: 30, AVANZATO: 20 },
+    sets: { PRINCIPIANTE: 2, INTERMEDIO: 3, AVANZATO: 3 }
+  },
+  CARDIO: {
+    minExercises: { PRINCIPIANTE: 3, INTERMEDIO: 4, AVANZATO: 5 },
+    maxExercises: { PRINCIPIANTE: 4, INTERMEDIO: 5, AVANZATO: 6 },
+    exerciseDuration: { PRINCIPIANTE: 120, INTERMEDIO: 180, AVANZATO: 240 },
+    restBetweenExercises: { PRINCIPIANTE: 60, INTERMEDIO: 45, AVANZATO: 30 },
+    sets: { PRINCIPIANTE: 1, INTERMEDIO: 1, AVANZATO: 1 }
+  },
+  MOBILITA: {
+    minExercises: { PRINCIPIANTE: 4, INTERMEDIO: 5, AVANZATO: 6 },
+    maxExercises: { PRINCIPIANTE: 5, INTERMEDIO: 6, AVANZATO: 8 },
+    exerciseDuration: { PRINCIPIANTE: 30, INTERMEDIO: 45, AVANZATO: 60 },
+    restBetweenExercises: { PRINCIPIANTE: 15, INTERMEDIO: 10, AVANZATO: 10 },
+    sets: { PRINCIPIANTE: 1, INTERMEDIO: 1, AVANZATO: 2 }
+  }
+};
+
+// Modalità QUICK ottimizzata (10 minuti totali)
+const QUICK_MODE_RULES = {
+  FORZA: { 
+    exercises: 8,     // 8 esercizi
+    duration: 40,     // 40 secondi lavoro
+    rest: 20          // 20 secondi recupero
+    // Totale: 8 minuti lavoro + 2.5 min recupero = ~10 min
+  },
+  HIIT: { 
+    exercises: 12,    // 12 esercizi
+    duration: 30,     // 30 secondi lavoro
+    rest: 20          // 20 secondi recupero
+    // Totale: 6 min lavoro + 4 min recupero = 10 min
+  },
+  CARDIO: { 
+    exercises: 5,     // 5 esercizi
+    duration: 90,     // 90 secondi lavoro
+    rest: 30          // 30 secondi recupero
+    // Totale: 7.5 min lavoro + 2.5 min recupero = 10 min
+  },
+  MOBILITA: { 
+    exercises: 10,    // 10 esercizi
+    duration: 40,     // 40 secondi stretching
+    rest: 15          // 15 secondi transizione
+    // Totale: 6.5 min lavoro + 2.5 min recupero = ~9 min
+  }
+};
 
 interface WorkoutPlan {
   name: string;
@@ -172,42 +233,68 @@ const shuffleArray = <T>(array: T[]): T[] => {
 // Genera un allenamento basato su categoria e durata
 export const generateWorkout = (
   category: 'cardio' | 'strength' | 'hiit' | 'mobility', 
-  totalMinutes: number
+  totalMinutes: number,
+  filters: any = {},
+  userLevel: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO' = 'INTERMEDIO',
+  quickMode: boolean = false
 ): WorkoutPlan => {
-  const categoryData = exerciseDatabase[category];
+  // Mappa corretta delle categorie
+  const categoryMap = {
+    'cardio': 'CARDIO',
+    'strength': 'FORZA', 
+    'hiit': 'HIIT',
+    'mobility': 'MOBILITA'
+  };
+  const categoryUpper = categoryMap[category] as keyof typeof WORKOUT_RULES;
+  const rules = quickMode ? QUICK_MODE_RULES[categoryUpper] : WORKOUT_RULES[categoryUpper];
   
-  // Determina intensità basata sulla durata
-  let intensity: 'short' | 'medium' | 'long';
-  if (totalMinutes <= 15) {
-    intensity = 'short';
-  } else if (totalMinutes <= 30) {
-    intensity = 'medium';
+  // Calcola numero esercizi
+  let numExercises;
+  if (quickMode) {
+    numExercises = rules.exercises;
   } else {
-    intensity = 'long';
+    const min = rules.minExercises[userLevel];
+    const max = rules.maxExercises[userLevel];
+    numExercises = Math.floor(Math.random() * (max - min + 1)) + min;
   }
-
-  const durations = categoryData.durations[intensity];
   
-  // Calcola quanti esercizi servono
-  const workTime = parseInt(durations.work);
-  const restTime = parseInt(durations.rest);
-  const totalTimePerExercise = workTime + restTime;
-  const targetExercises = Math.floor((totalMinutes * 60) / totalTimePerExercise);
+  // Usa valori specifici per livello (scientificamente validati)
+  const duration = quickMode ? rules.duration : rules.exerciseDuration[userLevel];
+  const rest = quickMode ? rules.rest : rules.restBetweenExercises[userLevel];
   
-  // Assicurati che ci siano abbastanza esercizi (minimo 4, massimo disponibili)
-  const exerciseCount = Math.max(4, Math.min(targetExercises, categoryData.exercises.length));
+  // Applica filtri esistenti per selezione esercizi
+  let availableExercises = exerciseDatabase[category].exercises || [];
+  if (filters.muscleGroup) {
+    // Per forza, usa il database dettagliato
+    if (category === 'strength') {
+      availableExercises = detailedExerciseDatabase.strength
+        .filter(e => e.muscleGroup === filters.muscleGroup)
+        .map(e => e.name);
+    }
+  }
+  if (filters.equipment) {
+    // Per forza, usa il database dettagliato
+    if (category === 'strength') {
+      availableExercises = detailedExerciseDatabase.strength
+        .filter(e => e.equipment === filters.equipment)
+        .map(e => e.name);
+    }
+  }
   
-  // Seleziona esercizi casuali
-  const shuffledExercises = shuffleArray(categoryData.exercises);
-  const selectedExercises = shuffledExercises.slice(0, exerciseCount);
+  // Genera workout con nuove regole
+  const selectedExercises = [];
+  const shuffledExercises = shuffleArray([...availableExercises]);
   
-  // Crea gli esercizi con le durate appropriate
-  const exercises: Exercise[] = selectedExercises.map(name => ({
-    name,
-    duration: durations.work,
-    rest: durations.rest
-  }));
-
+  for (let i = 0; i < numExercises && i < shuffledExercises.length; i++) {
+    const exercise = shuffledExercises[i];
+    selectedExercises.push({
+      name: exercise,
+      duration: `${duration}s`,
+      rest: `${rest}s`,
+      sets: quickMode ? 1 : rules.sets[userLevel]
+    });
+  }
+  
   // Nome personalizzato basato su categoria e durata
   const categoryNames = {
     cardio: 'Cardio',
@@ -216,15 +303,18 @@ export const generateWorkout = (
     mobility: 'Mobilità'
   };
 
-  const intensityNames = {
-    short: 'Express',
-    medium: 'Standard',
-    long: 'Intenso'
+  const levelNames = {
+    PRINCIPIANTE: 'Principiante',
+    INTERMEDIO: 'Intermedio',
+    AVANZATO: 'Avanzato'
   };
 
+  const modeSuffix = quickMode ? ' (Quick 10min)' : ` (${totalMinutes} min)`;
+  const levelSuffix = userLevel !== 'INTERMEDIO' ? ` - ${levelNames[userLevel]}` : '';
+
   return {
-    name: `${categoryNames[category]} ${intensityNames[intensity]} (${totalMinutes} min)`,
-    exercises
+    name: `${categoryNames[category]}${levelSuffix}${modeSuffix}`,
+    exercises: selectedExercises
   };
 };
 

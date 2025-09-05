@@ -150,14 +150,14 @@ export const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-black shadow-lg border-b-2 border-pp-gold z-50">
+    <header className="fixed top-0 left-0 right-0 bg-black/20 backdrop-blur-xl shadow-lg border-b border-white/20 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center overflow-hidden border border-pp-gold">
+            <div className="w-10 h-10 flex items-center justify-center">
               <img 
-                src="/lovable-uploads/689d57c4-e221-4d98-91fb-b40567d2e305.png" 
+                src="/images/logo-pp-transparent.png" 
                 alt="Performance Prime Logo" 
                 className="w-full h-full object-contain"
               />
@@ -305,7 +305,7 @@ export const Header = () => {
 
       {/* Search Overlay */}
       {showSearch && (
-        <div className="absolute top-16 left-0 right-0 bg-black border-b-2 border-pp-gold shadow-lg z-50" ref={searchRef}>
+        <div className="absolute top-16 left-0 right-0 bg-black/20 backdrop-blur-xl border-b border-white/20 shadow-lg z-50" ref={searchRef}>
           <div className="container mx-auto px-4 py-4">
             <div className="relative max-w-md mx-auto">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

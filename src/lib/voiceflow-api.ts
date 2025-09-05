@@ -123,7 +123,7 @@ class VoiceflowAPI {
       }
 
       const response = await this.makeRequest(
-        `/state/${this.projectId}/${this.versionId}/${sessionID}/interact`,
+        `/state/${this.versionId}/user/${sessionID}/interact`,
         'POST',
         initBody
       );
@@ -145,7 +145,7 @@ class VoiceflowAPI {
   async sendMessage(sessionID: string, message: string): Promise<VoiceflowMessage[]> {
     try {
       const response = await this.makeRequest(
-        `/state/${this.projectId}/${this.versionId}/${sessionID}/interact`,
+        `/state/${this.versionId}/user/${sessionID}/interact`,
         'POST',
         {
           action: {
@@ -174,7 +174,7 @@ class VoiceflowAPI {
   async sendChoice(sessionID: string, choice: any): Promise<VoiceflowMessage[]> {
     try {
       const response = await this.makeRequest(
-        `/state/${this.projectId}/${this.versionId}/${sessionID}/interact`,
+        `/state/${this.versionId}/user/${sessionID}/interact`,
         'POST',
         {
           action: {
@@ -203,7 +203,7 @@ class VoiceflowAPI {
   async updateUserContext(sessionID: string, context: any): Promise<void> {
     try {
       await this.makeRequest(
-        `/state/${this.projectId}/${this.versionId}/${sessionID}/variables`,
+        `/state/${this.versionId}/user/${sessionID}/variables`,
         'PATCH',
         context
       );
@@ -219,7 +219,7 @@ class VoiceflowAPI {
   async getSessionState(sessionID: string): Promise<any> {
     try {
       const response = await this.makeRequest(
-        `/state/${this.projectId}/${this.versionId}/${sessionID}`
+        `/state/${this.versionId}/user/${sessionID}`
       );
       return response;
     } catch (error) {

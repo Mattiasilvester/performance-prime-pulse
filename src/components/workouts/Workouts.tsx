@@ -70,7 +70,7 @@ export const Workouts = () => {
     setTimerAutoRest(null);
   };
 
-  const handleStartWorkout = (workoutId: string, duration?: number, generatedWorkout?: any) => {
+  const handleStartWorkout = (workoutId: string, duration?: number, generatedWorkout?: any, userLevel?: string, quickMode?: boolean) => {
     if (generatedWorkout) {
       // Se viene passato un allenamento generato (con filtri), usalo direttamente
       setGeneratedWorkout(generatedWorkout);
@@ -80,7 +80,7 @@ export const Workouts = () => {
       setGeneratedWorkout(workout);
       setActiveWorkout('generated');
     } else if (duration && ['cardio', 'strength', 'hiit', 'mobility'].includes(workoutId)) {
-      const workout = generateWorkout(workoutId as any, duration);
+      const workout = generateWorkout(workoutId as any, duration, {}, userLevel || 'INTERMEDIO', quickMode || false);
       setGeneratedWorkout(workout);
       setActiveWorkout('generated');
     } else {
@@ -96,6 +96,7 @@ export const Workouts = () => {
           <p className="text-white">Scegli il tuo workout perfetto</p>
         </div>
       </div>
+
 
       {activeWorkout === 'custom' && customWorkout ? (
         <div className="space-y-6">
