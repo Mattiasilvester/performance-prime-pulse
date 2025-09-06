@@ -343,7 +343,7 @@ const RegistrationForm = () => {
           <Button
             type="submit"
             disabled={isSubmitting || isValidating || !!emailError || !email || !firstName || !lastName || !password || !confirmPassword || password !== confirmPassword || !acceptedTerms}
-            className="w-full"
+            className="w-full h-10 sm:h-12 text-sm sm:text-base"
           >
             {isSubmitting ? (
               <>
