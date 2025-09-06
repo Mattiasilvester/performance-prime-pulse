@@ -1,6 +1,39 @@
-// services/emailAnalytics.js
+// services/emailAnalytics.ts
+
+interface ValidationResult {
+  valid: boolean;
+  score: number;
+  errors: string[];
+  checks: {
+    disposable: boolean;
+    dns: boolean;
+  };
+}
+
+interface BlockedAttempt {
+  domain: string;
+  timestamp: number;
+  fullEmail: string;
+}
+
+interface DomainStats {
+  total: number;
+  valid: number;
+  invalid: number;
+  disposable: number;
+  avgScore: number;
+  lastSeen: number;
+}
+
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
 
 class EmailAnalytics {
+  private blockedAttempts: BlockedAttempt[];
+  private validationStats: Record<string, DomainStats>;
   constructor() {
     this.blockedAttempts = this.loadBlockedAttempts();
     this.validationStats = this.loadValidationStats();
@@ -9,7 +42,7 @@ class EmailAnalytics {
   /**
    * Traccia una validazione email
    */
-  trackValidation(email, result) {
+  trackValidation(email: string, result: ValidationResult) {
     // Invia a Google Analytics o altro sistema
     if (window.gtag) {
       window.gtag('event', 'email_validation', {
@@ -26,6 +59,7 @@ class EmailAnalytics {
     
     // Log per monitoring
     if (!result.valid) {
+      console.log('Email validation failed:', {
         email: email.split('@')[1], // Log solo dominio per privacy
         errors: result.errors,
         score: result.score
@@ -39,7 +73,7 @@ class EmailAnalytics {
   /**
    * Traccia tentativo di registrazione
    */
-  trackRegistrationAttempt(email, success) {
+  trackRegistrationAttempt(email: string, success: boolean) {
     // Track tentativi di registrazione con email disposable
     if (!success) {
       this.logBlockedAttempt(email);
@@ -61,7 +95,7 @@ class EmailAnalytics {
   /**
    * Logga tentativo bloccato
    */
-  logBlockedAttempt(email) {
+  logBlockedAttempt(email: string) {
     const domain = email.split('@')[1];
     const timestamp = Date.now();
     
@@ -82,6 +116,7 @@ class EmailAnalytics {
     this.blockedAttempts = blocked;
     
     // Log per monitoring
+    console.log('Blocked attempt:', {
       domain: domain,
       timestamp: new Date(timestamp).toISOString(),
       reason: 'Email disposable o non valida'
@@ -91,7 +126,7 @@ class EmailAnalytics {
   /**
    * Carica tentativi bloccati da localStorage
    */
-  loadBlockedAttempts() {
+  loadBlockedAttempts(): BlockedAttempt[] {
     try {
       return JSON.parse(localStorage.getItem('blocked_attempts') || '[]');
     } catch {
@@ -102,7 +137,7 @@ class EmailAnalytics {
   /**
    * Carica statistiche validazione da localStorage
    */
-  loadValidationStats() {
+  loadValidationStats(): Record<string, DomainStats> {
     try {
       return JSON.parse(localStorage.getItem('email_validation_stats') || '{}');
     } catch {
@@ -113,7 +148,7 @@ class EmailAnalytics {
   /**
    * Aggiorna statistiche validazione
    */
-  updateValidationStats(email, result) {
+  updateValidationStats(email: string, result: ValidationResult) {
     const domain = email.split('@')[1];
     const stats = this.loadValidationStats();
     
@@ -154,7 +189,7 @@ class EmailAnalytics {
   /**
    * Controlla se un dominio è stato bloccato recentemente
    */
-  isRecentlyBlocked(domain, hours = 24) {
+  isRecentlyBlocked(domain: string, hours = 24): boolean {
     const blocked = this.loadBlockedAttempts();
     const cutoff = Date.now() - (hours * 60 * 60 * 1000);
     
@@ -166,7 +201,7 @@ class EmailAnalytics {
   /**
    * Ottieni statistiche per dominio
    */
-  getDomainStats(domain) {
+  getDomainStats(domain: string): DomainStats | null {
     const stats = this.loadValidationStats();
     return stats[domain] || null;
   }
@@ -193,7 +228,7 @@ class EmailAnalytics {
   /**
    * Controlla se email è disposable (helper)
    */
-  isDisposableEmail(email) {
+  isDisposableEmail(email: string): boolean {
     const disposableDomains = [
       '10minutemail.com', 'guerrillamail.com', 'mailinator.com',
       'tempmail.com', 'throwaway.email', 'yopmail.com',
@@ -268,6 +303,8 @@ class EmailAnalytics {
     });
     localStorage.setItem('email_validation_stats', JSON.stringify(filteredStats));
     
+    this.blockedAttempts = filteredBlocked;
+    this.validationStats = filteredStats;
   }
 }
 
