@@ -201,7 +201,10 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           {questionsToShow.map(q => (
             <button
               key={q}
-              onClick={() => send(q)}
+              onClick={() => {
+                setInput(q);
+                send(q);
+              }}
               className={`border border-[#DAA520] hover:bg-gray-50 bg-white text-black ${isModal ? 'text-xs px-2 py-2 rounded-lg' : 'text-sm px-4 py-3 rounded-2xl'}`}
             >
               {q}
