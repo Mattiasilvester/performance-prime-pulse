@@ -528,7 +528,10 @@ Fammi sapere come posso aiutarti!`;
             {questionsToShow.map((question, index) => (
               <button
                 key={index}
-                onClick={() => handleSendMessage(question)}
+                onClick={() => {
+                  setInputText(question);
+                  handleSendMessage(question);
+                }}
                 className="text-xs bg-white hover:bg-gray-50 text-black px-1.5 py-1 rounded-md transition-colors border border-[#EEBA2B] truncate"
               >
                 {question}
