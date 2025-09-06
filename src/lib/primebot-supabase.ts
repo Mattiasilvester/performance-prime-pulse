@@ -66,7 +66,7 @@ export async function getUserContextForBot(userID: string): Promise<UserContext 
 
     // Ottieni workout recenti
     const { data: recentWorkouts, error: workoutError } = await supabase
-      .from('workouts')
+      .from('custom_workouts')
       .select('*')
       .eq('user_id', userID)
       .order('created_at', { ascending: false })
