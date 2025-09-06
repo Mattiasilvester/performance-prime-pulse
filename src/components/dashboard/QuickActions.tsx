@@ -133,11 +133,11 @@ const QuickActions = () => {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg">
+      <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-3 sm:p-6 shadow-lg">
 
-        <h3 className="text-lg font-semibold text-pp-gold mb-4">Azioni Rapide</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-pp-gold mb-3 sm:mb-4">Azioni Rapide</h3>
         
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           {actions.map((action) => {
             const Icon = action.icon;
             
@@ -147,12 +147,12 @@ const QuickActions = () => {
                   key={action.label}
                   onClick={action.onClick}
                   disabled={action.disabled}
-                  className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 hover:scale-105 transition-all duration-200`}
+                  className={`${action.color} ${action.textColor} h-auto p-2 sm:p-4 flex flex-col items-center space-y-1 sm:space-y-2 hover:scale-105 transition-all duration-200`}
                 >
-                  <Icon className="h-6 w-6" />
+                  <Icon className="h-4 w-4 sm:h-6 sm:w-6" />
                   <div className="text-center">
-                    <p className="font-medium text-sm">{action.label}</p>
-                    <p className="text-xs opacity-90">{action.description}</p>
+                    <p className="font-medium text-xs sm:text-sm">{action.label}</p>
+                    <p className="text-xs opacity-90 hidden sm:block">{action.description}</p>
                   </div>
                 </Button>
               );
@@ -161,12 +161,12 @@ const QuickActions = () => {
                 <div key={action.label} className="relative">
                   <Button
                     disabled
-                    className={`${action.color} ${action.textColor} h-auto p-4 flex flex-col items-center space-y-2 opacity-50`}
+                    className={`${action.color} ${action.textColor} h-auto p-2 sm:p-4 flex flex-col items-center space-y-1 sm:space-y-2 opacity-50`}
                   >
-                    <Icon className="h-6 w-6" />
+                    <Icon className="h-4 w-4 sm:h-6 sm:w-6" />
                     <div className="text-center">
-                      <p className="font-medium text-sm">{action.label}</p>
-                      <p className="text-xs opacity-90">{action.description}</p>
+                      <p className="font-medium text-xs sm:text-sm">{action.label}</p>
+                      <p className="text-xs opacity-90 hidden sm:block">{action.description}</p>
                     </div>
                   </Button>
                   

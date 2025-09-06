@@ -42,15 +42,15 @@ export const Dashboard = () => {
   return (
     <div className="min-h-screen bg-black pb-20">
       <Header />
-      <div className="container mx-auto px-4 py-6 space-y-6 pt-20">
+      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 space-y-4 sm:space-y-6 pt-16 sm:pt-20">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-pp-gold">Ciao, {userName}!</h2>
-            <p className="text-pp-gold/80">Pronto per superare i tuoi limiti oggi?</p>
+            <h2 className="text-lg sm:text-2xl font-bold text-pp-gold">Ciao, {userName}!</h2>
+            <p className="text-sm sm:text-base text-pp-gold/80">Pronto per superare i tuoi limiti oggi?</p>
           </div>
           <button
             onClick={handleLogout}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+            className="bg-red-600 hover:bg-red-700 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm"
           >
             Logout
           </button>
@@ -66,7 +66,7 @@ export const Dashboard = () => {
         <StatsOverview />
         <QuickActions />
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <WeeklyProgress />
           <RecentActivity />
         </div>

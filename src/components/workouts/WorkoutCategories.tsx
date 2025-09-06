@@ -120,7 +120,7 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
       {/* Pulsante Inizia allenamento di oggi */}
       <StartTodayButton />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {categories.map((category) => {
           const Icon = category.icon;
           return (
@@ -128,16 +128,16 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
               key={category.id}
               className="bg-gradient-to-r from-black to-[#C89116] rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105"
             >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`${category.iconBgColor} rounded-xl p-3 flex items-center justify-center`}>
-                    <Icon className="h-8 w-8" style={{ color: category.iconColor }} />
+              <div className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className={`${category.iconBgColor} rounded-xl p-2 sm:p-3 flex items-center justify-center`}>
+                    <Icon className="h-6 w-6 sm:h-8 sm:w-8" style={{ color: category.iconColor }} />
                   </div>
                   <span className="text-sm text-white/80">{category.workouts} workout</span>
                 </div>
-                <div className="mb-4">
-                  <h3 className="text-xl font-bold text-pp-gold mb-2">{category.name}</h3>
-                  <p className="text-white text-sm mb-3">{category.description}</p>
+                <div className="mb-3 sm:mb-4">
+                  <h3 className="text-lg sm:text-xl font-bold text-pp-gold mb-1 sm:mb-2">{category.name}</h3>
+                  <p className="text-white text-xs sm:text-sm mb-2 sm:mb-3">{category.description}</p>
                   
                   {/* Filtri per FORZA */}
                   {category.id === 'strength' && showFilters[category.id] && (
@@ -379,11 +379,11 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
       </div>
 
       {/* Today's Recommended */}
-      <div className="bg-gradient-to-r from-black to-[#C89116] rounded-2xl p-6 border-2 border-black">
+      <div className="bg-gradient-to-r from-black to-[#C89116] rounded-2xl p-4 sm:p-6 border-2 border-black">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold mb-2 text-pp-gold">Consigliato per Oggi</h3>
-            <p className="text-white mb-4">HIIT Total Body - Perfetto per il tuo livello</p>
+            <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2 text-pp-gold">Consigliato per Oggi</h3>
+            <p className="text-white mb-3 sm:mb-4 text-sm sm:text-base">HIIT Total Body - Perfetto per il tuo livello</p>
             <Button 
               onClick={() => onStartWorkout('recommended')}
               className="bg-black text-white hover:bg-gray-900 border border-white/20"
