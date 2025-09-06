@@ -25,7 +25,7 @@ const QuickActions = () => {
       const today = new Date().toISOString().split('T')[0];
       
       const { data: workouts, error } = await supabase
-        .from('workouts')
+        .from('custom_workouts')
         .select('*')
         .eq('user_id', user.id)
         .gte('created_at', today)
