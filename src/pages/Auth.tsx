@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getResetPasswordUrl } from '@/shared/config/environments';
 import { analytics } from '@/services/analytics';
 import RegistrationForm from '@/components/auth/RegistrationForm';
-import emailAnalytics from '@/services/emailAnalytics';
+// import emailAnalytics from '@/services/emailAnalytics';
 import { sendPasswordResetEmail } from '@/services/emailService';
 
 const Auth = () => {
