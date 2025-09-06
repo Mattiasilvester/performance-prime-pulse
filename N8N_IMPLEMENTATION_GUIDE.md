@@ -235,3 +235,4 @@ npm run build
 - [x] Pronto per produzione
 
 **🎉 IMPLEMENTAZIONE N8N COMPLETATA CON SUCCESSO!**
+

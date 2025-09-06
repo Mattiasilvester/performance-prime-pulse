@@ -239,23 +239,28 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose, onStartExe
         return total + (workTime + restTime) / 60;
       }, 0);
 
-      // Aggiorna le statistiche utente
-      const { error } = await supabase
-        .from('user_workout_stats')
-        .upsert({
-          user_id: user.id,
-          total_workouts: 1,
-          total_hours: Math.round(totalMinutes),
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id',
-          ignoreDuplicates: false
-        });
+      // Aggiorna le statistiche utente (non bloccante)
+      try {
+        const { error } = await supabase
+          .from('user_workout_stats')
+          .upsert({
+            user_id: user.id,
+            total_workouts: 1,
+            total_hours: Math.round(totalMinutes),
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id',
+            ignoreDuplicates: false
+          });
 
-      if (error) {
-        console.error('Errore aggiornamento statistiche:', error);
-      } else {
-        toast.success('Allenamento completato! Statistiche aggiornate.');
+        if (error) {
+          console.warn('Errore aggiornamento statistiche (non bloccante):', error);
+        } else {
+          toast.success('Allenamento completato! Statistiche aggiornate.');
+        }
+      } catch (error) {
+        console.warn('user_workout_stats table not available:', error);
+        toast.success('Allenamento completato!');
       }
     } catch (error) {
       console.error('Errore durante il completamento:', error);

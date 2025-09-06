@@ -54,7 +54,6 @@ export async function sendWelcomeEmail(user: EmailUser): Promise<void> {
       throw new Error(`Webhook n8n fallito: ${response.status}`);
     }
     
-    console.log('✅ Email di benvenuto inviata via n8n a:', user.email);
     return;
     
   } catch (error) {
@@ -96,7 +95,6 @@ export async function sendPasswordResetEmail(email: string, resetLink: string): 
       throw new Error(`Webhook n8n fallito: ${response.status}`);
     }
     
-    console.log('✅ Email reset password inviata via n8n a:', email);
     
   } catch (error) {
     console.error('⚠️ Errore invio email reset (non bloccante):', error);
@@ -135,7 +133,6 @@ export async function sendVerificationEmail(email: string, verificationLink: str
       throw new Error(`Webhook n8n fallito: ${response.status}`);
     }
     
-    console.log('✅ Email verifica inviata via n8n a:', email);
     
   } catch (error) {
     console.error('⚠️ Errore invio email verifica (non bloccante):', error);

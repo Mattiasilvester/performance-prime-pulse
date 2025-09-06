@@ -37,7 +37,6 @@ export const UserProfile = () => {
         console.error('Error loading profile data:', error);
       } finally {
         setLoading(false);
-        console.log('Loading completed');
       }
     };
 

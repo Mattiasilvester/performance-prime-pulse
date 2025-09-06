@@ -26,6 +26,13 @@
 - ✅ **Database GIF Completo** - 145+ URL placeholder per tutti gli esercizi categorizzati
 - ✅ **Fix Z-Index Modal** - Risolto problema sovrapposizione bottoni esercizio
 - ✅ **Gestione Errori GIF** - Fallback per GIF non disponibili
+- ✅ **Banner Beta Landing Page** - Banner promozionale per accesso early adopters
+- ✅ **Google Analytics Integration** - Tracking completo con ID G-X8LZRYL596
+- ✅ **Feedback Widget Tally** - Sistema feedback utenti distribuito su tutte le pagine
+- ✅ **Checkbox Terms & Conditions** - Accettazione obbligatoria per registrazione
+- ✅ **Fix Z-Index Critico** - Risolto conflitto bottoni esercizi sopra widget e menu
+- ✅ **Fix Errori 406 Supabase** - Gestione graceful dati mancanti con maybeSingle()
+- ✅ **Console Log Cleanup** - Rimossi 99 console.log per produzione
 
 ### **✅ COMPONENTI ATTIVI E FUNZIONANTI**
 1. **Landing Page** - Porta 8080 (Python HTTP Server) ✅
@@ -527,7 +534,58 @@ cd dist && python3 -m http.server 8083
 
 ---
 
-*Ultimo aggiornamento: 3 Settembre 2025 - 23:00*
-*Stato: IN SVILUPPO ATTIVO 🔄*
-*Versione: 1.3 - Sistema Filtri e Generazione Allenamenti Dinamici*
+---
+
+## 🚀 **NUOVE FEATURES IMPLEMENTATE - 11 GENNAIO 2025**
+
+### **Banner Beta Landing Page**
+- **Posizionamento**: Banner in cima alla landing page, sopra Hero Section
+- **Design**: Sfondo giallo dorato (#EEBA2B) con testo nero per massimo contrasto
+- **Contenuto**: "🚀 BETA GRATUITA - Accesso Early Adopters • Limitato fino a Novembre 2025"
+- **Responsive**: Ottimizzato per mobile e desktop
+- **Visibilità**: Solo nella landing page, non in altre parti dell'app
+
+### **Google Analytics Integration**
+- **Script Integration**: Aggiunto script Google Analytics in `index.html`
+- **Tracking ID**: G-X8LZRYL596 configurato
+- **Posizionamento**: Script inserito prima di `</head>` per caricamento ottimale
+- **Configurazione**: gtag configurato per tracking automatico
+
+### **Feedback Widget Tally**
+- **Widget Component**: Creato `FeedbackWidget.tsx` con design moderno
+- **Tally Integration**: Form ID mDL24Z collegato con emoji 💪 e animazione wave
+- **Posizionamento**: Fisso in basso a destra (bottom-20 right-6) con z-index massimo
+- **Distribuzione**: Aggiunto a tutte le pagine principali (Dashboard, Workouts, Schedule, Profile)
+- **Accessibilità**: Aria-label per screen reader e hover effects
+
+### **Checkbox Terms & Conditions**
+- **Validazione**: Checkbox obbligatorio per accettare Termini e Privacy Policy
+- **Styling**: Design coerente con form di registrazione
+- **Funzionalità**: Button submit disabilitato senza accettazione
+- **Error Handling**: Messaggio di errore se tentano submit senza checkbox
+- **Links**: Link placeholder per Terms e Privacy Policy (Beta Version)
+
+### **Fix Z-Index Critico**
+- **Problema Identificato**: Bottoni esercizi (AVVIA/COMPLETA) coprivano widget feedback e menu dropdown
+- **Analisi Approfondita**: Identificato conflitto stacking context tra Card e bottoni
+- **Soluzione Implementata**: Aumentato z-index widget e menu a `z-[99999]`
+- **Risultato**: Gerarchia UI corretta con elementi importanti sempre accessibili
+
+### **Fix Errori 406 Supabase**
+- **Problema**: Errori 406 (Not Acceptable) per chiamate a `user_workout_stats`
+- **Causa**: `.single()` falliva quando non c'erano record per l'utente
+- **Soluzione**: Sostituito `.single()` con `.maybeSingle()` in tutti i servizi
+- **Error Handling**: Aggiunto try-catch per gestione graceful dei dati mancanti
+
+### **Console Log Cleanup**
+- **Rimozione Completa**: Eliminati tutti i `console.log` dal progetto (99 istanze)
+- **Preservazione**: Mantenuti `console.error` e `console.warn` per gestione errori
+- **Metodologia**: Utilizzato `sed` per rimozione automatica in tutti i file
+- **Risultato**: Codice pulito e production-ready
+
+---
+
+*Ultimo aggiornamento: 11 Gennaio 2025 - 18:00*
+*Stato: PRONTO PER LANCIO 🚀*
+*Versione: 1.6 - Banner Beta, Analytics, Feedback e Fix Z-Index*
 *Autore: Mattia Silvestrelli + AI Assistant*

@@ -31,7 +31,6 @@ export const StartTodayButton = () => {
         setTodayWorkout(data);
       }
     } catch (error) {
-      console.log('No workout found for today');
     }
   };
 

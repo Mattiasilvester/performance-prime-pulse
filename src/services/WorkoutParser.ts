@@ -47,7 +47,6 @@ export async function parseWorkoutFile(file: File): Promise<ParsedWorkoutResult>
  * Estrazione testo dal file (versione semplificata)
  */
 async function extractTextFromFile(file: File): Promise<string> {
-  console.log('📄 Estrazione testo da:', file.type);
   
   // Per ora supporta solo file di testo
   if (file.type === 'text/plain' || file.name.endsWith('.txt')) {

@@ -122,6 +122,9 @@ export const exerciseGifs: Record<string, string> = {
   'Leg Raises': 'https://example.com/gifs/leg-raises.gif',
   'Dead Bug': 'https://example.com/gifs/dead-bug.gif',
   'Glute Bridges': 'https://example.com/gifs/glute-bridges.gif',
+  'Sedia al Muro': 'https://example.com/gifs/sedia-al-muro.gif',
+  'Controllo Core': 'https://example.com/gifs/controllo-core.gif',
+  'Apertura Inversa': 'https://example.com/gifs/apertura-inversa.gif',
 
   // HIIT
   'Burpees esplosivi': 'https://example.com/gifs/burpees-esplosivi.gif',
@@ -158,3 +161,4 @@ export const exerciseGifs: Record<string, string> = {
 export const getExerciseGifUrl = (exerciseName: string): string => {
   return exerciseGifs[exerciseName] || 'https://example.com/gifs/default-exercise.gif';
 };
+
