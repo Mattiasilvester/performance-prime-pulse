@@ -68,33 +68,24 @@ export const ExerciseGifLink: React.FC<ExerciseGifLinkProps> = ({
 
             {/* GIF */}
             <div className="p-4">
-              <div className="aspect-video bg-gray-800 rounded-lg flex items-center justify-center">
+              <div className="aspect-video bg-gray-800 rounded-lg flex items-center justify-center relative">
+                {/* Overlay sempre visibile */}
+                <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-black/80 flex items-center justify-center rounded-lg z-10">
+                  <div className="text-center text-white p-6">
+                    <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-pp-gold to-yellow-400 text-black px-6 py-3 rounded-full font-semibold text-sm shadow-lg">
+                      <div className="w-2 h-2 bg-black rounded-full animate-pulse"></div>
+                      <span>IN FASE DI SVILUPPO</span>
+                      <div className="w-2 h-2 bg-black rounded-full animate-pulse"></div>
+                    </div>
+                    <p className="text-gray-300 text-xs mt-3 opacity-75">GIF dimostrativa in arrivo</p>
+                  </div>
+                </div>
+                
+                {/* GIF nascosta dietro l'overlay */}
                 <img
                   src={getGifUrl(exerciseName)}
                   alt={`GIF dimostrativa per ${exerciseName}`}
-                  className="max-w-full max-h-full object-contain rounded-lg"
-                  onError={(e) => {
-                    // Fallback se l'immagine non carica
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      parent.innerHTML = `
-                        <div class="relative w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg">
-                          <div class="absolute inset-0 bg-gradient-to-br from-black/60 to-black/80 flex items-center justify-center rounded-lg">
-                            <div class="text-center text-white p-6">
-                              <div class="inline-flex items-center space-x-2 bg-gradient-to-r from-pp-gold to-yellow-400 text-black px-6 py-3 rounded-full font-semibold text-sm shadow-lg">
-                                <div class="w-2 h-2 bg-black rounded-full animate-pulse"></div>
-                                <span>IN FASE DI SVILUPPO</span>
-                                <div class="w-2 h-2 bg-black rounded-full animate-pulse"></div>
-                              </div>
-                              <p class="text-gray-300 text-xs mt-3 opacity-75">GIF dimostrativa in arrivo</p>
-                            </div>
-                          </div>
-                        </div>
-                      `;
-                    }
-                  }}
+                  className="max-w-full max-h-full object-contain rounded-lg opacity-0"
                 />
               </div>
             </div>
