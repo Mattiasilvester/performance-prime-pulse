@@ -306,6 +306,34 @@ function generateFitnessResponse(message: string, lowerMessage: string): { messa
     };
   }
   
+  if (lowerMessage.includes('resistenza') || lowerMessage.includes('migliorare la resistenza')) {
+    return {
+      message: `🏃‍♂️ MIGLIORARE LA RESISTENZA - GUIDA COMPLETA\n\nTRAINING CARDIOVASCOLARE:\n• Corsa: 3-4x/settimana, 20-45 min\n• Interval Training: 1:1 (30s veloce, 30s lento)\n• Fartlek: Variazione ritmo durante la corsa\n• Nuoto: 2-3x/settimana, 30-60 min\n• Ciclismo: 2-3x/settimana, 45-90 min\n\nTRAINING FUNZIONALE:\n• Burpees: 3 serie x 10-15 rip\n• Mountain Climbers: 3 serie x 20-30 rip\n• Jumping Jacks: 3 serie x 30-50 rip\n• High Knees: 3 serie x 30-60 sec\n• Plank Jacks: 3 serie x 15-25 rip\n\nPROGRESSIONE:\n• Settimana 1-2: 60% intensità\n• Settimana 3-4: 70% intensità\n• Settimana 5-6: 80% intensità\n• Settimana 7-8: 85% intensità\n\nNUTRIZIONE:\n• Carboidrati: 50-60% delle calorie\n• Proteine: 1.2-1.6g per kg peso\n• Idratazione: 35ml per kg peso\n• Pre-workout: Banana + caffè\n• Post-workout: Proteine + carboidrati\n\nVuoi un programma specifico per la tua resistenza?`,
+      confidence: 0.95
+    };
+  }
+
+  if (lowerMessage.includes('workout') && (lowerMessage.includes('oggi') || lowerMessage.includes('meglio'))) {
+    return {
+      message: `🎯 WORKOUT PERFETTO PER OGGI\n\nBasandomi sui tuoi obiettivi, ti consiglio:\n\n🔥 HIIT TOTAL BODY (30 min)\n• Riscaldamento: 5 min\n• Circuito 1: 4 esercizi x 3 round\n  - Burpees x 30s\n  - Mountain Climbers x 30s\n  - Jump Squats x 30s\n  - Plank x 30s\n• Circuito 2: 4 esercizi x 3 round\n  - Push-ups x 30s\n  - Lunges x 30s\n  - High Knees x 30s\n  - Russian Twists x 30s\n• Defaticamento: 5 min\n\n💪 FORZA UPPER BODY (45 min)\n• Riscaldamento: 5 min\n• Push-ups: 3x12-15\n• Pike Push-ups: 3x8-12\n• Tricep Dips: 3x10-15\n• Plank: 3x30-60s\n• Superman: 3x12-15\n• Cool-down: 5 min\n\n🏃‍♂️ CARDIO LISS (25 min)\n• Camminata veloce o corsa leggera\n• Mantieni 60-70% frequenza cardiaca\n• Respirazione costante\n\nQuale preferisci? Posso personalizzarlo per te!`,
+      confidence: 0.9
+    };
+  }
+
+  if (lowerMessage.includes('nutrizione') && (lowerMessage.includes('pre') || lowerMessage.includes('allenamento'))) {
+    return {
+      message: `🍌 NUTRIZIONE PRE-ALLENAMENTO - GUIDA COMPLETA\n\n⏰ TIMING:\n• 2-3 ore prima: Pasto completo\n• 30-60 min prima: Spuntino leggero\n• 15-30 min prima: Carboidrati rapidi\n\n🍎 SPUNTINI PRE-WORKOUT:\n• Banana + caffè (30 min prima)\n• Toast con miele (45 min prima)\n• Yogurt greco + frutti di bosco (1 ora prima)\n• Avena + latte (2 ore prima)\n\n💧 IDRATAZIONE:\n• 500ml acqua 2 ore prima\n• 250ml acqua 30 min prima\n• Sorsi durante l'allenamento\n\n🚫 DA EVITARE:\n• Cibi grassi (digestione lenta)\n• Fibre eccessive (gonfiore)\n• Alcol (disidratazione)\n• Cibi piccanti (reflusso)\n\n⚡ INTEGRATORI (opzionali):\n• Caffeina: 100-200mg\n• Beta-alanina: 2-3g\n• Creatina: 3-5g\n\nVuoi un piano nutrizionale personalizzato?`,
+      confidence: 0.9
+    };
+  }
+
+  if (lowerMessage.includes('raggiungere') && lowerMessage.includes('obiettivi')) {
+    return {
+      message: `🎯 COME RAGGIUNGERE I TUOI OBIETTIVI - STRATEGIA COMPLETA\n\n📊 STEP 1: DEFINISCI OBIETTIVI SMART\n• Specifici: Cosa vuoi ottenere?\n• Misurabili: Come misuri il progresso?\n• Raggiungibili: Sono realistici?\n• Rilevanti: Ti motivano davvero?\n• Temporali: Quando li vuoi raggiungere?\n\n📅 STEP 2: PIANIFICAZIONE\n• Obiettivi a lungo termine (6-12 mesi)\n• Obiettivi a medio termine (1-3 mesi)\n• Obiettivi a breve termine (1-4 settimane)\n• Azioni quotidiane concrete\n\n📈 STEP 3: TRACKING\n• Misura i progressi settimanalmente\n• Foto prima/dopo\n• Metriche (peso, misure, performance)\n• Diario allenamenti\n• App di tracking\n\n🧠 STEP 4: MINDSET\n• Visualizza il successo\n• Celebra piccole vittorie\n• Impara dagli errori\n• Mantieni costanza\n• Chiedi supporto quando serve\n\n💪 STEP 5: AZIONE\n• Inizia oggi, non domani\n• Fai il primo passo\n• Costruisci abitudini\n• Sii paziente ma persistente\n\nQuali sono i tuoi obiettivi specifici? Ti aiuto a creare un piano!`,
+      confidence: 0.9
+    };
+  }
+
   if (lowerMessage.includes('programma') || lowerMessage.includes('piano')) {
     return {
       message: `📋 PROGRAMMA ALLENAMENTO PERSONALIZZATO\n\nPer principianti (3x/settimana):\n• LUN: Upper Body (petto, spalle, braccia)\n• MER: Lower Body (gambe, glutei)\n• VEN: Full Body + Cardio\n\nPer intermedi (4x/settimana):\n• LUN: Petto + Tricipiti\n• MAR: Gambe + Glutei\n• GIO: Schiena + Bicipiti\n• SAB: Spalle + Core\n\nPer avanzati (5x/settimana):\n• LUN: Petto + Tricipiti\n• MAR: Gambe + Glutei\n• MER: Schiena + Bicipiti\n• GIO: Spalle + Core\n• VEN: Full Body + HIIT\n\nDurata: 45-60 minuti per sessione\nRiposo: 1-2 minuti tra le serie\n\nVuoi che ti crei un programma specifico per i tuoi obiettivi?`,
