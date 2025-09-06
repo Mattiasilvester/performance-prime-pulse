@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
+import FeedbackWidget from '@/components/feedback/FeedbackWidget';
 
 export const Dashboard = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -71,6 +72,7 @@ export const Dashboard = () => {
         </div>
       </div>
       <BottomNavigation />
+      <FeedbackWidget />
     </div>
   );
 };

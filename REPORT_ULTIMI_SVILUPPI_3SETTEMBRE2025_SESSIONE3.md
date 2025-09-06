@@ -172,3 +172,4 @@ Il sistema di filtri e generazione allenamenti dinamici è stato implementato co
 *Report generato: 3 Settembre 2025 - 23:00*  
 *Autore: Mattia Silvestrelli + AI Assistant*  
 *Versione: 1.3 - Sistema Filtri e Generazione Allenamenti Dinamici*
+

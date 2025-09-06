@@ -25,9 +25,12 @@ export const checkMonthlyReset = async (userId: string) => {
       .from('user_workout_stats')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (statsError || !currentStats) return;
+    if (statsError || !currentStats) {
+      console.warn('user_workout_stats not available for monthly reset:', statsError);
+      return;
+    }
 
     // Reset statistiche correnti
     const { error: resetError } = await supabase
@@ -67,7 +70,6 @@ export const checkMonthlyReset = async (userId: string) => {
 const addMonthlyNotification = async (userId: string, monthName: string, workouts: number, hours: number) => {
   // Qui potresti salvare la notifica in una tabella dedicata se necessario
   // Per ora utilizziamo solo il toast
-  console.log(`Notifica mensile per utente ${userId}: ${monthName} - ${workouts} allenamenti, ${hours} ore`);
 };
 
 // Ottieni statistiche mensili dell'utente

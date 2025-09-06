@@ -1,15 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { vfPatchState, vfInteract, parseVF } from '@/lib/voiceflow';
 import { fetchUserProfile } from '@/services/userService';
 
-type Msg = { id: string; role: 'user' | 'bot'; text: string };
+type Msg = { 
+  id: string; 
+  role: 'user' | 'bot'; 
+  text: string; 
+  navigation?: { 
+    path: string; 
+    label: string; 
+    action: string; 
+  }; 
+};
 
 interface PrimeChatProps {
   isModal?: boolean;
 }
 
 export default function PrimeChat({ isModal = false }: PrimeChatProps) {
+  const navigate = useNavigate();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,6 +29,17 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [userId, setUserId] = useState<string>('guest-' + crypto.randomUUID());
   const [userName, setUserName] = useState<string>('Performance Prime User');
   const [userEmail, setUserEmail] = useState<string>('');
+
+  // Test API connection on mount (solo per debug)
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      const apiKey = import.meta.env.VITE_VF_API_KEY;
+      if (apiKey) {
+      } else {
+        console.error('❌ API Key not found!');
+      }
+    }
+  }, []);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
 
   useEffect(() => {
@@ -92,11 +114,16 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
 
     try {
       const traces = await vfInteract(userId, trimmed);
-      const { texts, choices } = parseVF(traces);
+      const { texts, choices, navigation } = parseVF(traces);
 
       setMsgs(m => [
         ...m,
-        ...texts.map(t => ({ id: crypto.randomUUID(), role: 'bot' as const, text: t })),
+        ...texts.map(t => ({ 
+          id: crypto.randomUUID(), 
+          role: 'bot' as const, 
+          text: t,
+          navigation: navigation || undefined
+        })),
         ...(choices.length
           ? [{
               id: crypto.randomUUID(),
@@ -142,14 +169,25 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-300 min-h-[400px] max-h-[400px]">
         {msgs.map(m => (
-                      <div
-              key={m.id}
-              className={`max-w-[85%] px-4 py-3 rounded-2xl ${
-                m.role === 'user' ? 'ml-auto bg-yellow-600 text-black' : 'mr-auto bg-white text-black'
+          <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
+            <div
+              className={`px-4 py-3 rounded-2xl ${
+                m.role === 'user' ? 'bg-yellow-600 text-black' : 'bg-white text-black'
               }`}
             >
               <div className="whitespace-pre-wrap">{m.text}</div>
             </div>
+            
+            {/* Pulsante di navigazione per messaggi bot */}
+            {m.role === 'bot' && m.navigation && (
+              <button
+                onClick={() => navigate(m.navigation!.path)}
+                className="mt-3 px-4 py-2 bg-[#EEBA2B] text-black font-semibold rounded-lg hover:bg-[#d4a527] transition-colors"
+              >
+                {m.navigation.label}
+              </button>
+            )}
+          </div>
         ))}
         {loading && (
           <div className="mr-auto px-4 py-3 rounded-2xl bg-white animate-pulse text-black">

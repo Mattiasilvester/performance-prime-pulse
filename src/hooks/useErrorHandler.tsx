@@ -174,3 +174,4 @@ export const useErrorHandler = (options: UseErrorHandlerOptions = {}) => {
     clearErrorLog
   };
 };
+

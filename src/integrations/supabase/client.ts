@@ -26,7 +26,6 @@ if (env.IS_DEV) {
           'Verifica che VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY siano corretti nel file .env'
         );
       } else {
-        console.log('✅ Supabase client inizializzato correttamente');
       }
     })
     .catch((err) => {

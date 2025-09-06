@@ -175,7 +175,7 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
               />
             )}
             
-            <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center justify-between relative">
               <div className="flex items-center space-x-3">
                 <div
                   className={`cardio-fatburn-card__bullet w-10 h-10 rounded-full flex items-center justify-center border-2 ${

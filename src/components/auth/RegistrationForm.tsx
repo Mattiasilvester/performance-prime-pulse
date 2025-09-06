@@ -22,6 +22,7 @@ const RegistrationForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -97,6 +98,11 @@ const RegistrationForm = () => {
     
     if (password.length < 8) {
       toast.error('La password deve essere di almeno 8 caratteri');
+      return;
+    }
+    
+    if (!acceptedTerms) {
+      toast.error('Devi accettare i Termini di Servizio e la Privacy Policy per continuare');
       return;
     }
     
@@ -310,9 +316,33 @@ const RegistrationForm = () => {
             )}
           </div>
           
+          <div className="space-y-2">
+            <div className="flex items-start space-x-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 h-4 w-4 text-brand-primary border-gray-300 rounded focus:ring-brand-primary"
+                required
+              />
+              <label htmlFor="terms" className="text-sm text-gray-700">
+                Accetto i{' '}
+                <a href="#" className="text-brand-primary hover:underline">
+                  Termini di Servizio
+                </a>{' '}
+                e la{' '}
+                <a href="#" className="text-brand-primary hover:underline">
+                  Privacy Policy
+                </a>{' '}
+                (Beta Version) *
+              </label>
+            </div>
+          </div>
+          
           <Button
             type="submit"
-            disabled={isSubmitting || isValidating || !!emailError || !email || !firstName || !lastName || !password || !confirmPassword || password !== confirmPassword}
+            disabled={isSubmitting || isValidating || !!emailError || !email || !firstName || !lastName || !password || !confirmPassword || password !== confirmPassword || !acceptedTerms}
             className="w-full"
           >
             {isSubmitting ? (

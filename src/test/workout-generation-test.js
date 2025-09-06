@@ -40,12 +40,8 @@ const testCases = [
 ];
 
 function testWorkoutGeneration() {
-  console.log('🧪 Test generazione allenamenti dopo correzioni...');
-  console.log('📊 Verificando che non ci siano più allenamenti con un solo esercizio...\n');
   
   testCases.forEach((testCase, index) => {
-    console.log(`\n${index + 1}. ${testCase.name}`);
-    console.log('='.repeat(50));
     
     try {
       const workout = generateFilteredStrengthWorkout(
@@ -54,9 +50,6 @@ function testWorkoutGeneration() {
         testCase.totalMinutes
       );
       
-      console.log(`✅ Nome: ${workout.name}`);
-      console.log(`📝 Esercizi: ${workout.exercises.length}`);
-      console.log(`⏱️ Durata target: ${testCase.totalMinutes} minuti`);
       
       // Calcola durata effettiva
       const workTime = parseInt(workout.exercises[0]?.duration || '60');
@@ -64,8 +57,6 @@ function testWorkoutGeneration() {
       const totalTimePerExercise = workTime + restTime;
       const totalTimeMinutes = (workout.exercises.length * totalTimePerExercise) / 60;
       
-      console.log(`⏰ Durata effettiva: ${totalTimeMinutes.toFixed(1)} minuti`);
-      console.log(`🔄 Tempo per esercizio: ${workTime}s lavoro + ${restTime}s riposo`);
       
       // Verifica che non ci sia solo 1 esercizio
       if (workout.exercises.length === 1) {
@@ -73,17 +64,13 @@ function testWorkoutGeneration() {
       } else if (workout.exercises.length < 5) {
         console.warn(`⚠️ ATTENZIONE: Solo ${workout.exercises.length} esercizi per ${testCase.name}`);
       } else {
-        console.log(`✅ OK: ${workout.exercises.length} esercizi generati`);
       }
       
       // Mostra i primi 3 esercizi
-      console.log('\n📋 Primi esercizi:');
       workout.exercises.slice(0, 3).forEach((exercise, i) => {
-        console.log(`   ${i + 1}. ${exercise.name} (${exercise.duration} + ${exercise.rest})`);
       });
       
       if (workout.exercises.length > 3) {
-        console.log(`   ... e altri ${workout.exercises.length - 3} esercizi`);
       }
       
     } catch (error) {
@@ -91,8 +78,6 @@ function testWorkoutGeneration() {
     }
   });
   
-  console.log('\n✅ Test completato!');
-  console.log('📝 Se tutti gli allenamenti hanno più di 1 esercizio, il problema è risolto!');
 }
 
 // Esegui test se chiamato direttamente
@@ -101,3 +86,4 @@ if (typeof window !== 'undefined') {
 }
 
 export { testWorkoutGeneration };
+

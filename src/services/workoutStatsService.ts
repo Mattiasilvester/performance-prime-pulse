@@ -12,17 +12,22 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
     if (!user) return { total_workouts: 0, total_hours: 0 };
 
     // Prima controlla se esistono statistiche nella tabella user_workout_stats
-    const { data: stats, error: statsError } = await supabase
-      .from('user_workout_stats')
-      .select('total_workouts, total_hours')
-      .eq('user_id', user.id)
-      .single();
+    try {
+      const { data: stats, error: statsError } = await supabase
+        .from('user_workout_stats')
+        .select('total_workouts, total_hours')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    if (!statsError && stats) {
-      return {
-        total_workouts: stats.total_workouts || 0,
-        total_hours: Math.round((stats.total_hours || 0) / 60 * 10) / 10
-      };
+      if (!statsError && stats) {
+        return {
+          total_workouts: stats.total_workouts || 0,
+          total_hours: Math.round((stats.total_hours || 0) / 60 * 10) / 10
+        };
+      }
+    } catch (error) {
+      // Se la tabella non esiste o non ci sono dati, continua con il calcolo dai workout
+      console.warn('user_workout_stats table not available, calculating from workouts:', error);
     }
 
     // Se non ci sono statistiche, calcola dai workout completati

@@ -112,12 +112,6 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
     const isQuickMode = quick !== undefined ? quick : false;
     const duration = isQuickMode ? 10 : 15;
     
-    console.log('Avvio workout mobility con parametri:', {
-      level: selectedLevel,
-      quick: isQuickMode,
-      duration: duration
-    });
-    
     onStartWorkout('mobility', duration, undefined, selectedLevel, isQuickMode);
     setShowFilters({});
   };

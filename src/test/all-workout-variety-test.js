@@ -72,22 +72,15 @@ const testCases = [
 ];
 
 function testAllWorkoutVariety() {
-  console.log('🧪 Test completo varietà allenamenti...');
-  console.log('📊 Verificando tutte le funzioni di generazione...\n');
   
   let passedTests = 0;
   let totalTests = testCases.length;
   
   testCases.forEach((testCase, index) => {
-    console.log(`\n${index + 1}. ${testCase.name}`);
-    console.log('='.repeat(70));
     
     try {
       const workout = testCase.func();
       
-      console.log(`✅ Nome: ${workout.name}`);
-      console.log(`📝 Esercizi totali: ${workout.exercises.length}`);
-      console.log(`🎯 Limite atteso: ${testCase.expectedMax}`);
       
       // Verifica numero di esercizi
       if (workout.exercises.length > testCase.expectedMax) {
@@ -95,22 +88,18 @@ function testAllWorkoutVariety() {
       } else if (workout.exercises.length < 1) {
         console.error(`❌ ERRORE: Nessun esercizio generato`);
       } else {
-        console.log(`✅ OK: ${workout.exercises.length} esercizi (limite ${testCase.expectedMax})`);
       }
       
       // Verifica varietà degli esercizi
       const uniqueExercises = [...new Set(workout.exercises.map(ex => ex.name))];
       const varietyRatio = uniqueExercises.length / workout.exercises.length;
       
-      console.log(`🎨 Esercizi unici: ${uniqueExercises.length}/${workout.exercises.length}`);
-      console.log(`📊 Rapporto varietà: ${(varietyRatio * 100).toFixed(1)}%`);
       
       if (varietyRatio < 0.3) {
         console.error(`❌ ERRORE: Troppo poca varietà (${(varietyRatio * 100).toFixed(1)}%)`);
       } else if (varietyRatio < 0.5) {
         console.warn(`⚠️ ATTENZIONE: Varietà limitata (${(varietyRatio * 100).toFixed(1)}%)`);
       } else {
-        console.log(`✅ OK: Buona varietà (${(varietyRatio * 100).toFixed(1)}%)`);
       }
       
       // Verifica ripetizioni massime
@@ -118,22 +107,17 @@ function testAllWorkoutVariety() {
         workout.exercises.filter(e => e.name === ex).length
       ));
       
-      console.log(`🔄 Ripetizioni massime: ${maxRepetitions}`);
       
       if (maxRepetitions > 2) {
         console.error(`❌ ERRORE: Troppe ripetizioni (max ${maxRepetitions})`);
       } else {
-        console.log(`✅ OK: Ripetizioni moderate (max ${maxRepetitions})`);
       }
       
       // Mostra alcuni esercizi
-      console.log('\n📋 Primi esercizi:');
       workout.exercises.slice(0, 5).forEach((exercise, i) => {
-        console.log(`   ${i + 1}. ${exercise.name} (${exercise.duration} + ${exercise.rest})`);
       });
       
       if (workout.exercises.length > 5) {
-        console.log(`   ... e altri ${workout.exercises.length - 5} esercizi`);
       }
       
       // Conta test passati
@@ -142,9 +126,7 @@ function testAllWorkoutVariety() {
           varietyRatio >= 0.3 && 
           maxRepetitions <= 2) {
         passedTests++;
-        console.log(`✅ TEST PASSATO`);
       } else {
-        console.log(`❌ TEST FALLITO`);
       }
       
     } catch (error) {
@@ -152,16 +134,11 @@ function testAllWorkoutVariety() {
     }
   });
   
-  console.log('\n' + '='.repeat(70));
-  console.log(`📊 RISULTATI FINALI: ${passedTests}/${totalTests} test passati`);
   
   if (passedTests === totalTests) {
-    console.log('🎉 TUTTI I TEST SONO PASSATI! Le correzioni sono state applicate correttamente.');
   } else {
-    console.log('⚠️ Alcuni test sono falliti. Verifica le correzioni.');
   }
   
-  console.log('\n✅ Test completato!');
 }
 
 // Esegui test se chiamato direttamente
@@ -170,3 +147,4 @@ if (typeof window !== 'undefined') {
 }
 
 export { testAllWorkoutVariety };
+

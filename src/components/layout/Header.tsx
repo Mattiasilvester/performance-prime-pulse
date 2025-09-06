@@ -198,7 +198,7 @@ export const Header = () => {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 bg-gray-800 border border-gray-600 shadow-lg z-50">
+              <PopoverContent className="w-80 bg-gray-800 border border-gray-600 shadow-lg z-[99999]">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between border-b border-gray-600 pb-2">
                     <h3 className="font-semibold text-pp-gold">Notifiche</h3>
@@ -256,7 +256,7 @@ export const Header = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-gray-800 border border-gray-600 shadow-lg z-50">
+              <DropdownMenuContent className="w-56 bg-gray-800 border border-gray-600 shadow-lg z-[99999]">
                 {/* User Info */}
                 <div className="px-4 py-3 border-b border-gray-600">
                   <p className="text-sm font-medium text-white">{userProfile?.name || user?.email}</p>

@@ -157,3 +157,4 @@ export const emailService = {
 - **Import Resend**: 0
 
 **CONCLUSIONE**: Il progetto è già pronto per n8n, non serve rimuovere Resend perché non è mai stato implementato!
+

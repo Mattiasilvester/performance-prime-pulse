@@ -113,3 +113,4 @@ Riposo: 45s
 Dove `[GIF]` è un link cliccabile che apre il modal con descrizione e GIF dimostrativa.
 
 **✅ IMPLEMENTAZIONE COMPLETATA CON SUCCESSO!**
+

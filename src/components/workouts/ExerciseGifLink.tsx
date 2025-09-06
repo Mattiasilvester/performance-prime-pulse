@@ -80,10 +80,17 @@ export const ExerciseGifLink: React.FC<ExerciseGifLinkProps> = ({
                     const parent = target.parentElement;
                     if (parent) {
                       parent.innerHTML = `
-                        <div class="text-center text-gray-400">
-                          <Play className="h-12 w-12 mx-auto mb-2" />
-                          <p>GIF non disponibile</p>
-                          <p class="text-xs">URL: ${getGifUrl(exerciseName)}</p>
+                        <div class="relative w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg">
+                          <div class="absolute inset-0 bg-gradient-to-br from-black/60 to-black/80 flex items-center justify-center rounded-lg">
+                            <div class="text-center text-white p-6">
+                              <div class="inline-flex items-center space-x-2 bg-gradient-to-r from-pp-gold to-yellow-400 text-black px-6 py-3 rounded-full font-semibold text-sm shadow-lg">
+                                <div class="w-2 h-2 bg-black rounded-full animate-pulse"></div>
+                                <span>IN FASE DI SVILUPPO</span>
+                                <div class="w-2 h-2 bg-black rounded-full animate-pulse"></div>
+                              </div>
+                              <p class="text-gray-300 text-xs mt-3 opacity-75">GIF dimostrativa in arrivo</p>
+                            </div>
+                          </div>
                         </div>
                       `;
                     }

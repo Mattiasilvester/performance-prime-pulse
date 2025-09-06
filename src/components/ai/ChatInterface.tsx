@@ -1,15 +1,21 @@
 
 import { useState, forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
-import { Send, Bot, User, Copy, Check, X } from 'lucide-react';
+import { Send, Bot, User, Copy, Check, X, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface Message {
   id: string;
   text: string;
   sender: 'user' | 'ai';
   timestamp: Date;
+  suggestions?: string[];
+  navigation?: {
+    path: string;
+    action: string;
+  };
 }
 
 const initialMessages: Message[] = [
@@ -37,6 +43,7 @@ interface ChatInterfaceProps {
 
 export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void }, ChatInterfaceProps>((props, ref) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const navigate = useNavigate();
   
   // Inizializza i messaggi dal localStorage o usa quelli iniziali
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -61,6 +68,33 @@ export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void },
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
   const { toast } = useToast();
+
+  // Funzione per gestire i suggerimenti
+  const handleSuggestionClick = (suggestion: string) => {
+    sendMessage(suggestion);
+  };
+
+  // Funzione per gestire la navigazione
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    toast({
+      title: "Navigazione",
+      description: `Ti sto portando a ${path}`,
+    });
+  };
+
+  // Funzione per ottenere il testo del pulsante di navigazione
+  const getNavigationButtonText = (path: string): string => {
+    const pathMap: { [key: string]: string } = {
+      '/workouts': 'Vai a Workouts',
+      '/nutrition': 'Vai a Nutrition', 
+      '/dashboard': 'Vai a Dashboard',
+      '/profile': 'Vai a Profile',
+      '/schedule': 'Vai a Schedule',
+      '/timer': 'Vai a Timer'
+    };
+    return pathMap[path] || `Vai a ${path}`;
+  };
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -144,16 +178,104 @@ export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void },
       timestamp: new Date(),
     };
 
-    // Simulate AI response
+    // Simulate AI response with suggestions and navigation
     const aiResponse: Message = {
       id: (Date.now() + 1).toString(),
       text: generateAIResponse(text),
       sender: 'ai',
       timestamp: new Date(),
+      suggestions: generateSuggestions(text),
+      navigation: generateNavigation(text)
     };
 
     setMessages(prev => [...prev, userMessage, aiResponse]);
     setInputText('');
+  };
+
+  // Genera suggerimenti basati sul messaggio
+  const generateSuggestions = (text: string): string[] => {
+    const lowerText = (text || '').toString().toLowerCase().trim();
+    
+    if (lowerText.includes('workout') || lowerText.includes('allenamento')) {
+      return [
+        "Mostrami esercizi specifici",
+        "Crea un piano settimanale",
+        "Vai alla sezione Workouts"
+      ];
+    }
+    
+    if (lowerText.includes('nutrizione') || lowerText.includes('dieta')) {
+      return [
+        "Calcola le mie calorie",
+        "Suggeriscimi ricette",
+        "Vai alla sezione Nutrition"
+      ];
+    }
+    
+    if (lowerText.includes('progressi') || lowerText.includes('statistiche')) {
+      return [
+        "Mostra i miei grafici",
+        "Vai alla Dashboard",
+        "Analizza le mie performance"
+      ];
+    }
+    
+    return [
+      "Come posso aiutarti?",
+      "Hai altre domande?",
+      "Esplora le funzionalità"
+    ];
+  };
+
+  // Genera navigazione basata sul messaggio
+  const generateNavigation = (text: string) => {
+    const lowerText = (text || '').toString().toLowerCase().trim();
+    
+    // Riconosce domande che iniziano con "dove" per creare allenamenti
+    if (lowerText.includes('dove') && (lowerText.includes('creare') || lowerText.includes('allenamento'))) {
+      return { path: '/workouts', action: 'navigate_to_workouts' };
+    }
+    
+    if (lowerText.includes('workout') || lowerText.includes('esercizi') || lowerText.includes('allenamento') || lowerText.includes('creare allenamento')) {
+      return { path: '/workouts', action: 'navigate_to_workouts' };
+    }
+    
+    // Riconosce domande che iniziano con "dove" per nutrizione
+    if (lowerText.includes('dove') && (lowerText.includes('nutrizione') || lowerText.includes('dieta') || lowerText.includes('alimentazione'))) {
+      return { path: '/nutrition', action: 'navigate_to_nutrition' };
+    }
+    
+    if (lowerText.includes('nutrizione') || lowerText.includes('dieta') || lowerText.includes('alimentazione')) {
+      return { path: '/nutrition', action: 'navigate_to_nutrition' };
+    }
+    
+    // Riconosce domande che iniziano con "dove" per dashboard
+    if (lowerText.includes('dove') && (lowerText.includes('progressi') || lowerText.includes('dashboard') || lowerText.includes('statistiche'))) {
+      return { path: '/dashboard', action: 'navigate_to_dashboard' };
+    }
+    
+    if (lowerText.includes('progressi') || lowerText.includes('dashboard') || lowerText.includes('statistiche')) {
+      return { path: '/dashboard', action: 'navigate_to_dashboard' };
+    }
+    
+    // Riconosce domande che iniziano con "dove" per profilo
+    if (lowerText.includes('dove') && (lowerText.includes('profilo') || lowerText.includes('impostazioni') || lowerText.includes('settings'))) {
+      return { path: '/profile', action: 'navigate_to_profile' };
+    }
+    
+    if (lowerText.includes('profilo') || lowerText.includes('impostazioni') || lowerText.includes('settings')) {
+      return { path: '/profile', action: 'navigate_to_profile' };
+    }
+    
+    if (lowerText.includes('schedule') || lowerText.includes('appuntamenti') || lowerText.includes('prenotazioni')) {
+      return { path: '/schedule', action: 'navigate_to_schedule' };
+    }
+    
+    if (lowerText.includes('timer') || lowerText.includes('cronometro')) {
+      return { path: '/timer', action: 'navigate_to_timer' };
+    }
+    
+    return null;
   };
 
   // Espone il metodo sendMessage al componente padre
@@ -188,7 +310,7 @@ export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void },
   };
 
   const generateAIResponse = (userText: string): string => {
-    const lowerText = userText.toLowerCase();
+    const lowerText = (userText || '').toString().toLowerCase().trim();
     
     // Piano personalizzato per perdita peso
     if (lowerText.includes('perdere peso') || lowerText.includes('perdita') || lowerText.includes('dimagrire') || lowerText.includes('dimagrimento')) {
@@ -435,6 +557,26 @@ Qual è il tuo obiettivo principale in questo momento?`;
 Hai attrezzature specifiche a disposizione?`;
     }
     
+    // Navigazione per creare allenamenti
+    if (lowerText.includes('dove') && (lowerText.includes('creare') || lowerText.includes('allenamento'))) {
+      return `Perfetto! Per creare un allenamento personalizzato, vai alla sezione Workouts. Ti guido subito alla sezione giusta. Clicca il pulsante qui sotto per navigare direttamente!`;
+    }
+    
+    // Navigazione per dashboard
+    if (lowerText.includes('dove') && (lowerText.includes('dashboard') || lowerText.includes('progressi') || lowerText.includes('statistiche'))) {
+      return `Perfetto! Per vedere i tuoi progressi e statistiche, vai alla Dashboard. Ti guido subito alla sezione giusta. Clicca il pulsante qui sotto per navigare direttamente!`;
+    }
+    
+    // Navigazione per nutrizione
+    if (lowerText.includes('dove') && (lowerText.includes('nutrizione') || lowerText.includes('dieta') || lowerText.includes('alimentazione'))) {
+      return `Perfetto! Per gestire la tua nutrizione e piani alimentari, vai alla sezione Nutrition. Ti guido subito alla sezione giusta. Clicca il pulsante qui sotto per navigare direttamente!`;
+    }
+    
+    // Navigazione per profilo
+    if (lowerText.includes('dove') && (lowerText.includes('profilo') || lowerText.includes('impostazioni') || lowerText.includes('settings'))) {
+      return `Perfetto! Per gestire il tuo profilo e le impostazioni, vai alla sezione Profile. Ti guido subito alla sezione giusta. Clicca il pulsante qui sotto per navigare direttamente!`;
+    }
+    
     // Risposta di default più mirata
     return `Ciao! Sono qui per aiutarti con il tuo fitness. 
 
@@ -520,17 +662,45 @@ Fammi sapere come posso aiutarti!`;
                     {message.text}
                   </div>
                   {message.sender === 'ai' && (
-                    <button
-                      onClick={() => copyMessage(message.id, message.text)}
-                      className="mt-2 p-1 rounded hover:bg-gray-200 transition-colors flex items-center gap-1 text-xs text-gray-600"
-                    >
-                      {copiedMessageId === message.id ? (
-                        <Check className="h-3 w-3" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
+                    <div className="mt-2 space-y-2">
+                      <button
+                        onClick={() => copyMessage(message.id, message.text)}
+                        className="p-1 rounded hover:bg-gray-200 transition-colors flex items-center gap-1 text-xs text-gray-600"
+                      >
+                        {copiedMessageId === message.id ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                        {copiedMessageId === message.id ? 'Copiato!' : 'Copia'}
+                      </button>
+                      
+                      {/* Suggerimenti cliccabili */}
+                      {message.suggestions && message.suggestions.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {message.suggestions.map((suggestion, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleSuggestionClick(suggestion)}
+                              className="text-xs px-3 py-1 bg-[#EEBA2B] text-black rounded-full hover:bg-[#EEBA2B]/80 transition-colors"
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
                       )}
-                      {copiedMessageId === message.id ? 'Copiato!' : 'Copia'}
-                    </button>
+                      
+                      {/* Pulsante di navigazione */}
+                      {message.navigation && (
+                        <button
+                          onClick={() => handleNavigation(message.navigation!.path)}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                        >
+                          <Navigation className="h-4 w-4" />
+                          {getNavigationButtonText(message.navigation.path)}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
                 {message.sender === 'user' && (
