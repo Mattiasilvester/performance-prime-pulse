@@ -11,7 +11,7 @@
 
 ## 🎯 **STATO ATTUALE: PRONTO PER DEPLOY LOVABLE 🚀**
 
-**Performance Prime Pulse** è un'applicazione React completa e pronta per il deploy su Lovable con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata, sistema filtri interattivi, overlay GIF esercizi e configurazione completa per deploy. Ultimi sviluppi: 12 Gennaio 2025.
+**Performance Prime Pulse** è un'applicazione React completa e pronta per il deploy su Lovable con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata, sistema filtri interattivi, overlay GIF esercizi, automazione feedback 15 giorni e configurazione completa per deploy. Ultimi sviluppi: 12 Gennaio 2025.
 
 - ✅ **Architettura**: Landing → Auth → App implementata
 - ✅ **Sicurezza**: Gestione errori robusta e accesso sicuro  
@@ -32,6 +32,8 @@
 - ✅ **Favicon Personalizzato**: Logo Performance Prime Pulse
 - ✅ **Configurazione Lovable**: Variabili ambiente complete
 - ✅ **Build Validata**: Test produzione superato
+- ✅ **Automazione Feedback 15 Giorni**: Sistema completo con webhook n8n e form Tally
+- ✅ **Database Pulito**: Migrazione definitiva e RLS policies configurate
 - ✅ **Documentazione**: Completa e aggiornata
 
 ---
@@ -368,7 +370,7 @@ Questo progetto è sotto licenza MIT. Vedi il file `LICENSE` per i dettagli.
 ---
 
 *Ultimo aggiornamento: 12 Gennaio 2025 - 22:30*
-*Versione: 1.7 - Preparazione Deploy, Fix Overlay GIF e Favicon*
+*Versione: 1.8 - Automazione Feedback 15 Giorni e Database Pulito*
 *Stato: PRONTO PER DEPLOY LOVABLE 🚀*
 *Autore: Mattia Silvestrelli + AI Assistant*
 

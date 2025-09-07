@@ -252,6 +252,7 @@ export type Database = {
           birth_place: string | null
           created_at: string
           email: string | null
+          feedback_15d_sent: boolean | null
           first_name: string | null
           id: string
           last_name: string | null
@@ -264,6 +265,7 @@ export type Database = {
           birth_place?: string | null
           created_at?: string
           email?: string | null
+          feedback_15d_sent?: boolean | null
           first_name?: string | null
           id: string
           last_name?: string | null
@@ -276,6 +278,7 @@ export type Database = {
           birth_place?: string | null
           created_at?: string
           email?: string | null
+          feedback_15d_sent?: boolean | null
           first_name?: string | null
           id?: string
           last_name?: string | null
