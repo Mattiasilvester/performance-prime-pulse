@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -37,36 +37,10 @@ const AuthPage = () => {
 
     try {
       if (mode === 'register') {
-        // Validazione per registrazione
-        if (formData.password !== formData.confirmPassword) {
-          setError('Le password non coincidono');
-          setLoading(false);
-          return;
-        }
-        if (formData.password.length < 6) {
-          setError('La password deve essere di almeno 6 caratteri');
-          setLoading(false);
-          return;
-        }
-
-        // Registrazione Supabase
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: {
-              first_name: formData.firstName,
-              last_name: formData.lastName
-            }
-          }
-        });
-
-        if (error) {
-          setError(error.message);
-          setLoading(false);
-          return;
-        }
-
+        // Reindirizza alla pagina di registrazione principale
+        setLoading(false);
+        navigate('/auth/register', { replace: true });
+        return;
       } else {
         // Login Supabase
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -80,10 +54,9 @@ const AuthPage = () => {
           return;
         }
 
+        setLoading(false);
+        navigate('/dashboard', { replace: true });
       }
-
-      setLoading(false);
-      navigate('/dashboard', { replace: true });
     } catch (error: any) {
       setError(error.message || 'Errore durante l\'autenticazione');
       setLoading(false);

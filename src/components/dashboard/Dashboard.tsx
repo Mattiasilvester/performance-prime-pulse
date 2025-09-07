@@ -11,10 +11,14 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import FeedbackWidget from '@/components/feedback/FeedbackWidget';
+import { useFeedback15Days } from '@/hooks/useFeedback15Days';
+import { useAuth } from '@/hooks/useAuth';
 
 export const Dashboard = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  useFeedback15Days(user?.id);
 
   useEffect(() => {
     const loadUserProfile = async () => {

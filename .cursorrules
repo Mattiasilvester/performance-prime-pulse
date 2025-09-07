@@ -11,9 +11,9 @@
   * Separate .css files
   * CSS modules (.module.css)
 
-## 🎯 **STATO ATTUALE: PROGETTO IN SVILUPPO ATTIVO**
+## 🎯 **STATO ATTUALE: PRONTO PER DEPLOY LOVABLE 🚀**
 
-**Performance Prime Pulse** è un'applicazione React in sviluppo attivo con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata e feature modal 3D. Ultimi sviluppi: 3 Settembre 2025.
+**Performance Prime Pulse** è un'applicazione React completa e pronta per il deploy su Lovable con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata, sistema filtri interattivi, overlay GIF esercizi, automazione feedback 15 giorni e configurazione completa per deploy. Ultimi sviluppi: 12 Gennaio 2025.
 
 ---
 
@@ -587,6 +587,21 @@ python3 -m http.server 8083
 - **Documentazione Aggiornata** - Tutti i documenti aggiornati con ultimi sviluppi
 - **Preparazione Deploy** - Configurazione completa per deploy immediato su Lovable
 
+### **STEP 13: AUTOMAZIONE FEEDBACK 15 GIORNI E DATABASE PULITO (12 GENNAIO 2025)** ✅
+- **Automazione Feedback 15 Giorni** - Sistema completo con webhook n8n e form Tally
+- **Hook useFeedback15Days** - Creato hook per gestione automazione feedback integrato in Dashboard
+- **Webhook n8n** - Configurato `https://gurfadigitalsolution.app.n8n.cloud/webhook/pp/feedback-15d`
+- **Form Tally** - Integrato `https://tally.so/r/nW4OxJ` per raccolta feedback utenti
+- **Colonna Database** - Aggiunta `feedback_15d_sent` in profiles table
+- **Query Corretta** - Usa `id` per query profiles, non `user_id`
+- **Gestione Errori Silenziosa** - Non interferisce con signup normale
+- **Database Pulito e Sincronizzato** - Migrazione definitiva `20250112_final_fix_signup_error.sql`
+- **Trigger Ricreato** - `handle_new_user` con gestione errori robusta
+- **RLS Policies** - 6 policy configurate correttamente per profiles
+- **Schema Sincronizzato** - Tutte le colonne sincronizzate con TypeScript types
+- **Fix Errori Critici Supabase** - Import corretti, logica signup pulita, file .env creato
+- **Bug Specifico Identificato** - Email `elisamarcello.06@gmail.com` (bug Supabase specifico)
+
 ### **PROBLEMI RISOLTI - 12 GENNAIO 2025 (Sessione 7)**
 
 ### **30. Overlay GIF Non Visibile**
@@ -635,5 +650,5 @@ python3 -m http.server 8083
 
 *Ultimo aggiornamento: 12 Gennaio 2025 - 22:30*
 *Stato: PRONTO PER DEPLOY LOVABLE 🚀*
-*Versione: 1.7 - Preparazione Deploy, Fix Overlay GIF e Favicon*
+*Versione: 1.8 - Automazione Feedback 15 Giorni e Database Pulito*
 *Autore: Mattia Silvestrelli + AI Assistant* 

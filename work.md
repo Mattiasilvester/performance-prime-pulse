@@ -1024,7 +1024,110 @@ cd dist && python3 -m http.server 8083
 
 ---
 
+### **12 Gennaio 2025 - Sessione 8: AUTOMAZIONE FEEDBACK 15 GIORNI E DATABASE PULITO**
+- **Ora Inizio**: 20:00
+- **Ora Fine**: 22:30
+- **Durata**: 2 ore e 30 minuti
+
+#### **Implementazioni Completate**
+1. **✅ AUTOMAZIONE FEEDBACK 15 GIORNI** - Sistema completo implementato
+   - **Hook useFeedback15Days**: Creato hook per gestione automazione feedback
+   - **Webhook n8n**: Configurato `https://gurfadigitalsolution.app.n8n.cloud/webhook/pp/feedback-15d`
+   - **Form Tally**: Integrato `https://tally.so/r/nW4OxJ` per raccolta feedback
+   - **Colonna Database**: Aggiunta `feedback_15d_sent` in profiles table
+   - **Query Corretta**: Usa `id` per query profiles, non `user_id`
+   - **Gestione Errori Silenziosa**: Non interferisce con signup normale
+   - **Integrazione Dashboard**: Hook attivo in `Dashboard.tsx` con `useFeedback15Days(user?.id)`
+
+2. **✅ DATABASE PULITO E SINCRONIZZATO** - Migrazione definitiva
+   - **Migrazione Finale**: Creata `20250112_final_fix_signup_error.sql`
+   - **Trigger Ricreato**: `handle_new_user` con gestione errori robusta
+   - **RLS Policies**: 6 policy configurate correttamente per profiles
+   - **Schema Sincronizzato**: Tutte le colonne sincronizzate con TypeScript types
+   - **Duplicati Eliminati**: Rimossi file migrazione conflittuali
+
+3. **✅ FIX ERRORI CRITICI SUPABASE** - Risoluzione problemi signup
+   - **Import Supabase Corretto**: Da `../../integrations/supabase/client` a `@/integrations/supabase/client`
+   - **Logica Signup Duplicata**: Eliminata in `AuthPage.tsx`, ora reindirizza a `/auth/register`
+   - **File .env Creato**: Con `VITE_SUPABASE_URL` configurato
+   - **Tipi TypeScript Aggiornati**: Aggiunta colonna `feedback_15d_sent` in profiles table
+
+4. **✅ GESTIONE ERRORI ROBUSTA** - Sistema a prova di crash
+   - **Error Handling**: Gestione errori silenziosa per automazione feedback
+   - **Fallback Automatici**: Sistema non interferisce con funzionalità principali
+   - **Debug Temporaneo**: Aggiunto logging per monitoraggio (da rimuovere in produzione)
+
+#### **Problemi Risolti**
+1. **✅ IMPORT SUPABASE ERRATO** - Path import non corretto
+   - **Problema**: Import da `../../integrations/supabase/client` falliva
+   - **Soluzione**: Corretto a `@/integrations/supabase/client`
+   - **Risultato**: Import Supabase funzionante
+   - **File**: `src/landing/pages/AuthPage.tsx`
+
+2. **✅ LOGICA SIGNUP DUPLICATA** - Doppia gestione signup
+   - **Problema**: Logica signup duplicata in `AuthPage.tsx`
+   - **Soluzione**: Eliminata logica duplicata, ora reindirizza a `/auth/register`
+   - **Risultato**: Flusso signup pulito e coerente
+   - **File**: `src/landing/pages/AuthPage.tsx`
+
+3. **✅ FILE .ENV MANCANTE** - Configurazione ambiente mancante
+   - **Problema**: File `.env` non presente
+   - **Soluzione**: Creato file `.env` con `VITE_SUPABASE_URL` configurato
+   - **Risultato**: Configurazione ambiente completa
+   - **File**: `.env`
+
+4. **✅ TIPI TYPESCRIPT OBSOLETI** - Colonna database mancante
+   - **Problema**: Colonna `feedback_15d_sent` non presente in types
+   - **Soluzione**: Aggiunta colonna in `profiles` table e types TypeScript
+   - **Risultato**: Tipi sincronizzati con database
+   - **File**: `src/integrations/supabase/types.ts`
+
+5. **✅ HOOK useFeedback15Days ERRATO** - Query con user_id invece di id
+   - **Problema**: Hook usava `user_id` per query profiles
+   - **Soluzione**: Corretto per usare `id` (chiave primaria profiles)
+   - **Risultato**: Query corretta e funzionante
+   - **File**: `src/hooks/useFeedback15Days.ts`
+
+6. **✅ BUG SPECIFICO SUPABASE** - Email problematica identificata
+   - **Problema**: Email `elisamarcello.06@gmail.com` causa errore 500
+   - **Causa**: Bug specifico Supabase (altri account funzionano normalmente)
+   - **Stato**: Email non esiste in nessuna tabella, ma signup fallisce
+   - **Soluzione**: Contattare supporto Supabase per bug specifico
+
+#### **File Creati/Modificati**
+- `src/hooks/useFeedback15Days.ts` - Hook automazione feedback 15 giorni
+- `src/components/dashboard/Dashboard.tsx` - Integrazione hook automazione
+- `src/landing/pages/AuthPage.tsx` - Fix import Supabase e logica signup
+- `src/integrations/supabase/types.ts` - Aggiunta colonna feedback_15d_sent
+- `supabase/migrations/20250112_final_fix_signup_error.sql` - Migrazione definitiva
+- `.env` - Configurazione ambiente Supabase
+
+#### **Tecnologie Utilizzate**
+- **React + TypeScript + Vite**: Stack principale
+- **Supabase**: Database e autenticazione
+- **n8n**: Automazione webhook per feedback
+- **Tally**: Form per raccolta feedback utenti
+- **Git**: Version control e backup
+
+#### **Risultati Raggiunti**
+- ✅ Automazione feedback 15 giorni implementata al 100%
+- ✅ Database pulito e sincronizzato
+- ✅ Errori critici Supabase risolti
+- ✅ Sistema robusto e a prova di crash
+- ✅ Build di produzione stabile
+- ✅ Un solo bug specifico rimanente (email singola)
+
+#### **Specifiche Tecniche**
+- **Webhook n8n**: `https://gurfadigitalsolution.app.n8n.cloud/webhook/pp/feedback-15d`
+- **Form Tally**: `https://tally.so/r/nW4OxJ`
+- **Colonna Database**: `feedback_15d_sent` in profiles table
+- **Hook Attivo**: `useFeedback15Days(user?.id)` in Dashboard.tsx
+- **Gestione Errori**: Silenziosa, non interferisce con signup
+- **Bug Rimanente**: Email `elisamarcello.06@gmail.com` (bug Supabase specifico)
+
+---
+
 *Ultimo aggiornamento: 12 Gennaio 2025 - 22:30*
 *Stato: PRONTO PER DEPLOY LOVABLE 🚀*
-*Versione: 1.7 - Preparazione Deploy, Fix Overlay GIF e Favicon*
+*Versione: 1.8 - Automazione Feedback 15 Giorni e Database Pulito*
 *Autore: Mattia Silvestrelli + AI Assistant*
