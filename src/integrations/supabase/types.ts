@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -55,60 +55,6 @@ export type Database = {
           workout_type?: string
         }
         Relationships: []
-      }
-      workout_attachments: {
-        Row: {
-          id: string
-          workout_id: string
-          user_id: string
-          file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
-          mime_type: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          workout_id: string
-          user_id: string
-          file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
-          mime_type: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          workout_id?: string
-          user_id?: string
-          file_name?: string
-          file_path?: string
-          file_size?: number
-          file_type?: string
-          mime_type?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "workout_attachments_workout_id_fkey"
-            columns: ["workout_id"]
-            isOneToOne: false
-            referencedRelation: "custom_workouts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workout_attachments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
       }
       monthly_workout_stats: {
         Row: {
@@ -254,6 +200,7 @@ export type Database = {
           email: string | null
           feedback_15d_sent: boolean | null
           first_name: string | null
+          full_name: string | null
           id: string
           last_name: string | null
           phone: string | null
@@ -267,6 +214,7 @@ export type Database = {
           email?: string | null
           feedback_15d_sent?: boolean | null
           first_name?: string | null
+          full_name?: string | null
           id: string
           last_name?: string | null
           phone?: string | null
@@ -280,6 +228,7 @@ export type Database = {
           email?: string | null
           feedback_15d_sent?: boolean | null
           first_name?: string | null
+          full_name?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
@@ -394,6 +343,36 @@ export type Database = {
           phone?: string
           reset_requested_at?: string | null
           reset_token?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      waiting_list: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          notes: string | null
+          source: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          notes?: string | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          notes?: string | null
+          source?: string | null
+          status?: string | null
           updated_at?: string
         }
         Relationships: []
