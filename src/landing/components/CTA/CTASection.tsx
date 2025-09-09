@@ -37,7 +37,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
             <div className="founder-card">
               <div className="founder-image">
                 <img 
-                  src="../images/mattia-silvestrelli-real.jpg" 
+                  src="/images/mattia-silvestrelli-real.jpg" 
                   alt="Mattia Silvestrelli - CEO e Co-Founder di Performance Prime, atleta della Nazionale Italiana"
                   loading="lazy"
                   onError={(e) => {
@@ -57,7 +57,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
             <div className="founder-card">
               <div className="founder-image">
                 <img 
-                  src="../images/nicholas-capponi-real.jpg" 
+                  src="/images/nicholas-capponi-real.jpg" 
                   alt="Nicholas Capponi - CTO e Co-Founder di Performance Prime, atleta e sviluppatore software"
                   loading="lazy"
                   onError={(e) => {
