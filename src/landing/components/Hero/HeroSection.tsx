@@ -23,7 +23,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTAClick }) => {
           <div className="hero-brand">
             <div className="brand-logo">
               <img 
-                src="../images/logo-pp-no-bg.jpg" 
+                src="/images/logo-pp-no-bg.jpg" 
                 alt="Performance Prime Logo"
                 className="logo-image"
                 loading="lazy"
