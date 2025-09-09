@@ -23,6 +23,8 @@ async function testEmailValidationFix() {
     try {
       const result = await emailValidation.validateEmail(email);
       
+      console.log(`✅ Email: ${email}`, {
+        valid: result.valid,
         format: result.checks.format,
         disposable: result.checks.disposable,
         dns: result.checks.dns,
@@ -30,12 +32,15 @@ async function testEmailValidationFix() {
       });
       
       if (result.errors.length > 0) {
+        console.log(`⚠️ Errori: ${result.errors.join(', ')}`);
       }
       
       if (result.warnings.length > 0) {
+        console.log(`⚠️ Avvertimenti: ${result.warnings.join(', ')}`);
       }
       
       if (result.details.length > 0) {
+        console.log(`ℹ️ Dettagli: ${result.details.join(', ')}`);
       }
       
       // Verifica che Gmail sia sempre valida
@@ -48,6 +53,7 @@ async function testEmailValidationFix() {
     }
   }
   
+  console.log('🎉 Test completati!');
 }
 
 // Esegui test se chiamato direttamente
