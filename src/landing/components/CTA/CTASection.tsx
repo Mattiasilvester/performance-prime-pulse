@@ -15,7 +15,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
         <h2 className="cta-title animate-on-scroll">Provalo ora gratuitamente</h2>
         
         <div className="cta-content">
-          <QRCode url="https://performanceprime.it" size={180} />
+          <QRCode url="https://performance-prime.lovable.app" size={180} />
           <div className="cta-buttons">
             <button 
               onClick={onCTAClick}
@@ -35,13 +35,14 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
           <h3 className="founders-title">I Fondatori</h3>
           <div className="founders-cards">
             <div className="founder-card">
-              <div className="founder-image">
+              <div className="w-48 h-48 rounded-full overflow-hidden mx-auto mb-6 border-4 border-[#EEBA2B]/30 bg-white/10 relative">
                 <img 
                   src="/images/mattia-silvestrelli-real.jpg" 
                   alt="Mattia Silvestrelli - CEO e Co-Founder di Performance Prime, atleta della Nazionale Italiana"
                   loading="lazy"
+                  className="w-full h-full object-cover object-top transition-transform duration-300 hover:scale-105"
                   onError={(e) => {
-                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjM0I0QjVCIi8+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjN0M4QzlBIi8+CjxyZWN0IHg9IjM1IiB5PSI3MCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjN0M4QzlBIi8+Cjwvc3ZnPgo=';
+                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjM0I0QjVCIi8+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjN0M4QzlAIi8+CjxyZWN0IHg9IjM1IiB5PSI3MCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjN0M4QzlAIi8+Cjwvc3ZnPgo=';
                   }}
                 />
               </div>
@@ -55,11 +56,12 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
             </div>
             
             <div className="founder-card">
-              <div className="founder-image">
+              <div className="w-48 h-48 rounded-full overflow-hidden mx-auto mb-6 border-4 border-[#EEBA2B]/30 bg-white/10 relative">
                 <img 
                   src="/images/nicholas-capponi-real.jpg" 
                   alt="Nicholas Capponi - CTO e Co-Founder di Performance Prime, atleta e sviluppatore software"
                   loading="lazy"
+                  className="w-full h-full object-cover object-top transition-transform duration-300 hover:scale-105"
                   onError={(e) => {
                     e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjM0I0QjVCIi8+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjN0M4QzlBIi8+CjxyZWN0IHg9IjM1IiB5PSI3MCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjN0M4QzlAIi8+Cjwvc3ZnPgo=';
                   }}

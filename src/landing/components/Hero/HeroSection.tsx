@@ -1,5 +1,5 @@
 import React from 'react';
-import QRCode from '../CTA/QRCode';
+import QRCode from '@/components/QRCode';
 
 interface HeroSectionProps {
   onCTAClick: () => void;
