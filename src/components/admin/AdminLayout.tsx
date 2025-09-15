@@ -61,9 +61,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }, []);
 
   return (
-    <div className="h-screen w-screen flex overflow-hidden bg-gray-900">
+    <div className="min-h-screen w-screen flex bg-gray-900">
       {/* Sidebar Fixed */}
-      <aside className="w-64 bg-gray-950 border-r border-gray-800 flex flex-col h-screen">
+      <aside className="w-64 bg-gray-950 border-r border-gray-800 flex flex-col min-h-screen">
         {/* Header */}
         <div className="p-6 border-b border-gray-800">
           <h1 className="text-2xl font-bold text-white">Nexus Control</h1>

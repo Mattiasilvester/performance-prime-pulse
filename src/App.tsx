@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AuthProvider } from './hooks/useAuth'
 import { NotificationProvider } from './hooks/useNotifications'
+import MobileScrollFix from '@/components/MobileScrollFix'
 
 // Import componenti
 import LandingPage from '@/landing/pages/LandingPage'
@@ -14,6 +15,7 @@ import TermsAndConditions from '@/pages/TermsAndConditions'
 import PrivacyPolicy from '@/pages/PrivacyPolicy'
 import Auth from '@/pages/Auth'
 import Workouts from '@/pages/Workouts'
+import QuickWorkout from '@/pages/QuickWorkout'
 import Timer from '@/pages/Timer'
 import Schedule from '@/pages/Schedule'
 import AICoach from '@/pages/AICoach'
@@ -45,6 +47,18 @@ function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // Force cache invalidation and scroll fix
+  useEffect(() => {
+    console.log('Build version:', new Date().toISOString());
+    console.log('Emergency scroll fix applied');
+    
+    // Force scroll enabled
+    document.body.style.overflow = 'auto';
+    document.documentElement.style.overflow = 'auto';
+    document.body.style.height = 'auto';
+    document.documentElement.style.height = 'auto';
+  }, []);
+
   useEffect(() => {
     // Check sessione attuale
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -68,6 +82,7 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <MobileScrollFix />
       <AuthProvider>
         <NotificationProvider>
           <Router>
@@ -93,6 +108,11 @@ function App() {
               <Route path="/workouts" element={
                 <ProtectedRoute session={session}>
                   <Workouts />
+                </ProtectedRoute>
+              } />
+              <Route path="/workout/quick" element={
+                <ProtectedRoute session={session}>
+                  <QuickWorkout />
                 </ProtectedRoute>
               } />
               <Route path="/timer" element={

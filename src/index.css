@@ -1,17 +1,68 @@
 
+/* Import mobile scroll fixes */
+@import './styles/mobile-fix.css';
+
 @tailwind base;
 @tailwind components;  
 @tailwind utilities;
+
+/* 🚨 EMERGENCY SCROLL FIX - OVERRIDE TOTALE */
+* {
+  /* Reset overflow restrictions */
+  overflow: visible !important;
+}
+
+html {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  position: relative !important;
+}
+
+#root {
+  overflow: visible !important;
+  min-height: 100vh !important;
+  position: relative !important;
+}
+
+/* Fix per container con overflow hidden */
+.overflow-hidden {
+  overflow: visible !important;
+}
+
+/* Fix specifici per dashboard e sezioni */
+main, section, div[class*="container"] {
+  overflow: visible !important;
+}
+
+/* Mantieni scroll solo per elementi specifici che lo necessitano */
+.modal-overlay {
+  overflow: auto !important;
+}
+
+.sidebar {
+  overflow-y: auto !important;
+}
 
 /* CSS Variables per viewport height su mobile */
 :root {
   --vh: 1vh;
 }
 
-/* Fix per viewport height su mobile */
+/* Fix per viewport height su mobile - CORRETTO PER SCROLL */
 html, body {
-  height: 100%;
-  height: calc(var(--vh, 1vh) * 100);
+  min-height: 100vh;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* 1. FIX GLOBALE PER PULSANTI FLOATING */
@@ -721,12 +772,11 @@ body, #root, .app-container {
   margin: 0 auto 15px;
 }
 
-/* Fix per layout admin */
-html, body, #root {
-  height: 100%;
+/* Fix per layout admin - solo quando necessario */
+#root {
+  min-height: 100vh;
   margin: 0;
   padding: 0;
-  overflow: hidden;
 }
 
 /* Previeni scroll su body quando in admin */

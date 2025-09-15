@@ -1,0 +1,69 @@
+/* Mobile-specific scroll fixes */
+@media only screen and (max-width: 768px) {
+  /* Reset tutto per mobile */
+  html, body, #root {
+    position: relative !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    touch-action: pan-y !important;
+  }
+  
+  /* Previeni fixed positioning */
+  .fixed {
+    position: relative !important;
+  }
+  
+  /* Fix per container */
+  main, section, div {
+    overflow: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Fix specifico iOS */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      min-height: -webkit-fill-available !important;
+    }
+  }
+  
+  /* Fix per Android */
+  @supports not (-webkit-touch-callout: none) {
+    body {
+      overscroll-behavior-y: auto !important;
+    }
+  }
+}
+
+/* Fix per landscape mobile */
+@media only screen and (max-height: 600px) and (orientation: landscape) {
+  body {
+    overflow-y: scroll !important;
+    position: relative !important;
+  }
+}
+
+/* Fix per PWA mobile */
+@media (display-mode: standalone) {
+  html, body, #root {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    position: relative !important;
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+}
+
+/* Fix per iOS Safari specifico */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    body {
+      position: relative !important;
+      overflow-y: scroll !important;
+      -webkit-overflow-scrolling: touch !important;
+      min-height: -webkit-fill-available !important;
+    }
+  }
+}

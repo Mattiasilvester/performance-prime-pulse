@@ -11,6 +11,9 @@ export default function SuperAdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [dbInfo, setDbInfo] = useState<any>(null)
   const [workoutAnalytics, setWorkoutAnalytics] = useState<any>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
     loadDashboardData()
@@ -20,40 +23,74 @@ export default function SuperAdminDashboard() {
     fetchWorkoutAnalytics()
   }, [])
 
-  // 🔄 AUTO-REFRESH DASHBOARD ogni 30 secondi
+  // 🔄 AUTO-REFRESH DASHBOARD ogni 60 secondi (ottimizzato)
   useEffect(() => {
-    const refreshData = () => {
+    let isRefreshing = false; // Evita refresh multipli simultanei
+    
+    const refreshData = async () => {
+      if (isRefreshing) {
+        console.log('⏸️ Refresh già in corso, salto...');
+        return;
+      }
+      
+      setIsRefreshing(true);
       console.log('🔄 Auto-refresh dashboard...');
-      loadDashboardData();
-      inspectDatabase().then(setDbInfo);
-      fetchWorkoutAnalytics();
+      
+      try {
+        await Promise.all([
+          loadDashboardData(),
+          inspectDatabase().then(setDbInfo),
+          fetchWorkoutAnalytics()
+        ]);
+        console.log('✅ Auto-refresh completato');
+      } catch (error) {
+        console.error('❌ Errore durante auto-refresh:', error);
+      } finally {
+        setIsRefreshing(false);
+      }
     };
 
-    // Auto-refresh ogni 30 secondi
-    const interval = setInterval(() => {
-      console.log('🔄 Auto-refresh dashboard...');
-      refreshData();
-    }, 30000); // 30 secondi
+    // Auto-refresh ogni 60 secondi (ottimizzato da 30s)
+    const interval = setInterval(refreshData, 60000); // 60 secondi
 
     return () => clearInterval(interval);
   }, []);
 
+  // Funzione retry con backoff esponenziale
+  const retryWithBackoff = async (fn: () => Promise<any>, maxRetries = 3) => {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await fn();
+      } catch (error) {
+        if (i === maxRetries - 1) throw error;
+        
+        const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+        console.log(`⏳ Retry ${i + 1}/${maxRetries} in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  };
+
   const loadDashboardData = async () => {
     console.log('📈 Fetching REAL Performance Prime stats with ADMIN client...');
     setLoading(true);
+    setError(null);
     
     try {
-      // 1. Utenti totali da profiles (con supabaseAdmin per bypassare RLS)
-      const { count: totalUsers, error: profilesError } = await supabaseAdmin
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
+      // 1. Utenti totali da profiles (con retry e error handling)
+      const { count: totalUsers, error: profilesError } = await retryWithBackoff(async () => {
+        const result = await supabaseAdmin
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+        
+        if (result.error) {
+          throw new Error(`Profiles query failed: ${result.error.message}`);
+        }
+        
+        return result;
+      });
       
       console.log('👥 Profiles query result:', { totalUsers, profilesError });
-      
-      if (profilesError) {
-        console.error('❌ Profiles error:', profilesError);
-        throw profilesError;
-      }
       
       // 2. Utenti attivi (ultimi 30 giorni)
       const thirtyDaysAgo = new Date();
@@ -77,7 +114,87 @@ export default function SuperAdminDashboard() {
       
       console.log('📈 Weekly new users:', { weeklyNewUsers, weeklyError });
       
-      // 4. Calcoli semplici
+      // 4. Calcola Activation D0 Rate (% primo workout entro 24h)
+      let activationD0Rate = 0;
+      try {
+        const { data: activationData, error: activationError } = await supabaseAdmin
+          .from('custom_workouts')
+          .select('user_id, created_at')
+          .not('user_id', 'is', null);
+        
+        if (!activationError && activationData) {
+          // Conta utenti che hanno fatto primo workout entro 24h dalla registrazione
+          const usersWithFirstWorkout = new Set();
+          const userFirstWorkout = new Map();
+          
+          // Trova primo workout per ogni utente
+          activationData.forEach(workout => {
+            if (!userFirstWorkout.has(workout.user_id)) {
+              userFirstWorkout.set(workout.user_id, workout.created_at);
+            }
+          });
+          
+          // Conta utenti con primo workout entro 24h
+          let usersActivatedWithin24h = 0;
+          for (const [userId, firstWorkoutDate] of userFirstWorkout) {
+            // Trova data registrazione utente
+            const userProfile = profiles?.find(p => p.id === userId);
+            if (userProfile) {
+              const registrationDate = new Date(userProfile.created_at);
+              const workoutDate = new Date(firstWorkoutDate);
+              const hoursDiff = (workoutDate.getTime() - registrationDate.getTime()) / (1000 * 60 * 60);
+              
+              if (hoursDiff <= 24) {
+                usersActivatedWithin24h++;
+              }
+            }
+          }
+          
+          activationD0Rate = totalUsersFinal > 0 ? 
+            Math.round((usersActivatedWithin24h / totalUsersFinal) * 100) : 0;
+        }
+      } catch (error) {
+        console.warn('⚠️ Errore calcolo Activation D0 Rate:', error);
+      }
+
+      // 5. Calcola Retention D7 (% utenti attivi dopo 7 giorni)
+      let retentionD7 = 0;
+      try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        // Conta utenti registrati 7+ giorni fa
+        const { data: oldUsers, error: oldUsersError } = await supabaseAdmin
+          .from('profiles')
+          .select('id, created_at, last_login')
+          .lt('created_at', sevenDaysAgo.toISOString());
+        
+        if (!oldUsersError && oldUsers && oldUsers.length > 0) {
+          // Conta quanti di questi sono ancora attivi (hanno fatto login negli ultimi 7 giorni)
+          const now = new Date();
+          const sevenDaysAgoForActivity = new Date();
+          sevenDaysAgoForActivity.setDate(sevenDaysAgoForActivity.getDate() - 7);
+          
+          const activeOldUsers = oldUsers.filter(user => {
+            if (!user.last_login) return false;
+            const lastLoginDate = new Date(user.last_login);
+            return lastLoginDate >= sevenDaysAgoForActivity;
+          });
+          
+          retentionD7 = oldUsers.length > 0 ? 
+            Math.round((activeOldUsers.length / oldUsers.length) * 100) : 0;
+          
+          console.log('📊 Retention D7 calcolata:', {
+            totalOldUsers: oldUsers.length,
+            activeOldUsers: activeOldUsers.length,
+            retentionD7
+          });
+        }
+      } catch (error) {
+        console.warn('⚠️ Errore calcolo Retention D7:', error);
+      }
+
+      // 6. Calcoli semplici
       const totalUsersFinal = totalUsers || 0;
       const activeUsersFinal = activeUsers || 0;
       const inactiveUsers = totalUsersFinal - activeUsersFinal;
@@ -94,10 +211,20 @@ export default function SuperAdminDashboard() {
         totalNotes: 0, // Non disponibile senza tabella notes
         growth: parseFloat(growthRate.toFixed(1)),
         engagement: totalUsersFinal ? parseFloat((activeUsersFinal / totalUsersFinal * 100).toFixed(1)) : 0,
-        newUsersThisMonth: weeklyNewUsers || 0
+        newUsersThisMonth: weeklyNewUsers || 0,
+        // Nuove metriche activation
+        activationD0Rate: activationD0Rate,
+        retentionD7: retentionD7,
+        weeklyGrowth: weeklyNewUsers || 0
       };
       
       console.log('📊 REAL Performance Prime stats with ADMIN:', statsData);
+      console.log('🔄 METRICHE ACTIVATION REAL-TIME:', {
+        activationD0Rate: `${activationD0Rate}%`,
+        retentionD7: `${retentionD7}%`,
+        weeklyGrowth: `+${weeklyNewUsers || 0}`,
+        timestamp: new Date().toISOString()
+      });
       setStats(statsData);
       
       // 10. Carica profili per la tabella
@@ -131,8 +258,14 @@ export default function SuperAdminDashboard() {
         setUsers(usersData);
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error loading dashboard:', error);
+      
+      // Gestisci errori specifici
+      const errorMessage = error?.message || 'Errore sconosciuto durante il caricamento';
+      setError(errorMessage);
+      setRetryCount(prev => prev + 1);
+      
       // Imposta valori di default in caso di errore
       setStats({
         totalUsers: 0,
@@ -147,6 +280,15 @@ export default function SuperAdminDashboard() {
         newUsersThisMonth: 0
       });
       setUsers([]);
+      
+      // Auto-retry dopo 30 secondi se non è un errore critico
+      if (retryCount < 3 && !errorMessage.includes('permission denied')) {
+        console.log('🔄 Scheduling auto-retry in 30 seconds...');
+        setTimeout(() => {
+          console.log('🔄 Auto-retry triggered...');
+          loadDashboardData();
+        }, 30000);
+      }
     } finally {
       setLoading(false);
     }
@@ -154,19 +296,74 @@ export default function SuperAdminDashboard() {
 
   const fetchWorkoutAnalytics = async () => {
     try {
-      console.log('🏃‍♂️ Fetching workout analytics from EXISTING tables...');
+      console.log('🏃‍♂️ Verificando tabella custom_workouts...');
       
-      // Per ora non abbiamo tabelle workout, quindi mostriamo dati placeholder
-      setWorkoutAnalytics({
-        topTypes: {},
-        recentCount: 0,
-        message: 'Tabelle workout non disponibili - usando dati da profiles'
+      // Verifica se la tabella custom_workouts esiste e ha dati
+      const { data: workoutData, error: workoutError, count: workoutCount } = await supabaseAdmin
+        .from('custom_workouts')
+        .select('*', { count: 'exact' })
+        .limit(5);
+      
+      console.log('📊 Custom Workouts Analysis:', {
+        exists: !workoutError,
+        error: workoutError?.message,
+        count: workoutCount,
+        sampleData: workoutData?.length || 0
       });
       
-      console.log('✅ Workout analytics placeholder loaded');
+      if (workoutError) {
+        console.error('❌ Tabella custom_workouts non accessibile:', workoutError);
+        setWorkoutAnalytics({
+          topTypes: {},
+          recentCount: 0,
+          message: `❌ Tabella custom_workouts non accessibile: ${workoutError.message}`,
+          hasData: false,
+          tableExists: false
+        });
+        return;
+      }
+      
+      // Analizza struttura dati se disponibili
+      let structure = {};
+      if (workoutData && workoutData.length > 0) {
+        structure = {
+          columns: Object.keys(workoutData[0]),
+          sampleRecord: workoutData[0]
+        };
+        console.log('📋 Struttura custom_workouts:', structure);
+      }
+      
+      // Calcola metriche se ci sono dati
+      const recentCount = workoutCount || 0;
+      const hasData = recentCount > 0;
+      
+      setWorkoutAnalytics({
+        topTypes: {},
+        recentCount,
+        message: hasData 
+          ? `✅ Tabella custom_workouts popolata con ${recentCount} record`
+          : '⚠️ Tabella custom_workouts vuota - nessun workout registrato',
+        hasData,
+        tableExists: true,
+        structure,
+        totalWorkouts: recentCount
+      });
+      
+      console.log('✅ Workout analytics loaded:', {
+        hasData,
+        totalWorkouts: recentCount,
+        tableExists: true
+      });
       
     } catch (error) {
       console.error('❌ Workout analytics error:', error);
+      setWorkoutAnalytics({
+        topTypes: {},
+        recentCount: 0,
+        message: `❌ Errore verifica custom_workouts: ${error}`,
+        hasData: false,
+        tableExists: false
+      });
     }
   };
 
@@ -273,10 +470,25 @@ export default function SuperAdminDashboard() {
         
         {/* Indicatore Live Monitoring */}
         <div className="mb-4 flex items-center gap-2">
-          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-green-400 text-sm font-medium">
-            Live Monitoring • Ultimo aggiornamento: {new Date().toLocaleTimeString('it-IT')}
+          <div className={`w-3 h-3 rounded-full ${
+            error ? 'bg-red-500 animate-pulse' : 
+            isRefreshing ? 'bg-yellow-500 animate-spin' : 
+            'bg-green-500 animate-pulse'
+          }`}></div>
+          <span className={`text-sm font-medium ${
+            error ? 'text-red-400' : 
+            isRefreshing ? 'text-yellow-400' : 
+            'text-green-400'
+          }`}>
+            {error ? `❌ Errore: ${error}` : 
+             isRefreshing ? '🔄 Aggiornamento in corso...' : 
+             `Live Monitoring • Ultimo aggiornamento: ${new Date().toLocaleTimeString('it-IT')}`}
           </span>
+          {retryCount > 0 && (
+            <span className="text-xs text-gray-400">
+              (Tentativi: {retryCount})
+            </span>
+          )}
         </div>
         
         {/* Database info migliorato */}
@@ -325,7 +537,7 @@ export default function SuperAdminDashboard() {
       </div>
       
       {/* Stats Cards */}
-      <AdminStatsCards stats={stats} />
+      <AdminStatsCards stats={stats} loading={loading} />
       
       {/* Workout Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -339,8 +551,25 @@ export default function SuperAdminDashboard() {
               </div>
               
               {workoutAnalytics.message && (
-                <div className="bg-yellow-600/20 border border-yellow-500/50 rounded-lg p-3">
-                  <p className="text-yellow-300 text-sm">{workoutAnalytics.message}</p>
+                <div className={`rounded-lg p-3 mb-4 ${
+                  workoutAnalytics.hasData 
+                    ? 'bg-green-600/20 border border-green-500/50' 
+                    : 'bg-yellow-600/20 border border-yellow-500/50'
+                }`}>
+                  <p className={`text-sm ${
+                    workoutAnalytics.hasData ? 'text-green-300' : 'text-yellow-300'
+                  }`}>
+                    {workoutAnalytics.message}
+                  </p>
+                  
+                  {workoutAnalytics.structure && (
+                    <div className="mt-2 text-xs text-gray-400">
+                      <p><strong>Colonne disponibili:</strong> {workoutAnalytics.structure.columns?.join(', ')}</p>
+                      {workoutAnalytics.totalWorkouts > 0 && (
+                        <p><strong>Total Workouts:</strong> {workoutAnalytics.totalWorkouts}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
               

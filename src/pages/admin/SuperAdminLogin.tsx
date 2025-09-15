@@ -4,14 +4,7 @@ import { useAdminAuthBypass as useAdminAuth } from '@/hooks/useAdminAuthBypass'
 import { toast } from 'sonner'
 import { AdminCredentials } from '@/types/admin.types'
 
-// Debug info all'avvio
-console.log('🔍 SuperAdmin Login Page Loaded');
-console.log('ENV Check:', {
-  supabaseUrl: import.meta.env.VITE_SUPABASE_URL ? '✅' : '❌',
-  supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY ? '✅' : '❌',
-  adminSecret: import.meta.env.VITE_ADMIN_SECRET_KEY ? '✅' : '❌',
-  adminEmail: import.meta.env.VITE_ADMIN_EMAIL
-});
+// SuperAdmin Login Page Loaded
 
 export default function SuperAdminLogin() {
   const [credentials, setCredentials] = useState<AdminCredentials>({ 
