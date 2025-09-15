@@ -193,13 +193,31 @@ const QuickWorkout = () => {
     }
   };
 
-  // Inizializza audio context
+  // Inizializza audio context con user interaction
   useEffect(() => {
-    try {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    } catch (e) {
-      console.log('Audio non supportato, useremo feedback visivo');
-    }
+    const initAudio = () => {
+      try {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        console.log('Audio context inizializzato');
+      } catch (error) {
+        console.log('Audio non supportato, useremo feedback visivo');
+      }
+    };
+
+    // Inizializza audio al primo user interaction
+    const handleUserInteraction = () => {
+      initAudio();
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+    };
+
+    document.addEventListener('click', handleUserInteraction);
+    document.addEventListener('touchstart', handleUserInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+    };
   }, []);
 
   // Controlla se c'è un workout da riprendere all'avvio
@@ -249,7 +267,7 @@ const QuickWorkout = () => {
     }
   }, [sidebarOpen]);
 
-  // Funzione per suonare beep
+  // Funzione per suonare beep con gestione errori
   const playBeep = (frequency: number = 800, duration: number = 200) => {
     if (!audioContextRef.current) {
       // Fallback: flash visivo
@@ -260,20 +278,34 @@ const QuickWorkout = () => {
       return;
     }
 
-    const oscillator = audioContextRef.current.createOscillator();
-    const gainNode = audioContextRef.current.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContextRef.current.destination);
-    
-    oscillator.frequency.value = frequency;
-    oscillator.type = 'sine';
-    
-    gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration / 1000);
-    
-    oscillator.start(audioContextRef.current.currentTime);
-    oscillator.stop(audioContextRef.current.currentTime + duration / 1000);
+    try {
+      // Resume audio context se sospeso
+      if (audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
+
+      const oscillator = audioContextRef.current.createOscillator();
+      const gainNode = audioContextRef.current.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContextRef.current.destination);
+      
+      oscillator.frequency.value = frequency;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration / 1000);
+      
+      oscillator.start(audioContextRef.current.currentTime);
+      oscillator.stop(audioContextRef.current.currentTime + duration / 1000);
+    } catch (error) {
+      console.log('Errore riproduzione audio:', error);
+      // Fallback: flash visivo
+      document.body.style.backgroundColor = '#ffd700';
+      setTimeout(() => {
+        document.body.style.backgroundColor = '';
+      }, 100);
+    }
   };
 
   // Avvia workout
@@ -590,7 +622,7 @@ const QuickWorkout = () => {
 
   // Schermata principale workout
   return (
-    <div className="h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col">
       {workoutState === 'ready' ? (
         // Schermata di preparazione fullscreen
         <div className="h-full flex flex-col">
@@ -714,17 +746,17 @@ const QuickWorkout = () => {
               <div className="text-center space-y-8 w-full max-w-2xl">
                 {/* Nome esercizio */}
                 <div>
-                  <h2 className="text-4xl md:text-5xl font-bold text-pp-gold mb-4">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-pp-gold mb-4">
                     {isRest ? 'Riposo' : currentExercise.name}
                   </h2>
-                  <p className="text-xl md:text-2xl text-pp-gold/80">
+                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-pp-gold/80">
                     {isRest ? 'Preparati per il prossimo esercizio' : currentExercise.instructions}
                   </p>
                 </div>
 
                 {/* Timer gigante */}
                 <div className="text-center">
-                  <div className="text-8xl md:text-9xl font-mono font-bold text-pp-gold">
+                  <div className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-mono font-bold text-pp-gold">
                     {formatTime(timeLeft)}
                   </div>
                 </div>
@@ -761,8 +793,8 @@ const QuickWorkout = () => {
             />
             
             {/* Sidebar */}
-            <div className="fixed top-0 right-0 h-full w-64 md:w-80 bg-gray-900 border-l border-pp-gold/20 z-50 transform transition-transform duration-300 ease-in-out">
-              <div className="h-full flex flex-col">
+            <div className="fixed top-0 right-0 min-h-full w-64 md:w-80 bg-gray-900 border-l border-pp-gold/20 z-50 transform transition-transform duration-300 ease-in-out">
+              <div className="h-full flex flex-col overflow-y-auto">
                 {/* Header Sidebar */}
                 <div className="flex items-center justify-between p-4 border-b border-pp-gold/20">
                   <h3 className="text-lg font-bold text-pp-gold">
@@ -779,7 +811,7 @@ const QuickWorkout = () => {
                 </div>
 
                 {/* Lista Esercizi */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-2">
                   {WORKOUT_CIRCUIT.map((exercise, index) => {
                     const status = getExerciseStatus(index);
                     const statusIcon = getExerciseStatusIcon(status);
