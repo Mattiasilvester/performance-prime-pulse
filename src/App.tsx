@@ -51,8 +51,8 @@ function App() {
 
   // Force cache invalidation and scroll fix
   useEffect(() => {
-    console.log('Build version:', new Date().toISOString());
-    console.log('Emergency scroll fix applied');
+    // console.log('Build version:', new Date().toISOString());
+    // console.log('Emergency scroll fix applied');
     
     // Force scroll enabled
     document.body.style.overflow = 'auto';
@@ -251,4 +251,4 @@ function App() {
 }
 
 export default App
-console.log('Vercel deploy:', new Date());
+// console.log('Vercel deploy:', new Date());
