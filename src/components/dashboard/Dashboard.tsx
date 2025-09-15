@@ -43,7 +43,7 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black pb-20 dashboard-container">
+    <div className="min-h-screen pb-20 dashboard-container">
       <Header />
       <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 space-y-4 sm:space-y-6 pt-4 sm:pt-6">
         <div className="flex items-center justify-between">
