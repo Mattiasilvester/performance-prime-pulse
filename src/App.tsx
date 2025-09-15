@@ -31,6 +31,7 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
 import { Header } from '@/components/layout/Header'
 import BottomNavigation from '@/components/layout/BottomNavigation'
+import FeedbackWidget from '@/components/feedback/FeedbackWidget'
 
 // Import SuperAdmin components
 import SuperAdminLogin from '@/pages/admin/SuperAdminLogin'
@@ -108,6 +109,7 @@ function App() {
                     <Dashboard />
                   </div>
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/workouts" element={
@@ -117,6 +119,7 @@ function App() {
                     <Workouts />
                   </div>
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/workout/quick" element={
@@ -129,6 +132,7 @@ function App() {
                   <Header />
                   <Timer />
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/schedule" element={
@@ -138,6 +142,7 @@ function App() {
                     <Schedule />
                   </div>
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/ai-coach" element={
@@ -147,6 +152,7 @@ function App() {
                     <AICoach />
                   </div>
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/subscriptions" element={
@@ -154,6 +160,7 @@ function App() {
                   <Header />
                   <Subscriptions />
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/profile" element={
@@ -170,6 +177,7 @@ function App() {
                   <Header />
                   <PersonalInfo />
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/settings/security" element={
@@ -177,6 +185,7 @@ function App() {
                   <Header />
                   <Security />
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/settings/notifications" element={
@@ -184,6 +193,7 @@ function App() {
                   <Header />
                   <Notifications />
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/settings/language" element={
@@ -191,6 +201,7 @@ function App() {
                   <Header />
                   <Language />
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/settings/privacy" element={
@@ -198,6 +209,7 @@ function App() {
                   <Header />
                   <Privacy />
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/settings/help" element={
