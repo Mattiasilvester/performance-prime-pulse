@@ -44,7 +44,7 @@ const BottomNavigation = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[99999] safe-area-pb">
+    <div className="fixed bottom-0 left-0 right-0 z-50 safe-area-pb">
       {/* Linea dorata sopra la barra */}
       <div className="h-px bg-gradient-to-r from-transparent via-[#EEBA2B] to-transparent"></div>
       
