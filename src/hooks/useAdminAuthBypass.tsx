@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../integrations/supabase/client'
+import { supabaseAdmin } from '../lib/supabaseAdmin'
 import { AdminUser, AdminSession } from '@/types/admin.types'
 
 export function useAdminAuthBypass() {
