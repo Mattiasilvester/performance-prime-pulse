@@ -35,7 +35,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
           <h3 className="founders-title">I Fondatori</h3>
           <div className="founders-cards">
             <div className="founder-card">
-              <div className="w-48 h-48 rounded-full overflow-hidden mx-auto mb-6 border-4 border-[#EEBA2B]/30 bg-white/10 relative">
+              <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-6 border-4 border-[#EEBA2B]/30 bg-white/10 relative">
                 <img 
                   src="/images/mattia-silvestrelli-real.jpg" 
                   alt="Mattia Silvestrelli - CEO e Co-Founder di Performance Prime, atleta della Nazionale Italiana"
@@ -56,7 +56,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
             </div>
             
             <div className="founder-card">
-              <div className="w-48 h-48 rounded-full overflow-hidden mx-auto mb-6 border-4 border-[#EEBA2B]/30 bg-white/10 relative">
+              <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-6 border-4 border-[#EEBA2B]/30 bg-white/10 relative">
                 <img 
                   src="/images/nicholas-capponi-real.jpg" 
                   alt="Nicholas Capponi - CTO e Co-Founder di Performance Prime, atleta e sviluppatore software"
