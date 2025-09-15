@@ -44,9 +44,9 @@ const BottomNavigation = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[99999] safe-area-pb">
+    <div className="fixed bottom-0 left-0 right-0 backdrop-blur-lg bg-black/30 border-t border-white/10 z-50">
       {/* Barra di navigazione */}
-      <div className="bg-black border-t border-white/20 rounded-t-2xl pb-safe h-20">
+      <div className="pb-safe h-20">
         <div className="flex justify-around items-center py-1 px-2 sm:py-2 sm:px-4">
           {navItems.map((item) => {
             const IconComponent = item.icon;
