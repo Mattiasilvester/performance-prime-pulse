@@ -55,6 +55,29 @@ export default function MobileScrollFix() {
       });
     };
     
+    // REFRESH DETECTION E FIX
+    const handlePageShow = (event: PageTransitionEvent) => {
+      console.log('Page show event:', event.persisted ? 'back/forward cache' : 'normal load');
+      
+      // Detecta refresh
+      if (performance.navigation && performance.navigation.type === 1) {
+        console.log('Refresh detected - applying scroll fix');
+        
+        // Reset completo
+        setTimeout(() => {
+          fixMobileScroll();
+          
+          // Trick iOS con scrollTo
+          window.scrollTo(0, 1);
+          setTimeout(() => {
+            window.scrollTo(0, 0);
+          }, 10);
+          
+          console.log('Refresh scroll fix applied');
+        }, 100);
+      }
+    };
+    
     // Applica fix
     fixMobileScroll();
     
@@ -65,6 +88,9 @@ export default function MobileScrollFix() {
     
     // Listener per orientamento
     window.addEventListener('orientationchange', fixMobileScroll);
+    
+    // Listener per refresh
+    window.addEventListener('pageshow', handlePageShow);
     
     // Previeni il bounce di iOS ma permetti scroll
     const handleTouchMove = (e: TouchEvent) => {
@@ -79,6 +105,7 @@ export default function MobileScrollFix() {
     return () => {
       timeouts.forEach(clearTimeout);
       window.removeEventListener('orientationchange', fixMobileScroll);
+      window.removeEventListener('pageshow', handlePageShow);
       document.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);

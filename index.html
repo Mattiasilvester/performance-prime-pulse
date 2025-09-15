@@ -10,6 +10,11 @@
     <meta name="apple-mobile-web-app-capable" content="no">
     <meta name="mobile-web-app-capable" content="no">
     
+    <!-- NO-CACHE PER MOBILE REFRESH -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <title>Performance Prime - App</title>
     <meta name="description" content="Performance Prime - App fitness per atleti. Traccia allenamenti, monitora progressi, raggiungi obiettivi.">
     <meta property="og:title" content="Performance Prime - Oltre ogni limite">
@@ -20,9 +25,9 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="keywords" content="fitness, allenamento, palestra, workout, tracking, performance">
     
-    <!-- PWA Manifest and Service Worker -->
-    <link rel="manifest" href="https://progressier.app/57xt3KDGgRIDatj1qtpm/progressier.json"/>
-    <script defer src="https://progressier.app/57xt3KDGgRIDatj1qtpm/script.js"></script>
+    <!-- PWA Manifest and Service Worker - DISABILITATO PER MOBILE REFRESH FIX -->
+    <!-- <link rel="manifest" href="https://progressier.app/57xt3KDGgRIDatj1qtpm/progressier.json"/> -->
+    <!-- <script defer src="https://progressier.app/57xt3KDGgRIDatj1qtpm/script.js"></script> -->
     
     <!-- CRITICAL MOBILE SCROLL FIX -->
     <style>
@@ -92,6 +97,16 @@
       // Detecta mobile
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       
+      // UNREGISTER TUTTI I SERVICE WORKERS
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log('Service worker unregistered');
+          }
+        });
+      }
+      
       if (isMobile) {
         // Fix per mobile
         document.addEventListener('DOMContentLoaded', function() {
@@ -119,6 +134,45 @@
           }, { passive: true });
           
           console.log('Mobile scroll fix applied');
+        });
+        
+        // REFRESH DETECTION E FIX
+        window.addEventListener('pageshow', function(event) {
+          console.log('Page show event:', event.persisted ? 'back/forward cache' : 'normal load');
+          
+          // Detecta refresh
+          if (performance.navigation && performance.navigation.type === 1) {
+            console.log('Refresh detected - applying scroll fix');
+            
+            // Reset completo
+            setTimeout(() => {
+              document.body.style.cssText = `
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                position: relative !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                touch-action: pan-y !important;
+              `;
+              
+              document.documentElement.style.cssText = `
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                position: relative !important;
+                height: auto !important;
+                touch-action: pan-y !important;
+              `;
+              
+              // Trick iOS con scrollTo
+              window.scrollTo(0, 1);
+              setTimeout(() => {
+                window.scrollTo(0, 0);
+              }, 10);
+              
+              console.log('Refresh scroll fix applied');
+            }, 100);
+          }
         });
         
         // Double-check dopo caricamento

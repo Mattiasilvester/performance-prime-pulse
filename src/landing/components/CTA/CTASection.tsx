@@ -1,5 +1,5 @@
 import React from 'react';
-import QRCode from './QRCode';
+import QRCode from '@/components/QRCode';
 import { useScrollAnimation } from '../../hooks/useScrollAnimation';
 
 interface CTASectionProps {
@@ -15,7 +15,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
         <h2 className="cta-title animate-on-scroll">Provalo ora gratuitamente</h2>
         
         <div className="cta-content">
-          <QRCode />
+          <QRCode url={`${window.location.origin}/auth`} size={180} />
           <div className="cta-buttons">
             <button 
               onClick={onCTAClick}
