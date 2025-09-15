@@ -6,8 +6,8 @@ export default function FeedbackWidget() {
       data-tally-open="mDL24Z"
       data-tally-emoji-text="💪"
       data-tally-emoji-animation="wave"
-      className="fixed bottom-20 right-4 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 sm:p-4 shadow-lg transition-all hover:scale-110 feedback-widget"
-      style={{ bottom: '84px' }}
+      className="fixed bottom-24 right-4 z-40 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 sm:p-4 shadow-lg transition-all hover:scale-110 feedback-widget"
+      style={{ bottom: '96px !important' }}
       aria-label="Dai il tuo feedback"
     >
       <MessageCircle size={24} />

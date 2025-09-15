@@ -92,6 +92,25 @@
     <script type="module" src="/src/main.tsx"></script>
     <script src="https://tally.so/widgets/embed.js"></script>
     
+    <!-- EMERGENCY FIX SCRIPT -->
+    <script>
+      // Emergency fix per production
+      window.addEventListener('load', () => {
+        console.log('Emergency fix applied');
+        // Fix scroll mobile
+        document.body.style.overflow = 'auto';
+        // Fix footer color
+        const footer = document.querySelector('[class*="bottom-0"]');
+        if (footer) footer.style.backgroundColor = 'black';
+        // Fix feedback widget position
+        const feedback = document.querySelector('.feedback-widget');
+        if (feedback) {
+          feedback.style.bottom = '96px';
+          feedback.style.zIndex = '40';
+        }
+      });
+    </script>
+    
     <!-- MOBILE SCROLL FIX SCRIPT -->
     <script>
       // Detecta mobile
