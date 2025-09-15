@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import AdminStatsCards from '@/components/admin/AdminStatsCards'
 import UserManagementTable from '@/components/admin/UserManagementTable'
 import { AdminStats, AdminUser } from '@/types/admin.types'
-import { inspectDatabase } from '@/utils/databaseInspector'
+// import { inspectDatabase } from '@/utils/databaseInspector' // File rimosso
 
 export default function SuperAdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null)
