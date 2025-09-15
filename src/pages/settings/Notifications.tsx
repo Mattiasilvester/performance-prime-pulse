@@ -39,7 +39,7 @@ const Notifications = () => {
   return (
     <div className="min-h-screen bg-black pb-20">
       <Header />
-      <div className="container mx-auto px-4 py-6 pt-20">
+      <div className="container mx-auto px-4 py-6 pt-4">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="mb-8">

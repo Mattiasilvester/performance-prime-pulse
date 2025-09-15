@@ -137,10 +137,10 @@ export const StatsOverview = () => {
                   <p className="text-xs text-pp-gold/80">{(stat as any).description}</p>
                 )}
                 {isMedalCard && medalData.state === 'challenge_active' && medalData.progress !== undefined && (
-                  <div className="mt-2">
-                    <div className="w-full bg-gray-700 rounded-full h-1.5">
+                  <div className="mt-1">
+                    <div className="w-full bg-gray-700 rounded-full h-1">
                       <div 
-                        className="bg-pp-gold h-1.5 rounded-full transition-all duration-300"
+                        className="bg-pp-gold h-1 rounded-full transition-all duration-300"
                         style={{ width: `${(medalData.progress / 3) * 100}%` }}
                       ></div>
                     </div>
