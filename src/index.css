@@ -370,7 +370,7 @@ button[type="button"],
 
 /* 16. FIX PER Z-INDEX */
 .action-buttons-container {
-  z-index: 9999;
+  z-index: 10;
 }
 
 .btn-avvia,
@@ -378,7 +378,7 @@ button[type="button"],
 .btn-termina-sessione,
 .btn-termina-allenamento,
 .btn-completa {
-  z-index: 10000;
+  z-index: 20;
   position: relative;
 }
 
