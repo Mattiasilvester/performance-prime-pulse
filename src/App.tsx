@@ -10,17 +10,17 @@ import MobileScrollFix from '@/components/MobileScrollFix'
 import LandingPage from '@/landing/pages/LandingPage'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
-import Dashboard from '@/pages/Dashboard'
+import { Dashboard } from '@/components/dashboard/Dashboard'
 import TermsAndConditions from '@/pages/TermsAndConditions'
 import PrivacyPolicy from '@/pages/PrivacyPolicy'
 import Auth from '@/pages/Auth'
-import Workouts from '@/pages/Workouts'
+import { Workouts } from '@/components/workouts/Workouts'
 import QuickWorkout from '@/pages/QuickWorkout'
 import Timer from '@/pages/Timer'
-import Schedule from '@/pages/Schedule'
-import AICoach from '@/pages/AICoach'
+import { Schedule } from '@/components/schedule/Schedule'
+import { AICoach } from '@/components/ai/AICoach'
 import Subscriptions from '@/pages/Subscriptions'
-import Profile from '@/pages/Profile'
+import { Profile } from '@/components/profile/Profile'
 import PersonalInfo from '@/pages/settings/PersonalInfo'
 import Security from '@/pages/settings/Security'
 import Notifications from '@/pages/settings/Notifications'
@@ -102,12 +102,16 @@ function App() {
               {/* ROUTE PROTETTE */}
               <Route path="/dashboard" element={
                 <ProtectedRoute session={session}>
-                  <Dashboard />
+                  <div className="min-h-screen bg-black pb-20">
+                    <Dashboard />
+                  </div>
                 </ProtectedRoute>
               } />
               <Route path="/workouts" element={
                 <ProtectedRoute session={session}>
-                  <Workouts />
+                  <div className="min-h-screen bg-black pb-20">
+                    <Workouts />
+                  </div>
                 </ProtectedRoute>
               } />
               <Route path="/workout/quick" element={
@@ -122,12 +126,16 @@ function App() {
               } />
               <Route path="/schedule" element={
                 <ProtectedRoute session={session}>
-                  <Schedule />
+                  <div className="min-h-screen bg-black pb-20">
+                    <Schedule />
+                  </div>
                 </ProtectedRoute>
               } />
               <Route path="/ai-coach" element={
                 <ProtectedRoute session={session}>
-                  <AICoach />
+                  <div className="min-h-screen bg-black pb-20">
+                    <AICoach />
+                  </div>
                 </ProtectedRoute>
               } />
               <Route path="/subscriptions" element={
@@ -137,7 +145,9 @@ function App() {
               } />
               <Route path="/profile" element={
                 <ProtectedRoute session={session}>
-                  <Profile />
+                  <div className="min-h-screen bg-black pb-20">
+                    <Profile />
+                  </div>
                 </ProtectedRoute>
               } />
               <Route path="/settings/personal-info" element={
