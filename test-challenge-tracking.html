@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sfida 7 Giorni</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+        }
+        .test-section {
+            background: #1a1a1a;
+            border: 2px solid #c89116;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-button {
+            background: #c89116;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        .test-button:hover {
+            background: #ffd700;
+        }
+        .status {
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .success { color: #4ade80; }
+        .info { color: #c89116; }
+        .warning { color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <h1>🔥 Test Sfida 7 Giorni - Performance Prime</h1>
+    
+    <div class="test-section">
+        <h2>📊 Stato Attuale</h2>
+        <div id="currentStatus" class="status">Caricamento...</div>
+        <button class="test-button" onclick="refreshStatus()">🔄 Aggiorna Stato</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 Test Tracking Workout</h2>
+        <p>Simula il completamento di un workout per testare il tracking della sfida:</p>
+        <button class="test-button" onclick="simulateWorkout()">💪 Simula Workout Completato</button>
+        <button class="test-button" onclick="simulateSegnaCompletato()">✅ Simula "Segna Completato"</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔄 Test Reset</h2>
+        <p>Reset completo del sistema per testare da zero:</p>
+        <button class="test-button" onclick="resetChallenge()">🗑️ Reset Sfida</button>
+        <button class="test-button" onclick="resetAll()">⚠️ Reset Completo</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📈 Test Scenari</h2>
+        <p>Testa scenari specifici:</p>
+        <button class="test-button" onclick="testFirstWorkout()">🥇 Primo Workout</button>
+        <button class="test-button" onclick="testSecondWorkout()">🥈 Secondo Workout</button>
+        <button class="test-button" onclick="testThirdWorkout()">🥉 Terzo Workout (Completamento)</button>
+        <button class="test-button" onclick="testDuplicateWorkout()">🔄 Workout Duplicato (stesso giorno)</button>
+    </div>
+
+    <script>
+        // Simula le funzioni del sistema
+        function trackWorkoutForChallenge() {
+            const challenge = JSON.parse(localStorage.getItem('pp_challenge_7days') || '{}');
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Se sfida non iniziata, iniziala
+            if (!challenge.startDate) {
+                const newChallenge = {
+                    startDate: new Date().toISOString(),
+                    workoutCount: 1,
+                    completedDates: [today],
+                    isActive: true,
+                    isCompleted: false,
+                    badgeEarned: false
+                };
+                
+                localStorage.setItem('pp_challenge_7days', JSON.stringify(newChallenge));
+                
+                return { 
+                    isNewChallenge: true, 
+                    isUpdated: false,
+                    isCompleted: false,
+                    challenge: newChallenge,
+                    message: '🔥 Sfida 7 Giorni iniziata! Completa 3 allenamenti in 7 giorni per sbloccare il badge Kickoff Champion!'
+                };
+            }
+            
+            // Controlla se sfida è scaduta (7 giorni)
+            const startDate = new Date(challenge.startDate);
+            const now = new Date();
+            const daysPassed = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (daysPassed >= 7 && !challenge.isCompleted) {
+                // Sfida scaduta - reset
+                localStorage.removeItem('pp_challenge_7days');
+                return {
+                    isNewChallenge: false,
+                    isUpdated: false,
+                    isCompleted: false,
+                    challenge: {
+                        startDate: '',
+                        workoutCount: 0,
+                        completedDates: [],
+                        isActive: false,
+                        isCompleted: false,
+                        badgeEarned: false
+                    },
+                    message: 'Sfida scaduta. Inizia una nuova sfida!'
+                };
+            }
+            
+            // Se sfida attiva e non completata
+            if (challenge.isActive && !challenge.isCompleted) {
+                // Verifica che non sia già stato registrato oggi
+                if (!challenge.completedDates?.includes(today)) {
+                    challenge.workoutCount = (challenge.workoutCount || 0) + 1;
+                    challenge.completedDates = [...(challenge.completedDates || []), today];
+                    
+                    // Controlla se sfida completata
+                    if (challenge.workoutCount >= 3) {
+                        challenge.isCompleted = true;
+                        challenge.badgeEarned = true;
+                        
+                        // Incrementa contatore medaglie totali
+                        const totalMedals = parseInt(localStorage.getItem('pp_total_medals') || '0');
+                        localStorage.setItem('pp_total_medals', String(totalMedals + 1));
+                        
+                        localStorage.setItem('pp_challenge_7days', JSON.stringify(challenge));
+                        
+                        return {
+                            isNewChallenge: false,
+                            isUpdated: true,
+                            isCompleted: true,
+                            challenge,
+                            message: '🎉 Sfida Completata! Hai guadagnato il badge Kickoff Champion!'
+                        };
+                    } else {
+                        localStorage.setItem('pp_challenge_7days', JSON.stringify(challenge));
+                        
+                        return {
+                            isNewChallenge: false,
+                            isUpdated: true,
+                            isCompleted: false,
+                            challenge,
+                            message: `Progresso sfida: ${challenge.workoutCount}/3 allenamenti completati!`
+                        };
+                    }
+                } else {
+                    // Già registrato oggi
+                    return {
+                        isNewChallenge: false,
+                        isUpdated: false,
+                        isCompleted: false,
+                        challenge,
+                        message: 'Hai già completato un allenamento oggi!'
+                    };
+                }
+            }
+            
+            return {
+                isNewChallenge: false,
+                isUpdated: false,
+                isCompleted: false,
+                challenge
+            };
+        }
+
+        function getChallengeStatus() {
+            const challenge = JSON.parse(localStorage.getItem('pp_challenge_7days') || '{}');
+            
+            // Se sfida attiva, controlla se è scaduta
+            if (challenge.isActive && !challenge.isCompleted && challenge.startDate) {
+                const startDate = new Date(challenge.startDate);
+                const now = new Date();
+                const daysPassed = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+                
+                if (daysPassed >= 7) {
+                    // Sfida scaduta - reset
+                    localStorage.removeItem('pp_challenge_7days');
+                    return {
+                        startDate: '',
+                        workoutCount: 0,
+                        completedDates: [],
+                        isActive: false,
+                        isCompleted: false,
+                        badgeEarned: false
+                    };
+                }
+            }
+            
+            return challenge;
+        }
+
+        function getMedalsCount() {
+            return parseInt(localStorage.getItem('pp_total_medals') || '0');
+        }
+
+        function refreshStatus() {
+            const challenge = getChallengeStatus();
+            const totalMedals = getMedalsCount();
+            
+            let statusHtml = `
+                <h3>📊 Stato Sfida:</h3>
+                <p><strong>Attiva:</strong> ${challenge.isActive ? '✅ Sì' : '❌ No'}</p>
+                <p><strong>Completata:</strong> ${challenge.isCompleted ? '✅ Sì' : '❌ No'}</p>
+                <p><strong>Badge Guadagnato:</strong> ${challenge.badgeEarned ? '🏆 Sì' : '❌ No'}</p>
+                <p><strong>Workout Completati:</strong> ${challenge.workoutCount || 0}/3</p>
+                <p><strong>Data Inizio:</strong> ${challenge.startDate ? new Date(challenge.startDate).toLocaleString() : 'N/A'}</p>
+                <p><strong>Giorni Completati:</strong> ${challenge.completedDates ? challenge.completedDates.join(', ') : 'Nessuno'}</p>
+                
+                <h3>🏆 Medaglie Totali:</h3>
+                <p><strong>Conteggio:</strong> ${totalMedals}</p>
+            `;
+            
+            document.getElementById('currentStatus').innerHTML = statusHtml;
+        }
+
+        function simulateWorkout() {
+            const result = trackWorkoutForChallenge();
+            showResult('Simulazione Workout', result);
+            refreshStatus();
+        }
+
+        function simulateSegnaCompletato() {
+            const result = trackWorkoutForChallenge();
+            showResult('Simulazione "Segna Completato"', result);
+            refreshStatus();
+        }
+
+        function showResult(action, result) {
+            const message = result.message || 'Nessun messaggio';
+            const type = result.isCompleted ? 'success' : result.isNewChallenge ? 'info' : 'info';
+            
+            alert(`${action}:\n\n${message}\n\nDettagli:\n- Nuova sfida: ${result.isNewChallenge}\n- Aggiornato: ${result.isUpdated}\n- Completato: ${result.isCompleted}`);
+        }
+
+        function resetChallenge() {
+            localStorage.removeItem('pp_challenge_7days');
+            alert('✅ Sfida resettata!');
+            refreshStatus();
+        }
+
+        function resetAll() {
+            localStorage.removeItem('pp_challenge_7days');
+            localStorage.removeItem('pp_total_medals');
+            alert('⚠️ Sistema completamente resettato!');
+            refreshStatus();
+        }
+
+        function testFirstWorkout() {
+            resetAll();
+            simulateWorkout();
+        }
+
+        function testSecondWorkout() {
+            resetAll();
+            simulateWorkout();
+            simulateWorkout();
+        }
+
+        function testThirdWorkout() {
+            resetAll();
+            simulateWorkout();
+            simulateWorkout();
+            simulateWorkout();
+        }
+
+        function testDuplicateWorkout() {
+            resetAll();
+            simulateWorkout();
+            simulateWorkout(); // Dovrebbe mostrare messaggio duplicato
+        }
+
+        // Inizializza
+        refreshStatus();
+    </script>
+</body>
+</html>

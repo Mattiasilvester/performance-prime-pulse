@@ -8,6 +8,37 @@
 
 .landing-page {
   min-height: 100vh;
+  overflow: visible;
+  height: auto;
+}
+
+/* FIX SCROLL LANDING PAGE - FORZA SCROLL */
+body:not(.admin-panel) {
+  overflow-y: auto !important;
+  height: auto !important;
+  min-height: 100vh !important;
+}
+
+#root:not(.admin-panel) {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 100vh !important;
+}
+
+/* FIX AGGIUNTIVO PER PRODUZIONE */
+html:not(.admin-panel) {
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
+/* FIX PER TUTTI I CONTAINER PRINCIPALI */
+.landing-page,
+.hero-section,
+.features-section,
+.cta-section,
+.footer {
+  overflow: visible !important;
+  height: auto !important;
 }
 
 /* Hero Section */

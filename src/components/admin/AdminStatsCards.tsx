@@ -1,112 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-export default function AdminStatsCards() {
+interface AdminStatsCardsProps {
+  stats?: {
+    totalUsers: number;
+    activeUsers: number;
+    inactiveUsers: number;
+    totalWorkouts: number;
+    totalPT: number;
+    weeklyGrowth: number;
+    activationD0Rate: number;
+    retentionD7: number;
+  };
+  loading?: boolean;
+}
+
+export default function AdminStatsCards({ stats: propsStats, loading: propsLoading }: AdminStatsCardsProps) {
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
     inactiveUsers: 0,
     totalWorkouts: 0,
     totalPT: 0,
-    weeklyGrowth: 0
+    weeklyGrowth: 0,
+    activationD0Rate: 0,
+    retentionD7: 0
   });
   
   const [loading, setLoading] = useState(true);
   const [lastCount, setLastCount] = useState(0);
 
-  const fetchStats = async () => {
-    console.log('🔍 RICALCOLO UTENTI ATTIVI CORRETTO:');
-    setLoading(true);
-    
-    try {
-      // USA supabaseAdmin invece di supabase normale
-      const { count: totalUsers, error: usersError } = await supabaseAdmin
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-      
-      console.log('Total users result:', { totalUsers, usersError });
-      
-      if (usersError) {
-        console.error('Users count error:', usersError);
-        throw usersError;
-      }
-
-      // 🔍 CALCOLO UTENTI ONLINE ORA - Solo chi è connesso adesso
-      console.log('🔍 CALCOLO UTENTI ONLINE ORA - Solo chi è connesso adesso');
-      
-      // Conta solo utenti online negli ultimi 5 minuti
-      const fiveMinutesAgo = new Date();
-      fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
-      
-      const { data: onlineUsers, error: onlineError } = await supabaseAdmin
-        .from('profiles')
-        .select('id, email, last_login')
-        .gte('last_login', fiveMinutesAgo.toISOString());
-      
-      console.log('🟢 Utenti online ORA (ultimi 5 min):', onlineUsers?.length || 0);
-      console.log('🟢 Utenti online:', onlineUsers?.map(u => u.email) || []);
-      
-      if (onlineError) {
-        console.error('❌ Errore query online:', onlineError);
-      }
-      
-      const currentlyActiveUsers = onlineUsers?.length || 0;
-
-      // Altri conteggi
-      const { count: totalWorkouts } = await supabaseAdmin
-        .from('custom_workouts')
-        .select('*', { count: 'exact', head: true });
-
-      const { count: totalPT } = await supabaseAdmin
-        .from('professionals')
-        .select('*', { count: 'exact', head: true });
-
-      // Crescita settimanale
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      
-      const { count: weeklyNewUsers } = await supabaseAdmin
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', oneWeekAgo.toISOString());
-
-      const statsData = {
-        totalUsers: totalUsers || 0,
-        activeUsers: currentlyActiveUsers, // Solo chi è online ORA
-        inactiveUsers: (totalUsers || 0) - currentlyActiveUsers,
-        totalWorkouts: totalWorkouts || 0,
-        totalPT: totalPT || 0,
-        weeklyGrowth: weeklyNewUsers || 0
-      };
-
-      console.log('📊 RIEPILOGO FINALE:');
-      console.log('- Utenti totali:', totalUsers);
-      console.log('- Utenti online ORA:', currentlyActiveUsers);
-      console.log('- Utenti offline:', (totalUsers || 0) - currentlyActiveUsers);
-      console.log('- Percentuale online:', 
-        Math.round((currentlyActiveUsers / (totalUsers || 1)) * 100) + '%');
-      console.log('✅ Final stats with ADMIN client:', statsData);
-      
-      setStats(statsData);
-
-    } catch (error) {
-      console.error('❌ Stats error:', error);
-      setStats({
-        totalUsers: 0,
-        activeUsers: 0,
-        inactiveUsers: 0,
-        totalWorkouts: 0,
-        totalPT: 0,
-        weeklyGrowth: 0
-      });
-    } finally {
+  // Usa props se disponibili, altrimenti mantieni stato locale
+  useEffect(() => {
+    if (propsStats) {
+      setStats(propsStats);
       setLoading(false);
     }
-  };
+  }, [propsStats]);
 
+  // Fallback: se non ci sono props, mantieni comportamento originale
   useEffect(() => {
-    fetchStats();
-  }, []);
+    if (!propsStats && !propsLoading) {
+      console.log('⚠️ AdminStatsCards: Nessun props stats fornito, usando stato locale');
+    }
+  }, [propsStats, propsLoading]);
 
   // 🎉 Notifica visiva quando ci sono nuovi utenti
   useEffect(() => {
@@ -146,25 +83,25 @@ export default function AdminStatsCards() {
       color: "green"
     },
     {
-      title: "Utenti Inattivi", 
-      value: stats.inactiveUsers,
-      subtitle: "Da riattivare",
-      icon: "😴",
-      color: "orange"
+      title: "ACTIVATION D0 RATE",
+      value: `${stats.activationD0Rate}%`,
+      subtitle: stats.activationD0Rate >= 40 ? "✅ Target raggiunto" : "⚠️ Sotto target 40%",
+      icon: "🚀",
+      color: stats.activationD0Rate >= 40 ? "green" : "red"
     },
     {
-      title: "Crescita Settimanale",
+      title: "RETENTION D7",
+      value: `${stats.retentionD7}%`,
+      subtitle: stats.retentionD7 >= 20 ? "✅ Target raggiunto" : "⚠️ Sotto target 20%",
+      icon: "🔄",
+      color: stats.retentionD7 >= 20 ? "green" : "orange"
+    },
+    {
+      title: "WEEKLY GROWTH",
       value: `+${stats.weeklyGrowth}`,
-      subtitle: "Nuovi utenti",
+      subtitle: "Nuovi utenti/settimana",
       icon: "📈", 
       color: "blue"
-    },
-    {
-      title: "Allenamenti Totali",
-      value: stats.totalWorkouts,
-      subtitle: "Workout creati",
-      icon: "💪",
-      color: "purple"
     },
     {
       title: "Personal Trainer",
@@ -188,7 +125,9 @@ export default function AdminStatsCards() {
     return colors[color] || colors.blue;
   };
 
-  if (loading) {
+  const isLoading = propsLoading !== undefined ? propsLoading : loading;
+  
+  if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {[...Array(6)].map((_, i) => (

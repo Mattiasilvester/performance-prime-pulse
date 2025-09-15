@@ -3,6 +3,8 @@ import { TrendingUp, Target, Clock, Award } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { fetchWorkoutStats } from '@/services/workoutStatsService';
 import { supabase } from '@/integrations/supabase/client';
+import { useMedalSystem } from '@/hooks/useMedalSystem';
+import { ChallengeModal } from '@/components/medals/ChallengeModal';
 
 interface StatsData {
   totalWorkouts: number;
@@ -19,6 +21,15 @@ export const StatsOverview = () => {
     completedObjectives: 0
   });
   const [loading, setLoading] = useState(true);
+
+  // Hook per sistema medaglie e sfide
+  const {
+    medalSystem,
+    challengeModal,
+    getMedalCardData,
+    startKickoffChallenge,
+    closeChallengeModal
+  } = useMedalSystem();
 
   useEffect(() => {
     const loadStats = async () => {
@@ -54,6 +65,9 @@ export const StatsOverview = () => {
     loadStats();
   }, []);
 
+  // Ottieni dati card medaglie dinamici
+  const medalCardData = getMedalCardData();
+
   const statsCards = [
     {
       label: 'Allenamenti completati',
@@ -80,36 +94,70 @@ export const StatsOverview = () => {
       bgColor: 'bg-black',
     },
     {
-      label: 'Medaglie',
-      value: loading ? '...' : Math.floor(stats.totalWorkouts / 5).toString(),
-      change: '+0',
+      label: medalCardData.label,
+      value: loading ? '...' : medalCardData.value,
+      change: medalCardData.state === 'challenge_active' ? `${medalCardData.daysRemaining}d` : '+0',
       icon: Award,
       color: 'text-pp-gold',
       bgColor: 'bg-black',
+      description: medalCardData.description,
+      isMedalCard: true,
+      medalData: medalCardData
     },
   ];
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {statsCards.map((stat) => {
-        const Icon = stat.icon;
-        return (
-          <div
-            key={stat.label}
-            className="bg-gradient-to-br from-black to-[#c89116]/20 rounded-2xl p-4 shadow-lg border-2 border-[#c89116] hover:shadow-xl hover:shadow-[#c89116]/20 transition-all duration-200"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className={`p-2 rounded-xl bg-[#c89116]/20 border border-[#c89116]`}>
-                <Icon className={`h-5 w-5 ${stat.color}`} />
+    <>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {statsCards.map((stat) => {
+          const Icon = stat.icon;
+          const isMedalCard = (stat as any).isMedalCard;
+          const medalData = (stat as any).medalData;
+          
+          return (
+            <div
+              key={stat.label}
+              className={`bg-gradient-to-br from-black to-[#c89116]/20 rounded-2xl p-4 shadow-lg border-2 border-[#c89116] hover:shadow-xl hover:shadow-[#c89116]/20 transition-all duration-200 ${
+                isMedalCard && medalData.state === 'challenge_active' ? 'ring-2 ring-pp-gold/50' : ''
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className={`p-2 rounded-xl bg-[#c89116]/20 border border-[#c89116]`}>
+                  {isMedalCard ? (
+                    <span className="text-lg">{medalData.icon}</span>
+                  ) : (
+                    <Icon className={`h-5 w-5 ${stat.color}`} />
+                  )}
+                </div>
+                <span className="text-sm font-medium text-white">{stat.change}</span>
               </div>
-              <span className="text-sm font-medium text-white">{stat.change}</span>
+              <div className="space-y-1">
+                <p className="text-2xl font-bold text-pp-gold">{stat.value}</p>
+                <p className="text-sm text-white">{stat.label}</p>
+                {isMedalCard && (stat as any).description && (
+                  <p className="text-xs text-pp-gold/80">{(stat as any).description}</p>
+                )}
+                {isMedalCard && medalData.state === 'challenge_active' && medalData.progress !== undefined && (
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-700 rounded-full h-1.5">
+                      <div 
+                        className="bg-pp-gold h-1.5 rounded-full transition-all duration-300"
+                        style={{ width: `${(medalData.progress / 3) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-pp-gold">{stat.value}</p>
-              <p className="text-sm text-white">{stat.label}</p>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+
+      {/* Modal Sfida */}
+      <ChallengeModal
+        modalData={challengeModal}
+        onClose={closeChallengeModal}
+        onStartChallenge={startKickoffChallenge}
+      />
+    </>
   );
 };
