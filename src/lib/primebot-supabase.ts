@@ -45,10 +45,10 @@ export interface WorkoutSummary {
  */
 export async function getUserContextForBot(userID: string): Promise<UserContext | null> {
   try {
-    // Ottieni dati utente base
+    // Ottieni dati utente base da profiles (più sicuro di users)
     const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id, name, email, created_at')
+      .from('profiles')
+      .select('id, first_name, last_name, email, created_at')
       .eq('id', userID)
       .single();
 
