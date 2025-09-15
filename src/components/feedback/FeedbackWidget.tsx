@@ -7,7 +7,14 @@ export default function FeedbackWidget() {
       data-tally-emoji-text="💪"
       data-tally-emoji-animation="wave"
       className="fixed bottom-24 right-4 z-40 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-all hover:scale-110 feedback-widget"
-      style={{ bottom: '96px !important' }}
+      style={{ 
+        bottom: '96px !important',
+        right: '16px !important',
+        left: 'auto !important',
+        display: 'flex !important',
+        alignItems: 'center !important',
+        justifyContent: 'center !important'
+      }}
       aria-label="Dai il tuo feedback"
     >
       <MessageCircle size={20} />
