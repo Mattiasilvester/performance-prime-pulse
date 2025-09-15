@@ -138,3 +138,4 @@ BEGIN
   RAISE NOTICE 'RLS policies configurate';
   RAISE NOTICE 'Errore "Database error finding user" RISOLTO';
 END $$;
+

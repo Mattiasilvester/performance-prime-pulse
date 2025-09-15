@@ -173,3 +173,4 @@ Il sistema di filtri e generazione allenamenti dinamici è stato implementato co
 *Autore: Mattia Silvestrelli + AI Assistant*  
 *Versione: 1.3 - Sistema Filtri e Generazione Allenamenti Dinamici*
 
+

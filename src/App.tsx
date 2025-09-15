@@ -29,6 +29,18 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
 import BottomNavigation from '@/components/layout/BottomNavigation'
 
+// Import SuperAdmin components
+import SuperAdminLogin from '@/pages/admin/SuperAdminLogin'
+import SuperAdminDashboard from '@/pages/admin/SuperAdminDashboard'
+import AdminUsers from '@/pages/admin/AdminUsers'
+import TestConnection from '@/pages/admin/TestConnection'
+import DatabaseDiagnostic from '@/pages/admin/DatabaseDiagnostic'
+import AdminAnalytics from '@/pages/admin/AdminAnalytics'
+import AdminSystem from '@/pages/admin/AdminSystem'
+import AdminAuditLogs from '@/pages/admin/AdminAuditLogs'
+import AdminGuard from '@/components/admin/AdminGuard'
+import AdminLayout from '@/components/admin/AdminLayout'
+
 function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -137,6 +149,25 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Help />
                 </ProtectedRoute>
+              } />
+              
+              {/* ROUTE SUPERADMIN NASCOSTE - NON LINKATE DA NESSUNA PARTE */}
+              <Route path="/nexus-prime-control" element={<SuperAdminLogin />} />
+              <Route path="/test-db" element={<TestConnection />} />
+              <Route path="/diagnostic" element={<DatabaseDiagnostic />} />
+              <Route path="/nexus-prime-control/*" element={
+                <AdminGuard>
+                  <AdminLayout>
+                    <Routes>
+                      <Route path="dashboard" element={<SuperAdminDashboard />} />
+                      <Route path="users" element={<AdminUsers />} />
+                      <Route path="analytics" element={<AdminAnalytics />} />
+                      <Route path="system" element={<AdminSystem />} />
+                      <Route path="logs" element={<AdminAuditLogs />} />
+                      <Route path="diagnostic" element={<DatabaseDiagnostic />} />
+                    </Routes>
+                  </AdminLayout>
+                </AdminGuard>
               } />
               
               {/* Fallback */}
