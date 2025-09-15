@@ -29,6 +29,7 @@ import Privacy from '@/pages/settings/Privacy'
 import Help from '@/pages/settings/Help'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
+import { Header } from '@/components/layout/Header'
 import BottomNavigation from '@/components/layout/BottomNavigation'
 
 // Import SuperAdmin components
@@ -102,16 +103,20 @@ function App() {
               {/* ROUTE PROTETTE */}
               <Route path="/dashboard" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <div className="min-h-screen bg-black pb-20">
                     <Dashboard />
                   </div>
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/workouts" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <div className="min-h-screen bg-black pb-20">
                     <Workouts />
                   </div>
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/workout/quick" element={
@@ -121,63 +126,85 @@ function App() {
               } />
               <Route path="/timer" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <Timer />
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/schedule" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <div className="min-h-screen bg-black pb-20">
                     <Schedule />
                   </div>
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/ai-coach" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <div className="min-h-screen bg-black pb-20">
                     <AICoach />
                   </div>
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/subscriptions" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <Subscriptions />
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/profile" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <div className="min-h-screen bg-black pb-20">
                     <Profile />
                   </div>
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/settings/personal-info" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <PersonalInfo />
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/settings/security" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <Security />
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/settings/notifications" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <Notifications />
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/settings/language" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <Language />
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/settings/privacy" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <Privacy />
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/settings/help" element={
                 <ProtectedRoute session={session}>
+                  <Header />
                   <Help />
+                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               
