@@ -44,9 +44,9 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black pb-20">
+    <div className="min-h-screen bg-black pb-20 dashboard-container">
       <Header />
-      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 space-y-4 sm:space-y-6 pt-16 sm:pt-20">
+      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 space-y-4 sm:space-y-6 pt-20 sm:pt-24">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg sm:text-2xl font-bold text-pp-gold">Ciao, {userName}!</h2>

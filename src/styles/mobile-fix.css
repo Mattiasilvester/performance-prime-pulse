@@ -42,6 +42,18 @@
     padding-bottom: 80px !important; /* Bottom nav height */
   }
   
+  /* Fix specifico per Dashboard */
+  .dashboard-container {
+    padding-top: 80px !important; /* Header height mobile */
+    padding-bottom: 100px !important; /* Bottom nav height mobile */
+  }
+  
+  /* Fix per FeedbackWidget */
+  .feedback-widget {
+    bottom: 120px !important; /* Sopra bottom navigation */
+    right: 16px !important;
+  }
+  
   /* Fix specifico iOS */
   @supports (-webkit-touch-callout: none) {
     body {
