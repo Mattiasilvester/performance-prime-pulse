@@ -11,15 +11,35 @@
     touch-action: pan-y !important;
   }
   
-  /* Previeni fixed positioning */
-  .fixed {
+  /* Previeni fixed positioning - ECCETTO header e footer */
+  .fixed:not(header):not(.fixed-bottom):not(.fixed-top) {
     position: relative !important;
+  }
+  
+  /* Mantieni header e footer fissi */
+  header.fixed,
+  .fixed-bottom,
+  .fixed-top {
+    position: fixed !important;
   }
   
   /* Fix per container */
   main, section, div {
     overflow: visible !important;
     -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Fix specifico per QuickWorkout */
+  .quick-workout-container {
+    min-height: 100vh !important;
+    height: auto !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Fix per contenuto principale */
+  .main-content {
+    padding-top: 64px !important; /* Header height */
+    padding-bottom: 80px !important; /* Bottom nav height */
   }
   
   /* Fix specifico iOS */

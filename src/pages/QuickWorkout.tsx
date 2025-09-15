@@ -622,10 +622,10 @@ const QuickWorkout = () => {
 
   // Schermata principale workout
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col quick-workout-container">
       {workoutState === 'ready' ? (
         // Schermata di preparazione fullscreen
-        <div className="h-full flex flex-col">
+        <div className="min-h-screen flex flex-col">
           {/* Header minimale */}
           <div className="flex-shrink-0 p-4">
             <button
