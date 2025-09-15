@@ -121,11 +121,11 @@ header {
     padding-bottom: 100px !important; /* Bottom nav height mobile */
   }
   
-  /* Fix per FeedbackWidget */
-  .feedback-widget {
-    bottom: 120px !important; /* Sopra bottom navigation */
+  /* Fix per FeedbackWidget - RIMOSSO override che causava conflitti */
+  /* .feedback-widget {
+    bottom: 120px !important;
     right: 16px !important;
-  }
+  } */
   
   /* Fix specifico iOS */
   @supports (-webkit-touch-callout: none) {
