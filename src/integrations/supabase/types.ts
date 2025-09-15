@@ -14,6 +14,121 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          action: string
+          admin_id: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: string | null
+          target_user_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audit_logs_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_sessions: {
+        Row: {
+          admin_id: string | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          token: string
+        }
+        Insert: {
+          admin_id?: string | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          token: string
+        }
+        Update: {
+          admin_id?: string | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_sessions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_settings: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_workouts: {
         Row: {
           completed: boolean | null
@@ -202,10 +317,10 @@ export type Database = {
           first_name: string | null
           full_name: string | null
           id: string
+          last_login: string | null
           last_name: string | null
           phone: string | null
           role: string | null
-          last_login: string | null
           updated_at: string
         }
         Insert: {
@@ -218,10 +333,10 @@ export type Database = {
           first_name?: string | null
           full_name?: string | null
           id: string
+          last_login?: string | null
           last_name?: string | null
           phone?: string | null
           role?: string | null
-          last_login?: string | null
           updated_at?: string
         }
         Update: {
@@ -234,10 +349,10 @@ export type Database = {
           first_name?: string | null
           full_name?: string | null
           id?: string
+          last_login?: string | null
           last_name?: string | null
           phone?: string | null
           role?: string | null
-          last_login?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -383,127 +498,38 @@ export type Database = {
         }
         Relationships: []
       }
-      admin_audit_logs: {
-        Row: {
-          id: string
-          admin_id: string
-          action: string
-          target_user_id: string | null
-          details: Json
-          ip_address: string | null
-          user_agent: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          admin_id: string
-          action: string
-          target_user_id?: string | null
-          details?: Json
-          ip_address?: string | null
-          user_agent?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          admin_id?: string
-          action?: string
-          target_user_id?: string | null
-          details?: Json
-          ip_address?: string | null
-          user_agent?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admin_audit_logs_admin_id_fkey"
-            columns: ["admin_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "admin_audit_logs_target_user_id_fkey"
-            columns: ["target_user_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      admin_sessions: {
-        Row: {
-          id: string
-          admin_id: string
-          token: string
-          expires_at: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          admin_id: string
-          token: string
-          expires_at: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          admin_id?: string
-          token?: string
-          expires_at?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admin_sessions_admin_id_fkey"
-            columns: ["admin_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      admin_settings: {
-        Row: {
-          id: string
-          key: string
-          value: Json
-          description: string | null
-          updated_by: string | null
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          key: string
-          value: Json
-          description?: string | null
-          updated_by?: string | null
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          key?: string
-          value?: Json
-          description?: string | null
-          updated_by?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admin_settings_updated_by_fkey"
-            columns: ["updated_by"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
     }
     Views: {
-      admin_stats: {
+      users_public: {
         Row: {
-          total_users: number
-          premium_users: number
-          admin_users: number
-          new_users_today: number
-          active_users_today: number
-          admin_actions_today: number
+          category: Database["public"]["Enums"]["user_category"] | null
+          created_at: string | null
+          email: string | null
+          first_name: string | null
+          id: string | null
+          last_name: string | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["user_category"] | null
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["user_category"] | null
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -512,20 +538,6 @@ export type Database = {
       validate_password_strength: {
         Args: { password_text: string }
         Returns: boolean
-      }
-      cleanup_expired_admin_sessions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      log_admin_action: {
-        Args: {
-          p_action: string
-          p_target_user_id?: string
-          p_details?: Json
-          p_ip_address?: string
-          p_user_agent?: string
-        }
-        Returns: string
       }
     }
     Enums: {
