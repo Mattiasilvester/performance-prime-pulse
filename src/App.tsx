@@ -251,3 +251,4 @@ function App() {
 }
 
 export default App
+console.log('Vercel deploy:', new Date());
