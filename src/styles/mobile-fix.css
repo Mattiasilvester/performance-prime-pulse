@@ -8,9 +8,25 @@ header {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+  width: 100% !important;
+  height: auto !important;
 }
 
 .fixed-bottom {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 99999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* Fix specifico per BottomNavigation */
+[class*="fixed"][class*="bottom"] {
   position: fixed !important;
   bottom: 0 !important;
   left: 0 !important;
@@ -47,28 +63,7 @@ header {
     touch-action: pan-y !important;
   }
   
-  /* Mantieni header e footer fissi - RIMOSSO override che li rompeva */
-  header {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 99999 !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .fixed-bottom {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 99999 !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
+  /* Header e footer ereditano le regole globali sopra */
   
   /* Fix per container - RIMOSSO override eccessivo che rompeva le foto */
   

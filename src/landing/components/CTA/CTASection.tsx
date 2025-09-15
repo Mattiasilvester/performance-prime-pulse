@@ -15,7 +15,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onCTAClick }) => {
         <h2 className="cta-title animate-on-scroll">Provalo ora gratuitamente</h2>
         
         <div className="cta-content">
-          <QRCode url={`${window.location.origin}/auth`} size={180} />
+          <QRCode url="https://performanceprime.it" size={180} />
           <div className="cta-buttons">
             <button 
               onClick={onCTAClick}
