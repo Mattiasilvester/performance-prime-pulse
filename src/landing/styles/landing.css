@@ -1186,6 +1186,7 @@ html:not(.admin-panel) {
   box-shadow: 0 15px 30px rgba(238, 186, 43, 0.1);
 }
 
+/* FIX FOTO FONDATORI - DESKTOP/PC */
 .founder-image {
   width: 120px;
   height: 120px;
