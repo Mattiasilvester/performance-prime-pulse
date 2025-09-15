@@ -7,10 +7,7 @@
 @tailwind utilities;
 
 /* 🚨 EMERGENCY SCROLL FIX - OVERRIDE TOTALE */
-* {
-  /* Reset overflow restrictions */
-  overflow: visible !important;
-}
+/* RIMOSSO: override eccessivo che rompeva tutto */
 
 html {
   overflow-y: auto !important;
@@ -33,15 +30,12 @@ body {
   position: relative !important;
 }
 
-/* Fix per container con overflow hidden */
+/* Fix per container con overflow hidden - RIPRISTINATO */
 .overflow-hidden {
-  overflow: visible !important;
+  overflow: hidden !important;
 }
 
-/* Fix specifici per dashboard e sezioni */
-main, section, div[class*="container"] {
-  overflow: visible !important;
-}
+/* Fix specifici per dashboard e sezioni - RIMOSSO override eccessivo */
 
 /* Mantieni scroll solo per elementi specifici che lo necessitano */
 .modal-overlay {
