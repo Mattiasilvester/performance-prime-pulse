@@ -45,6 +45,31 @@
     min-height: 100vh !important;
     height: auto !important;
     overflow-y: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .quick-workout-container .min-h-screen {
+    min-height: 100vh !important;
+    height: auto !important;
+  }
+  
+  .quick-workout-container .h-full {
+    min-height: calc(100vh - 80px) !important;
+    height: auto !important;
+  }
+  
+  .quick-workout-container .flex-1 {
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+  
+  .quick-workout-container .justify-center {
+    justify-content: center !important;
+  }
+  
+  .quick-workout-container .items-center {
+    align-items: center !important;
   }
   
   /* Fix per contenuto principale */
