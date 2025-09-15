@@ -720,3 +720,23 @@ body, #root, .app-container {
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;
 }
+
+/* Fix per layout admin */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Previeni scroll su body quando in admin */
+body.admin-panel {
+  overflow: hidden !important;
+}
+
+/* Fix per contenuto admin */
+.admin-content-wrapper {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
