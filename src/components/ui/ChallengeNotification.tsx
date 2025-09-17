@@ -51,7 +51,7 @@ export const ChallengeNotification: React.FC<ChallengeNotificationProps> = ({
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 max-w-sm">
+    <div className="fixed top-4 right-4 z-[45] max-w-sm">
       <div className={`${getBgColor()} border rounded-lg p-4 shadow-lg backdrop-blur-sm`}>
         <div className="flex items-start space-x-3">
           <div className="text-2xl">{getIcon()}</div>

@@ -15,7 +15,7 @@ export const FileAccessBanner = ({ onAccept, onDecline, isVisible }: FileAccessB
   if (!isVisible || isDismissed) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 lg:left-8 lg:right-8">
+    <div className="fixed bottom-4 left-4 right-4 z-[45] lg:left-8 lg:right-8">
       <Card className="bg-black border-2 border-[#c89116] shadow-lg">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">

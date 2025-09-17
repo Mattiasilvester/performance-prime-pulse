@@ -86,31 +86,37 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
         </div>
       </div>
 
-      {/* Modal Chat a Tutto Schermo */}
+      {/* Modal Chat Fullscreen con sfondo nero */}
       {isFullScreenChat && (
-        <div className="fixed inset-0 z-50">
-          {/* Backdrop sfocato con click per chiudere */}
-          <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm transition-all duration-300 ease-in-out cursor-pointer" 
-            onClick={closeFullScreenChat}
-          />
-          
-          {/* Chat Modal centrato */}
-          <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-            <div 
-              className="w-full max-w-2xl relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Pulsante X per chiudere */}
-              <button
-                onClick={closeFullScreenChat}
-                className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
-                title="Chiudi"
-              >
-                <X className="h-5 w-5" />
-              </button>
-              <PrimeChat isModal={true} />
+        <div className="fixed inset-0 z-[45] bg-black">
+          {/* Header con logo e titolo */}
+          <div className="flex items-center justify-between p-6 border-b border-[#EEBA2B]/30">
+            <div className="flex items-center space-x-4">
+              {/* Logo fulmine */}
+              <div className="w-12 h-12 bg-[#EEBA2B] rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-[#EEBA2B]">PrimeBot</h1>
+                <p className="text-sm text-gray-400">Il tuo coach fitness AI</p>
+              </div>
             </div>
+            
+            {/* Pulsante X per chiudere */}
+            <button
+              onClick={closeFullScreenChat}
+              className="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition-colors"
+              title="Chiudi chat"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+          
+          {/* Area Chat Fullscreen */}
+          <div className="h-[calc(100vh-80px)] flex flex-col">
+            <PrimeChat isModal={true} />
           </div>
         </div>
       )}

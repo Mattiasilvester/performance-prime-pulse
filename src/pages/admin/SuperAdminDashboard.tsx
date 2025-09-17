@@ -17,8 +17,7 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     loadDashboardData()
-    // Ispeziona database all'avvio
-    inspectDatabase().then(setDbInfo)
+    // Database inspection rimosso - non più necessario
     // Carica analytics workout
     fetchWorkoutAnalytics()
   }, [])
@@ -39,7 +38,7 @@ export default function SuperAdminDashboard() {
       try {
         await Promise.all([
           loadDashboardData(),
-          inspectDatabase().then(setDbInfo),
+          // Database inspection rimosso
           fetchWorkoutAnalytics()
         ]);
         console.log('✅ Auto-refresh completato');
@@ -446,7 +445,7 @@ export default function SuperAdminDashboard() {
               onClick={async () => {
                 console.log('🔄 Manual refresh...');
                 loadDashboardData();
-                inspectDatabase().then(setDbInfo);
+                // Database inspection rimosso
                 fetchWorkoutAnalytics();
               }}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium"
@@ -456,10 +455,9 @@ export default function SuperAdminDashboard() {
             
             <button
               onClick={async () => {
-                const info = await inspectDatabase();
-                setDbInfo(info);
-                console.log('Database Info:', info);
-                alert('Check console for database structure');
+                // Database inspection rimosso - funzionalità non più disponibile
+                console.log('Database inspection non più disponibile');
+                alert('Database inspection non più disponibile');
               }}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
             >

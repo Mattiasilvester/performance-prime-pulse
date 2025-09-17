@@ -18,7 +18,7 @@ export const ChallengeModal: React.FC<ChallengeModalProps> = ({
   const isChallengeActive = modalData.challengeType === 'kickoff_7days' && !isCompleted;
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[45] p-4">
       <div className="bg-gray-900 border border-pp-gold/30 rounded-2xl p-6 max-w-md w-full mx-4">
         {/* Header */}
         <div className="text-center mb-6">

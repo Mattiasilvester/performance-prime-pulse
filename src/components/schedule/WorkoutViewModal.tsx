@@ -64,7 +64,7 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[45]" onClick={onClose}>
       <div className="bg-black border-2 border-[#c89116] rounded-2xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-pp-gold">Allenamento Salvato</h3>
