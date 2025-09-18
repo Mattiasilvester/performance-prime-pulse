@@ -630,6 +630,47 @@ Stato - Pronto per produzione e monitoraggio crescita
 - **CODEBASE PULITO**: Eliminati 1,207 righe codice morto - mantenere pulizia
 - **AI LIMITS**: 10 richieste/mese per controllo costi - monitorare usage
 
+📅 AGGIORNAMENTI SESSIONE 18 SETTEMBRE 2025
+NUOVI FILE LOCKED:
+src/lib/openai-service.ts - Servizio OpenAI con limiti e tracking (STABILE - NON MODIFICARE)
+src/lib/primebot-fallback.ts - Risposte sicure con disclaimer medico (STABILE - SICUREZZA CRITICA)
+supabase/migrations/20250918000000_openai_usage_logs.sql - Tabella tracking OpenAI (CRITICA - NON ELIMINARE)
+MODIFICHE IMPORTANTI:
+src/components/PrimeChat.tsx - Redesign completo: landing page, fullscreen, auto-scroll, sistema AI ibrido
+src/components/ai/AICoachPrime.tsx - Sistema showChat unificato, eliminata doppia istanza
+src/components/feedback/FeedbackWidget.tsx - Z-index z-[60], centering corretto
+performance-prime-pulse/.env.local - Fix chiavi Supabase (CRITICO per autenticazione)
+13 file UI components - Z-index da z-50 a z-[45] per hierarchy corretta
+NUOVE REGOLE:
+FILE .ENV PRIORITY: .env.local sovrascrive SEMPRE .env - controllare .env.local PRIMA per auth issues
+Z-INDEX HIERARCHY: FeedbackWidget z-[60] > BottomNav z-50 > Modal z-[45] > Overlay z-10 (NON MODIFICARE)
+PRIMEBOT SINGLE INSTANCE: Mai creare doppie istanze PrimeChat - usare SOLO sistema showChat
+MEDICAL SAFETY MANDATORY: Disclaimer obbligatorio + keywords detection per protezione legale
+AI HYBRID FIRST: Preset responses (gratis) PRIMA di OpenAI (costa token) - ottimizzazione costi
+VITE CACHE ISSUES: Dopo modifiche .env fare SEMPRE rm -rf .vite + restart per reload variabili
+BUG RISOLTI:
+DOPPIA ISTANZA PRIMEBOT CRITICO: Due PrimeChat renderizzati simultaneamente → Sistema showChat unificato con callback pattern
+AUTH INVALID API KEY CRITICO: .env.local con chiavi Supabase vecchie → Aggiornamento chiave ANON corretta
+SERVER CONFLICTS: Server multipli su porte diverse causavano conflitti → Un solo server unificato
+CACHE VITE OSTINATA: Variabili .env non aggiornate dopo modifiche → Pulizia cache completa
+REF ERROR TYPESCRIPT: scrollRef assegnato a input HTMLElement → Rimosso ref sbagliato
+MESSAGGIO AUTO BENVENUTO: setMsgs automatici impedivano landing page → Commentati setMsgs in useEffect
+Z-INDEX WARS: Conflitti sovrapposizione componenti → Hierarchy standardizzata
+TODO PROSSIMA SESSIONE:
+Fix SuperAdmin Dashboard TypeScript: Risolvere errori import supabase e variabili undefined
+Test PrimeBot Mobile Responsive: Verificare chat fullscreen su dispositivi mobili
+OpenAI Key Production Setup: Configurare chiave OpenAI reale per testing completo
+Performance Testing AI System: Load testing sistema ibrido preset+OpenAI
+Production Build Optimization: Preparare build finale per deploy
+NOTE CRITICHE:
+⚠️ ATTENZIONE .ENV: In caso di auth issues, controllare SEMPRE .env.local PRIMA di .env
+🔒 PRIMEBOT ARCHITETTURA STABILE: Sistema ora ottimizzato - modifiche solo se necessarie
+🛡️ MEDICAL COMPLIANCE ATTIVA: Sistema sicurezza implementato - NON rimuovere disclaimer
+🗑️ CODEBASE PULITO: Eliminati 1,207 righe codice morto - mantenere pulizia
+💰 AI LIMITS ATTIVI: 10 richieste/mese per controllo costi - monitorare usage in produzione
+🎯 SINGLE INSTANCE RULE: PrimeChat deve avere UNA SOLA istanza - usare showChat state
+PROMPT MASTER V1.1 - PERFORMANCE PRIME - AGGIORNATO 18 SETTEMBRE 2025 - SESSIONE CHIUSA</parameter>
+</invoke>
 
 ---
 PROMPT MASTER V1.1 - PERFORMANCE PRIME - AGGIORNATO 18 SETTEMBRE 2025
