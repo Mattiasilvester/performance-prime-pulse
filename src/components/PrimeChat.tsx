@@ -318,6 +318,7 @@ export default function PrimeChat({ isModal, onClose, onStartChat }: PrimeChatPr
     );
   }
 
+<<<<<<< HEAD
   // Chat fullscreen modal - Layout completo come Lovable
   if (isModal) {
     return (
@@ -450,6 +451,8 @@ export default function PrimeChat({ isModal, onClose, onStartChat }: PrimeChatPr
   }
 
   // Chat normale embedded
+=======
+>>>>>>> 41f8ea81424633b2f67f95a2b76c0b5adf0f6841
   return (
     <div className={`w-full h-full flex flex-col rounded-2xl border border-[#DAA520] bg-black text-white ${isModal ? 'min-h-[700px]' : 'min-h-[600px] mb-4 pb-2'}`}>
       <header className="px-6 py-4 bg-gradient-to-r from-[#DAA520] to-[#B8860B] rounded-t-2xl text-black font-semibold">

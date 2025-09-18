@@ -4,7 +4,7 @@ header {
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 99999 !important;
+  z-index: 50 !important;
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -17,7 +17,7 @@ header {
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 99999 !important;
+  z-index: 50 !important;
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -25,29 +25,29 @@ header {
   height: auto !important;
 }
 
-/* Fix specifico per BottomNavigation */
-[class*="fixed"][class*="bottom"] {
+/* Fix specifico per BottomNavigation - RIMOSSO per evitare conflitti con FeedbackWidget */
+/* [class*="fixed"][class*="bottom"] {
   position: fixed !important;
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 99999 !important;
+  z-index: 50 !important;
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
-}
+} */
 
 /* Fix per popover e dropdown */
 [data-radix-popper-content-wrapper] {
-  z-index: 99999 !important;
+  z-index: 50 !important;
 }
 
 [data-radix-popover-content] {
-  z-index: 99999 !important;
+  z-index: 50 !important;
 }
 
 [data-radix-dropdown-menu-content] {
-  z-index: 99999 !important;
+  z-index: 50 !important;
 }
 
 /* Mobile-specific scroll fixes */
