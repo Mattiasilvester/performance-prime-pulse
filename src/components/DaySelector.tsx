@@ -23,7 +23,7 @@ export const DaySelector: React.FC<DaySelectorProps> = ({
   onCancel
 }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[45] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="w-full max-w-2xl mx-4">
         <Card className="bg-gray-900 border-gray-700 text-white">
           <CardHeader className="text-center">

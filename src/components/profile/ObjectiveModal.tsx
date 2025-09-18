@@ -57,7 +57,7 @@ export const ObjectiveModal = ({ isOpen, onClose, onObjectiveCreated }: Objectiv
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[45]" onClick={onClose}>
       <div className="bg-black border-2 border-[#EEBA2B] rounded-2xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-[#EEBA2B]">Nuovo Obiettivo</h3>

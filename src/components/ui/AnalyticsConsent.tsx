@@ -41,7 +41,7 @@ export const AnalyticsConsent = () => {
   if (!showBanner) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-surface-primary border-t-2 border-brand-primary p-4 shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-[45] bg-surface-primary border-t-2 border-brand-primary p-4 shadow-lg">
       <div className="max-w-4xl mx-auto flex items-start gap-4">
         <div className="flex-shrink-0">
           <BarChart3 className="h-6 w-6 text-brand-primary" />

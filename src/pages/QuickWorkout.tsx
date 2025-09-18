@@ -793,7 +793,7 @@ const QuickWorkout = () => {
             />
             
             {/* Sidebar */}
-            <div className="fixed top-0 right-0 min-h-full w-64 md:w-80 bg-gray-900 border-l border-pp-gold/20 z-50 transform transition-transform duration-300 ease-in-out">
+            <div className="fixed top-0 right-0 min-h-full w-64 md:w-80 bg-gray-900 border-l border-pp-gold/20 z-[45] transform transition-transform duration-300 ease-in-out">
               <div className="h-full flex flex-col overflow-y-auto">
                 {/* Header Sidebar */}
                 <div className="flex items-center justify-between p-4 border-b border-pp-gold/20">

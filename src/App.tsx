@@ -51,8 +51,8 @@ function App() {
 
   // Force cache invalidation and scroll fix
   useEffect(() => {
-    console.log('Build version:', new Date().toISOString());
-    console.log('Emergency scroll fix applied');
+    // console.log('Build version:', new Date().toISOString());
+    // console.log('Emergency scroll fix applied');
     
     // Force scroll enabled
     document.body.style.overflow = 'auto';
@@ -105,7 +105,7 @@ function App() {
               <Route path="/dashboard" element={
                 <ProtectedRoute session={session}>
                   <Header />
-                  <div className="min-h-screen bg-black pb-20">
+                  <div className="min-h-screen pb-20 pt-24">
                     <Dashboard />
                   </div>
                   <BottomNavigation />
@@ -115,7 +115,7 @@ function App() {
               <Route path="/workouts" element={
                 <ProtectedRoute session={session}>
                   <Header />
-                  <div className="min-h-screen bg-black pb-20">
+                  <div className="min-h-screen pb-20 pt-24">
                     <Workouts />
                   </div>
                   <BottomNavigation />
@@ -138,7 +138,7 @@ function App() {
               <Route path="/schedule" element={
                 <ProtectedRoute session={session}>
                   <Header />
-                  <div className="min-h-screen bg-black pb-20">
+                  <div className="min-h-screen pb-20 pt-24">
                     <Schedule />
                   </div>
                   <BottomNavigation />
@@ -148,7 +148,7 @@ function App() {
               <Route path="/ai-coach" element={
                 <ProtectedRoute session={session}>
                   <Header />
-                  <div className="min-h-screen bg-black pb-20">
+                  <div className="min-h-screen pb-20 pt-24">
                     <AICoach />
                   </div>
                   <BottomNavigation />
@@ -166,7 +166,7 @@ function App() {
               <Route path="/profile" element={
                 <ProtectedRoute session={session}>
                   <Header />
-                  <div className="min-h-screen bg-black pb-20">
+                  <div className="min-h-screen pb-20 pt-24">
                     <Profile />
                   </div>
                   <BottomNavigation />
@@ -251,4 +251,4 @@ function App() {
 }
 
 export default App
-console.log('Vercel deploy:', new Date());
+// console.log('Vercel deploy:', new Date());

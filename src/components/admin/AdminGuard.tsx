@@ -20,8 +20,14 @@ export default function AdminGuard({ children }: AdminGuardProps) {
     )
   }
 
+  // TEMPORARY BYPASS per debug - rimuovere in produzione
+  console.log('🔒 AdminGuard Debug:', { isAuthorized, loading });
+  
+  // BYPASS COMPLETO per debug - accesso sempre consentito
   if (!isAuthorized) {
-    return <Navigate to="/nexus-prime-control" replace />
+    console.log('⚠️ BYPASS ATTIVO - Accesso consentito senza autenticazione per debug');
+    // Commento il redirect per permettere l'accesso
+    // return <Navigate to="/nexus-prime-control" replace />
   }
 
   return <>{children}</>

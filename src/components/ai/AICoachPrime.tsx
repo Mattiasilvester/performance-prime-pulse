@@ -10,26 +10,19 @@ interface AICoachPrimeProps {
 }
 
 export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatInterfaceRef }) => {
-  const [isFullScreenChat, setIsFullScreenChat] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
-  const openFullScreenChat = () => {
-    setIsFullScreenChat(true);
-  };
+  // Se chat è aperta, mostra SOLO PrimeChat fullscreen
+  if (showChat) {
+    return <PrimeChat isModal={true} onClose={() => setShowChat(false)} />;
+  }
 
-  const closeFullScreenChat = () => {
-    setIsFullScreenChat(false);
-  };
-
+  // Resto del componente normale
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 relative">
-          <div 
-            className="cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={openFullScreenChat}
-          >
-            <PrimeChat isModal={false} />
-          </div>
+          <PrimeChat isModal={false} onStartChat={() => setShowChat(true)} />
         </div>
         <div className="space-y-4">
           <div className="bg-black border border-gray-500 rounded-2xl p-6 quick-actions relative">
@@ -86,34 +79,6 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
         </div>
       </div>
 
-      {/* Modal Chat a Tutto Schermo */}
-      {isFullScreenChat && (
-        <div className="fixed inset-0 z-50">
-          {/* Backdrop sfocato con click per chiudere */}
-          <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm transition-all duration-300 ease-in-out cursor-pointer" 
-            onClick={closeFullScreenChat}
-          />
-          
-          {/* Chat Modal centrato */}
-          <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-            <div 
-              className="w-full max-w-2xl relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Pulsante X per chiudere */}
-              <button
-                onClick={closeFullScreenChat}
-                className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
-                title="Chiudi"
-              >
-                <X className="h-5 w-5" />
-              </button>
-              <PrimeChat isModal={true} />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
