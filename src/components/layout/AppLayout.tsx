@@ -17,9 +17,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <main className="pb-24">
         {children}
       </main>
-      
-      {/* Bottom Navigation */}
-      <BottomNavigation />
     </div>
   );
 };

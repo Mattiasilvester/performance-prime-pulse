@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react-swc'
 import path from 'path'
 import { componentTagger } from "lovable-tagger"
 
+// NOTE: In produzione, servire index.html con Cache-Control: no-cache.
+// Gli asset hashed possono avere Cache-Control: public, max-age=31536000, immutable.
+
 export default defineConfig(({ mode }) => ({
   plugins: [
     react(),

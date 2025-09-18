@@ -108,6 +108,7 @@ function App() {
                   <AppLayout>
                     <Dashboard />
                   </AppLayout>
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -116,6 +117,7 @@ function App() {
                   <AppLayout>
                     <Workouts />
                   </AppLayout>
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -128,6 +130,7 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Timer />
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -136,6 +139,7 @@ function App() {
                   <AppLayout>
                     <Schedule />
                   </AppLayout>
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -144,6 +148,7 @@ function App() {
                   <AppLayout>
                     <AICoach />
                   </AppLayout>
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -151,6 +156,7 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Subscriptions />
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -159,6 +165,7 @@ function App() {
                   <AppLayout>
                     <Profile />
                   </AppLayout>
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -166,6 +173,7 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <PersonalInfo />
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -173,6 +181,7 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Security />
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -180,6 +189,7 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Notifications />
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -187,6 +197,7 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Language />
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -194,6 +205,7 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Privacy />
+                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
