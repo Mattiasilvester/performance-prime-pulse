@@ -156,10 +156,10 @@ function App() {
               } />
               <Route path="/profile" element={
                 <ProtectedRoute session={session}>
-                  <Header />
-                  <div className="min-h-screen pb-20 pt-24">
+                  <AppLayout>
                     <Profile />
-                  </div>
+                  </AppLayout>
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/settings/personal-info" element={

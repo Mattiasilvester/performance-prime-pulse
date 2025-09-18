@@ -156,11 +156,15 @@ export const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#EEBA2B] rounded flex items-center justify-center">
               <img 
                 src="/images/logo-pp-transparent.png" 
                 alt="Performance Prime Logo" 
                 className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.parentElement!.innerHTML = '<span class="text-black font-bold text-xs">PP</span>';
+                }}
               />
             </div>
             <div className="flex flex-col">
