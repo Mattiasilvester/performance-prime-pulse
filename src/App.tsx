@@ -31,6 +31,7 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
 import { Header } from '@/components/layout/Header'
 import BottomNavigation from '@/components/layout/BottomNavigation'
+import { AppLayout } from '@/components/layout/AppLayout'
 import FeedbackWidget from '@/components/feedback/FeedbackWidget'
 
 // Import SuperAdmin components
@@ -104,21 +105,17 @@ function App() {
               {/* ROUTE PROTETTE */}
               <Route path="/dashboard" element={
                 <ProtectedRoute session={session}>
-                  <Header />
-                  <div className="min-h-screen pb-20 pt-24">
+                  <AppLayout>
                     <Dashboard />
-                  </div>
-                  <BottomNavigation />
+                  </AppLayout>
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/workouts" element={
                 <ProtectedRoute session={session}>
-                  <Header />
-                  <div className="min-h-screen pb-20 pt-24">
+                  <AppLayout>
                     <Workouts />
-                  </div>
-                  <BottomNavigation />
+                  </AppLayout>
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -131,27 +128,22 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Timer />
-                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/schedule" element={
                 <ProtectedRoute session={session}>
-                  <Header />
-                  <div className="min-h-screen pb-20 pt-24">
+                  <AppLayout>
                     <Schedule />
-                  </div>
-                  <BottomNavigation />
+                  </AppLayout>
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/ai-coach" element={
                 <ProtectedRoute session={session}>
-                  <Header />
-                  <div className="min-h-screen pb-20 pt-24">
+                  <AppLayout>
                     <AICoach />
-                  </div>
-                  <BottomNavigation />
+                  </AppLayout>
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -159,7 +151,6 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Subscriptions />
-                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -175,7 +166,6 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <PersonalInfo />
-                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -183,7 +173,6 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Security />
-                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -191,7 +180,6 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Notifications />
-                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -199,7 +187,6 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Language />
-                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
@@ -207,7 +194,6 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Privacy />
-                  <BottomNavigation />
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
