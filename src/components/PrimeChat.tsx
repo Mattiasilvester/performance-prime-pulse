@@ -51,7 +51,7 @@ export default function PrimeChat({ isModal, onClose, onStartChat }: PrimeChatPr
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
 
   // Logica per mostrare landing page
-  const showLanding = msgs.length === 0 && !isModal;
+  const showLanding = msgs.length === 0;
 
   // Auto-scroll quando arrivano nuovi messaggi
   useEffect(() => {
@@ -199,19 +199,28 @@ export default function PrimeChat({ isModal, onClose, onStartChat }: PrimeChatPr
         
         const aiResponse = await getAIResponse(userMessage.text, userData.user.id);
         
+        // Se OpenAI non è disponibile, usa fallback generico
+        if (!aiResponse.success) {
+          const fallbackMessage: Msg = {
+            id: crypto.randomUUID(),
+            role: 'bot',
+            text: aiResponse.message || 'Mi dispiace, non riesco a rispondere ora. Prova con i suggerimenti qui sotto!'
+          };
+          setMsgs(prev => [...prev, fallbackMessage]);
+          return;
+        }
+        
         const botMessage: Msg = {
           id: crypto.randomUUID(),
           role: 'bot',
           text: aiResponse.message
         };
         
-        // Se AI ha risposto con successo, aggiorna limiti
-        if (aiResponse.success) {
-          setAiLimit({
-            used: 10 - aiResponse.remaining,
-            remaining: aiResponse.remaining
-          });
-        }
+        // Aggiorna limiti AI
+        setAiLimit({
+          used: 10 - aiResponse.remaining,
+          remaining: aiResponse.remaining
+        });
         
         setMsgs(prev => [...prev, botMessage]);
       }

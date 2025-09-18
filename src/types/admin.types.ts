@@ -14,6 +14,13 @@ export interface AdminUser {
 
 export interface AdminStats {
   totalUsers: number
+  activeUsers: number
+  inactiveUsers: number
+  totalWorkouts: number
+  totalPT: number
+  weeklyGrowth: number
+  activationD0Rate: number
+  retentionD7: number
   payingUsers: number
   activeToday: number
   revenue: number

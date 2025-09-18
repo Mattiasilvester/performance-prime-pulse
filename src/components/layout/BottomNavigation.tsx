@@ -44,7 +44,7 @@ const BottomNavigation = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 backdrop-blur-lg bg-black/30 border-t border-white/10 z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-black/20 backdrop-blur-xl border-t border-white/20 z-50">
       {/* Barra di navigazione */}
       <div className="pb-safe h-20">
         <div className="flex justify-around items-center py-1 px-2 sm:py-2 sm:px-4">

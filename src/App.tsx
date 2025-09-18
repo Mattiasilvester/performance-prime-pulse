@@ -169,7 +169,6 @@ function App() {
                   <div className="min-h-screen pb-20 pt-24">
                     <Profile />
                   </div>
-                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               <Route path="/settings/personal-info" element={
@@ -216,7 +215,6 @@ function App() {
                 <ProtectedRoute session={session}>
                   <Header />
                   <Help />
-                  <BottomNavigation />
                 </ProtectedRoute>
               } />
               

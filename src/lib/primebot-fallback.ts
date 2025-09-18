@@ -8,6 +8,38 @@ export const disclaimerMessage = {
 
 // Risposte preimpostate che NON usano token AI (GRATIS)
 export const presetResponses: Record<string, any> = {
+  // SALUTI
+  "ciao": {
+    text: "Ciao! 👋 Sono PrimeBot, il tuo coach fitness AI. Sono qui per aiutarti con allenamenti, motivazione e consigli fitness. Come posso aiutarti oggi? 💪"
+  },
+  "salve": {
+    text: "Salve! 👋 Benvenuto in Performance Prime! Sono PrimeBot e sono qui per supportarti nel tuo percorso fitness. Cosa posso fare per te? 🚀"
+  },
+  "buongiorno": {
+    text: "Buongiorno! ☀️ Perfetto momento per parlare di fitness! Sono PrimeBot, il tuo assistente per allenamenti e motivazione. Come posso aiutarti? 💪"
+  },
+  "buonasera": {
+    text: "Buonasera! 🌙 Anche la sera è un ottimo momento per pianificare i tuoi allenamenti! Sono PrimeBot, come posso supportarti? 🏋️‍♀️"
+  },
+  
+  // QUICK QUESTIONS PREIMPOSTATE
+  "come posso migliorare la mia resistenza?": {
+    text: "🏃‍♀️ Per migliorare la resistenza ti consiglio: 1) Allenamenti HIIT 2-3 volte/settimana 2) Cardio a bassa intensità 30-45 min 3) Aumenta gradualmente la durata. Inizia dalla sezione Workouts!",
+    action: { label: "Vai a Workouts HIIT", link: "/workouts?category=hiit" }
+  },
+  "quale workout è meglio per oggi?": {
+    text: "🎯 Dipende dai tuoi obiettivi! Per forza: allenamento Forza. Per cardio: HIIT o Cardio. Per relax: Mobilità. Che tipo di energia hai oggi?",
+    action: { label: "Scegli il tuo Workout", link: "/workouts" }
+  },
+  "consigli per la nutrizione pre-allenamento": {
+    text: "🍎 Pre-workout perfetto: 1) Carboidrati semplici 30-60 min prima (banana, fette biscottate) 2) Idratazione 500ml acqua 3) Evita grassi e fibre. Energia pulita per performance ottimali! 💪",
+    action: { label: "Vai al tuo Profilo", link: "/profile" }
+  },
+  "come posso raggiungere i miei obiettivi?": {
+    text: "🎯 Strategia vincente: 1) Definisci obiettivi SMART nel tuo profilo 2) Costanza > Intensità 3) Traccia progressi 4) Celebra piccole vittorie. Il successo è un processo, non un evento!",
+    action: { label: "Imposta Obiettivi", link: "/profile" }
+  },
+  
   // MOTIVAZIONE
   "non ho tempo": {
     text: "Capisco! Con soli 10 minuti puoi fare un allenamento efficace. Prova il nostro Quick Workout!",

@@ -42,11 +42,11 @@ export const getAIResponse = async (message: string, userId: string) => {
     };
   }
 
-  if (!OPENAI_API_KEY) {
-    console.error('OpenAI API key mancante');
+  if (!OPENAI_API_KEY || OPENAI_API_KEY === 'sk-placeholder-key-here') {
+    console.warn('⚠️ OpenAI API key non configurata o placeholder:', OPENAI_API_KEY ? 'placeholder' : 'missing');
     return {
       success: false,
-      message: 'Servizio AI temporaneamente non disponibile.',
+      message: 'Servizio AI temporaneamente non disponibile. Usa i suggerimenti rapidi qui sotto!',
       remaining: limit.remaining
     };
   }

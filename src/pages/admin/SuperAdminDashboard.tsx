@@ -114,7 +114,18 @@ export default function SuperAdminDashboard() {
       
       console.log('📈 Weekly new users:', { weeklyNewUsers, weeklyError });
       
-      // 4. Calcola Activation D0 Rate (% primo workout entro 24h)
+      // 4. Carica profili per calcoli successivi
+      const { data: profiles, error: profilesDataError } = await supabaseAdmin
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (profilesDataError) {
+        console.error('❌ Profiles data error:', profilesDataError);
+        throw profilesDataError;
+      }
+
+      // 5. Calcola Activation D0 Rate (% primo workout entro 24h)
       let activationD0Rate = 0;
       try {
         const { data: activationData, error: activationError } = await supabaseAdmin
@@ -124,7 +135,6 @@ export default function SuperAdminDashboard() {
         
         if (!activationError && activationData) {
           // Conta utenti che hanno fatto primo workout entro 24h dalla registrazione
-          const usersWithFirstWorkout = new Set();
           const userFirstWorkout = new Map();
           
           // Trova primo workout per ogni utente
@@ -150,8 +160,8 @@ export default function SuperAdminDashboard() {
             }
           }
           
-          activationD0Rate = totalUsersFinal > 0 ? 
-            Math.round((usersActivatedWithin24h / totalUsersFinal) * 100) : 0;
+          activationD0Rate = (totalUsers || 0) > 0 ? 
+            Math.round((usersActivatedWithin24h / (totalUsers || 0)) * 100) : 0;
         }
       } catch (error) {
         console.warn('⚠️ Errore calcolo Activation D0 Rate:', error);
@@ -200,22 +210,20 @@ export default function SuperAdminDashboard() {
       const inactiveUsers = totalUsersFinal - activeUsersFinal;
       const growthRate = totalUsersFinal ? ((weeklyNewUsers || 0) / totalUsersFinal * 100) : 0;
       
-      const statsData = {
+      const statsData: AdminStats = {
         totalUsers: totalUsersFinal,
         activeUsers: activeUsersFinal,
         inactiveUsers: inactiveUsers,
-        totalWorkouts: 0, // Non disponibile senza tabella workouts
-        monthlyWorkouts: 0, // Non disponibile senza tabella workouts
-        professionals: 0, // Non disponibile senza tabella professionals
-        activeObjectives: 0, // Non disponibile senza tabella objectives
-        totalNotes: 0, // Non disponibile senza tabella notes
-        growth: parseFloat(growthRate.toFixed(1)),
-        engagement: totalUsersFinal ? parseFloat((activeUsersFinal / totalUsersFinal * 100).toFixed(1)) : 0,
-        newUsersThisMonth: weeklyNewUsers || 0,
-        // Nuove metriche activation
+        totalWorkouts: 0,
+        totalPT: 0,
+        weeklyGrowth: weeklyNewUsers || 0,
         activationD0Rate: activationD0Rate,
         retentionD7: retentionD7,
-        weeklyGrowth: weeklyNewUsers || 0
+        payingUsers: 0,
+        activeToday: activeUsersFinal,
+        revenue: 0,
+        churnRate: 0,
+        conversionRate: 0
       };
       
       console.log('📊 REAL Performance Prime stats with ADMIN:', statsData);
@@ -227,21 +235,12 @@ export default function SuperAdminDashboard() {
       });
       setStats(statsData);
       
-      // 10. Carica profili per la tabella
-      const { data: profiles, error: profilesDataError } = await supabaseAdmin
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (profilesDataError) {
-        console.error('❌ Profiles data error:', profilesDataError);
-        throw profilesDataError;
-      }
+      // 10. Usa profili già caricati per la tabella (limitati a 10 per performance)
+      const limitedProfiles = profiles?.slice(0, 10) || [];
 
       // Trasforma i dati per la tabella utenti
-      if (profiles) {
-        const usersData: AdminUser[] = profiles.map(profile => ({
+      if (limitedProfiles.length > 0) {
+        const usersData: AdminUser[] = limitedProfiles.map(profile => ({
           id: profile.id,
           email: profile.email || '',
           name: profile.full_name || profile.name || 'N/A',
@@ -270,14 +269,17 @@ export default function SuperAdminDashboard() {
       setStats({
         totalUsers: 0,
         activeUsers: 0,
+        inactiveUsers: 0,
         totalWorkouts: 0,
-        monthlyWorkouts: 0,
-        professionals: 0,
-        activeObjectives: 0,
-        totalNotes: 0,
-        growth: 0,
-        engagement: 0,
-        newUsersThisMonth: 0
+        totalPT: 0,
+        weeklyGrowth: 0,
+        activationD0Rate: 0,
+        retentionD7: 0,
+        payingUsers: 0,
+        activeToday: 0,
+        revenue: 0,
+        churnRate: 0,
+        conversionRate: 0
       });
       setUsers([]);
       
@@ -387,7 +389,7 @@ export default function SuperAdminDashboard() {
         case 'suspend':
           const { error: suspendError } = await supabase
             .from('profiles')
-            .update({ status: 'suspended' })
+            .update({ role: 'suspended' })
             .eq('id', userId)
           if (suspendError) throw suspendError
           break
@@ -395,7 +397,7 @@ export default function SuperAdminDashboard() {
         case 'activate':
           const { error: activateError } = await supabase
             .from('profiles')
-            .update({ status: 'active' })
+            .update({ role: 'user' })
             .eq('id', userId)
           if (activateError) throw activateError
           break
@@ -404,7 +406,7 @@ export default function SuperAdminDashboard() {
           if (confirm('Sei sicuro? Questa azione è irreversibile.')) {
             const { error: deleteError } = await supabase
               .from('profiles')
-              .update({ status: 'deleted' })
+              .update({ role: 'deleted' })
               .eq('id', userId)
             if (deleteError) throw deleteError
           }
@@ -594,15 +596,15 @@ export default function SuperAdminDashboard() {
           <div className="space-y-4">
             <div>
               <p className="text-gray-300">Obiettivi attivi totali:</p>
-              <p className="text-2xl font-bold text-purple-400">{stats?.activeObjectives || 0}</p>
+              <p className="text-2xl font-bold text-purple-400">{stats?.totalWorkouts || 0}</p>
             </div>
             <div>
               <p className="text-gray-300">Note utenti totali:</p>
-              <p className="text-2xl font-bold text-orange-400">{stats?.totalNotes || 0}</p>
+              <p className="text-2xl font-bold text-orange-400">{stats?.activationD0Rate || 0}%</p>
             </div>
             <div>
               <p className="text-gray-300">Professionisti attivi:</p>
-              <p className="text-2xl font-bold text-yellow-400">{stats?.professionals || 0}</p>
+              <p className="text-2xl font-bold text-yellow-400">{stats?.totalPT || 0}</p>
             </div>
           </div>
         </div>
