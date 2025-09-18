@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '@/integrations/supabase/client'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import AdminStatsCards from '@/components/admin/AdminStatsCards'
 import UserManagementTable from '@/components/admin/UserManagementTable'

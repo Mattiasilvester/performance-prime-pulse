@@ -427,7 +427,6 @@ export default function PrimeChat({ isModal, onClose, onStartChat }: PrimeChatPr
             {/* Input field */}
             <div className="flex gap-3">
               <input
-                ref={scrollRef}
                 aria-label="Scrivi la tua domanda"
                 value={input}
                 onChange={e => setInput(e.target.value)}
