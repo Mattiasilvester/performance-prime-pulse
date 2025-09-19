@@ -43,7 +43,7 @@ export const presetResponses: Record<string, any> = {
   // MOTIVAZIONE
   "non ho tempo": {
     text: "Capisco! Con soli 10 minuti puoi fare un allenamento efficace. Prova il nostro Quick Workout!",
-    action: { label: "Quick Workout 10min", link: "/quick-workout" }
+    action: { label: "Quick Workout 10min", link: "/workout/quick" }
   },
   "ho poco tempo": {
     text: "Perfetto! Anche con poco tempo puoi allenarti efficacemente! ⚡ I nostri Quick Workout da 10-15 minuti sono ideali per te. Massimo risultato, minimo tempo!",
@@ -72,12 +72,12 @@ export const presetResponses: Record<string, any> = {
   // ALLENAMENTI
   'come iniziare': {
     text: '🎯 Perfetto! Per iniziare il tuo percorso fitness: valuta il tuo livello, scegli obiettivi realistici, inizia gradualmente.',
-    action: { label: "Quick Workout", link: "/quick-workout" }
+    action: { label: "Quick Workout", link: "/workout/quick" }
   },
   
   'quick workout': {
     text: '⚡ Ottima scelta! I Quick Workout sono perfetti per chi ha poco tempo. Durata: 10-15 minuti, nessuna attrezzatura, risultati garantiti!',
-    action: { label: "Inizia Subito", link: "/quick-workout" }
+    action: { label: "Inizia Subito", link: "/workout/quick" }
   },
 
   'perdere peso': {
@@ -119,7 +119,7 @@ export const presetResponses: Record<string, any> = {
 
   'principiante': {
     text: '🌟 Benvenuto! Come principiante: inizia gradualmente, impara tecnica corretta, ascolta il corpo, sii paziente.',
-    action: { label: "Primo Allenamento", link: "/quick-workout" }
+    action: { label: "Primo Allenamento", link: "/workout/quick" }
   },
 
   'risultati': {
