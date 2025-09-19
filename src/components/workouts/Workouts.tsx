@@ -24,6 +24,12 @@ export const Workouts = () => {
 
   const loadCustomWorkout = async (workoutId: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('User not authenticated, skipping custom workout load');
+        return;
+      }
+
       const { data, error } = await supabase
         .from('custom_workouts')
         .select('*')

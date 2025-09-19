@@ -11,10 +11,16 @@ interface AICoachPrimeProps {
 
 export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatInterfaceRef }) => {
   const [showChat, setShowChat] = useState(false);
+  const [initialMessages, setInitialMessages] = useState<any[]>([]);
 
-  // Se chat è aperta, mostra SOLO PrimeChat fullscreen
+  // Reset showChat su mount per evitare overlay persistenti durante HMR
+  React.useEffect(() => {
+    setShowChat(false);
+  }, []);
+
+  // Se chat è aperta, mostra SOLO PrimeChat fullscreen con i messaggi iniziali
   if (showChat) {
-    return <PrimeChat isModal={true} onClose={() => setShowChat(false)} />;
+    return <PrimeChat isModal={true} onClose={() => setShowChat(false)} initialMessages={initialMessages} />;
   }
 
   // Resto del componente normale
@@ -22,7 +28,13 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 relative">
-          <PrimeChat isModal={false} onStartChat={() => setShowChat(true)} />
+          <PrimeChat 
+            isModal={false} 
+            onStartChat={(messages) => {
+              setInitialMessages(messages);
+              setShowChat(true);
+            }} 
+          />
         </div>
         <div className="space-y-4">
           <div className="bg-black border border-gray-500 rounded-2xl p-6 quick-actions relative">

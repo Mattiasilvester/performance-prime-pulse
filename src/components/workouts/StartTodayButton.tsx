@@ -17,7 +17,10 @@ export const StartTodayButton = () => {
   const checkTodayWorkout = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('User not authenticated, skipping workout check');
+        return;
+      }
 
       const today = new Date().toISOString().split('T')[0];
       const { data, error } = await supabase
@@ -31,6 +34,7 @@ export const StartTodayButton = () => {
         setTodayWorkout(data);
       }
     } catch (error) {
+      console.error('Error checking today workout:', error);
     }
   };
 

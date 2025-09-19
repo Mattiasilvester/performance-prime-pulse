@@ -7,6 +7,15 @@ import { safeGetElement } from '@/utils/domHelpers'
 import * as SWControl from "./sw-control";
 void SWControl; // impedisce il tree-shaking del modulo a side-effect
 
+if (import.meta.env.DEV) {
+  import("./dev/mobile-hard-refresh");
+  import("./dev/desktop-hard-refresh");
+}
+
+if (import.meta.env.PROD) {
+  import("./pwa/registerProgressier").then(m => m.registerProgressier?.());
+}
+
 // Gestione errori globale
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason)

@@ -22,16 +22,24 @@
       }
     });
   } else {
-    // DEV: ambiente sempre pulito
+    // DEV: ambiente sempre pulito - rimuovi TUTTI i SW incluso Progressier
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.getRegistrations().then((regs) =>
-        regs.forEach((r) => r.unregister())
-      );
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((r) => {
+          console.log(`🧹 DEV: Deregistering SW: ${r.scope}`);
+          r.unregister();
+        });
+      });
     }
     if ("caches" in window) {
       caches
         .keys()
-        .then((keys) => Promise.all(keys.map((k) => caches.delete(k))));
+        .then((keys) => {
+          // Cancella TUTTE le cache, incluse quelle PWA comuni
+          // Pattern: progressier, workbox, pwa, vite
+          const allCaches = keys.filter(k => /progressier|workbox|pwa|vite/i.test(k) || true);
+          return Promise.all(allCaches.map((k) => caches.delete(k)));
+        });
     }
   }
 })();

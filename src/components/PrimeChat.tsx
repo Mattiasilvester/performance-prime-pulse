@@ -22,12 +22,13 @@ type Msg = {
 interface PrimeChatProps {
   isModal: boolean;
   onClose?: () => void;
-  onStartChat?: () => void;
+  onStartChat?: (messages: any[]) => void;
+  initialMessages?: any[];
 }
 
-export default function PrimeChat({ isModal, onClose, onStartChat }: PrimeChatProps) {
+export default function PrimeChat({ isModal, onClose, onStartChat, initialMessages }: PrimeChatProps) {
   const navigate = useNavigate();
-  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [msgs, setMsgs] = useState<Msg[]>(initialMessages || []);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -279,24 +280,26 @@ export default function PrimeChat({ isModal, onClose, onStartChat }: PrimeChatPr
           {/* Bottone Inizia Chat */}
           <button
             onClick={() => {
+              // Inizializza i messaggi PRIMA di aprire la chat fullscreen
+              const disclaimer = {
+                id: 'disclaimer',
+                role: 'bot' as const,
+                text: `⚠️ **Importante:** PrimeBot è un assistente AI che può commettere errori. Non sostituisce professionisti qualificati. Per problemi di salute, consulta sempre un medico. Usa il buon senso e ascolta il tuo corpo!`,
+                isDisclaimer: true
+              };
+              
+              const welcomeMsg = {
+                id: 'welcome',
+                role: 'bot' as const,
+                text: `Ciao ${userName} 👋! Sono PrimeBot, il tuo coach fitness AI. Come posso aiutarti oggi? 💪`
+              };
+              
+              const messages = [disclaimer, welcomeMsg];
+              setMsgs(messages);
+              
+              // Chiama onStartChat per aprire la chat fullscreen con i messaggi già caricati
               if (onStartChat) {
-                onStartChat();
-              } else {
-                // Fallback per quando non c'è onStartChat
-                const disclaimer = {
-                  id: 'disclaimer',
-                  role: 'bot' as const,
-                  text: `⚠️ **Importante:** PrimeBot è un assistente AI che può commettere errori. Non sostituisce professionisti qualificati. Per problemi di salute, consulta sempre un medico. Usa il buon senso e ascolta il tuo corpo!`,
-                  isDisclaimer: true
-                };
-                
-                const welcomeMsg = {
-                  id: 'welcome',
-                  role: 'bot' as const,
-                  text: `Ciao ${userName} 👋! Sono PrimeBot, il tuo coach fitness AI. Come posso aiutarti oggi? 💪`
-                };
-                
-                setMsgs([disclaimer, welcomeMsg]);
+                onStartChat(messages);
               }
             }}
             className="px-8 py-4 bg-[#EEBA2B] hover:bg-[#d4a527] text-black font-bold rounded-xl transition-colors text-lg"
