@@ -45,6 +45,10 @@ export const presetResponses: Record<string, any> = {
     text: "Capisco! Con soli 10 minuti puoi fare un allenamento efficace. Prova il nostro Quick Workout!",
     action: { label: "Quick Workout 10min", link: "/quick-workout" }
   },
+  "ho poco tempo": {
+    text: "Perfetto! Anche con poco tempo puoi allenarti efficacemente! ⚡ I nostri Quick Workout da 10-15 minuti sono ideali per te. Massimo risultato, minimo tempo!",
+    action: { label: "Inizia Quick Workout", link: "/workout/quick" }
+  },
   "non ho voglia": {
     text: "È normale! Inizia con solo 5 minuti di movimento leggero. Il difficile è iniziare, poi il corpo ti ringrazierà!",
     action: { label: "Esercizi Mobilità", link: "/workouts?category=mobility" }
