@@ -4,6 +4,23 @@ import App from './App'
 import './index.css'
 import './styles/admin-override.css'
 import { safeGetElement } from '@/utils/domHelpers'
+import * as SWControl from "./sw-control";
+void SWControl; // impedisce il tree-shaking del modulo a side-effect
+
+if (import.meta.env.DEV) {
+  import("./dev/mobile-hard-refresh");
+  import("./dev/desktop-hard-refresh");
+}
+
+// TEMP: Bonifica PWA/Service Worker (rimuovere dopo 1–2 release)
+if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => r.unregister());
+  }).catch(() => {});
+  if (typeof caches !== "undefined" && caches?.keys) {
+    caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(() => {});
+  }
+}
 
 // Gestione errori globale
 window.addEventListener('unhandledrejection', (event) => {
