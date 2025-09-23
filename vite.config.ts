@@ -15,8 +15,8 @@ export default defineConfig(({ command, mode }) => {
     mode === 'development' && componentTagger(),
     isDev && {
       name: "dev-no-store",
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
+      configureServer(server: any) {
+        server.middlewares.use((req: any, res: any, next: any) => {
           // Imposta no-store su tutte le risposte in DEV
           res.setHeader("Cache-Control", "no-store");
           next();
@@ -38,7 +38,7 @@ export default defineConfig(({ command, mode }) => {
   },
   server: {
     host: "::",
-    port: 8081,
+    port: 8080,
   },
   build: {
     outDir: 'dist',
