@@ -307,3 +307,4 @@ dist/
 *Report generato automaticamente - 19 Settembre 2025*
 *Versione: 7.0 - Deploy Completato su Netlify - performanceprime.it LIVE 🚀*
 *Autore: Mattia Silvestrelli + AI Assistant*
+

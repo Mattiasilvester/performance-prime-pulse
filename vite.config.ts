@@ -14,15 +14,9 @@ export default defineConfig(({ command, mode }) => {
     react(),
     mode === 'development' && componentTagger(),
     isDev && {
-      name: "dev-no-store-and-block-progressier",
+      name: "dev-no-store",
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          // Blocca qualsiasi asset Progressier in DEV
-          if (/progressier(\.app)?/i.test(req.url || "")) {
-            res.statusCode = 404;
-            res.end("[DEV] Blocked Progressier asset");
-            return;
-          }
           // Imposta no-store su tutte le risposte in DEV
           res.setHeader("Cache-Control", "no-store");
           next();

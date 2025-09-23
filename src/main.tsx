@@ -12,8 +12,14 @@ if (import.meta.env.DEV) {
   import("./dev/desktop-hard-refresh");
 }
 
-if (import.meta.env.PROD) {
-  import("./pwa/registerProgressier").then(m => m.registerProgressier?.());
+// TEMP: Bonifica PWA/Service Worker (rimuovere dopo 1–2 release)
+if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => r.unregister());
+  }).catch(() => {});
+  if (typeof caches !== "undefined" && caches?.keys) {
+    caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(() => {});
+  }
 }
 
 // Gestione errori globale

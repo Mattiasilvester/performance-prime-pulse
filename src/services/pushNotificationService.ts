@@ -35,7 +35,7 @@ class PushNotificationService {
 
       // Registra il service worker
       // DISABILITATO PER MOBILE REFRESH FIX
-      // this.registration = await navigator.serviceWorker.register('/sw.js');
+      // Service Worker disabilitato per evitare conflitti PWA
       console.log('Service worker registration disabled for mobile refresh fix');
       console.log('Service Worker registered:', this.registration);
 

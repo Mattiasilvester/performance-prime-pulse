@@ -22,7 +22,7 @@
       }
     });
   } else {
-    // DEV: ambiente sempre pulito - rimuovi TUTTI i SW incluso Progressier
+    // DEV: ambiente sempre pulito - rimuovi TUTTI i SW
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then((regs) => {
         regs.forEach((r) => {
@@ -35,9 +35,8 @@
       caches
         .keys()
         .then((keys) => {
-          // Cancella TUTTE le cache, incluse quelle PWA comuni
-          // Pattern: progressier, workbox, pwa, vite
-          const allCaches = keys.filter(k => /progressier|workbox|pwa|vite/i.test(k) || true);
+          // Cancella TUTTE le cache applicative
+          const allCaches = keys;
           return Promise.all(allCaches.map((k) => caches.delete(k)));
         });
     }
