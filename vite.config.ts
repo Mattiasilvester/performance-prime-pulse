@@ -3,10 +3,26 @@ import react from '@vitejs/plugin-react-swc'
 import path from 'path'
 import { componentTagger } from "lovable-tagger"
 
-export default defineConfig(({ mode }) => ({
+// NOTE: In produzione, servire index.html con Cache-Control: no-cache.
+// Gli asset hashed possono avere Cache-Control: public, max-age=31536000, immutable.
+
+export default defineConfig(({ command, mode }) => {
+  const isDev = command === "serve";
+
+  return {
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
+    isDev && {
+      name: "dev-no-store",
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          // Imposta no-store su tutte le risposte in DEV
+          res.setHeader("Cache-Control", "no-store");
+          next();
+        });
+      },
+    },
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -36,4 +52,5 @@ export default defineConfig(({ mode }) => ({
       }
     }
   }
-}))
+};
+});
