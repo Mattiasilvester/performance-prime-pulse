@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# PWA files da ignorare
+public/progressier.js
+public/sw.js
+public/manifest.json
+public/site.webmanifest

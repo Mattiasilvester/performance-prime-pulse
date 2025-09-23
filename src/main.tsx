@@ -4,8 +4,7 @@ import App from './App'
 import './index.css'
 import './styles/admin-override.css'
 import { safeGetElement } from '@/utils/domHelpers'
-import * as SWControl from "./sw-control";
-void SWControl; // impedisce il tree-shaking del modulo a side-effect
+// SW Control rimosso - bonifica PWA integrata direttamente
 
 if (import.meta.env.DEV) {
   import("./dev/mobile-hard-refresh");
