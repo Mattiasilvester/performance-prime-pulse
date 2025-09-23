@@ -228,6 +228,39 @@ export type Database = {
         }
         Relationships: []
       }
+      openai_usage_logs: {
+        Row: {
+          cost: number | null
+          created_at: string | null
+          id: string
+          model: string | null
+          prompt: string | null
+          response: string | null
+          tokens_used: number | null
+          user_id: string | null
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string | null
+          id?: string
+          model?: string | null
+          prompt?: string | null
+          response?: string | null
+          tokens_used?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string | null
+          id?: string
+          model?: string | null
+          prompt?: string | null
+          response?: string | null
+          tokens_used?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       professionals: {
         Row: {
           birth_date: string
