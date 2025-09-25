@@ -1,223 +1,425 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { getResetPasswordUrl } from '@/shared/config/environments';
-import { analytics } from '@/services/analytics';
-import RegistrationForm from '@/components/auth/RegistrationForm';
-// import emailAnalytics from '@/services/emailAnalytics';
-import { sendPasswordResetEmail } from '@/services/emailService';
+import { toast } from 'sonner';
+import { validateInput, sanitizeText, authRateLimiter, passwordResetRateLimiter, generateCSRFToken, validateCSRFToken } from '@/lib/security';
 
 const Auth = () => {
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [registerData, setRegisterData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const [csrfToken, setCsrfToken] = useState('');
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isResetLoading, setIsResetLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [resetEmail, setResetEmail] = useState('');
-  const [activeTab, setActiveTab] = useState('login');
+
+  useEffect(() => {
+    setCsrfToken(generateCSRFToken());
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    // CSRF token validation
+    const formData = new FormData(e.target as HTMLFormElement);
+    const submittedToken = formData.get('csrf_token') as string;
+    if (!validateCSRFToken(submittedToken, csrfToken)) {
+      toast.error('Token di sicurezza non valido. Ricarica la pagina.');
+      return;
+    }
+    
+    setLoading(true);
 
     try {
+      // Rate limiting check
+      const rateLimitKey = `login_${loginEmail}`;
+      if (!authRateLimiter.isAllowed(rateLimitKey)) {
+        const resetTime = authRateLimiter.getResetTime(rateLimitKey);
+        const remainingMinutes = resetTime ? Math.ceil((resetTime - Date.now()) / 60000) : 0;
+        throw new Error(`Troppi tentativi di login. Riprova tra ${remainingMinutes} minuti.`);
+      }
+
+      // Input validation
+      if (!validateInput.email(loginEmail)) {
+        throw new Error('Formato email non valido');
+      }
+
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeText(loginEmail.trim().toLowerCase());
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: sanitizedEmail,
+        password: loginPassword,
       });
 
       if (error) {
         throw error;
       }
 
-      // Traccia login riuscito
-      analytics.trackAuth('login');
-      
-      toast({
-        title: "Accesso effettuato con successo!",
-        duration: 3000,
-      });
-
-      navigate('/dashboard');
+      if (data.user) {
+        toast.success('Accesso effettuato con successo!');
+        navigate('/app');
+      }
     } catch (error: any) {
-      console.error('Login error:', error);
-      
-      // Traccia errore login
-      analytics.trackError('login_error', {
-        error: error.message,
-        email: email
-      });
-      
-      toast({
-        title: "Errore durante l'accesso",
-        description: error.message,
-        variant: "destructive",
-        duration: 3000,
-      });
+      console.error('Errore durante il login:', error);
+      toast.error(error.message || 'Errore durante il login');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsResetLoading(true);
+    
+    // Rate limiting check
+    const rateLimitKey = `register_${registerData.email}`;
+    if (!authRateLimiter.isAllowed(rateLimitKey)) {
+      const resetTime = authRateLimiter.getResetTime(rateLimitKey);
+      const remainingMinutes = resetTime ? Math.ceil((resetTime - Date.now()) / 60000) : 0;
+      toast.error(`Troppi tentativi di registrazione. Riprova tra ${remainingMinutes} minuti.`);
+      return;
+    }
+
+    // Input validation
+    if (!validateInput.email(registerData.email)) {
+      toast.error('Formato email non valido');
+      return;
+    }
+
+    if (!validateInput.textLength(registerData.firstName, 50)) {
+      toast.error('Il nome deve essere massimo 50 caratteri');
+      return;
+    }
+
+    if (!validateInput.textLength(registerData.lastName, 50)) {
+      toast.error('Il cognome deve essere massimo 50 caratteri');
+      return;
+    }
+
+    // Password validation
+    const passwordValidation = validateInput.password(registerData.password);
+    if (!passwordValidation.isValid) {
+      toast.error(passwordValidation.errors.join('. '));
+      return;
+    }
+
+    if (registerData.password !== registerData.confirmPassword) {
+      toast.error('Le password non coincidono');
+      return;
+    }
+
+    setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: getResetPasswordUrl(),
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeText(registerData.email.trim().toLowerCase());
+      const sanitizedFirstName = sanitizeText(registerData.firstName.trim());
+      const sanitizedLastName = sanitizeText(registerData.lastName.trim());
+
+      const { data, error } = await supabase.auth.signUp({
+        email: sanitizedEmail,
+        password: registerData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            first_name: sanitizedFirstName,
+            last_name: sanitizedLastName,
+          }
+        }
       });
 
       if (error) {
         throw error;
       }
 
-      // Invia email personalizzata tramite n8n (non bloccante)
-      const resetLink = `${getResetPasswordUrl()}?access_token=TOKEN&refresh_token=TOKEN&type=recovery`;
-      sendPasswordResetEmail(resetEmail, resetLink).catch(error => {
-        console.error('Errore invio email reset personalizzata:', error);
-      });
-
-      // Traccia richiesta reset password
-      analytics.trackAuth('password_reset');
-      
-      toast({
-        title: "Email di reset inviata!",
-        description: "Controlla la tua email per reimpostare la password.",
-        duration: 5000,
-      });
-
-      setResetEmail('');
+      if (data.user) {
+        // Check if user is immediately confirmed (when email confirmation is disabled)
+        if (data.session) {
+          // User is already authenticated, redirect to dashboard
+          toast.success('Registrazione completata! Benvenuto in Performance Prime!');
+          navigate('/app');
+        } else {
+          // Email confirmation required
+          toast.success('Registrazione completata! Controlla la tua email per confermare l\'account.');
+          // Reset form
+          setRegisterData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+          });
+        }
+      }
     } catch (error: any) {
-      console.error('Password reset error:', error);
-      
-      // Traccia errore reset password
-      analytics.trackError('password_reset_error', {
-        error: error.message,
-        email: resetEmail
-      });
-      
-      toast({
-        title: "Errore durante l'invio",
-        description: error.message,
-        variant: "destructive",
-        duration: 3000,
-      });
+      console.error('Errore durante la registrazione:', error);
+      toast.error(error.message || 'Errore durante la registrazione');
     } finally {
-      setIsResetLoading(false);
+      setLoading(false);
     }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail.trim()) {
+      toast.error('Inserisci la tua email per recuperare la password');
+      return;
+    }
+
+    // Rate limiting check
+    const rateLimitKey = `reset_${loginEmail}`;
+    if (!passwordResetRateLimiter.isAllowed(rateLimitKey)) {
+      const resetTime = passwordResetRateLimiter.getResetTime(rateLimitKey);
+      const remainingMinutes = resetTime ? Math.ceil((resetTime - Date.now()) / 60000) : 0;
+      toast.error(`Troppi tentativi di reset password. Riprova tra ${remainingMinutes} minuti.`);
+      return;
+    }
+
+    // Input validation
+    if (!validateInput.email(loginEmail)) {
+      toast.error('Formato email non valido');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Sanitize email
+      const sanitizedEmail = sanitizeText(loginEmail.trim().toLowerCase());
+
+      const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success('Email per il recupero password inviata! Controlla la tua casella di posta e clicca sul link per reimpostare la password.');
+      setShowResetPassword(false);
+    } catch (error: any) {
+      // Log error without exposing sensitive information
+      toast.error(error.message || 'Errore durante il recupero password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setRegisterData({...registerData, password: value});
+    const validation = validateInput.password(value);
+    setPasswordErrors(validation.errors);
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-surface-primary border-2 border-brand-primary">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-black border-pp-gold border-2 shadow-xl shadow-pp-gold/20">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-brand-primary">
-            Performance Prime
-          </CardTitle>
-          <CardDescription className="text-text-secondary">
+          <div className="w-16 h-16 bg-black border-2 border-pp-gold rounded-xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-pp-gold font-bold text-2xl">PP</span>
+          </div>
+          <CardTitle className="text-2xl font-bold text-pp-gold">Performance Prime</CardTitle>
+          <CardDescription className="text-pp-gold/80">
             Accedi o registrati per iniziare il tuo percorso
           </CardDescription>
         </CardHeader>
-        
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-surface-secondary h-12 relative">
-              <TabsTrigger 
-                value="login" 
-                className="text-text-primary data-[state=active]:bg-brand-primary data-[state=active]:text-background h-full flex items-center justify-center transition-all duration-200 relative"
+          {showResetPassword ? (
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email" className="text-pp-gold font-medium">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="inserisci la tua email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-pp-gold text-black hover:bg-black hover:text-pp-gold border-2 border-pp-gold font-bold transition-all duration-200" 
+                disabled={loading}
               >
-                Accedi
-                {/* Indicatore personalizzato per Accedi */}
-                <div className="absolute top-4 bottom-12 left-4 right-4 bg-brand-primary rounded-md opacity-0 data-[state=active]:opacity-100 transition-opacity duration-200"></div>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="register" 
-                className="text-text-primary data-[state=active]:bg-brand-primary data-[state=active]:text-background h-full flex items-center justify-center transition-all duration-200 relative"
+                {loading ? 'Caricamento...' : 'Invia Email'}
+              </Button>
+              <Button
+                variant="link"
+                onClick={() => setShowResetPassword(false)}
+                disabled={loading}
+                className="w-full text-sm text-pp-gold hover:text-pp-gold/80 font-medium"
               >
-                Registrati
-                {/* Indicatore personalizzato per Registrati */}
-                <div className="absolute top-4 bottom-12 left-4 right-4 bg-brand-primary rounded-md opacity-0 data-[state=active]:opacity-100 transition-opacity duration-200"></div>
-              
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login" className="space-y-4">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email" className="text-text-primary">Email</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="la-tua-email@esempio.com"
-                    className="bg-surface-secondary border-border-primary text-text-primary"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="login-password" className="text-text-primary">Password</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Inserisci la tua password"
-                    className="bg-surface-secondary border-border-primary text-text-primary"
-                    required
-                  />
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full bg-brand-primary text-background hover:bg-brand-primary/90"
-                  disabled={isLoading}
+                Torna al login
+              </Button>
+            </form>
+          ) : (
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-black border border-pp-gold">
+                <TabsTrigger 
+                  value="login" 
+                  className="text-pp-gold data-[state=active]:bg-pp-gold data-[state=active]:text-black"
                 >
-                  {isLoading ? 'Accesso in corso...' : 'Accedi'}
-                </Button>
-              </form>
+                  Accedi
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="register"
+                  className="text-pp-gold data-[state=active]:bg-pp-gold data-[state=active]:text-black"
+                >
+                  Registrati
+                </TabsTrigger>
+              </TabsList>
               
-              <div className="mt-4 pt-4 border-t border-border-primary">
-                <form onSubmit={handlePasswordReset} className="space-y-4">
+              <TabsContent value="login" className="space-y-4">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <input type="hidden" name="csrf_token" value={csrfToken} />
                   <div className="space-y-2">
-                    <Label htmlFor="reset-email" className="text-text-primary">Reset Password</Label>
+                    <Label htmlFor="login-email" className="text-pp-gold font-medium">Email</Label>
                     <Input
-                      id="reset-email"
+                      id="login-email"
                       type="email"
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      placeholder="Email per il reset"
-                      className="bg-surface-secondary border-border-primary text-text-primary"
+                      placeholder="inserisci la tua email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
                       required
+                      disabled={loading}
+                      className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
                     />
                   </div>
-                  
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password" className="text-pp-gold font-medium">Password</Label>
+                    <Input
+                      id="login-password"
+                      type="password"
+                      placeholder="inserisci la tua password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                    />
+                  </div>
                   <Button 
                     type="submit" 
-                    variant="outline"
-                    className="w-full border-border-primary text-text-primary hover:bg-surface-secondary"
-                    disabled={isResetLoading}
+                    className="w-full bg-pp-gold text-black hover:bg-black hover:text-pp-gold border-2 border-pp-gold font-bold transition-all duration-200" 
+                    disabled={loading}
                   >
-                    {isResetLoading ? 'Invio in corso...' : 'Invia email di reset'}
+                    {loading ? 'Caricamento...' : 'Accedi'}
                   </Button>
                 </form>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="register" className="space-y-4">
-              {/* Usa il nuovo RegistrationForm con validazione anti-disposable */}
-              <RegistrationForm />
-            </TabsContent>
-          </Tabs>
+                <div className="text-center">
+                  <Button
+                    variant="link"
+                    onClick={() => setShowResetPassword(true)}
+                    disabled={loading}
+                    className="text-sm text-pp-gold hover:text-pp-gold/80 font-medium"
+                  >
+                    Recupera password
+                  </Button>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="register" className="space-y-4">
+                <form onSubmit={handleRegister} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName" className="text-pp-gold font-medium">Nome</Label>
+                      <Input
+                        id="firstName"
+                        type="text"
+                        placeholder="Nome"
+                        value={registerData.firstName}
+                        onChange={(e) => setRegisterData({...registerData, firstName: e.target.value})}
+                        required
+                        disabled={loading}
+                        className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName" className="text-pp-gold font-medium">Cognome</Label>
+                      <Input
+                        id="lastName"
+                        type="text"
+                        placeholder="Cognome"
+                        value={registerData.lastName}
+                        onChange={(e) => setRegisterData({...registerData, lastName: e.target.value})}
+                        required
+                        disabled={loading}
+                        className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email" className="text-pp-gold font-medium">Email</Label>
+                    <Input
+                      id="register-email"
+                      type="email"
+                      placeholder="inserisci la tua email"
+                      value={registerData.email}
+                      onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                      required
+                      disabled={loading}
+                      className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password" className="text-pp-gold font-medium">Password</Label>
+                      <Input
+                        id="register-password"
+                        type="password"
+                        placeholder="crea una password"
+                        value={registerData.password}
+                        onChange={(e) => handlePasswordChange(e.target.value)}
+                        required
+                        disabled={loading}
+                        className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                      />
+                      {passwordErrors.length > 0 && (
+                        <div className="text-red-400 text-sm space-y-1 mt-2">
+                          {passwordErrors.map((error, index) => (
+                            <p key={index}>• {error}</p>
+                          ))}
+                        </div>
+                      )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password" className="text-pp-gold font-medium">Conferma Password</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      placeholder="conferma la password"
+                      value={registerData.confirmPassword}
+                      onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})}
+                      required
+                      disabled={loading}
+                      className="bg-black border-pp-gold border-2 text-white placeholder:text-pp-gold/50 focus:ring-pp-gold focus:border-pp-gold"
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-pp-gold text-black hover:bg-black hover:text-pp-gold border-2 border-pp-gold font-bold transition-all duration-200" 
+                    disabled={loading}
+                  >
+                    {loading ? 'Caricamento...' : 'Registrati'}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          )}
         </CardContent>
       </Card>
     </div>
