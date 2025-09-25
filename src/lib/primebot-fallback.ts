@@ -1,294 +1,145 @@
-// PrimeBot Fallback Service
-// Servizio di fallback quando Voiceflow non è disponibile
+// Messaggio disclaimer iniziale (SEMPRE mostrato)
+export const disclaimerMessage = {
+  id: 'disclaimer',
+  role: 'bot' as const,
+  text: `⚠️ **Importante:** PrimeBot è un assistente AI che può commettere errori. Non sostituisce professionisti qualificati (personal trainer, nutrizionisti, medici). Per problemi di salute o programmi personalizzati, consulta sempre un esperto. Usa il buon senso e ascolta il tuo corpo! 💪`,
+  isDisclaimer: true
+};
 
-export interface FallbackMessage {
-  type: 'text' | 'choice';
-  payload: {
-    message?: string;
-    buttons?: Array<{
-      name: string;
-      action: string;
-    }>;
-  };
-}
+// Risposte preimpostate che NON usano token AI (GRATIS)
+export const presetResponses: Record<string, any> = {
+  // MOTIVAZIONE
+  "non ho tempo": {
+    text: "Capisco! Con soli 10 minuti puoi fare un allenamento efficace. Prova il nostro Quick Workout!",
+    action: { label: "Quick Workout 10min", link: "/quick-workout" }
+  },
+  "non ho voglia": {
+    text: "È normale! Inizia con solo 5 minuti di movimento leggero. Il difficile è iniziare, poi il corpo ti ringrazierà!",
+    action: { label: "Esercizi Mobilità", link: "/workouts?category=mobility" }
+  },
+  
+  // PROBLEMI COMUNI - CON CAUTELA
+  "male schiena": {
+    text: "⚠️ Per dolori persistenti, consulta SEMPRE un medico o fisioterapista. Nel frattempo, potresti provare mobilità dolce, ma fermati se senti dolore.",
+    action: { label: "Mobilità Dolce", link: "/workouts?category=mobility" },
+    warning: true
+  },
+  "dolore": {
+    text: "⚠️ Il dolore è un segnale importante del corpo. Se persiste, consulta un professionista. Non allenarti mai con dolore acuto.",
+    warning: true
+  },
+  "infortunio": {
+    text: "⚠️ Con un infortunio, FERMATI e consulta un medico. Il riposo e il recupero guidato da un professionista sono fondamentali.",
+    warning: true
+  },
+  
+  // ALLENAMENTI
+  'come iniziare': {
+    text: '🎯 Perfetto! Per iniziare il tuo percorso fitness: valuta il tuo livello, scegli obiettivi realistici, inizia gradualmente.',
+    action: { label: "Quick Workout", link: "/quick-workout" }
+  },
+  
+  'quick workout': {
+    text: '⚡ Ottima scelta! I Quick Workout sono perfetti per chi ha poco tempo. Durata: 10-15 minuti, nessuna attrezzatura, risultati garantiti!',
+    action: { label: "Inizia Subito", link: "/quick-workout" }
+  },
 
-export interface FallbackSession {
-  sessionID: string;
-  userID: string;
-  context: Record<string, any>;
-}
+  'perdere peso': {
+    text: '🎯 Per perdere peso in modo sano: deficit calorico moderato, allenamento misto (cardio + forza), costanza nel tempo, alimentazione equilibrata.',
+    action: { label: "Cardio HIIT", link: "/workouts?category=hiit" }
+  },
 
-export interface FallbackUserContext {
-  user_id: string;
-  name: string;
-  fitness_level: 'beginner' | 'intermediate' | 'advanced';
-  goals: string[];
-  recent_workouts: any[];
-  progress_metrics: {
-    weight?: number;
-    body_fat?: number;
-    last_updated: string;
-  };
-  has_trainer: boolean;
-  subscription_status: string;
-  preferences: {
-    workout_types: string[];
-    reminder_frequency: string;
-    communication_style: string;
-  };
-}
+  'aumentare massa': {
+    text: '💪 Per aumentare massa muscolare: allenamento di forza progressivo, surplus calorico controllato, riposo adeguato, proteine sufficienti.',
+    action: { label: "Allenamento Forza", link: "/workouts?category=strength" }
+  },
 
-class PrimeBotFallback {
-  private sessions: Map<string, any> = new Map();
+  'alimentazione': {
+    text: '🥗 Alimentazione fondamentale: equilibrio macronutrienti, idratazione adeguata, timing pasti, qualità alimenti. Per piani personalizzati, consulta un nutrizionista.',
+    warning: true
+  },
 
-  /**
-   * Inizializza una sessione di fallback
-   */
-  async initializeSession(userID: string, userContext?: FallbackUserContext): Promise<FallbackSession> {
-    const sessionID = `fallback_session_${userID}_${Date.now()}`;
-    
-    this.sessions.set(sessionID, {
-      userID,
-      context: userContext || {},
-      messageCount: 0
-    });
+  'proteine': {
+    text: '🍖 Proteine essenziali per: costruzione muscolare, recupero, sazietà. Fabbisogno: 1.6-2.2g per kg peso. Fonti: carne, pesce, uova, legumi.',
+  },
 
+  'recupero': {
+    text: '😴 Il recupero è quando i muscoli crescono! Sonno: 7-9 ore, riposo attivo, stretching, gestione stress.',
+    action: { label: "Stretching", link: "/workouts?category=mobility" }
+  },
+
+  'plateau': {
+    text: '📈 Plateau normale! Strategie: variare allenamento, aumentare intensità, cambiare volume, rivedere alimentazione.',
+  },
+
+  'motivazione': {
+    text: '🔥 La motivazione va allenata! Obiettivi SMART, traccia progressi, celebra successi, trova partner, varia routine. Costanza > Perfezione!',
+  },
+
+  'casa': {
+    text: '🏠 Allenarsi a casa è perfetto! Vantaggi: zero costi, flessibilità, privacy. Corpo libero, HIIT, yoga sono ottime opzioni.',
+    action: { label: "Workout Casa", link: "/workouts" }
+  },
+
+  'principiante': {
+    text: '🌟 Benvenuto! Come principiante: inizia gradualmente, impara tecnica corretta, ascolta il corpo, sii paziente.',
+    action: { label: "Primo Allenamento", link: "/quick-workout" }
+  },
+
+  'risultati': {
+    text: '📊 Tempistiche realistiche: prime sensazioni 2-4 settimane, cambiamenti visibili 6-8 settimane, trasformazioni 3-6 mesi. Serve costanza!',
+  }
+};
+
+// Funzione per trovare risposta
+export function findPresetResponse(message: string): any {
+  const lowerMessage = message.toLowerCase().trim();
+  
+  // Controllo parole chiave mediche/pericolose
+  const medicalKeywords = ['male', 'dolore', 'infortunio', 'ferito', 'problema cardiaco', 'vertigini', 'svenimento'];
+  const hasMedicalConcern = medicalKeywords.some(keyword => lowerMessage.includes(keyword));
+  
+  if (hasMedicalConcern && !presetResponses[lowerMessage]) {
     return {
-      sessionID,
-      userID,
-      context: userContext || {}
+      text: "⚠️ Per questioni mediche o dolori, ti consiglio vivamente di consultare un professionista sanitario. La tua salute viene prima di tutto!",
+      warning: true
     };
   }
-
-  /**
-   * Invia un messaggio e ricevi una risposta di fallback
-   */
-  async sendMessage(sessionID: string, message: string): Promise<FallbackMessage[]> {
-    const session = this.sessions.get(sessionID);
-    if (!session) {
-      throw new Error('Session not found');
-    }
-
-    session.messageCount++;
-    const messageLower = message.toLowerCase();
-
-    // Risposte intelligenti basate sul contenuto del messaggio
-    let response: FallbackMessage;
-
-    if (messageLower.includes('ciao') || messageLower.includes('salve') || messageLower.includes('hello')) {
-      response = {
-        type: 'text',
-        payload: {
-          message: `Ciao! Sono PrimeBot, il tuo AI Coach personale. Come posso aiutarti oggi con il tuo allenamento?`
-        }
-      };
-    } else if (messageLower.includes('allenamento') || messageLower.includes('workout') || messageLower.includes('esercizio')) {
-      response = {
-        type: 'choice',
-        payload: {
-          message: 'Perfetto! Posso aiutarti con il tuo allenamento. Cosa preferisci?',
-          buttons: [
-            { name: 'Crea nuovo allenamento', action: 'create_workout' },
-            { name: 'Mostra allenamenti recenti', action: 'show_recent' },
-            { name: 'Consigli personalizzati', action: 'personal_advice' }
-          ]
-        }
-      };
-    } else if (messageLower.includes('progressi') || messageLower.includes('risultati') || messageLower.includes('statistiche')) {
-      response = {
-        type: 'text',
-        payload: {
-          message: 'Ottimo! Posso aiutarti a tracciare i tuoi progressi. Vuoi vedere le tue statistiche o impostare nuovi obiettivi?'
-        }
-      };
-    } else if (messageLower.includes('nutrizione') || messageLower.includes('dieta') || messageLower.includes('alimentazione')) {
-      response = {
-        type: 'choice',
-        payload: {
-          message: 'La nutrizione è fondamentale! Cosa ti interessa?',
-          buttons: [
-            { name: 'Consigli nutrizionali', action: 'nutrition_tips' },
-            { name: 'Piano alimentare', action: 'meal_plan' },
-            { name: 'Calcolo calorie', action: 'calorie_calc' }
-          ]
-        }
-      };
-    } else if (messageLower.includes('obiettivi') || messageLower.includes('goal') || messageLower.includes('target')) {
-      response = {
-        type: 'text',
-        payload: {
-          message: 'Gli obiettivi sono la chiave del successo! Dimmi cosa vuoi raggiungere e ti aiuterò a creare un piano personalizzato.'
-        }
-      };
-    } else if (messageLower.includes('motivazione') || messageLower.includes('motivare') || messageLower.includes('inspirazione')) {
-      response = {
-        type: 'text',
-        payload: {
-          message: '💪 Ricorda: ogni grande atleta è iniziato da dove sei tu ora. La costanza batte la perfezione ogni volta. Sei sulla strada giusta!'
-        }
-      };
-    } else if (messageLower.includes('timer') || messageLower.includes('cronometro') || messageLower.includes('tempo')) {
-      response = {
-        type: 'choice',
-        payload: {
-          message: 'Perfetto per i tuoi allenamenti! Che tipo di timer ti serve?',
-          buttons: [
-            { name: 'Timer Tabata (20s/10s)', action: 'tabata_timer' },
-            { name: 'Timer Circuito (45s/15s)', action: 'circuit_timer' },
-            { name: 'Timer Personalizzato', action: 'custom_timer' }
-          ]
-        }
-      };
-    } else if (messageLower.includes('grazie') || messageLower.includes('thanks') || messageLower.includes('thank')) {
-      response = {
-        type: 'text',
-        payload: {
-          message: 'Prego! Sono qui per aiutarti a raggiungere i tuoi obiettivi. Continua così! 💪'
-        }
-      };
-    } else {
-      // Risposta generica per messaggi non riconosciuti
-      const genericResponses = [
-        'Interessante! Dimmi di più su quello che vuoi fare.',
-        'Capisco! Come posso aiutarti a raggiungere questo obiettivo?',
-        'Ottima domanda! Lascia che ti dia alcuni consigli personalizzati.',
-        'Sono qui per supportarti! Cosa ti serve per il tuo allenamento?',
-        'Perfetto! Posso aiutarti con allenamenti, nutrizione, progressi e molto altro.'
-      ];
-      
-      const randomResponse = genericResponses[Math.floor(Math.random() * genericResponses.length)];
-      
-      response = {
-        type: 'choice',
-        payload: {
-          message: randomResponse,
-          buttons: [
-            { name: 'Nuovo Allenamento', action: 'new_workout' },
-            { name: 'I Miei Progressi', action: 'my_progress' },
-            { name: 'Consigli Nutrizionali', action: 'nutrition_advice' },
-            { name: 'Impostazioni', action: 'settings' }
-          ]
-        }
-      };
-    }
-
-    return [response];
+  
+  // Cerca match esatto prima
+  if (presetResponses[lowerMessage]) {
+    return presetResponses[lowerMessage];
   }
-
-  /**
-   * Gestisce le scelte dell'utente
-   */
-  async sendChoice(sessionID: string, choice: any): Promise<FallbackMessage[]> {
-    const session = this.sessions.get(sessionID);
-    if (!session) {
-      throw new Error('Session not found');
-    }
-
-    session.messageCount++;
-
-    let response: FallbackMessage;
-
-    switch (choice.action) {
-      case 'create_workout':
-        response = {
-          type: 'text',
-          payload: {
-            message: 'Perfetto! Creiamo un allenamento personalizzato. Dimmi: che tipo di allenamento preferisci? (Cardio, Forza, Funzionale, Yoga)'
-          }
-        };
-        break;
-
-      case 'show_recent':
-        response = {
-          type: 'text',
-          payload: {
-            message: 'Ecco i tuoi allenamenti recenti! Continua così, la costanza è la chiave del successo. 💪'
-          }
-        };
-        break;
-
-      case 'personal_advice':
-        response = {
-          type: 'text',
-          payload: {
-            message: 'Basandomi sui tuoi dati, ti consiglio di: 1) Variare gli allenamenti, 2) Ascoltare il tuo corpo, 3) Mantenere la costanza. Vuoi un piano specifico?'
-          }
-        };
-        break;
-
-      case 'nutrition_tips':
-        response = {
-          type: 'text',
-          payload: {
-            message: '🍎 Consigli nutrizionali: 1) Proteine ad ogni pasto, 2) Carboidrati complessi, 3) Grassi buoni, 4) Idratazione costante. Vuoi un piano alimentare?'
-          }
-        };
-        break;
-
-      case 'meal_plan':
-        response = {
-          type: 'text',
-          payload: {
-            message: 'Creiamo un piano alimentare personalizzato! Dimmi: qual è il tuo obiettivo principale? (Perdita peso, Aumento massa, Mantenimento)'
-          }
-        };
-        break;
-
-      case 'tabata_timer':
-        response = {
-          type: 'text',
-          payload: {
-            message: '⏱️ Timer Tabata attivato! 20 secondi di lavoro intenso, 10 secondi di riposo. Pronto? Iniziamo!'
-          }
-        };
-        break;
-
-      case 'circuit_timer':
-        response = {
-          type: 'text',
-          payload: {
-            message: '⏱️ Timer Circuito attivato! 45 secondi di lavoro, 15 secondi di riposo. Perfetto per circuiti intensi!'
-          }
-        };
-        break;
-
-      default:
-        response = {
-          type: 'text',
-          payload: {
-            message: 'Ottima scelta! Come posso aiutarti ulteriormente con questo?'
-          }
-        };
-    }
-
-    return [response];
-  }
-
-  /**
-   * Testa la connessione (sempre true per fallback)
-   */
-  async testConnection(): Promise<boolean> {
-    return true; // Fallback sempre disponibile
-  }
-
-  /**
-   * Aggiorna il contesto utente
-   */
-  async updateUserContext(sessionID: string, context: any): Promise<void> {
-    const session = this.sessions.get(sessionID);
-    if (session) {
-      session.context = { ...session.context, ...context };
+  
+  // Cerca match parziale
+  for (const [key, response] of Object.entries(presetResponses)) {
+    if (lowerMessage.includes(key) || key.includes(lowerMessage)) {
+      return response;
     }
   }
-
-  /**
-   * Ottiene lo stato della sessione
-   */
-  async getSessionState(sessionID: string): Promise<any> {
-    return this.sessions.get(sessionID) || null;
-  }
+  
+  return null;
 }
 
-// Esporta un'istanza singleton
-export const primebotFallback = new PrimeBotFallback();
-export default primebotFallback;
+// Risposte generiche di fallback
+export const genericResponses = [
+  "🤖 Sono qui per aiutarti con il fitness! Puoi chiedermi di allenamenti, nutrizione, motivazione o consigli generali.",
+  "💪 Dimmi pure cosa ti serve: allenamenti, consigli alimentari, motivazione o altro!",
+  "🎯 Sono il tuo coach AI! Posso consigliarti su allenamenti, obiettivi fitness, alimentazione e molto altro.",
+  "⚡ Pronto ad aiutarti! Che si tratti di workout, nutrizione o motivazione, sono qui per te!"
+];
+
+// Funzione principale per ottenere risposta
+export function getPrimeBotFallbackResponse(message: string): any {
+  const presetResponse = findPresetResponse(message);
+  
+  if (presetResponse) {
+    return presetResponse;
+  }
+  
+  // Risposta generica randomica
+  const randomIndex = Math.floor(Math.random() * genericResponses.length);
+  return {
+    text: genericResponses[randomIndex]
+  };
+}
