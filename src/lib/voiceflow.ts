@@ -1,4 +1,6 @@
 import { Message } from "@/types/chat";
+import { getAIResponse } from './openai-service';
+import { getPrimeBotFallbackResponse, disclaimerMessage } from './primebot-fallback';
 
 // Mappa delle funzionalità dell'app per navigazione
 const APP_FEATURES = {
@@ -765,8 +767,77 @@ export const vfPatchState = async (chatID: string, state: any) => {
 };
 
 export const vfInteract = async (chatID: string, request: any) => {
-  // Wrapper per la funzione interact
-  return await interact(chatID, request);
+  // Estrai il messaggio
+  let messageText = '';
+  if (typeof request === 'string') {
+    messageText = request;
+  } else if (request?.message) {
+    messageText = request.message;
+  } else if (request?.text) {
+    messageText = request.text;
+  }
+  
+  if (!messageText || messageText.trim() === '') {
+    return {
+      message: "Non ho ricevuto il tuo messaggio. Puoi ripetere?",
+      suggestions: ["Come creo un workout?", "Chi è Mattia?"],
+      confidence: 0.2
+    };
+  }
+
+  // 1. Check preset responses first (GRATIS)
+  const presetResponse = getPrimeBotFallbackResponse(messageText);
+  if (presetResponse && presetResponse.text) {
+    return {
+      message: presetResponse.text,
+      suggestions: presetResponse.action ? [presetResponse.action.label] : [],
+      navigation: presetResponse.action ? {
+        path: presetResponse.action.link,
+        label: presetResponse.action.label,
+        action: 'navigate'
+      } : null,
+      confidence: 0.9
+    };
+  }
+  
+  // 2. Check for Quick Training
+  if (messageText.toLowerCase().includes('poco tempo') || 
+      messageText.toLowerCase().includes('non ho tempo') ||
+      messageText.toLowerCase().includes('workout veloce')) {
+    return {
+      message: '⚡ Perfetto! Ho il workout ideale per te: Quick Training da 15 minuti, super efficace e senza attrezzatura!',
+      navigation: {
+        path: '/workout/quick',
+        label: 'Inizia Quick Workout 10min',
+        action: 'navigate'
+      },
+      suggestions: ['Mostrami gli esercizi', 'Quanto spesso dovrei farlo?']
+    };
+  }
+  
+  // 3. Use OpenAI if no preset match
+  try {
+    const aiResponse = await getAIResponse(messageText, chatID);
+    if (aiResponse.success) {
+      return {
+        message: aiResponse.message,
+        suggestions: ['Altro consiglio?', 'Mostrami la Dashboard'],
+        confidence: 0.8
+      };
+    } else {
+      return {
+        message: aiResponse.message,
+        suggestions: ['Usa i bottoni rapidi', 'Mostrami la Dashboard'],
+        confidence: 0.6
+      };
+    }
+  } catch (error) {
+    console.error('OpenAI error:', error);
+    return { 
+      message: 'Scusa, ho avuto un problema tecnico. Riprova o usa i suggerimenti rapidi!',
+      suggestions: ['Mostrami la Dashboard', 'Come creo un workout?']
+    };
+  }
 };
 
 export const parseVF = (data: any) => {

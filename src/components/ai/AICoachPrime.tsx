@@ -24,12 +24,7 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 relative">
-          <div 
-            className="cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={openFullScreenChat}
-          >
-            <PrimeChat isModal={false} />
-          </div>
+          <PrimeChat isModal={false} />
         </div>
         <div className="space-y-4">
           <div className="bg-black border border-gray-500 rounded-2xl p-6 quick-actions relative">

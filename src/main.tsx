@@ -6,10 +6,7 @@ import './styles/admin-override.css'
 import { safeGetElement } from '@/utils/domHelpers'
 // SW Control rimosso - bonifica PWA integrata direttamente
 
-if (import.meta.env.DEV) {
-  import("./dev/mobile-hard-refresh");
-  import("./dev/desktop-hard-refresh");
-}
+// Dev imports rimossi - file non esistenti
 
 // TEMP: Bonifica PWA/Service Worker (rimuovere dopo 1–2 release)
 if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
