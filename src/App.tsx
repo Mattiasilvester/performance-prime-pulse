@@ -13,7 +13,6 @@ import RegisterPage from '@/pages/auth/RegisterPage'
 import { Dashboard } from '@/components/dashboard/Dashboard'
 import TermsAndConditions from '@/pages/TermsAndConditions'
 import PrivacyPolicy from '@/pages/PrivacyPolicy'
-import Auth from '@/pages/Auth'
 import { Workouts } from '@/components/workouts/Workouts'
 import QuickWorkout from '@/pages/QuickWorkout'
 import Timer from '@/pages/Timer'
@@ -94,7 +93,7 @@ function App() {
               <Route path="/auth/login" element={
                 session ? <Navigate to="/dashboard" /> : <LoginPage />
               } />
-              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth" element={<LoginPage />} />
               <Route path="/auth/register" element={
                 session ? <Navigate to="/dashboard" /> : <RegisterPage />
               } />

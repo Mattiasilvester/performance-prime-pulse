@@ -1,36 +1,26 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
-import { useErrorHandler } from '@/hooks/useErrorHandler'
-import { ErrorFallback } from '@/components/ui/ErrorFallback'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useToast } from '@/hooks/use-toast'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
+  const [isResetLoading, setIsResetLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const { handleAuthError, handleValidationError } = useErrorHandler({
-    context: { component: 'LoginPage' }
-  })
+  const [resetEmail, setResetEmail] = useState('')
+  const [activeTab, setActiveTab] = useState('login')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    // Validazione input
-    if (!email || !password) {
-      setError('Compila tutti i campi obbligatori')
-      setLoading(false)
-      return
-    }
-
-    if (!email.includes('@')) {
-      setError('Inserisci un indirizzo email valido')
-      setLoading(false)
-      return
-    }
+    setIsLoading(true)
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -38,81 +28,167 @@ export default function LoginPage() {
         password,
       })
 
-      if (error) throw error
+      if (error) {
+        throw error
+      }
 
-      // Success
+      // Traccia login riuscito
+      toast({
+        title: "Accesso effettuato con successo!",
+        duration: 3000,
+      })
+
       navigate('/dashboard')
-    } catch (error) {
-      const errorInfo = handleAuthError(error, { action: 'signIn' })
-      setError(errorInfo.userMessage)
+    } catch (error: any) {
+      console.error('Login error:', error)
+      
+      toast({
+        title: "Errore durante l'accesso",
+        description: error.message,
+        variant: "destructive",
+        duration: 3000,
+      })
     } finally {
-      setLoading(false)
+      setIsLoading(false)
+    }
+  }
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsResetLoading(true)
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      toast({
+        title: "Email di reset inviata!",
+        description: "Controlla la tua email per reimpostare la password.",
+        duration: 5000,
+      })
+
+      setResetEmail('')
+    } catch (error: any) {
+      console.error('Password reset error:', error)
+      
+      toast({
+        title: "Errore durante l'invio",
+        description: error.message,
+        variant: "destructive",
+        duration: 3000,
+      })
+    } finally {
+      setIsResetLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="max-w-md w-full space-y-8 p-8 bg-gray-900 rounded-lg">
-        <div>
-          <h2 className="text-3xl font-bold text-yellow-500 text-center">
-            Bentornato in Performance Prime
-          </h2>
-          <p className="mt-2 text-center text-gray-400">
-            Accedi al tuo account
-          </p>
-        </div>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-surface-primary border-2 border-brand-primary">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-brand-primary">
+            Performance Prime
+          </CardTitle>
+          <CardDescription className="text-text-secondary">
+            Accedi o registrati per iniziare il tuo percorso
+          </CardDescription>
+        </CardHeader>
         
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && (
-            <div className="bg-red-500/10 text-red-500 p-3 rounded border border-red-500/20">
-              {error}
-            </div>
-          )}
-          
-          <div>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 text-white rounded border border-gray-700 focus:border-yellow-500 focus:outline-none transition-colors"
-              placeholder="Email"
-              disabled={loading}
-            />
-          </div>
-          
-          <div>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 text-white rounded border border-gray-700 focus:border-yellow-500 focus:outline-none transition-colors"
-              placeholder="Password"
-              disabled={loading}
-            />
-          </div>
-          
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2 sm:py-3 bg-yellow-500 text-black font-bold rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
-          >
-            {loading ? 'Accesso...' : 'Accedi'}
-          </button>
-        </form>
-        
-        <p className="text-center text-gray-400">
-          Non hai un account?{' '}
-          <Link to="/auth/register" className="text-yellow-500 hover:underline">
-            Registrati gratis
-          </Link>
-        </p>
-        
-        <Link to="/" className="block text-center text-gray-500 hover:text-gray-400">
-          ← Torna alla home
-        </Link>
-      </div>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-surface-secondary h-12 relative">
+              <TabsTrigger 
+                value="login" 
+                className="text-text-primary data-[state=active]:bg-brand-primary data-[state=active]:text-background h-full flex items-center justify-center transition-all duration-200 relative"
+              >
+                Accedi
+              </TabsTrigger>
+              <TabsTrigger 
+                value="register" 
+                className="text-text-primary data-[state=active]:bg-brand-primary data-[state=active]:text-background h-full flex items-center justify-center transition-all duration-200 relative"
+              >
+                Registrati
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login" className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email" className="text-text-primary">Email</Label>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="la-tua-email@esempio.com"
+                    className="bg-surface-secondary border-border-primary text-text-primary"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="login-password" className="text-text-primary">Password</Label>
+                  <Input
+                    id="login-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Inserisci la tua password"
+                    className="bg-surface-secondary border-border-primary text-text-primary"
+                    required
+                  />
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-brand-primary text-background hover:bg-brand-primary/90"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Accesso in corso...' : 'Accedi'}
+                </Button>
+              </form>
+              
+              <div className="mt-4 pt-4 border-t border-border-primary">
+                <form onSubmit={handlePasswordReset} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email" className="text-text-primary">Reset Password</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="Email per il reset"
+                      className="bg-surface-secondary border-border-primary text-text-primary"
+                      required
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    variant="outline"
+                    className="w-full border-border-primary text-text-primary hover:bg-surface-secondary"
+                    disabled={isResetLoading}
+                  >
+                    {isResetLoading ? 'Invio in corso...' : 'Invia email di reset'}
+                  </Button>
+                </form>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="register" className="space-y-4">
+              <div className="text-center text-text-secondary">
+                <p>Registrazione temporaneamente non disponibile.</p>
+                <p className="text-sm mt-2">Contatta il supporto per maggiori informazioni.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   )
 }
