@@ -25,17 +25,48 @@ header {
   height: auto !important;
 }
 
-/* Fix specifico per BottomNavigation - RIMOSSO per evitare conflitti con FeedbackWidget */
-/* [class*="fixed"][class*="bottom"] {
+/* Fix specifico per BottomNavigation - AGGIORNATO Z-INDEX */
+[class*="fixed"][class*="bottom"] {
   position: fixed !important;
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 50 !important;
+  z-index: 9999 !important;
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
-} */
+}
+
+/* Fix specifico per classe bottom-navigation */
+.bottom-navigation {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+}
+
+/* Rimosso per permettere l'effetto vetro naturale di Tailwind */
+
+/* Rimosso per permettere l'effetto vetro naturale di Tailwind */
+
+/* Fix specifico per FeedbackWidget */
+.feedback-widget {
+  position: fixed !important;
+  bottom: 80px !important;
+  right: 16px !important;
+  left: auto !important;
+  z-index: 1000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
 
 /* Fix per popover e dropdown */
 [data-radix-popper-content-wrapper] {
@@ -52,6 +83,27 @@ header {
 
 /* Mobile-specific scroll fixes */
 @media only screen and (max-width: 768px) {
+  /* Fix specifico per BottomNavigation su mobile */
+  .bottom-navigation {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    width: 100% !important;
+  }
+  
+  /* Fix specifico per FeedbackWidget su mobile */
+  .feedback-widget {
+    position: fixed !important;
+    bottom: 80px !important;
+    right: 16px !important;
+    left: auto !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
   /* Reset tutto per mobile */
   html, body, #root {
     position: relative !important;

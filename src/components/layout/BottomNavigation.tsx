@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Dumbbell, Calendar, Crown, User } from 'lucide-react';
 
@@ -43,11 +43,57 @@ const BottomNavigation = () => {
     return location.pathname === path;
   };
 
+  // Forza il rendering corretto dopo il mount
+  useEffect(() => {
+    const forcePositioning = () => {
+      const nav = document.querySelector('.bottom-navigation') as HTMLElement;
+      if (nav) {
+        // Forza positioning per mobile
+        nav.style.zIndex = '9999';
+        nav.style.position = 'fixed';
+        nav.style.bottom = '0';
+        nav.style.left = '0';
+        nav.style.right = '0';
+        nav.style.width = '100%';
+        
+        // Mobile-specific fixes
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+          nav.style.transform = 'translateZ(0)'; // Force hardware acceleration
+          nav.style.willChange = 'transform';
+          console.log('📱 Mobile BottomNavigation positioning forced');
+        } else {
+          console.log('🖥️ Desktop BottomNavigation positioning forced');
+        }
+      }
+    };
+
+    const timer = setTimeout(forcePositioning, 0);
+    
+    // Listener per resize (mobile rotation)
+    window.addEventListener('resize', forcePositioning);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', forcePositioning);
+    };
+  }, []);
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 backdrop-blur-lg bg-black/30 border-t border-white/10 z-50">
-      {/* Barra di navigazione */}
-      <div className="pb-safe h-20">
-        <div className="flex justify-around items-center py-1 px-2 sm:py-2 sm:px-4">
+    <nav 
+      className="bottom-navigation fixed bottom-0 left-0 right-0 z-[9999] pb-safe sm:z-[9999] md:z-[9999] lg:z-[9999] xl:z-[9999]"
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999,
+        width: '100%'
+      }}
+    >
+      {/* Effetto vetro con blur e trasparenza */}
+      <div className="backdrop-blur-xl bg-black/20 shadow-lg border-t border-white/20">
+        <div className="flex justify-around items-center h-16">
           {navItems.map((item) => {
             const IconComponent = item.icon;
             const active = isActive(item.path);
@@ -56,27 +102,23 @@ const BottomNavigation = () => {
               <button
                 key={item.id}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center justify-center py-1 px-1 sm:py-2 sm:px-3 rounded-lg transition-colors min-w-0 flex-1 ${
+                className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-all duration-200 ${
                   active 
-                    ? 'text-pp-gold' 
-                    : 'text-gray-400 hover:text-pp-gold/80'
+                    ? 'text-yellow-400' 
+                    : 'text-white/70 hover:text-white'
                 }`}
               >
                 <IconComponent 
-                  size={20} 
-                  className={`mb-0.5 sm:mb-1 ${active ? 'text-pp-gold' : 'text-gray-400'}`}
+                  size={24} 
+                  className={active ? 'mb-1' : 'mb-1 opacity-70'} 
                 />
-                <span className={`text-[10px] sm:text-xs font-medium leading-tight text-center ${
-                  active ? 'text-pp-gold' : 'text-gray-400'
-                }`}>
-                  {item.label}
-                </span>
+                <span className="text-xs font-medium">{item.label}</span>
               </button>
             );
           })}
         </div>
       </div>
-    </div>
+    </nav>
   );
 };
 

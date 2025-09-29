@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
-import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { PushPermissionModal } from '@/components/notifications/PushPermissionModal';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useMedalSystem } from '@/hooks/useMedalSystem';

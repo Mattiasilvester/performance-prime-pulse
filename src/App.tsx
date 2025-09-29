@@ -104,7 +104,7 @@ function App() {
               <Route path="/dashboard" element={
                 <ProtectedRoute session={session}>
                   <Header />
-                  <div className="min-h-screen pb-20 pt-24">
+                  <div className="min-h-screen pt-24 pb-20">
                     <Dashboard />
                   </div>
                   <BottomNavigation />
@@ -114,7 +114,7 @@ function App() {
               <Route path="/workouts" element={
                 <ProtectedRoute session={session}>
                   <Header />
-                  <div className="min-h-screen pb-20 pt-24">
+                  <div className="min-h-screen pt-24 pb-20">
                     <Workouts />
                   </div>
                   <BottomNavigation />
@@ -137,7 +137,7 @@ function App() {
               <Route path="/schedule" element={
                 <ProtectedRoute session={session}>
                   <Header />
-                  <div className="min-h-screen pb-20 pt-24">
+                  <div className="min-h-screen pt-24 pb-20">
                     <Schedule />
                   </div>
                   <BottomNavigation />
@@ -147,7 +147,7 @@ function App() {
               <Route path="/ai-coach" element={
                 <ProtectedRoute session={session}>
                   <Header />
-                  <div className="min-h-screen pb-20 pt-24">
+                  <div className="min-h-screen pt-24 pb-20">
                     <AICoach />
                   </div>
                   <BottomNavigation />
@@ -165,10 +165,11 @@ function App() {
               <Route path="/profile" element={
                 <ProtectedRoute session={session}>
                   <Header />
-                  <div className="min-h-screen pb-20 pt-24">
+                  <div className="min-h-screen pt-24 pb-20">
                     <Profile />
                   </div>
                   <BottomNavigation />
+                  <FeedbackWidget />
                 </ProtectedRoute>
               } />
               <Route path="/settings/personal-info" element={

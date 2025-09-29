@@ -9,7 +9,6 @@ import { OnboardingBot } from '@/components/OnboardingBot';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
-import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { useFeedback15Days } from '@/hooks/useFeedback15Days';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -88,7 +87,6 @@ export const Dashboard = () => {
           <RecentActivity />
         </div>
       </div>
-      <BottomNavigation />
     </div>
   );
 };
