@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { vfPatchState, vfInteract, parseVF } from '@/lib/voiceflow';
+import { getAIResponse } from '@/lib/openai-service';
 import { fetchUserProfile } from '@/services/userService';
+import { usePrimeBot } from '@/contexts/PrimeBotContext';
 
 type Msg = { 
   id: string; 
@@ -20,8 +21,33 @@ interface PrimeChatProps {
   isModal?: boolean;
 }
 
+// Funzione per formattare markdown senza librerie
+const renderFormattedMessage = (text: string) => {
+  if (!text) return null;
+  
+  // Splitta per ** e processa
+  const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+  
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      // Grassetto
+      return <strong key={index} className="font-bold text-yellow-400">
+        {part.slice(2, -2)}
+      </strong>;
+    } else if (part.startsWith('*') && part.endsWith('*')) {
+      // Corsivo
+      return <em key={index} className="italic">
+        {part.slice(1, -1)}
+      </em>;
+    }
+    // Testo normale
+    return <span key={index}>{part}</span>;
+  });
+};
+
 export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const navigate = useNavigate();
+  const { setIsFullscreen } = usePrimeBot();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,16 +58,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [userEmail, setUserEmail] = useState<string>('');
   const [hasStartedChat, setHasStartedChat] = useState(false);
 
-  // Test API connection on mount (solo per debug)
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      const apiKey = import.meta.env.VITE_VF_API_KEY;
-      if (apiKey) {
-      } else {
-        console.error('❌ API Key not found!');
-      }
-    }
-  }, []);
+  // Voiceflow rimosso - ora usa solo OpenAI
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
 
   useEffect(() => {
@@ -102,15 +119,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         // I messaggi vengono gestiti solo dal bottone "Inizia Chat"
         console.log('useEffect PRINCIPALE: FINE - non aggiungo messaggi automaticamente');
 
-        try {
-          await vfPatchState(id, {
-            user_name: fullName,
-            user_id: id,
-            user_contact: email
-          });
-        } catch (e) {
-          console.warn('Voiceflow state patch error', e);
-        }
+        // Voiceflow rimosso - ora usa solo OpenAI
       } catch (error) {
         console.error('Error in PrimeChat useEffect:', error);
         // NON aggiungere messaggi automaticamente - mantieni la Landing Page
@@ -134,20 +143,29 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     }
 
     try {
-      const traces = await vfInteract(userId, trimmed);
-      const { texts, choices, navigation } = parseVF(traces);
-
-      setMsgs(m => [
-        ...m,
-        ...texts.map(t => ({ 
-          id: crypto.randomUUID(), 
-          role: 'bot' as const, 
-          text: t,
-          navigation: navigation || undefined
-        })),
-        // Rimosso: choices creano messaggi extra indesiderati
-      ]);
+      const aiResponse = await getAIResponse(trimmed, userId);
+      
+      if (aiResponse.success) {
+        setMsgs(m => [
+          ...m,
+          { 
+            id: crypto.randomUUID(), 
+            role: 'bot' as const, 
+            text: aiResponse.message
+          }
+        ]);
+      } else {
+        setMsgs(m => [
+          ...m,
+          { 
+            id: crypto.randomUUID(), 
+            role: 'bot' as const, 
+            text: aiResponse.message
+          }
+        ]);
+      }
     } catch (e) {
+      console.error('Errore chiamata OpenAI:', e);
       setMsgs(m => [
         ...m,
         { id: crypto.randomUUID(), role: 'bot', text: 'Ops, connessione instabile. Riprova tra qualche secondo.' }
@@ -211,6 +229,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
               console.log('PRIMA CLICK: msgs =', msgs);
               
               setHasStartedChat(true);
+              setIsFullscreen(true); // Imposta fullscreen quando inizia la chat
               setMsgs([
                 {
                   id: 'disclaimer',
@@ -281,6 +300,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
             onClick={() => {
               setHasStartedChat(false);
               setMsgs([]);
+              setIsFullscreen(false); // Reset fullscreen quando si chiude la chat
             }}
             className="text-xl hover:opacity-70"
             title="Torna a PrimeBot"
@@ -308,7 +328,9 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                       <span>⚠️ AVVISO IMPORTANTE</span>
                     </div>
                   )}
-                  <div className="whitespace-pre-wrap">{m.text}</div>
+                  <div className="whitespace-pre-wrap">
+                    {renderFormattedMessage(m.text)}
+                  </div>
                   
                   {/* Bottone di navigazione per messaggi bot */}
                   {m.role === 'bot' && m.navigation && (
@@ -415,7 +437,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                       <span className="text-red-200 font-bold">⚠️ AVVISO IMPORTANTE</span>
                     </div>
                   )}
-                  {m.text}
+                  {renderFormattedMessage(m.text)}
                 </div>
                 
                 {/* Timestamp sotto ogni messaggio */}

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AuthProvider } from './hooks/useAuth'
 import { NotificationProvider } from './hooks/useNotifications'
+import { PrimeBotProvider, usePrimeBot } from './contexts/PrimeBotContext'
 import MobileScrollFix from '@/components/MobileScrollFix'
 
 // Import componenti
@@ -43,6 +44,22 @@ import AdminSystem from '@/pages/admin/AdminSystem'
 import AdminAuditLogs from '@/pages/admin/AdminAuditLogs'
 import AdminGuard from '@/components/admin/AdminGuard'
 import AdminLayout from '@/components/admin/AdminLayout'
+
+// Componente wrapper per ai-coach che gestisce il footer condizionalmente
+const AICoachWrapper = ({ session }: { session: any }) => {
+  const { isFullscreen } = usePrimeBot();
+  
+  return (
+    <ProtectedRoute session={session}>
+      <Header />
+      <div className="min-h-screen pt-24 pb-20">
+        <AICoach />
+      </div>
+      {!isFullscreen && <BottomNavigation />}
+      <FeedbackWidget />
+    </ProtectedRoute>
+  );
+};
 
 function App() {
   const [session, setSession] = useState(null)
@@ -86,7 +103,8 @@ function App() {
       <MobileScrollFix />
       <AuthProvider>
         <NotificationProvider>
-          <Router>
+          <PrimeBotProvider>
+            <Router>
             <Routes>
               {/* ROUTE PUBBLICHE */}
               <Route path="/" element={<LandingPage />} />
@@ -144,16 +162,7 @@ function App() {
                   <FeedbackWidget />
                 </ProtectedRoute>
               } />
-              <Route path="/ai-coach" element={
-                <ProtectedRoute session={session}>
-                  <Header />
-                  <div className="min-h-screen pt-24 pb-20">
-                    <AICoach />
-                  </div>
-                  <BottomNavigation />
-                  <FeedbackWidget />
-                </ProtectedRoute>
-              } />
+              <Route path="/ai-coach" element={<AICoachWrapper session={session} />} />
               <Route path="/subscriptions" element={
                 <ProtectedRoute session={session}>
                   <Header />
@@ -244,9 +253,10 @@ function App() {
             </Routes>
           </Router>
           <Toaster />
-        </NotificationProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+        </PrimeBotProvider>
+      </NotificationProvider>
+    </AuthProvider>
+  </ErrorBoundary>
   )
 }
 

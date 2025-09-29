@@ -215,3 +215,4 @@ VITE_DEBUG_MODE=false
 *Versione: 4.0 - Sistema Completo con SuperAdmin, Sfida 7 Giorni e Fix Mobile*
 *Autore: Mattia Silvestrelli + AI Assistant*
 
+
