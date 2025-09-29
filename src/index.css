@@ -73,7 +73,7 @@ html, body {
   padding-bottom: env(safe-area-inset-bottom, 0);
   padding-bottom: constant(safe-area-inset-bottom, 0); /* iOS < 11.2 */
   
-  /* Sfondo e shadow per visibilità */
+  /* Sfondo e shadow per visibilità - ESCLUSO bottom-navigation */
   background: linear-gradient(to top, 
     rgba(255,255,255,1) 0%, 
     rgba(255,255,255,0.95) 90%,
@@ -82,13 +82,14 @@ html, body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-  
-  /* Z-index alto per stare sopra tutto */
-  z-index: 999;
-  
-  /* Padding interno */
-  padding: 16px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+}
+
+/* ESCLUSIONE ESPLICITA per bottom-navigation - solo per evitare conflitti */
+.bottom-navigation {
+  background: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
 }
 
 /* 2. FIX PER I PULSANTI */

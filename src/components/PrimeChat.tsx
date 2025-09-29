@@ -470,24 +470,6 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           ))}
         </div>
 
-        <div className="flex gap-3 sticky bottom-0 z-50 p-2 rounded-lg border-t-2 bg-black border-[#DAA520]">
-          <input
-            aria-label="Scrivi la tua domanda"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') send(input); }}
-            placeholder="Scrivi la tua domanda…"
-            className="flex-1 px-4 py-3 rounded-2xl border border-[#DAA520] focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] bg-gray-800 text-white placeholder-gray-400"
-          />
-          <button
-            onClick={() => send(input)}
-            className="px-6 py-3 rounded-2xl bg-[#EEBA2B] hover:bg-[#d4a527] text-black font-semibold disabled:opacity-50 transition-colors"
-            disabled={loading}
-            title="Invia"
-          >
-            ➤
-          </button>
-        </div>
       </div>
     </div>
   );

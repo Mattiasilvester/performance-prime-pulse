@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
-import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { PushPermissionModal } from '@/components/notifications/PushPermissionModal';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { pushNotificationService } from '@/services/pushNotificationService';
@@ -147,7 +146,6 @@ const Notifications = () => {
           </div>
         </div>
       </div>
-      <BottomNavigation />
 
       {/* Modal Notifiche Push */}
       <PushPermissionModal
