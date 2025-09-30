@@ -20,3 +20,4 @@ export interface SchedaAllenamento {
   difficolta?: 'Principiante' | 'Intermedio' | 'Avanzato';
   durata?: number;
 }
+

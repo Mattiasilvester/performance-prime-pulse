@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getAIResponse } from '@/lib/openai-service';
+import { getPrimeBotFallbackResponse } from '@/lib/primebot-fallback';
 import { fetchUserProfile } from '@/services/userService';
 import { usePrimeBot } from '@/contexts/PrimeBotContext';
 
@@ -143,6 +144,35 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     }
 
     try {
+      // PRIMA: Controlla se esiste una risposta preimpostata
+      const presetResponse = getPrimeBotFallbackResponse(trimmed);
+      
+      if (presetResponse) {
+        console.log('🎯 Risposta preimpostata trovata:', presetResponse);
+        
+        // Crea il messaggio con la risposta preimpostata
+        const message: Msg = {
+          id: crypto.randomUUID(),
+          role: 'bot',
+          text: presetResponse.text
+        };
+        
+        // Se c'è un'azione (bottone), aggiungi la navigazione
+        if (presetResponse.action) {
+          message.navigation = {
+            path: presetResponse.action.link,
+            label: presetResponse.action.label,
+            action: 'navigate'
+          };
+        }
+        
+        setMsgs(m => [...m, message]);
+        setLoading(false);
+        return;
+      }
+      
+      // SECONDO: Se non c'è risposta preimpostata, usa l'AI
+      console.log('🤖 Nessuna risposta preimpostata, uso AI');
       const aiResponse = await getAIResponse(trimmed, userId);
       
       if (aiResponse.success) {
