@@ -106,18 +106,12 @@ export function findPresetResponse(message: string): any {
     };
   }
   
-  // Cerca match esatto prima
+  // SOLO match esatto - NO match parziale per evitare interferenze
   if (presetResponses[lowerMessage]) {
     return presetResponses[lowerMessage];
   }
   
-  // Cerca match parziale
-  for (const [key, response] of Object.entries(presetResponses)) {
-    if (lowerMessage.includes(key) || key.includes(lowerMessage)) {
-      return response;
-    }
-  }
-  
+  // Nessun match trovato - passa all'AI
   return null;
 }
 
@@ -137,9 +131,6 @@ export function getPrimeBotFallbackResponse(message: string): any {
     return presetResponse;
   }
   
-  // Risposta generica randomica
-  const randomIndex = Math.floor(Math.random() * genericResponses.length);
-  return {
-    text: genericResponses[randomIndex]
-  };
+  // Nessun match trovato - passa all'AI OpenAI
+  return null;
 }
