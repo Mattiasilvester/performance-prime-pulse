@@ -1832,7 +1832,58 @@ cd dist && python3 -m http.server 8083
 
 ---
 
-*Ultimo aggiornamento: 23 Settembre 2025 - 18:30*
-*Stato: APP COMPLETAMENTE PULITA DA PWA, PRONTA PER DEPLOY 🚀*
-*Versione: 7.0 - Sistema Completo con Rimozione Progressier, Bonifica PWA e Analisi Supabase*
+### **1 Ottobre 2025 - Sessione 13: FIX PRIMEBOT RISPOSTE PREIMPOSTATE**
+- **Ora Inizio**: 17:30
+- **Ora Fine**: 18:00
+- **Durata**: 30 minuti
+
+#### **Obiettivi Raggiunti Sessione 13**
+1. **✅ FIX RISPOSTE PREIMPOSTATE PRIMEBOT** - Risoluzione problema funzionamento
+   - **Problema**: "non ho tempo" non mostrava risposta preimpostata con bottone Quick Workout
+   - **Soluzione**: Integrato controllo `getPrimeBotFallbackResponse()` in funzione `send()` di `PrimeChat.tsx`
+   - **Risultato**: Risposte preimpostate funzionanti al 100% per domande comuni
+
+2. **✅ INTEGRAZIONE SISTEMA FALLBACK** - Controllo preimpostate prima di AI
+   - **Problema**: `PrimeChat.tsx` chiamava direttamente `getAIResponse()` senza controllare fallback
+   - **Soluzione**: Modificata logica per controllare prima risposte preimpostate, poi AI
+   - **Risultato**: Sistema ibrido funzionante con ottimizzazione costi
+
+3. **✅ FIX LOGICA MATCHING** - Rimosso match parziale interferente
+   - **Problema**: Match parziale intercettava tutte le richieste, bloccando AI
+   - **Soluzione**: Rimosso match parziale in `findPresetResponse()`, mantenuto solo match esatto
+   - **Risultato**: Solo domande specifiche usano fallback, resto passa all'AI
+
+4. **✅ FIX RISPOSTE GENERICHE** - Sistema restituiva sempre risposta generica
+   - **Problema**: `getPrimeBotFallbackResponse()` restituiva array `genericResponses` invece di `null`
+   - **Soluzione**: Modificata per restituire `null` quando non trova match esatto
+   - **Risultato**: Richieste complesse vanno sempre all'AI OpenAI
+
+#### **Problemi Risolti Sessione 13**
+1. **Risposte Preimpostate Non Funzionanti** - PrimeChat non controllava fallback
+2. **Match Parziale Interferiva con AI** - Logica matching troppo ampia
+3. **Risposte Generiche Bloccavano AI** - Sistema restituiva sempre risposta generica
+
+#### **File Modificati Sessione 13**
+- `src/components/PrimeChat.tsx` - Integrato controllo fallback prima di chiamare AI
+- `src/lib/primebot-fallback.ts` - Fix logica matching e return null per AI
+
+#### **Funzionalità Implementate Sessione 13**
+- **Sistema Ibrido Ottimizzato**: Risposte preimpostate gratuite + AI a pagamento
+- **Match Esatto**: Solo domande specifiche usano fallback
+- **Bottoni Navigazione**: Funzionanti per Quick Workout e altre pagine
+- **Ottimizzazione Costi**: Riduzione chiamate API OpenAI con fallback
+
+#### **Risultati Finali Sessione 13**
+- ✅ **Sistema Ibrido** - 100% funzionante con fallback + AI
+- ✅ **Risposte Preimpostate** - "non ho tempo" → bottone Quick Workout
+- ✅ **AI OpenAI** - "mi crei un piano" → chiamata API a pagamento
+- ✅ **Ottimizzazione Costi** - Fallback gratuito per domande comuni
+- ✅ **Deploy Automatico** - Modifiche già live sul sito
+
+
+---
+
+*Ultimo aggiornamento: 1 Ottobre 2025 - 18:00*
+*Stato: APP COMPLETA CON SISTEMA IBRIDO PRIMEBOT OTTIMIZZATO, PRONTA PER PRODUZIONE 🚀*
+*Versione: 8.1 - Fix Risposte Preimpostate PrimeBot e Sistema Ibrido Ottimizzato*
 *Autore: Mattia Silvestrelli + AI Assistant*
