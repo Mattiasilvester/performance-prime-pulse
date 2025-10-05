@@ -4,11 +4,17 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/supabase-proxy/(.*)",
+      "destination": "/api/supabase-proxy"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
 }
+
+
 
 
 

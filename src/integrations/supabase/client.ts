@@ -1,4 +1,4 @@
-// Client ufficiale Supabase per Performance Prime
+// Client ufficiale Supabase per Performance Prime - SINGLETON PATTERN
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { env, validateEnv } from '@/config/env';
@@ -6,15 +6,71 @@ import { env, validateEnv } from '@/config/env';
 // Valida le variabili d'ambiente
 validateEnv();
 
-// Inizializza il client Supabase
-export const supabase = createClient<Database>(env.SUPABASE_URL!, env.SUPABASE_ANON_KEY!, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce', // Migliore sicurezza in SPA
-  },
-});
+// Singleton pattern per evitare istanze multiple
+let supabaseInstance: ReturnType<typeof createClient<Database>> | null = null;
+
+// Funzione per ottenere l'istanza singleton
+export const getSupabaseClient = () => {
+  if (!supabaseInstance) {
+    console.log('🔧 Creating new Supabase client instance');
+    
+    // Pulisci localStorage da sessioni corrotte prima di creare il client
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('supabase') || key.includes('sb-'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      console.log(`🧹 Cleaned ${keysToRemove.length} corrupted auth keys`);
+    } catch (error) {
+      console.warn('Storage cleanup failed:', error);
+    }
+
+    // Usa proxy in produzione per evitare CORS
+    const supabaseUrl = env.IS_DEV 
+      ? env.SUPABASE_URL!
+      : '/api/supabase-proxy';
+
+    supabaseInstance = createClient<Database>(supabaseUrl, env.SUPABASE_ANON_KEY!, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+        storage: {
+          getItem: (key: string) => {
+            try {
+              return localStorage.getItem(key);
+            } catch {
+              return null;
+            }
+          },
+          setItem: (key: string, value: string) => {
+            try {
+              localStorage.setItem(key, value);
+            } catch {
+              // Ignore storage errors
+            }
+          },
+          removeItem: (key: string) => {
+            try {
+              localStorage.removeItem(key);
+            } catch {
+              // Ignore storage errors
+            }
+          },
+        },
+      },
+    });
+  }
+  return supabaseInstance;
+};
+
+// Export dell'istanza singleton
+export const supabase = getSupabaseClient();
 
 // 🔍 Health Check (solo in sviluppo)
 if (env.IS_DEV) {
