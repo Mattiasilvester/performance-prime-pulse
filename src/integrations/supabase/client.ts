@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-// PROXY SEMPRE ATTIVO (sia dev che prod)
-const supabaseUrl = '/api/supabase-proxy';
+// Usa URL diretto in dev, proxy in produzione
+const supabaseUrl = import.meta.env.PROD 
+  ? '/api/supabase-proxy'  // Produzione: proxy Vercel
+  : 'https://kfxoyucatvvcgmqalxsg.supabase.co';  // Dev: URL diretto Supabase
+
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY!;
 
 if (!supabaseAnonKey) {
