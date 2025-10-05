@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Usa URL diretto in dev, proxy in produzione
+// PROXY SEMPRE ATTIVO (sia dev che prod) per evitare CORS
 const supabaseUrl = import.meta.env.PROD 
   ? '/api/supabase-proxy'  // Produzione: proxy Vercel
-  : 'https://kfxoyucatvvcgmqalxsg.supabase.co';  // Dev: URL diretto Supabase
+  : 'http://localhost:8080/api/supabase-proxy';  // Dev: proxy locale
 
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY!;
 
