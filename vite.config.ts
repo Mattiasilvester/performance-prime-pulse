@@ -100,19 +100,14 @@ export default defineConfig(({ command, mode }) => {
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // React ecosystem
-            if (id.includes('react') || id.includes('react-dom')) {
+            // React ecosystem - CRITICO: mantieni insieme per evitare errori
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
               return 'vendor-react';
             }
             
             // Supabase (pesante, chunk separato)
             if (id.includes('@supabase')) {
               return 'vendor-supabase';
-            }
-            
-            // Router
-            if (id.includes('react-router')) {
-              return 'vendor-router';
             }
             
             // UI libraries (Radix, Lucide, etc.)
