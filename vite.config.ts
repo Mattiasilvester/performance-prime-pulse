@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'
 import { componentTagger } from "lovable-tagger"
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // NOTE: In produzione, servire index.html con Cache-Control: no-cache.
 // Gli asset hashed possono avere Cache-Control: public, max-age=31536000, immutable.
@@ -13,6 +14,13 @@ export default defineConfig(({ command, mode }) => {
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
+    !isDev && visualizer({
+      filename: './dist/stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap'
+    }),
     isDev && {
       name: "dev-no-store",
       configureServer(server: any) {
@@ -39,18 +47,61 @@ export default defineConfig(({ command, mode }) => {
   server: {
     host: "::",
     port: 8080,
+    strictPort: true,
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    target: 'es2020',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      }
+    },
+    sourcemap: false, // Disabilita in prod per ridurre size
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          supabase: ['@supabase/supabase-js']
-        }
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            // React ecosystem
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            
+            // Supabase (pesante, chunk separato)
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            
+            // Router
+            if (id.includes('react-router')) {
+              return 'vendor-router';
+            }
+            
+            // UI libraries (Radix, Lucide, etc.)
+            if (id.includes('@radix-ui') || id.includes('lucide-react')) {
+              return 'vendor-ui';
+            }
+            
+            // TanStack Query (se usato)
+            if (id.includes('@tanstack')) {
+              return 'vendor-query';
+            }
+            
+            // Resto dipendenze
+            return 'vendor-other';
+          }
+        },
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js']
   }
 };
 });

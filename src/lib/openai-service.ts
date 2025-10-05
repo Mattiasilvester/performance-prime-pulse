@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+// ⚠️ DEPRECATO: Non usare più VITE_OPENAI_API_KEY direttamente
+// Usare /api/ai-chat endpoint invece
 const MONTHLY_LIMIT = 10;
 
 // Calcola costo
@@ -44,28 +45,14 @@ export const getAIResponse = async (message: string, userId: string) => {
     };
   }
 
-  console.log('🔑 OpenAI API Key presente:', !!OPENAI_API_KEY);
-  console.log('🔑 API Key inizia con sk-:', OPENAI_API_KEY?.startsWith('sk-'));
-  console.log('🔑 Primi 10 caratteri:', OPENAI_API_KEY?.substring(0, 10));
-  
-  if (!OPENAI_API_KEY) {
-    console.error('❌ OpenAI API key mancante');
-    return {
-      success: false,
-      message: 'Servizio AI temporaneamente non disponibile.',
-      remaining: limit.remaining
-    };
-  }
-
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Chiama l'API serverless invece di usare chiave diretta
+    const response = await fetch('/api/ai-chat', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
@@ -134,10 +121,7 @@ export const getAIResponse = async (message: string, userId: string) => {
             content: message
           }
         ],
-        max_tokens: 800,
-        temperature: 0.7,
-        presence_penalty: 0.3,
-        frequency_penalty: 0.3
+        model: 'gpt-3.5-turbo'
       })
     });
 
