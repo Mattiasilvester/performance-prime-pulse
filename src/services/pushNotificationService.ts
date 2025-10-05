@@ -119,10 +119,12 @@ class PushNotificationService {
     }
 
     try {
-      const subscription = await this.registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      });
+     // ... existing code ...
+     const subscription = await this.registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource
+    });
+// ... existing code ...
 
       const pushSubscription: PushSubscription = {
         endpoint: subscription.endpoint,

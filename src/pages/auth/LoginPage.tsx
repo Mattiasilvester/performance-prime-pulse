@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
+import RegistrationForm from '@/components/auth/RegistrationForm'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -181,10 +182,7 @@ export default function LoginPage() {
             </TabsContent>
             
             <TabsContent value="register" className="space-y-4">
-              <div className="text-center text-text-secondary">
-                <p>Registrazione temporaneamente non disponibile.</p>
-                <p className="text-sm mt-2">Contatta il supporto per maggiori informazioni.</p>
-              </div>
+              <RegistrationForm />
             </TabsContent>
           </Tabs>
         </CardContent>

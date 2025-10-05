@@ -4,7 +4,10 @@ export default function MobileScrollFix() {
   useEffect(() => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
+    // TEMPORANEAMENTE DISABILITATO per fix schermo nero mobile
     if (!isMobile) return;
+    
+    console.log('MobileScrollFix: Mobile detected, applying minimal fixes only');
     
     const fixMobileScroll = () => {
       // Fix body
@@ -38,21 +41,19 @@ export default function MobileScrollFix() {
         `;
       }
       
-      // Rimuovi tutti i fixed positioning (eccetto modali)
-      document.querySelectorAll('*').forEach(el => {
-        const computed = window.getComputedStyle(el);
-        const htmlEl = el as HTMLElement;
-        
-        if (computed.position === 'fixed' && 
-            !el.classList.contains('modal') && 
-            !el.classList.contains('toast')) {
-          htmlEl.style.position = 'relative';
-        }
-        
-        if (computed.touchAction === 'none') {
-          htmlEl.style.touchAction = 'auto';
-        }
-      });
+      // DISABILITATO: Rimozione positioning fixed che causa schermo nero
+      // document.querySelectorAll('*').forEach(el => {
+      //   const computed = window.getComputedStyle(el);
+      //   const htmlEl = el as HTMLElement;
+      //   
+      //   if (computed.position === 'fixed' && !isProtected) {
+      //     htmlEl.style.position = 'relative';
+      //   }
+      //   
+      //   if (computed.touchAction === 'none') {
+      //     htmlEl.style.touchAction = 'auto';
+      //   }
+      // });
     };
     
     // REFRESH DETECTION E FIX

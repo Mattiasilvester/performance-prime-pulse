@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Edit, MapPin, Calendar, Trophy, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { fetchUserProfile, updateUserProfile, uploadAvatar, type UserProfile as UserProfileType } from '@/services/userService';
+import { updateUserProfile, uploadAvatar, type UserProfile as UserProfileType } from '@/services/userService';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { fetchWorkoutStats, WorkoutStats } from '@/services/workoutStatsService';
 import { useToast } from '@/hooks/use-toast';
 
 export const UserProfile = () => {
   const { toast } = useToast();
-  const [profile, setProfile] = useState<UserProfileType | null>(null);
+  const { profile, loading: profileLoading, refetch } = useUserProfile();
   const [stats, setStats] = useState<WorkoutStats>({ total_workouts: 0, total_hours: 0 });
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', surname: '', birthPlace: '' });
@@ -20,15 +21,12 @@ export const UserProfile = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const profileData = await fetchUserProfile();
-        if (profileData) {
-          setProfile(profileData);
+        if (profile) {
           setForm({
-            name: profileData.name,
-            surname: profileData.surname,
-            birthPlace: profileData.birth_place,
+            name: profile.name,
+            surname: profile.surname,
+            birthPlace: profile.birth_place,
           });
-        } else {
         }
 
         const statsData = await fetchWorkoutStats();
@@ -41,7 +39,7 @@ export const UserProfile = () => {
     };
 
     loadData();
-  }, []);
+  }, [profile]);
 
   const handleSave = async () => {
     if (!profile) return;
@@ -65,17 +63,8 @@ export const UserProfile = () => {
         avatarUrl
       });
       
-      // Ricarica i dati dal localStorage dopo il salvataggio
-      const updatedProfile = await fetchUserProfile();
-      
-      if (updatedProfile) {
-        setProfile(updatedProfile);
-        setForm({
-          name: updatedProfile.name,
-          surname: updatedProfile.surname,
-          birthPlace: updatedProfile.birth_place,
-        });
-      }
+      // Ricarica i dati tramite hook
+      refetch();
       
       setEditing(false);
       
@@ -129,7 +118,7 @@ export const UserProfile = () => {
     input.click();
   };
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="bg-black rounded-2xl shadow-sm border-2 border-[#EEBA2B] p-6">
         <div className="text-center text-white">Caricamento profilo...</div>
