@@ -15,19 +15,23 @@ export interface UserProfile {
 
 export const fetchUserProfile = async (): Promise<UserProfile | null> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error } = await supabase.auth.getUser();
     
-    if (!user) {
+    if (error || !user) {
+      // Non loggare errori 403 ripetuti che causano spam console
+      if (error?.message !== 'User from sub claim in JWT does not exist') {
+        console.warn('User fetch failed (non-critical):', error?.message);
+      }
       return null;
     }
 
-    const { data: profile, error } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (error) {
+    if (profileError) {
       return null;
     }
 

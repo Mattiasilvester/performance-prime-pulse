@@ -248,7 +248,7 @@ class ErrorHandler {
       console.error('Message:', errorInfo.message);
       console.error('User Message:', errorInfo.userMessage);
       console.error('Context:', context);
-      console.error('Stack:', error instanceof Error ? error.stack : 'N/A');
+      console.error('Stack:', errorInfo.error instanceof Error ? errorInfo.error.stack : 'N/A');
       console.groupEnd();
     }
 

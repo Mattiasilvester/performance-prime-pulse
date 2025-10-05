@@ -37,6 +37,7 @@ class Analytics {
       
       // Gestione errori per evitare 406
       script.onerror = () => {
+        console.warn('Plausible script non disponibile, analytics disabilitate');
         this.scriptLoaded = false;
       };
       

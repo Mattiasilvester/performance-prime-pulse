@@ -10,24 +10,17 @@
 /* RIMOSSO: override eccessivo che rompeva tutto */
 
 html {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  height: auto !important;
   scroll-behavior: smooth;
 }
 
 body {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  height: auto !important;
-  min-height: 100vh !important;
-  position: relative !important;
+  min-height: 100vh;
+  position: relative;
 }
 
 #root {
-  overflow: visible !important;
-  min-height: 100vh !important;
-  position: relative !important;
+  min-height: 100vh;
+  position: relative;
 }
 
 /* Fix per container con overflow hidden - RIPRISTINATO */
@@ -55,34 +48,14 @@ body {
 html, body {
   min-height: 100vh;
   height: auto;
-  overflow-x: hidden;
-  overflow-y: auto;
 }
 
-/* 1. FIX GLOBALE PER PULSANTI FLOATING */
-.action-buttons-container,
+/* 1. FIX GLOBALE PER PULSANTI FLOATING - DISABILITATO */
+/* .action-buttons-container,
 .workout-actions,
 .exercise-actions {
-  /* Reset positioning sicuro */
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  
-  /* Safe area per notch iPhone e navbar Android */
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  padding-bottom: constant(safe-area-inset-bottom, 0); /* iOS < 11.2 */
-  
-  /* Sfondo e shadow per visibilità - ESCLUSO bottom-navigation */
-  background: linear-gradient(to top, 
-    rgba(255,255,255,1) 0%, 
-    rgba(255,255,255,0.95) 90%,
-    rgba(255,255,255,0) 100%
-  );
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-}
+  // Rimosso: causava rettangolo nero
+} */
 
 /* ESCLUSIONE ESPLICITA per bottom-navigation - solo per evitare conflitti */
 .bottom-navigation {
@@ -197,8 +170,8 @@ html, body {
 
 /* 5. MEDIA QUERIES PER DISPOSITIVI SPECIFICI */
 
-/* iPhone SE, iPhone 8 e simili */
-@media (max-width: 375px) {
+/* iPhone SE, iPhone 8 e simili - DISABILITATO */
+/* @media (max-width: 375px) {
   .action-buttons-container {
     padding: 12px;
   }
@@ -211,10 +184,10 @@ html, body {
     font-size: 14px;
     min-height: 44px;
   }
-}
+} */
 
-/* iPad e Tablet */
-@media (min-width: 768px) and (max-width: 1024px) {
+/* iPad e Tablet - DISABILITATO */
+/* @media (min-width: 768px) and (max-width: 1024px) {
   .action-buttons-container {
     padding: 20px;
     max-width: 600px;
@@ -231,10 +204,10 @@ html, body {
   .btn-completa {
     max-width: 500px;
   }
-}
+} */
 
-/* Landscape mode */
-@media (orientation: landscape) and (max-height: 500px) {
+/* Landscape mode - DISABILITATO */
+/* @media (orientation: landscape) and (max-height: 500px) {
   .action-buttons-container {
     position: sticky;
     padding: 8px;
@@ -248,16 +221,16 @@ html, body {
     min-height: 40px;
     padding: 8px 20px;
   }
-}
+} */
 
-/* 6. FIX PER NOTCH E SAFE AREAS */
-@supports (padding: max(0px)) {
+/* 6. FIX PER NOTCH E SAFE AREAS - DISABILITATO */
+/* @supports (padding: max(0px)) {
   .action-buttons-container {
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
-}
+} */
 
 /* 7. FIX PER PULSANTI NEI CARD */
 .cardio-fatburn-card .btn-completa,
@@ -352,27 +325,27 @@ button[type="button"],
   }
 }
 
-/* 14. FIX PER SAFE AREAS SU IPHONE */
-@supports (padding: max(0px)) {
+/* 14. FIX PER SAFE AREAS SU IPHONE - DISABILITATO */
+/* @supports (padding: max(0px)) {
   .action-buttons-container {
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
-}
+} */
 
-/* 15. FIX PER ORIENTATION CHANGE */
-@media (orientation: landscape) {
+/* 15. FIX PER ORIENTATION CHANGE - DISABILITATO */
+/* @media (orientation: landscape) {
   .action-buttons-container {
     position: sticky;
     bottom: 0;
   }
-}
+} */
 
-/* 16. FIX PER Z-INDEX */
-.action-buttons-container {
+/* 16. FIX PER Z-INDEX - DISABILITATO */
+/* .action-buttons-container {
   z-index: 10;
-}
+} */
 
 .btn-avvia,
 .btn-completato,
@@ -433,6 +406,8 @@ html,
 body {
   background: #1A1A1A;         /* grigio scuro invece di nero puro */
   color-scheme: dark;       /* status-bar e controlli di sistema in versione dark */
+  min-height: 100vh;
+  height: auto;
 }
 
 @layer base {

@@ -4,7 +4,7 @@ import QuickActions from './QuickActions';
 import { RecentActivity } from './RecentActivity';
 import { WeeklyProgress } from './WeeklyProgress';
 import { useState, useEffect } from 'react';
-import { fetchUserProfile, UserProfile } from '@/services/userService';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { OnboardingBot } from '@/components/OnboardingBot';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -13,18 +13,10 @@ import { useFeedback15Days } from '@/hooks/useFeedback15Days';
 import { useAuth } from '@/hooks/useAuth';
 
 export const Dashboard = () => {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { profile: userProfile } = useUserProfile();
   const navigate = useNavigate();
   const { user } = useAuth();
   useFeedback15Days(user?.id);
-
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      const profile = await fetchUserProfile();
-      setUserProfile(profile);
-    };
-    loadUserProfile();
-  }, []);
 
   const userName = userProfile?.name || 'Utente';
 

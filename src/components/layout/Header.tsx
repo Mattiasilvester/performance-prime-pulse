@@ -29,13 +29,13 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import { useTranslation } from '@/hooks/useTranslation';
-import { fetchUserProfile, UserProfile } from '@/services/userService';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 export const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { profile: userProfile } = useUserProfile();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const { user } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotifications();
@@ -76,15 +76,7 @@ export const Header = () => {
     }
   }, [searchQuery]);
 
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      if (user) {
-        const profile = await fetchUserProfile();
-        setUserProfile(profile);
-      }
-    };
-    loadUserProfile();
-  }, [user]);
+  // Profilo caricato tramite useUserProfile hook
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

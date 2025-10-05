@@ -3,12 +3,13 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { sendWelcomeEmail } from '@/services/emailService';
+import { clearAllAuth, hasCorruptedAuth } from '@/utils/clearAuth';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<boolean>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ success: boolean; message: string }>;
   signIn: (email: string, password: string) => Promise<boolean>;
   signOut: () => Promise<boolean>;
 }
@@ -17,17 +18,20 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  signUp: async () => ({ success: false, message: 'Not implemented' }),
+  signIn: async () => false,
+  signOut: async () => false,
 });
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,10 +39,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
     
+    // Controlla se ci sono sessioni corrotte all'avvio
+    if (hasCorruptedAuth()) {
+      console.log('🚨 Corrupted auth detected, clearing all sessions');
+      clearAllAuth();
+      return;
+    }
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
+        
+        // If session is null and we have auth state change, clear corrupted data
+        if (!session && (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED')) {
+          console.log('🔄 Auth state changed, clearing corrupted sessions');
+          clearAllAuth();
+        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -46,16 +63,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // THEN get initial session (only once)
+    // THEN get initial session (only once) - with aggressive error handling
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (!mounted) return;
+      
+      if (error) {
+        // Clear corrupted sessions on any auth error
+        console.log('🚨 Auth error detected, clearing all sessions');
+        clearAllAuth();
+        return;
+      }
       
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     }).catch((error) => {
       if (mounted) {
-        setLoading(false);
+        console.log('🚨 Session check failed, clearing all sessions');
+        clearAllAuth();
       }
     });
 
@@ -80,11 +105,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     
     console.log('2. Parsed names:', { first_name, last_name });
-    console.log('3. Supabase client:', {
-      url: supabase.supabaseUrl,
-      hasKey: !!supabase.supabaseKey,
-      keyLength: supabase.supabaseKey?.length
-    });
+    console.log('3. Supabase client initialized');
 
     try {
       const signupData = {
@@ -121,8 +142,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data.user && data.session) {
         // Utente confermato e sessione creata
         // Invia email di benvenuto (non bloccante)
-        if (data.user) {
-          sendWelcomeEmail(data.user).catch(error => {
+        if (data.user && data.user.email) {
+          sendWelcomeEmail({
+            id: data.user.id,
+            email: data.user.email,
+            user_metadata: data.user.user_metadata
+          }).catch(error => {
             console.error('Errore invio email benvenuto:', error);
           });
         }
@@ -132,8 +157,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else if (data.user && !data.session) {
         // Utente creato ma serve conferma email
         // Invia email di benvenuto anche se serve conferma (non bloccante)
-        if (data.user) {
-          sendWelcomeEmail(data.user).catch(error => {
+        if (data.user && data.user.email) {
+          sendWelcomeEmail({
+            id: data.user.id,
+            email: data.user.email,
+            user_metadata: data.user.user_metadata
+          }).catch(error => {
             console.error('Errore invio email benvenuto:', error);
           });
         }
@@ -145,10 +174,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('=== SIGNUP DEBUG END ===');
         return { success: false, message: 'Errore durante la registrazione' };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('8. Catch error:', error);
       console.log('=== SIGNUP DEBUG END ===');
-      return { success: false, message: 'Errore imprevisto durante la registrazione' };
+      
+      // RIMOSSO: Gestione errori password - l'utente può mettere qualsiasi password
+      
+      if (error?.message?.includes('User already registered')) {
+        return { 
+          success: false, 
+          message: 'Un account con questa email esiste già. Prova a fare login o usa un\'email diversa.' 
+        };
+      }
+      
+      if (error?.message?.includes('Invalid email')) {
+        return { 
+          success: false, 
+          message: 'Email non valida. Controlla che l\'email sia scritta correttamente.' 
+        };
+      }
+      
+      // Errore generico
+      return { 
+        success: false, 
+        message: error?.message || 'Errore durante la registrazione. Riprova più tardi.' 
+      };
     }
   };
 
@@ -186,4 +236,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}

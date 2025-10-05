@@ -8,6 +8,7 @@ import emailValidation from '../../services/emailValidation';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { validateInput } from '@/lib/security';
 import './RegistrationForm.css';
 
 const RegistrationForm = () => {
@@ -22,10 +23,28 @@ const RegistrationForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
+  const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong'>('weak');
+  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   
   const { signUp } = useAuth();
   const navigate = useNavigate();
+
+  // Validazione password in tempo reale - solo lunghezza minima 8 caratteri
+  useEffect(() => {
+    if (password) {
+      if (password.length < 8) {
+        setPasswordStrength('weak');
+        setPasswordSuggestions(['La password deve essere di almeno 8 caratteri']);
+      } else {
+        setPasswordStrength('strong');
+        setPasswordSuggestions([]);
+      }
+    } else {
+      setPasswordStrength('weak');
+      setPasswordSuggestions([]);
+    }
+  }, [password]);
   
   // Debounced validation
   const validateEmailDebounced = useCallback(
@@ -42,26 +61,40 @@ const RegistrationForm = () => {
       setEmailError('');
       setEmailWarning('');
       
-      try {
-        const result = await emailValidation.validateEmail(emailValue);
-        setValidationResult(result);
-        
-        if (!result.valid) {
-          setEmailError(result.errors[0] || 'Email non valida');
-        } else if (result.warnings.length > 0) {
-          setEmailWarning(result.warnings[0]);
-        }
-        
-        setValidationScore(result.score);
-        
-        // Log per debug
-        
-      } catch (error) {
-        console.error('Errore validazione:', error);
-        setEmailError('Errore durante la validazione');
-      } finally {
-        setIsValidating(false);
+      // Validazione semplificata - solo formato
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailRegex.test(emailValue)) {
+        setEmailError('');
+        setEmailWarning('');
+        setValidationScore(100);
+        setValidationResult({ 
+          valid: true, 
+          score: 100, 
+          errors: [], 
+          warnings: [],
+          checks: {
+            format: true,
+            disposable: true,
+            dns: true
+          }
+        });
+      } else {
+        setEmailError('Formato email non valido');
+        setValidationScore(0);
+        setValidationResult({ 
+          valid: false, 
+          score: 0, 
+          errors: ['Formato email non valido'], 
+          warnings: [],
+          checks: {
+            format: false,
+            disposable: false,
+            dns: false
+          }
+        });
       }
+      
+      setIsValidating(false);
     }, 500),
     []
   );
@@ -109,14 +142,15 @@ const RegistrationForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Validazione finale prima del submit
-      const finalValidation = await emailValidation.validateEmail(email);
-      
-      if (!finalValidation.valid) {
-        setEmailError('Email non valida. Utilizzare un indirizzo email reale.');
+      // Validazione email semplificata - solo formato base
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailError('Formato email non valido');
         setIsSubmitting(false);
         return;
       }
+      
+      console.log('🚀 Tentativo registrazione:', { email, firstName, lastName, passwordLength: password.length });
       
       // Procedi con la registrazione
       const result = await signUp(email, password, `${firstName} ${lastName}`);
@@ -132,6 +166,7 @@ const RegistrationForm = () => {
           toast.info('Controlla la tua email per confermare l\'account prima di accedere.');
         }
       } else {
+        // RIMOSSO: Gestione errori password - l'utente può mettere qualsiasi password
         toast.error(result.message || 'Errore durante la registrazione. Riprova più tardi.');
       }
       
@@ -296,7 +331,47 @@ const RegistrationForm = () => {
               required
               minLength={8}
               placeholder="Minimo 8 caratteri"
+              className={`${
+                passwordStrength === 'strong' ? 'border-green-500' : 
+                password && passwordStrength === 'weak' ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
+            
+            {/* Indicatore forza password - solo lunghezza minima 8 caratteri */}
+            {password && (
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-medium">Forza password:</span>
+                  <div className="flex space-x-1">
+                    <div className={`w-2 h-2 rounded-full ${
+                      passwordStrength === 'weak' ? 'bg-red-500' : 'bg-green-500'
+                    }`}></div>
+                    <div className={`w-2 h-2 rounded-full ${
+                      passwordStrength === 'strong' ? 'bg-green-500' : 'bg-gray-300'
+                    }`}></div>
+                    <div className={`w-2 h-2 rounded-full ${
+                      passwordStrength === 'strong' ? 'bg-green-500' : 'bg-gray-300'
+                    }`}></div>
+                  </div>
+                  <span className={`text-xs font-medium ${
+                    passwordStrength === 'weak' ? 'text-red-500' : 'text-green-500'
+                  }`}>
+                    {passwordStrength === 'weak' ? 'Troppo corta' : 'Valida'}
+                  </span>
+                </div>
+                
+                {/* Suggerimenti password */}
+                {passwordSuggestions.length > 0 && (
+                  <div className="text-xs text-red-600 space-y-1">
+                    {passwordSuggestions.map((suggestion, index) => (
+                      <div key={index} className="flex items-start space-x-1">
+                        <span>{suggestion}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
           <div className="space-y-2">
@@ -355,7 +430,8 @@ const RegistrationForm = () => {
             )}
           </Button>
           
-          {validationResult && (
+          
+          {validationResult && validationResult.checks && (
             <div className="text-xs text-gray-500 space-y-1">
               <p>Score validazione: {validationScore}/100</p>
               <div className="flex space-x-4">

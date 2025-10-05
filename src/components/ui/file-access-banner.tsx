@@ -12,7 +12,8 @@ interface FileAccessBannerProps {
 export const FileAccessBanner = ({ onAccept, onDecline, isVisible }: FileAccessBannerProps) => {
   const [isDismissed, setIsDismissed] = useState(false);
 
-  if (!isVisible || isDismissed) return null;
+  // Temporaneamente disabilitato per fix visualizzazione mobile
+  return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-[45] lg:left-8 lg:right-8">

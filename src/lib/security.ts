@@ -7,28 +7,20 @@ export const validateInput = {
     return emailRegex.test(email) && email.length <= 254;
   },
   
-  password: (password: string): { isValid: boolean; errors: string[] } => {
+  password: (password: string): { isValid: boolean; errors: string[]; strength: 'weak' | 'medium' | 'strong' } => {
     const errors: string[] = [];
     
+    // Validazione minima - solo lunghezza 8 caratteri
     if (password.length < 8) {
       errors.push('La password deve essere di almeno 8 caratteri');
-    }
-    if (!/(?=.*[a-z])/.test(password)) {
-      errors.push('La password deve contenere almeno una lettera minuscola');
-    }
-    if (!/(?=.*[A-Z])/.test(password)) {
-      errors.push('La password deve contenere almeno una lettera maiuscola');
-    }
-    if (!/(?=.*\d)/.test(password)) {
-      errors.push('La password deve contenere almeno un numero');
-    }
-    if (!/(?=.*[!@#$%^&*])/.test(password)) {
-      errors.push('La password deve contenere almeno un carattere speciale (!@#$%^&*)');
+      return { isValid: false, errors, strength: 'weak' };
     }
     
+    // Se ha almeno 8 caratteri, è valida
     return {
-      isValid: errors.length === 0,
-      errors
+      isValid: true,
+      errors: [],
+      strength: 'strong'
     };
   },
   

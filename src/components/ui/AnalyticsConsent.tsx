@@ -5,6 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { analytics } from '@/services/analytics';
 
 export const AnalyticsConsent = () => {
+  // TEMPORANEAMENTE DISABILITATO - CAUSA RETTANGOLO NERO
+  return null;
+
   const navigate = useNavigate();
   const [showBanner, setShowBanner] = useState(false);
 
