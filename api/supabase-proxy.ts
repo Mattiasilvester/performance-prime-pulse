@@ -17,16 +17,8 @@ export default async function handler(
 
   const supabaseUrl = 'https://kfxoyucatvvcgmqalxsg.supabase.co';
   
-  // Estrai il path dal query parameter o dall'URL
-  let path = '';
-  if (req.query.path && typeof req.query.path === 'string') {
-    // Path dal rewrite di Vercel
-    path = '/' + req.query.path;
-  } else if (req.url) {
-    // Path dall'URL originale
-    path = req.url.replace('/api/supabase-proxy', '');
-  }
-  
+  // Estrai il path dall'URL originale
+  const path = req.url?.replace('/api/supabase-proxy', '') || '';
   const targetUrl = `${supabaseUrl}${path}`;
 
   console.log(`🔄 Proxy request: ${req.method} ${targetUrl}`);
