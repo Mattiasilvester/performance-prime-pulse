@@ -48,6 +48,27 @@ export default defineConfig(({ command, mode }) => {
     host: "::",
     port: 8080,
     strictPort: true,
+    proxy: {
+      '/api/supabase-proxy': {
+        target: 'https://kfxoyucatvvcgmqalxsg.supabase.co',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/supabase-proxy/, ''),
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            // Copia headers importanti
+            if (req.headers.authorization) {
+              proxyReq.setHeader('Authorization', req.headers.authorization);
+            }
+            if (req.headers.apikey) {
+              proxyReq.setHeader('apikey', req.headers.apikey);
+            }
+            if (req.headers['content-type']) {
+              proxyReq.setHeader('Content-Type', req.headers['content-type']);
+            }
+          });
+        }
+      }
+    }
   },
   build: {
     outDir: 'dist',
