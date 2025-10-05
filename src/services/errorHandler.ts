@@ -16,6 +16,8 @@ export interface ErrorInfo {
   severity: 'low' | 'medium' | 'high' | 'critical';
   userMessage: string;
   shouldRetry: boolean;
+  error?: Error;
+  context?: ErrorContext;
 }
 
 class ErrorHandler {
@@ -46,7 +48,9 @@ class ErrorHandler {
       type: errorType,
       severity,
       userMessage,
-      shouldRetry
+      shouldRetry,
+      error: error instanceof Error ? error : undefined,
+      context
     };
   }
 

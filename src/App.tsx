@@ -44,8 +44,8 @@ const DatabaseDiagnostic = lazy(() => import('@/pages/admin/DatabaseDiagnostic')
 const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics'))
 const AdminSystem = lazy(() => import('@/pages/admin/AdminSystem'))
 const AdminAuditLogs = lazy(() => import('@/pages/admin/AdminAuditLogs'))
-const AdminGuard = lazy(() => import('@/components/admin/AdminGuard').then(m => ({ default: m.AdminGuard })))
-const AdminLayout = lazy(() => import('@/components/admin/AdminLayout').then(m => ({ default: m.AdminLayout })))
+const AdminGuard = lazy(() => import('@/components/admin/AdminGuard'))
+const AdminLayout = lazy(() => import('@/components/admin/AdminLayout'))
 
 // Loading component per lazy loading
 const LoadingSpinner = () => (
