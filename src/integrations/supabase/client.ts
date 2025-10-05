@@ -1,9 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 
-// PROXY SEMPRE ATTIVO (sia dev che prod) per evitare CORS
-const supabaseUrl = import.meta.env.PROD 
-  ? '/api/supabase-proxy'  // Produzione: proxy Vercel
-  : 'http://localhost:8080/api/supabase-proxy';  // Dev: proxy locale
+// URL diretto Supabase per test locale
+const SUPABASE_DIRECT_URL = 'https://kfxoyucatvvcgmqalxsg.supabase.co';
+
+// Determina supabaseUrl in base all'ambiente
+let supabaseUrl: string;
+if (import.meta.env.PROD) {
+  // Nel build di produzione
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    // Se il build di produzione è servito localmente (es. python http.server)
+    supabaseUrl = SUPABASE_DIRECT_URL; // Usa l'URL diretto
+  } else {
+    // Se il build di produzione è deployato (es. su Vercel)
+    supabaseUrl = '/api/supabase-proxy'; // Usa il proxy Vercel
+  }
+} else {
+  // In sviluppo (npm run dev)
+  supabaseUrl = 'http://localhost:8080/api/supabase-proxy'; // Usa il proxy Vite
+}
 
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY!;
 
