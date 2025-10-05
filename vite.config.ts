@@ -120,8 +120,23 @@ export default defineConfig(({ command, mode }) => {
               return 'vendor-query';
             }
             
-            // Resto dipendenze
-            return 'vendor-other';
+            // Lodash e utility (spesso pesanti)
+            if (id.includes('lodash') || id.includes('date-fns') || id.includes('moment')) {
+              return 'vendor-utils';
+            }
+            
+            // Chart e visualization libraries
+            if (id.includes('chart') || id.includes('d3') || id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+            
+            // Resto dipendenze - dividi per evitare chunk troppo grandi
+            if (id.includes('node_modules')) {
+              // Prendi il primo livello del path per raggruppare
+              const segments = id.split('/');
+              const packageName = segments.find(seg => seg.startsWith('@') || !seg.includes('/')) || 'vendor-misc';
+              return `vendor-${packageName.replace('@', '').replace('/', '-')}`;
+            }
           }
         },
         chunkFileNames: 'assets/[name]-[hash].js',
