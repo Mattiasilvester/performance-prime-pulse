@@ -15,6 +15,42 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    // Pulisci sessioni corrotte per evitare 431
+    storage: {
+      getItem: (key: string) => {
+        try {
+          const item = localStorage.getItem(key);
+          // Se l'item è troppo grande, rimuovilo
+          if (item && item.length > 10000) {
+            localStorage.removeItem(key);
+            return null;
+          }
+          return item;
+        } catch {
+          return null;
+        }
+      },
+      setItem: (key: string, value: string) => {
+        try {
+          // Se il valore è troppo grande, non salvarlo
+          if (value && value.length > 10000) {
+            console.warn('Token troppo grande, rimuovendo:', key);
+            localStorage.removeItem(key);
+            return;
+          }
+          localStorage.setItem(key, value);
+        } catch {
+          // Ignore storage errors
+        }
+      },
+      removeItem: (key: string) => {
+        try {
+          localStorage.removeItem(key);
+        } catch {
+          // Ignore storage errors
+        }
+      }
+    }
   }
 });

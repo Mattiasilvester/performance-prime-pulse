@@ -48,14 +48,24 @@ export default defineConfig(({ command, mode }) => {
     host: "::",
     port: 8080,
     strictPort: true,
+    // Aumenta limite headers per evitare errore 431
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey'
+    },
     proxy: {
       '/api/supabase-proxy': {
         target: 'https://kfxoyucatvvcgmqalxsg.supabase.co',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/supabase-proxy/, ''),
+        // Aumenta limite headers per evitare 431
+        headers: {
+          'Connection': 'keep-alive'
+        },
         configure: (proxy, options) => {
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            // Copia headers importanti
+            // Copia solo headers essenziali per evitare 431
             if (req.headers.authorization) {
               proxyReq.setHeader('Authorization', req.headers.authorization);
             }
@@ -65,6 +75,10 @@ export default defineConfig(({ command, mode }) => {
             if (req.headers['content-type']) {
               proxyReq.setHeader('Content-Type', req.headers['content-type']);
             }
+            // Rimuovi headers non essenziali che possono causare 431
+            proxyReq.removeHeader('cookie');
+            proxyReq.removeHeader('x-forwarded-for');
+            proxyReq.removeHeader('x-forwarded-proto');
           });
         }
       }
