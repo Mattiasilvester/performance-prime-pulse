@@ -12,7 +12,10 @@ if (import.meta.env.PROD) {
     supabaseUrl = SUPABASE_DIRECT_URL; // Usa l'URL diretto
   } else {
     // Se il build di produzione è deployato (es. su Vercel)
-    supabaseUrl = '/api/supabase-proxy'; // Usa il proxy Vercel
+    // Costruisci URL assoluto per il proxy Vercel
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    supabaseUrl = `${protocol}//${hostname}/api/supabase-proxy`;
   }
 } else {
   // In sviluppo (npm run dev)
