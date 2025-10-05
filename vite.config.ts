@@ -95,50 +95,11 @@ export default defineConfig(({ command, mode }) => {
       }
     },
     sourcemap: false, // Disabilita in prod per ridurre size
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 1000, // Aumenta limite per evitare warning
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            // React ecosystem - CRITICO: mantieni insieme per evitare errori
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            
-            // Supabase (pesante, chunk separato)
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase';
-            }
-            
-            // UI libraries (Radix, Lucide, etc.)
-            if (id.includes('@radix-ui') || id.includes('lucide-react')) {
-              return 'vendor-ui';
-            }
-            
-            // TanStack Query (se usato)
-            if (id.includes('@tanstack')) {
-              return 'vendor-query';
-            }
-            
-            // Lodash e utility (spesso pesanti)
-            if (id.includes('lodash') || id.includes('date-fns') || id.includes('moment')) {
-              return 'vendor-utils';
-            }
-            
-            // Chart e visualization libraries
-            if (id.includes('chart') || id.includes('d3') || id.includes('recharts')) {
-              return 'vendor-charts';
-            }
-            
-            // Resto dipendenze - dividi per evitare chunk troppo grandi
-            if (id.includes('node_modules')) {
-              // Prendi il primo livello del path per raggruppare
-              const segments = id.split('/');
-              const packageName = segments.find(seg => seg.startsWith('@') || !seg.includes('/')) || 'vendor-misc';
-              return `vendor-${packageName.replace('@', '').replace('/', '-')}`;
-            }
-          }
-        },
+        // DISABILITA CODE-SPLITTING MANUALE PER RISOLVERE REACT ERROR
+        // manualChunks: undefined,
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
