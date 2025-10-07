@@ -3,7 +3,6 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { sendWelcomeEmail } from '@/services/emailService';
-import { clearAllAuth, hasCorruptedAuth } from '@/utils/clearAuth';
 
 interface AuthContextType {
   user: User | null;
@@ -38,24 +37,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    
-    // Controlla se ci sono sessioni corrotte all'avvio
-    if (hasCorruptedAuth()) {
-      console.log('🚨 Corrupted auth detected, clearing all sessions');
-      clearAllAuth();
-      return;
-    }
 
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
-        
-        // If session is null and we have auth state change, clear corrupted data
-        if (!session && (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED')) {
-          console.log('🔄 Auth state changed, clearing corrupted sessions');
-          clearAllAuth();
-        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -63,15 +49,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // THEN get initial session (only once) - with aggressive error handling
+    // THEN get initial session (only once)
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (!mounted) return;
       
       if (error) {
-        // Clear corrupted sessions on any auth error
-        console.log('🚨 Auth error detected, clearing all sessions');
-        clearAllAuth();
-        return;
+        console.warn('Session error (non-critical):', error?.message);
       }
       
       setSession(session);
@@ -79,8 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     }).catch((error) => {
       if (mounted) {
-        console.log('🚨 Session check failed, clearing all sessions');
-        clearAllAuth();
+        console.warn('Session check failed (non-critical)');
+        setLoading(false);
       }
     });
 

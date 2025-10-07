@@ -51,7 +51,7 @@ const LandingPage = () => {
       {/* Banner Beta - SOLO nella landing */}
       <div className="w-full bg-[#EEBA2B] text-black text-center py-3 font-semibold">
         <div className="container mx-auto px-4">
-          🚀 BETA GRATUITA - Accesso Early Adopters • Limitato fino a Novembre 2025
+          🚀 BETA GRATUITA - Accesso Early Adopters • Limitato fino a Febbraio 2026
         </div>
       </div>
       
