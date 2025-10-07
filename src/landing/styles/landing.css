@@ -12,6 +12,8 @@
   height: auto;
   background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
   color: white;
+  display: flex;
+  flex-direction: column;
 }
 
 /* FIX SCROLL LANDING PAGE - FORZA SCROLL */
@@ -1071,6 +1073,9 @@ html:not(.admin-panel) {
   background: rgba(0, 0, 0, 0.8);
   padding: 60px 20px 30px;
   border-top: 1px solid rgba(238, 186, 43, 0.2);
+  position: relative;
+  width: 100%;
+  margin-top: auto;
 }
 
 .footer-container {

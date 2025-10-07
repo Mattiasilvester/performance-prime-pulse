@@ -39,6 +39,8 @@ export default function LoginPage() {
         duration: 3000,
       })
 
+      // ✅ Aspetta che sessione sia salvata
+      await new Promise(resolve => setTimeout(resolve, 500));
       navigate('/dashboard')
     } catch (error: any) {
       console.error('Login error:', error)

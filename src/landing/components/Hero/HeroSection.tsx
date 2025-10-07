@@ -51,6 +51,17 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTAClick }) => {
             <span className="highlight-text"> performance straordinarie</span>
           </p>
           
+          {/* Bottone Accedi */}
+          <div className="mt-3 mb-2">
+            <button 
+              onClick={onCTAClick}
+              className="bg-[#EEBA2B] text-black px-6 py-2 rounded-lg font-semibold hover:bg-[#D4A017] transition-colors duration-200"
+              style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}
+            >
+              Accedi
+            </button>
+          </div>
+          
           {/* New Content Section */}
           <div className="hero-description">
             {/* Linea divisoria oro al posto dei testi rimossi */}

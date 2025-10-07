@@ -48,24 +48,28 @@ export default defineConfig(({ command, mode }) => {
     host: "::",
     port: 8080,
     strictPort: true,
-    // Aumenta limite headers per evitare errore 431
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey'
-    },
+    // Configurazione per token grandi (70KB+)
+    maxHttpHeaderSize: 200000, // 200KB per header
+    // Proxy ottimizzato per token grandi
     proxy: {
       '/api/supabase-proxy': {
         target: 'https://kfxoyucatvvcgmqalxsg.supabase.co',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/supabase-proxy/, ''),
+        // Configurazione per token grandi
+        timeout: 30000,
+        proxyTimeout: 30000,
         // Aumenta limite headers per evitare 431
         headers: {
-          'Connection': 'keep-alive'
+          'Connection': 'keep-alive',
+          'Content-Type': 'application/json'
         },
         configure: (proxy, options) => {
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            // Copia solo headers essenziali per evitare 431
+            // Configurazione per token grandi (70KB+)
+            proxyReq.setHeader('Connection', 'keep-alive');
+            
+            // Copia headers essenziali per evitare 431
             if (req.headers.authorization) {
               proxyReq.setHeader('Authorization', req.headers.authorization);
             }
@@ -75,10 +79,16 @@ export default defineConfig(({ command, mode }) => {
             if (req.headers['content-type']) {
               proxyReq.setHeader('Content-Type', req.headers['content-type']);
             }
-            // Rimuovi headers non essenziali che possono causare 431
-            proxyReq.removeHeader('cookie');
+            // MANTIENI i cookie per autenticazione
+            if (req.headers.cookie) {
+              proxyReq.setHeader('Cookie', req.headers.cookie);
+            }
+            
+            // Rimuovi solo headers non critici per ridurre dimensione
             proxyReq.removeHeader('x-forwarded-for');
             proxyReq.removeHeader('x-forwarded-proto');
+            proxyReq.removeHeader('x-forwarded-host');
+            proxyReq.removeHeader('x-real-ip');
           });
         }
       }
