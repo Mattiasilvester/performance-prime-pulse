@@ -6,6 +6,9 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useMedalSystem } from '@/hooks/useMedalSystem';
 import { trackWorkoutForChallenge } from '@/utils/challengeTracking';
 import { ChallengeNotification } from '@/components/ui/ChallengeNotification';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 // Struttura dati del circuito workout
 interface Exercise {
@@ -87,6 +90,7 @@ const QuickWorkout = () => {
 
   // Hook per sistema medaglie
   const { recordWorkoutCompletion } = useMedalSystem();
+  const { user } = useAuth();
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -448,7 +452,7 @@ const QuickWorkout = () => {
   };
 
   // Salva completamento
-  const markCompleted = () => {
+  const markCompleted = async () => {
     localStorage.setItem('lastWorkoutCompleted', new Date().toISOString());
     
     // Registra completamento nel sistema medaglie
@@ -456,6 +460,42 @@ const QuickWorkout = () => {
     
     // Traccia workout per sfida 7 giorni
     const challengeResult = trackWorkoutForChallenge();
+    
+    // Salva nel database Supabase
+    try {
+      console.log('🔍 [DEBUG] QuickWorkout: Creazione record custom_workouts...');
+      const { data: workoutRecord, error: createError } = await supabase
+        .from('custom_workouts')
+        .insert({
+          user_id: user?.id,
+          title: 'Allenamento Rapido 10 minuti',
+          workout_type: 'cardio',
+          scheduled_date: new Date().toISOString().split('T')[0],
+          exercises: WORKOUT_CIRCUIT,
+          total_duration: 10, // 10 minuti
+          completed: true,
+          completed_at: new Date().toISOString()
+        })
+        .select('id, title, total_duration, completed, completed_at')
+        .single();
+
+      console.log('📊 [DEBUG] QuickWorkout: Risultato inserimento:', { workoutRecord, createError });
+
+      if (createError) {
+        console.error('❌ [DEBUG] Errore creazione workout record:', createError);
+      } else {
+        console.log('✅ [DEBUG] QuickWorkout: Record creato con successo');
+        
+        // Emetti evento per aggiornare dashboard
+        console.log('🚀 [DEBUG] QuickWorkout: Emetto evento workoutCompleted');
+        window.dispatchEvent(new CustomEvent('workoutCompleted', {
+          detail: { workoutId: workoutRecord.id }
+        }));
+        console.log('✅ [DEBUG] QuickWorkout: Evento workoutCompleted emesso');
+      }
+    } catch (error) {
+      console.error('❌ [DEBUG] Errore salvataggio workout:', error);
+    }
     
     // Mostra notifica se c'è un messaggio
     if (challengeResult.message) {
@@ -512,7 +552,7 @@ const QuickWorkout = () => {
       }, 5000);
     }
     
-    alert('Funzionalità diario in arrivo! Workout salvato.');
+    toast.success('Funzionalità diario in arrivo! Workout salvato.');
     navigate('/dashboard');
   };
 
@@ -522,7 +562,7 @@ const QuickWorkout = () => {
     const exerciseName = progress ? WORKOUT_CIRCUIT[progress.currentExercise]?.name : '';
     
     return (
-      <div className="min-h-screen bg-black flex flex-col">
+      <div className="fixed inset-0 bg-black flex flex-col" style={{ zIndex: 99999 }}>
         <div className="flex-1 flex flex-col justify-center items-center px-6">
           <div className="text-center space-y-8 max-w-lg w-full">
             <div className="flex justify-center">
@@ -572,7 +612,7 @@ const QuickWorkout = () => {
   // Schermata di completamento
   if (workoutState === 'completed') {
     return (
-      <div className="min-h-screen bg-black flex flex-col">
+      <div className="fixed inset-0 bg-black flex flex-col" style={{ zIndex: 99999 }}>
         {/* Header minimale */}
         <div className="flex-shrink-0 p-4">
           <button
@@ -621,7 +661,7 @@ const QuickWorkout = () => {
 
   // Schermata principale workout
   return (
-    <div className="min-h-screen bg-black flex flex-col quick-workout-container">
+    <div className="fixed inset-0 bg-black flex flex-col quick-workout-container" style={{ zIndex: 99999 }}>
       {workoutState === 'ready' ? (
         // Schermata di preparazione fullscreen
         <div className="min-h-screen flex flex-col">

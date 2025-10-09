@@ -300,7 +300,7 @@ export default function SuperAdminDashboard() {
       // Verifica se la tabella custom_workouts esiste e ha dati
       const { data: workoutData, error: workoutError, count: workoutCount } = await supabaseAdmin
         .from('custom_workouts')
-        .select('*', { count: 'exact' })
+        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at', { count: 'exact' })
         .limit(5);
       
       console.log('📊 Custom Workouts Analysis:', {

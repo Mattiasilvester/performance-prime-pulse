@@ -41,7 +41,7 @@ export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrig
 
       const { data, error } = await supabase
         .from('custom_workouts')
-        .select('*')
+        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .eq('user_id', user.id)
         .gte('scheduled_date', startDate.toISOString().split('T')[0])
         .lte('scheduled_date', endDate.toISOString().split('T')[0]);

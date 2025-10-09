@@ -33,8 +33,15 @@ export const ProgressHistory = () => {
 
   const totalStats = chartData ? {
     workouts: chartData.reduce((sum, item) => sum + item.workouts, 0),
-    hours: Math.round(chartData.reduce((sum, item) => sum + item.hours, 0) * 10) / 10
+    hours: chartData.reduce((sum, item) => sum + item.hours, 0)
   } : { workouts: 0, hours: 0 };
+
+  // Formatta le ore totali in formato Xh Ym
+  const formatTotalHours = (totalHours: number): string => {
+    const hours = Math.floor(totalHours);
+    const minutes = Math.round((totalHours - hours) * 60);
+    return `${hours}h ${minutes}m`;
+  };
 
   return (
     <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
@@ -99,7 +106,7 @@ export const ProgressHistory = () => {
             <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
             <span className="text-sm font-medium text-white">{t('progressHistory.totalHours')}</span>
           </div>
-          <div className="text-2xl font-bold text-orange-500">{totalStats.hours}h</div>
+          <div className="text-2xl font-bold text-orange-500">{formatTotalHours(totalStats.hours)}</div>
           <div className="text-sm text-gray-400">{t('progressHistory.inPeriod')}</div>
         </div>
       </div>

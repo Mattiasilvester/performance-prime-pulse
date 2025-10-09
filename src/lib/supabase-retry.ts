@@ -106,7 +106,7 @@ export const supabaseWithRetry = {
               const { data, error } = await supabase
                 .from(table)
                 .insert(values)
-                .select()
+                .select('id, created_at')
                 .single();
               if (error) throw error;
               return { data, error: null };

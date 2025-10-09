@@ -8,7 +8,8 @@ import { ChallengeModal } from '@/components/medals/ChallengeModal';
 
 interface StatsData {
   totalWorkouts: number;
-  totalHours: number;
+  totalHours: string; // Ora è una stringa formattata (es. "39m" o "1h 30m")
+  totalMinutes?: number; // Minuti totali per calcoli interni
   totalObjectives: number;
   completedObjectives: number;
 }
@@ -16,7 +17,7 @@ interface StatsData {
 export const StatsOverview = () => {
   const [stats, setStats] = useState<StatsData>({
     totalWorkouts: 0,
-    totalHours: 0,
+    totalHours: '0h 0m',
     totalObjectives: 0,
     completedObjectives: 0
   });
@@ -63,6 +64,19 @@ export const StatsOverview = () => {
     };
 
     loadStats();
+
+    // Ascolta l'evento di completamento workout per refresh automatico
+    const handleWorkoutCompleted = (event: any) => {
+      console.log('🔄 [DEBUG] StatsOverview: Evento workoutCompleted ricevuto!', event.detail);
+      console.log('🔄 [DEBUG] StatsOverview: Workout completato, ricarico statistiche...');
+      loadStats();
+    };
+
+    window.addEventListener('workoutCompleted', handleWorkoutCompleted);
+    
+    return () => {
+      window.removeEventListener('workoutCompleted', handleWorkoutCompleted);
+    };
   }, []);
 
   // Ottieni dati card medaglie dinamici
@@ -87,7 +101,7 @@ export const StatsOverview = () => {
     },
     {
       label: 'Tempo totale',
-      value: loading ? '...' : `${stats.totalHours}h`,
+      value: loading ? '...' : stats.totalHours,
       change: '+0h',
       icon: Clock,
       color: 'text-pp-gold',

@@ -134,7 +134,7 @@ export type Database = {
           completed: boolean | null
           completed_at: string | null
           created_at: string
-          exercises: Json
+          exercises?: Json
           id: string
           scheduled_date: string
           title: string

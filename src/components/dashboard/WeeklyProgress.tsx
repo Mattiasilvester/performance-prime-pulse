@@ -62,6 +62,18 @@ export const WeeklyProgress = () => {
     };
 
     loadWeeklyData();
+
+    // Ascolta l'evento di completamento workout per refresh automatico
+    const handleWorkoutCompleted = () => {
+      console.log('🔄 [DEBUG] WeeklyProgress: Workout completato, ricarico dati settimanali...');
+      loadWeeklyData();
+    };
+
+    window.addEventListener('workoutCompleted', handleWorkoutCompleted);
+    
+    return () => {
+      window.removeEventListener('workoutCompleted', handleWorkoutCompleted);
+    };
   }, []);
   return (
     <div className="bg-black rounded-2xl p-6 shadow-lg border-2 border-pp-gold">

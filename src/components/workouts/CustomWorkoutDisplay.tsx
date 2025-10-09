@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { CheckCircle, ArrowRight, X } from 'lucide-react';
+import { CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ExerciseGifLink } from './ExerciseGifLink';
+import { ExerciseCard } from './ExerciseCard';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CustomWorkoutDisplayProps {
@@ -126,115 +126,62 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
     };
     return colorMap[workout.workout_type] || '#c89116';
   };
-  
+
   return (
-    <div className="cardio-fatburn-section rounded-2xl shadow-sm overflow-hidden" style={{ border: '2px solid #EEBA2B', maxHeight: 'calc(100vh - 120px)' }}>
-      <div className="p-6 text-white" style={{ background: getHeaderBackground() }}>
+    <div className="bg-black rounded-2xl shadow-sm overflow-hidden border-2 border-[#EEBA2B] animate-fade-in" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+      <div className="p-6 bg-gradient-to-r from-pp-gold to-yellow-600 animate-slide-in-right">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-bold">{workout.title}</h3>
-            <p className="text-blue-100">
-              Esercizio {currentExercise + 1} di {exercises.length}
-            </p>
-          </div>
+          <h2 className="text-2xl font-bold text-black animate-scale-in">{workout.title}</h2>
           <Button 
             onClick={onClose}
-            variant="ghost"
+            variant="ghost" 
             size="sm"
-            className="text-white hover:bg-white/20"
+            className="text-black hover:text-pp-gold hover:bg-black/10 hover-scale"
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
-        
-        {/* Progress Bar */}
-        <div className="mt-4 bg-white/20 rounded-full h-2">
+
+        <div className="mt-4 bg-black/20 rounded-full h-2 animate-fade-in">
           <div 
-            className="bg-white rounded-full h-2 transition-all duration-300"
-            style={{ width: `${(completedExercises.length / exercises.length) * 100}%` }}
+            className="bg-black rounded-full h-2 transition-all duration-500 animate-scale-in"
+            style={{ width: `${(completedExercises.length / (exercises.length || 1)) * 100}%` }}
           />
         </div>
+        <p className="text-black mt-2 font-medium animate-fade-in">COMPLETA TUTTI GLI ESERCIZI • {exercises.length || 0} ESERCIZI</p>
       </div>
 
-      <div className="cardio-fatburn-section__container p-6 space-y-4 overflow-y-auto" style={{ backgroundColor: '#000000', border: '2px solid #EEBA2B', maxHeight: 'calc(100vh - 300px)' }}>
-        {exercises.map((exercise: any, index: number) => (
-          <div
-            key={index}
-            className="cardio-fatburn-card p-4 rounded-xl transition-all duration-300"
-            style={{
-              backgroundColor: '#000000',
-              border: '2px solid #EEBA2B',
-              position: 'relative',
-            }}
-          >
-            {/* Active exercise overlay */}
-            {index === currentExercise && !isCompleted(index) && (
-              <div 
-                className="absolute inset-0 rounded-xl pointer-events-none"
-                style={{ backgroundColor: 'rgba(56, 182, 255, 0.3)' }}
+      <div className="p-6 space-y-4 bg-black overflow-y-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
+        <div className="grid gap-4 pb-8">
+          {exercises.map((exercise: any, index: number) => (
+            <div key={`${exercise.name}-${index}`} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <ExerciseCard
+                exercise={exercise}
+                index={index}
+                isCompleted={isCompleted(index)}
+                onToggleComplete={completeExercise}
+                onStart={() => {
+                  // Logica per avviare esercizio se necessario
+                }}
               />
-            )}
-            
-            <div className="flex items-center justify-between relative">
-              <div className="flex items-center space-x-3">
-                <div
-                  className={`cardio-fatburn-card__bullet w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                    isCompleted(index)
-                      ? 'bg-green-500 text-white border-green-500'
-                      : 'bg-slate-300 text-slate-600 border-slate-300'
-                  }`}
-                >
-                  {isCompleted(index) ? (
-                    <CheckCircle className="h-5 w-5" />
-                  ) : (
-                    <span className="font-bold">{index + 1}</span>
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="cardio-fatburn-card__title font-semibold text-white">
-                      {exercise.name}
-                    </h4>
-                    <ExerciseGifLink exerciseName={exercise.name} />
-                  </div>
-                  <p className="cardio-fatburn-card__subtitle text-sm text-gray-400">
-                    {exercise.sets && `${exercise.sets} serie`}
-                    {exercise.reps && ` • ${exercise.reps} rip.`}
-                    {exercise.rest && ` • ${exercise.rest} rec.`}
-                  </p>
-                </div>
-              </div>
-              
-              {index === currentExercise && !isCompleted(index) && (
-                <Button
-                  onClick={handleCompleteClick}
-                  onTouchEnd={handleCompleteTouch}
-                  style={{ backgroundColor: '#EEBA2B', color: '#000000' }}
-                  className="btn-completa min-h-[44px] px-4 py-2 text-sm font-semibold"
-                  type="button"
-                  aria-label={`Completa ${exercise.name}`}
-                >
-                  Completa
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
             </div>
-          </div>
-        ))}
-        
-        {completedExercises.length === exercises.length && (
-          <div className="action-buttons-container text-center p-6 bg-green-50 rounded-xl border-2 border-green-200">
-            <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-3" />
-            <h3 className="text-xl font-bold text-green-800 mb-2">Workout Completato!</h3>
-            <p className="text-green-600 mb-4">Ottimo lavoro! Hai completato tutti gli esercizi.</p>
+          ))}
+          {(!exercises || exercises.length === 0) && (
+            <p className="text-white animate-fade-in text-center py-8">NESSUN ESERCIZIO DISPONIBILE</p>
+          )}
+        </div>
+
+        {completedExercises.length === exercises.length && exercises.length > 0 && (
+          <div className="action-buttons-container bg-green-500/20 border border-green-500/50 rounded-lg p-4 text-center animate-scale-in">
+            <CheckCircle className="h-8 w-8 text-green-400 mx-auto mb-2 animate-pulse" />
+            <p className="text-green-400 font-semibold uppercase">ALLENAMENTO COMPLETATO! 🎉</p>
             <Button 
               onClick={handleTerminateWorkout}
-              onTouchEnd={handleTerminateTouch}
-              className="btn-termina-allenamento bg-green-600 hover:bg-green-700 min-h-[48px] px-6 py-3 text-base font-semibold"
+              className="btn-termina-sessione mt-3 animate-fade-in min-h-[48px] px-6 py-3 text-base font-semibold"
               type="button"
-              aria-label="Termina allenamento"
+              aria-label="Termina sessione allenamento"
             >
-              Termina Allenamento
+              TERMINA SESSIONE
             </Button>
           </div>
         )}

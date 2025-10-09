@@ -95,7 +95,7 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
             user_id: user.id,
           }
         ])
-        .select()
+        .select('id, user_id, workout_id, content, created_at, updated_at')
         .single();
 
       if (error) {
@@ -142,7 +142,7 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
         })
         .eq('id', id)
         .eq('user_id', user.id)
-        .select()
+        .select('id, user_id, workout_id, content, created_at, updated_at')
         .single();
 
       if (error) {

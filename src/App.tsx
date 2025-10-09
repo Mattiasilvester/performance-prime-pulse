@@ -8,6 +8,7 @@ import { PrimeBotProvider, usePrimeBot } from './contexts/PrimeBotContext'
 import MobileScrollFix from '@/components/MobileScrollFix'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
+import { Toaster as SonnerToaster } from '@/components/ui/sonner'
 import { Header } from '@/components/layout/Header'
 import BottomNavigation from '@/components/layout/BottomNavigation'
 import FeedbackWidget from '@/components/feedback/FeedbackWidget'
@@ -330,6 +331,7 @@ function App() {
             </Suspense>
           </Router>
           <Toaster />
+          <SonnerToaster />
         </PrimeBotProvider>
       </NotificationProvider>
     </AuthProvider>

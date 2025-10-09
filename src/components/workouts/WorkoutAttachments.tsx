@@ -124,7 +124,7 @@ export const WorkoutAttachments = ({ workoutId, onAttachmentsChange }: WorkoutAt
             file_type: file.type,
             mime_type: file.type,
           })
-          .select()
+          .select('id, workout_id, user_id, filename, file_url, file_size, mime_type, created_at')
           .single();
 
         if (dbError) {
