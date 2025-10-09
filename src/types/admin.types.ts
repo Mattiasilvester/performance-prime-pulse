@@ -22,6 +22,21 @@ export interface AdminStats {
   revenue: number
   churnRate: number
   conversionRate: number
+  // Properties aggiuntive usate nel dashboard
+  activeUsers?: number
+  inactiveUsers?: number
+  totalWorkouts?: number
+  monthlyWorkouts?: number
+  professionals?: number
+  activeObjectives?: number
+  totalNotes?: number
+  totalPT?: number
+  growth?: number
+  engagement?: number
+  newUsersThisMonth?: number
+  activationD0Rate?: number
+  retentionD7?: number
+  weeklyGrowth?: number
 }
 
 export interface AdminAuditLog {

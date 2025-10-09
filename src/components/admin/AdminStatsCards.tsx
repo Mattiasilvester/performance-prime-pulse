@@ -1,17 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { AdminStats } from '@/types/admin.types';
 
 interface AdminStatsCardsProps {
-  stats?: {
-    totalUsers: number;
-    activeUsers: number;
-    inactiveUsers: number;
-    totalWorkouts: number;
-    totalPT: number;
-    weeklyGrowth: number;
-    activationD0Rate: number;
-    retentionD7: number;
-  };
+  stats?: AdminStats;
   loading?: boolean;
 }
 

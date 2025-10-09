@@ -113,6 +113,9 @@ export default function SuperAdminDashboard() {
       
       console.log('📈 Weekly new users:', { weeklyNewUsers, weeklyError });
       
+      // Calcolo variabili necessarie per metriche
+      const totalUsersFinal = totalUsers || 0;
+      
       // 4. Calcola Activation D0 Rate (% primo workout entro 24h)
       let activationD0Rate = 0;
       try {
@@ -135,9 +138,17 @@ export default function SuperAdminDashboard() {
           
           // Conta utenti con primo workout entro 24h
           let usersActivatedWithin24h = 0;
+          
+          // Query profiles necessari per il calcolo
+          const userIds = Array.from(userFirstWorkout.keys());
+          const { data: profilesForActivation } = await supabaseAdmin
+            .from('profiles')
+            .select('id, created_at')
+            .in('id', userIds);
+          
           for (const [userId, firstWorkoutDate] of userFirstWorkout) {
             // Trova data registrazione utente
-            const userProfile = profiles?.find(p => p.id === userId);
+            const userProfile = profilesForActivation?.find(p => p.id === userId);
             if (userProfile) {
               const registrationDate = new Date(userProfile.created_at as string);
               const workoutDate = new Date(firstWorkoutDate);
@@ -194,24 +205,28 @@ export default function SuperAdminDashboard() {
       }
 
       // 6. Calcoli semplici
-      const totalUsersFinal = totalUsers || 0;
       const activeUsersFinal = activeUsers || 0;
       const inactiveUsers = totalUsersFinal - activeUsersFinal;
       const growthRate = totalUsersFinal ? ((weeklyNewUsers || 0) / totalUsersFinal * 100) : 0;
       
-      const statsData = {
+      const statsData: AdminStats = {
         totalUsers: totalUsersFinal,
+        payingUsers: 0, // TODO: implementare quando disponibile
+        activeToday: 0, // TODO: implementare quando disponibile
+        revenue: 0, // TODO: implementare quando disponibile
+        churnRate: 0, // TODO: implementare quando disponibile
+        conversionRate: 0, // TODO: implementare quando disponibile
         activeUsers: activeUsersFinal,
         inactiveUsers: inactiveUsers,
-        totalWorkouts: 0, // Non disponibile senza tabella workouts
-        monthlyWorkouts: 0, // Non disponibile senza tabella workouts
-        professionals: 0, // Non disponibile senza tabella professionals
-        activeObjectives: 0, // Non disponibile senza tabella objectives
-        totalNotes: 0, // Non disponibile senza tabella notes
+        totalWorkouts: 0,
+        monthlyWorkouts: 0,
+        totalPT: 0, // Personal Trainers - TODO: implementare
+        professionals: 0,
+        activeObjectives: 0,
+        totalNotes: 0,
         growth: parseFloat(growthRate.toFixed(1)),
         engagement: totalUsersFinal ? parseFloat((activeUsersFinal / totalUsersFinal * 100).toFixed(1)) : 0,
         newUsersThisMonth: weeklyNewUsers || 0,
-        // Nuove metriche activation
         activationD0Rate: activationD0Rate,
         retentionD7: retentionD7,
         weeklyGrowth: weeklyNewUsers || 0
@@ -279,6 +294,11 @@ export default function SuperAdminDashboard() {
       // Imposta valori di default in caso di errore
       setStats({
         totalUsers: 0,
+        payingUsers: 0,
+        activeToday: 0,
+        revenue: 0,
+        churnRate: 0,
+        conversionRate: 0,
         activeUsers: 0,
         totalWorkouts: 0,
         monthlyWorkouts: 0,
