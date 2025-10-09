@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 export const UserProfile = () => {
   const { toast } = useToast();
   const { profile, loading: profileLoading, refetch } = useUserProfile();
-  const [stats, setStats] = useState<WorkoutStats>({ total_workouts: 0, total_hours: 0 });
+  const [stats, setStats] = useState<WorkoutStats>({ total_workouts: 0, total_hours: "0m" });
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', surname: '', birthPlace: '' });
   const [loading, setLoading] = useState(true);

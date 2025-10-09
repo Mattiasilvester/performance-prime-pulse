@@ -827,9 +827,9 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
     // Nasconde header e footer quando completato - SCRIPT AGGGRESSIVO
     useEffect(() => {
       const hideElements = () => {
-        const header = document.querySelector('header');
-        const footer = document.querySelector('.bottom-navigation');
-        const feedback = document.querySelector('.feedback-widget');
+        const header = document.querySelector('header') as HTMLElement | null;
+        const footer = document.querySelector('.bottom-navigation') as HTMLElement | null;
+        const feedback = document.querySelector('.feedback-widget') as HTMLElement | null;
         
         if (header) {
           header.style.display = 'none !important';
@@ -859,9 +859,9 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
       
       return () => {
         clearInterval(interval);
-        const header = document.querySelector('header');
-        const footer = document.querySelector('.bottom-navigation');
-        const feedback = document.querySelector('.feedback-widget');
+        const header = document.querySelector('header') as HTMLElement | null;
+        const footer = document.querySelector('.bottom-navigation') as HTMLElement | null;
+        const feedback = document.querySelector('.feedback-widget') as HTMLElement | null;
         
         if (header) {
           header.style.display = '';

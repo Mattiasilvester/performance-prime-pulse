@@ -289,3 +289,5 @@ SICUREZZA:
 - NON tocca: tabelle custom_workouts, user_objectives, profiles
 - SOLO pulisce: user_metadata e app_metadata in auth.users
 */
+
+

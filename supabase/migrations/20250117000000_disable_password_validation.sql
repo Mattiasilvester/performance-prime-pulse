@@ -15,3 +15,5 @@
 
 -- Note: Queste configurazioni devono essere fatte manualmente nel dashboard Supabase
 -- https://supabase.com/dashboard/project/kfxoyucatvvcgmqalxsg/auth/settings
+
+

@@ -54,3 +54,5 @@ SELECT
     updated_at
 FROM user_workout_stats
 ORDER BY updated_at DESC;
+
+

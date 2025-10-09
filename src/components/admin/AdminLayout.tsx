@@ -17,7 +17,7 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout, adminUser } = useAdminAuthBypass();
+  const { logout, admin } = useAdminAuthBypass();
 
   const handleLogout = async () => {
     await logout();
@@ -102,7 +102,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <div className="min-w-0 flex-1">
               <p className="text-white font-medium truncate">Super Admin</p>
               <p className="text-gray-400 text-sm truncate">
-                {adminUser?.email || 'Super Admin'}
+                {admin?.email || 'Super Admin'}
               </p>
             </div>
           </div>

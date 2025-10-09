@@ -240,18 +240,29 @@ export default function SuperAdminDashboard() {
 
       // Trasforma i dati per la tabella utenti
       if (profiles) {
-        const usersData: AdminUser[] = profiles.map(profile => ({
-          id: profile.id,
-          email: profile.email || '',
-          name: profile.full_name || profile.name || 'N/A',
-          role: profile.role || 'user',
-          status: profile.status || 'active',
-          subscription_status: profile.subscription_status,
-          created_at: profile.created_at,
-          last_login: profile.last_login,
-          total_workouts: profile.total_workouts || 0,
-          total_minutes: profile.total_minutes || 0
-        }));
+        const usersData: AdminUser[] = profiles.map(profile => {
+          const fullName = profile.full_name || profile.name || 'N/A';
+          const status = profile.status || 'active';
+          const lastLogin = profile.last_login ? new Date(profile.last_login) : null;
+          const now = new Date();
+          const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+          
+          return {
+            id: profile.id,
+            email: profile.email || '',
+            name: fullName,
+            full_name: fullName,
+            role: profile.role || 'user',
+            status: status,
+            is_active: status === 'active',
+            is_active_user: lastLogin ? lastLogin > fiveMinutesAgo : false,
+            subscription_status: profile.subscription_status,
+            created_at: profile.created_at,
+            last_login: profile.last_login,
+            total_workouts: profile.total_workouts || 0,
+            total_minutes: profile.total_minutes || 0
+          } as AdminUser;
+        });
         
         console.log(`✅ Processed ${usersData.length} users for dashboard`);
         setUsers(usersData);
@@ -369,8 +380,8 @@ export default function SuperAdminDashboard() {
   const handleUserAction = async (userId: string, action: string) => {
     try {
       // Log azione
-      const { error: logError } = await supabase.from('admin_audit_logs').insert({
-        admin_id: (await supabase.auth.getUser()).data.user?.id,
+      const { error: logError } = await supabaseAdmin.from('admin_audit_logs').insert({
+        admin_id: (await supabaseAdmin.auth.getUser()).data.user?.id,
         action,
         target_user_id: userId,
         details: { 
@@ -384,7 +395,7 @@ export default function SuperAdminDashboard() {
       // Esegui azione
       switch(action) {
         case 'suspend':
-          const { error: suspendError } = await supabase
+          const { error: suspendError } = await supabaseAdmin
             .from('profiles')
             .update({ status: 'suspended' })
             .eq('id', userId)
@@ -392,7 +403,7 @@ export default function SuperAdminDashboard() {
           break
           
         case 'activate':
-          const { error: activateError } = await supabase
+          const { error: activateError } = await supabaseAdmin
             .from('profiles')
             .update({ status: 'active' })
             .eq('id', userId)
@@ -401,7 +412,7 @@ export default function SuperAdminDashboard() {
           
         case 'delete':
           if (confirm('Sei sicuro? Questa azione è irreversibile.')) {
-            const { error: deleteError } = await supabase
+            const { error: deleteError } = await supabaseAdmin
               .from('profiles')
               .update({ status: 'deleted' })
               .eq('id', userId)

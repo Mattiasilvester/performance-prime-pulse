@@ -3,8 +3,11 @@ export interface AdminUser {
   id: string
   email: string
   name: string
+  full_name?: string // Alias per name (compatibility)
   role: 'user' | 'premium' | 'super_admin'
   status: 'active' | 'suspended' | 'deleted'
+  is_active?: boolean // Calcolato da status
+  is_active_user?: boolean // Calcolato da last_login
   subscription_status?: 'active' | 'inactive' | 'cancelled'
   created_at: string
   last_login?: string

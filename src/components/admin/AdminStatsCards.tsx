@@ -52,7 +52,7 @@ export default function AdminStatsCards({ stats: propsStats, loading: propsLoadi
       console.log('🎉 NUOVO UTENTE!', stats.totalUsers);
       
       // Highlight temporaneo della card obiettivo
-      const card = document.querySelector('[data-card="objective"]');
+      const card = document.querySelector('[data-card="objective"]') as HTMLElement | null;
       if (card) {
         card.style.boxShadow = '0 0 20px #00ff00';
         card.style.transform = 'scale(1.05)';

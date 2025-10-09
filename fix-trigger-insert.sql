@@ -67,3 +67,5 @@ CREATE TRIGGER update_workout_stats_trigger
 -- 
 -- Poi verifica:
 -- SELECT * FROM user_workout_stats WHERE user_id = 'your-user-id';
+
+

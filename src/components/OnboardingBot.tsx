@@ -8,7 +8,7 @@ interface OnboardingBotProps {
 }
 
 // Stili interni per la card intro PrimeBot
-const introCardStyle = {
+const introCardStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-start",
@@ -33,7 +33,7 @@ const iconStyle = {
   color: "#000"
 };
 const textStyle = { fontSize: "16px", color: "#000" };
-const buttonsStyle = { display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" };
+const buttonsStyle: React.CSSProperties = { display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" };
 const buttonStyle = {
   border: "none",
   borderRadius: "8px",
