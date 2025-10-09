@@ -69,11 +69,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
                 };
                 
                 const leanTokenString = JSON.stringify(leanToken);
-                console.log('🧹 Token lean applied:', {
-                  originalSize: item.length,
-                  leanSize: leanTokenString.length,
-                  reduction: ((item.length - leanTokenString.length) / item.length * 100).toFixed(1) + '%'
-                });
+                // Token lean applied silently
                 
                 return leanTokenString;
               }
@@ -167,3 +163,4 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     }
   }
 });
+

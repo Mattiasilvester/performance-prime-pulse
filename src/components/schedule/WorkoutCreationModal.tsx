@@ -181,7 +181,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           exercises: exercisesData as any,
           total_duration: duration ? parseInt(duration) : null,
         })
-        .select()
+        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .single();
 
       if (error) throw error;
@@ -261,7 +261,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           exercises: exercisesData as any,
           total_duration: duration ? parseInt(duration) : null,
         })
-        .select()
+        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .single();
 
       if (error) throw error;

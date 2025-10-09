@@ -16,6 +16,9 @@ export const fetchProgressStats = async (period: string): Promise<ProgressData[]
     const now = new Date();
     let startDate: Date;
     
+    console.log('🔍 [DEBUG] fetchProgressStats: Periodo selezionato:', period);
+    console.log('🔍 [DEBUG] fetchProgressStats: Data corrente:', now.toISOString());
+    
     switch (period) {
       case 'week':
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -37,6 +40,9 @@ export const fetchProgressStats = async (period: string): Promise<ProgressData[]
 
     const startDateString = startDate.toISOString().split('T')[0];
 
+    console.log('🔍 [DEBUG] fetchProgressStats: Data inizio calcolata:', startDateString);
+    console.log('🔍 [DEBUG] fetchProgressStats: Filtro scheduled_date >=', startDateString);
+
     // Query per ottenere i workout completati nel periodo
     const { data: workouts, error } = await supabase
       .from('custom_workouts')
@@ -45,6 +51,8 @@ export const fetchProgressStats = async (period: string): Promise<ProgressData[]
       .eq('completed', true)
       .gte('scheduled_date', startDateString)
       .order('scheduled_date', { ascending: true });
+
+    console.log('📊 [DEBUG] fetchProgressStats: Workouts trovati:', workouts);
 
     if (error) {
       console.error('Error fetching progress stats:', error);
@@ -77,9 +85,11 @@ export const fetchProgressStats = async (period: string): Promise<ProgressData[]
       .map(([date, stats]) => ({
         date,
         workouts: stats.workouts,
-        hours: Math.round(stats.hours * 10) / 10 // Arrotonda a 1 decimale
+        hours: stats.hours // Mantieni precisione completa, arrotonda solo alla fine
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
+
+    console.log('📊 [DEBUG] fetchProgressStats: Risultato finale:', result);
 
     return result;
   } catch (error) {

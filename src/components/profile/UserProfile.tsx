@@ -236,7 +236,7 @@ export const UserProfile = () => {
                   <div className="text-sm text-white">Allenamenti</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">{stats.total_hours}h</div>
+                  <div className="text-2xl font-bold text-orange-600">{stats.total_hours}</div>
                   <div className="text-sm text-white">Ore totali</div>
                 </div>
               </div>

@@ -42,7 +42,7 @@ export default function AdminUsers() {
             // Conta allenamenti totali (per info)
             const { count: userWorkouts } = await supabaseAdmin
               .from('custom_workouts')
-              .select('*', { count: 'exact', head: true })
+              .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at', { count: 'exact', head: true })
               .eq('user_id', profile.id);
 
             // Ultimo workout (per info)

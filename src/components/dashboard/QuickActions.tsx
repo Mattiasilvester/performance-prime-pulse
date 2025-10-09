@@ -26,7 +26,7 @@ const QuickActions = () => {
       
       const { data: workouts, error } = await supabase
         .from('custom_workouts')
-        .select('*')
+        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .eq('user_id', user.id)
         .gte('created_at', today)
         .order('created_at', { ascending: false })
@@ -56,11 +56,9 @@ const QuickActions = () => {
       if (todayWorkout) {
         // Se c'è già un workout per oggi, vai alla pagina allenamenti
         navigate('/workouts');
-        toast.success('Vai al tuo allenamento di oggi');
       } else {
         // Se non c'è un workout per oggi, vai alla creazione
         navigate('/workouts');
-        toast.success('Crea il tuo allenamento di oggi');
       }
     } catch (error) {
       console.error('Errore nell\'avvio allenamento:', error);

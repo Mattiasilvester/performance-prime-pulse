@@ -175,7 +175,7 @@ export function useAdminAuthBypass() {
               is_active: true,
               created_at: new Date().toISOString()
             })
-            .select()
+            .select('id, user_id, email, created_at')
             .single();
             
           console.log('👤 Account creato:', { newProfile, createError });
