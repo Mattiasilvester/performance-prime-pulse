@@ -139,7 +139,7 @@ export default function SuperAdminDashboard() {
             // Trova data registrazione utente
             const userProfile = profiles?.find(p => p.id === userId);
             if (userProfile) {
-              const registrationDate = new Date(userProfile.created_at);
+              const registrationDate = new Date(userProfile.created_at as string);
               const workoutDate = new Date(firstWorkoutDate);
               const hoursDiff = (workoutDate.getTime() - registrationDate.getTime()) / (1000 * 60 * 60);
               
@@ -176,7 +176,7 @@ export default function SuperAdminDashboard() {
           
           const activeOldUsers = oldUsers.filter(user => {
             if (!user.last_login) return false;
-            const lastLoginDate = new Date(user.last_login);
+            const lastLoginDate = new Date(user.last_login as string);
             return lastLoginDate >= sevenDaysAgoForActivity;
           });
           
@@ -243,7 +243,7 @@ export default function SuperAdminDashboard() {
         const usersData: AdminUser[] = profiles.map(profile => {
           const fullName = profile.full_name || profile.name || 'N/A';
           const status = profile.status || 'active';
-          const lastLogin = profile.last_login ? new Date(profile.last_login) : null;
+          const lastLogin = profile.last_login ? new Date(profile.last_login as string) : null;
           const now = new Date();
           const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
           

@@ -51,7 +51,7 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
   }, []);
 
   // Fix per il click che non funziona
-  const handleStartClick = (e: React.MouseEvent) => {
+  const handleStartClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -70,7 +70,7 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
     }
   };
   
-  const handleCompleteClick = (e: React.MouseEvent) => {
+  const handleCompleteClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
     

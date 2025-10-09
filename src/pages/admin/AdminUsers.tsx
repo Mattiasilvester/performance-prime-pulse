@@ -60,10 +60,10 @@ export default function AdminUsers() {
             
             // Verifica se ha fatto azioni recenti (login, attività) negli ultimi 5 min
             const isActiveNow = profile.last_login && 
-              new Date(profile.last_login) > fiveMinutesAgo;
+              new Date(profile.last_login as string) > fiveMinutesAgo;
 
             // Calcola tempo dall'ultimo accesso
-            const lastLoginTime = profile.last_login ? new Date(profile.last_login) : null;
+            const lastLoginTime = profile.last_login ? new Date(profile.last_login as string) : null;
             const minutesSinceLogin = lastLoginTime ? 
               Math.floor((new Date().getTime() - lastLoginTime.getTime()) / (1000 * 60)) : null;
 

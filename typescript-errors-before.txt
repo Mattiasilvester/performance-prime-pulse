@@ -1,0 +1,111 @@
+src/components/notifications/PushPermissionModal.tsx(102,33): error TS2341: Property 'savePermissionStatus' is private and only accessible within class 'PushNotificationService'.
+src/components/notifications/PushPermissionModal.tsx(120,29): error TS2341: Property 'savePermissionStatus' is private and only accessible within class 'PushNotificationService'.
+src/components/notifications/PushPermissionModal.tsx(131,29): error TS2341: Property 'savePermissionStatus' is private and only accessible within class 'PushNotificationService'.
+src/components/SchedaView.tsx(19,45): error TS2339: Property 'metadata' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(23,45): error TS2339: Property 'metadata' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(27,45): error TS2339: Property 'metadata' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(36,28): error TS2339: Property 'riscaldamento' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(37,28): error TS2339: Property 'riscaldamento' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(38,28): error TS2339: Property 'riscaldamento' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(47,28): error TS2339: Property 'schedaGiornaliera' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(58,28): error TS2339: Property 'stretching' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(59,28): error TS2339: Property 'stretching' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(60,28): error TS2339: Property 'stretching' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(72,32): error TS2339: Property 'metadata' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(73,21): error TS2339: Property 'riscaldamento' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(76,21): error TS2339: Property 'stretching' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(79,42): error TS2339: Property 'schedaGiornaliera' does not exist on type 'SchedaAllenamento'.
+src/components/SchedaView.tsx(167,79): error TS2339: Property 'confidence' does not exist on type 'Esercizio'.
+src/components/SchedaView.tsx(193,20): error TS2339: Property 'ripetute' does not exist on type 'Esercizio'.
+src/components/SchedaView.tsx(196,48): error TS2339: Property 'ripetute' does not exist on type 'Esercizio'.
+src/components/SchedaView.tsx(221,20): error TS2339: Property 'confidence' does not exist on type 'Esercizio'.
+src/components/SchedaView.tsx(227,46): error TS2339: Property 'confidence' does not exist on type 'Esercizio'.
+src/components/SchedaView.tsx(231,37): error TS2339: Property 'confidence' does not exist on type 'Esercizio'.
+src/components/schedule/WorkoutCreationModal.tsx(130,18): error TS2345: Argument of type '{ name: string; sets: string | number; reps: string; rest: string; }[]' is not assignable to parameter of type 'SetStateAction<Exercise[]>'.
+  Type '{ name: string; sets: string | number; reps: string; rest: string; }[]' is not assignable to type 'Exercise[]'.
+    Type '{ name: string; sets: string | number; reps: string; rest: string; }' is not assignable to type 'Exercise'.
+      Types of property 'sets' are incompatible.
+        Type 'string | number' is not assignable to type 'string'.
+          Type 'number' is not assignable to type 'string'.
+src/components/schedule/WorkoutCreationModal.tsx(457,17): error TS2322: Type '{ result: FileAnalysisResult; onAccept: (exercises: ExtractedExercise[], title?: string, duration?: string) => void; onReject: () => void; onEdit: () => void; }' is not assignable to type 'IntrinsicAttributes & FileAnalysisResultsProps'.
+  Property 'onAccept' does not exist on type 'IntrinsicAttributes & FileAnalysisResultsProps'.
+src/components/WorkoutResults.tsx(50,21): error TS2339: Property 'ripetizioni' does not exist on type 'WorkoutExercise'.
+src/components/WorkoutResults.tsx(53,31): error TS2339: Property 'ripetizioni' does not exist on type 'WorkoutExercise'.
+src/components/WorkoutResults.tsx(57,21): error TS2339: Property 'tempo' does not exist on type 'WorkoutExercise'.
+src/components/WorkoutResults.tsx(60,31): error TS2339: Property 'tempo' does not exist on type 'WorkoutExercise'.
+src/components/workouts/ExerciseCard.tsx(113,15): error TS2322: Type '(e: React.MouseEvent) => void' is not assignable to type 'TouchEventHandler<HTMLButtonElement>'.
+  Types of parameters 'e' and 'event' are incompatible.
+    Type 'TouchEvent<HTMLButtonElement>' is missing the following properties from type 'MouseEvent<Element, MouseEvent>': button, buttons, clientX, clientY, and 7 more.
+src/components/workouts/ExerciseCard.tsx(123,15): error TS2322: Type '(e: React.MouseEvent) => void' is not assignable to type 'TouchEventHandler<HTMLButtonElement>'.
+  Types of parameters 'e' and 'event' are incompatible.
+    Type 'TouchEvent<HTMLButtonElement>' is missing the following properties from type 'MouseEvent<Element, MouseEvent>': button, buttons, clientX, clientY, and 7 more.
+src/components/workouts/WorkoutAttachments.tsx(142,28): error TS2345: Argument of type '{ id: any; workout_id: any; user_id: any; filename: any; file_url: any; file_size: any; mime_type: any; created_at: any; }' is not assignable to parameter of type 'WorkoutAttachment'.
+  Type '{ id: any; workout_id: any; user_id: any; filename: any; file_url: any; file_size: any; mime_type: any; created_at: any; }' is missing the following properties from type 'WorkoutAttachment': file_name, file_path, file_type, updated_at
+src/components/workouts/WorkoutCategories.tsx(104,51): error TS2554: Expected 1-3 arguments, but got 5.
+src/components/workouts/WorkoutCategories.tsx(115,53): error TS2554: Expected 1-3 arguments, but got 5.
+src/components/workouts/Workouts.tsx(55,71): error TS2345: Argument of type 'string' is not assignable to parameter of type '"PRINCIPIANTE" | "INTERMEDIO" | "AVANZATO"'.
+src/components/WorkoutUploader.tsx(2,8): error TS1192: Module '"/Users/mattiasilvestrelli/Prime-puls-HUB/performance-prime-pulse/src/services/WorkoutParser"' has no default export.
+src/components/WorkoutUploader.tsx(71,9): error TS2451: Cannot redeclare block-scoped variable 'handleShowOptions'.
+src/components/WorkoutUploader.tsx(106,9): error TS2451: Cannot redeclare block-scoped variable 'handleShowOptions'.
+src/hooks/useAdminAuthBypass.tsx(191,28): error TS2339: Property 'role' does not exist on type '{ id: unknown; user_id: unknown; email: unknown; created_at: unknown; }'.
+src/hooks/useAdminAuthBypass.tsx(192,66): error TS2339: Property 'role' does not exist on type '{ id: unknown; user_id: unknown; email: unknown; created_at: unknown; }'.
+src/hooks/useAdminAuthBypass.tsx(210,32): error TS2339: Property 'role' does not exist on type '{ id: unknown; user_id: unknown; email: unknown; created_at: unknown; }'.
+src/hooks/useAdminAuthBypass.tsx(216,13): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/hooks/useAdminAuthBypass.tsx(217,13): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/hooks/useAdminAuthBypass.tsx(218,32): error TS2339: Property 'full_name' does not exist on type '{ id: unknown; user_id: unknown; email: unknown; created_at: unknown; }'.
+src/hooks/useAdminAuthBypass.tsx(221,13): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/hooks/useNotes.tsx(111,23): error TS2352: Conversion of type '{ id: any; user_id: any; workout_id: any; content: any; created_at: any; updated_at: any; }' to type 'Note' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'title' is missing in type '{ id: any; user_id: any; workout_id: any; content: any; created_at: any; updated_at: any; }' but required in type 'Note'.
+src/hooks/useNotes.tsx(158,27): error TS2352: Conversion of type '{ id: any; user_id: any; workout_id: any; content: any; created_at: any; updated_at: any; }' to type 'Note' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'title' is missing in type '{ id: any; user_id: any; workout_id: any; content: any; created_at: any; updated_at: any; }' but required in type 'Note'.
+src/pages/admin/AdminUsers.tsx(63,24): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/pages/admin/AdminUsers.tsx(66,65): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/pages/admin/SuperAdminDashboard.tsx(140,33): error TS2448: Block-scoped variable 'profiles' used before its declaration.
+src/pages/admin/SuperAdminDashboard.tsx(142,49): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/pages/admin/SuperAdminDashboard.tsx(152,30): error TS2448: Block-scoped variable 'totalUsersFinal' used before its declaration.
+src/pages/admin/SuperAdminDashboard.tsx(153,51): error TS2448: Block-scoped variable 'totalUsersFinal' used before its declaration.
+src/pages/admin/SuperAdminDashboard.tsx(179,44): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/pages/admin/SuperAdminDashboard.tsx(227,16): error TS2345: Argument of type '{ totalUsers: any; activeUsers: number; inactiveUsers: number; totalWorkouts: number; monthlyWorkouts: number; professionals: number; activeObjectives: number; totalNotes: number; growth: number; ... 4 more ...; weeklyGrowth: number; }' is not assignable to parameter of type 'SetStateAction<AdminStats>'.
+  Type '{ totalUsers: any; activeUsers: number; inactiveUsers: number; totalWorkouts: number; monthlyWorkouts: number; professionals: number; activeObjectives: number; totalNotes: number; growth: number; ... 4 more ...; weeklyGrowth: number; }' is missing the following properties from type 'AdminStats': payingUsers, activeToday, revenue, churnRate, conversionRate
+src/pages/admin/SuperAdminDashboard.tsx(246,59): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/pages/admin/SuperAdminDashboard.tsx(282,9): error TS2353: Object literal may only specify known properties, and 'activeUsers' does not exist in type 'SetStateAction<AdminStats>'.
+src/pages/admin/SuperAdminDashboard.tsx(549,24): error TS2740: Type 'AdminStats' is missing the following properties from type '{ totalUsers: number; activeUsers: number; inactiveUsers: number; totalWorkouts: number; totalPT: number; weeklyGrowth: number; activationD0Rate: number; retentionD7: number; }': activeUsers, inactiveUsers, totalWorkouts, totalPT, and 3 more.
+src/pages/admin/SuperAdminDashboard.tsx(607,73): error TS2339: Property 'activeObjectives' does not exist on type 'AdminStats'.
+src/pages/admin/SuperAdminDashboard.tsx(611,73): error TS2339: Property 'totalNotes' does not exist on type 'AdminStats'.
+src/pages/admin/SuperAdminDashboard.tsx(615,73): error TS2339: Property 'professionals' does not exist on type 'AdminStats'.
+src/services/workoutGenerator.ts(308,26): error TS2339: Property 'exercises' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; } | { ...; }'.
+  Property 'exercises' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; }'.
+src/services/workoutGenerator.ts(310,23): error TS2339: Property 'minExercises' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; } | { ...; }'.
+  Property 'minExercises' does not exist on type '{ exercises: number; duration: number; rest: number; }'.
+src/services/workoutGenerator.ts(311,23): error TS2339: Property 'maxExercises' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; } | { ...; }'.
+  Property 'maxExercises' does not exist on type '{ exercises: number; duration: number; rest: number; }'.
+src/services/workoutGenerator.ts(316,38): error TS2339: Property 'duration' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; } | { ...; }'.
+  Property 'duration' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; }'.
+src/services/workoutGenerator.ts(316,55): error TS2339: Property 'exerciseDuration' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; } | { ...; }'.
+  Property 'exerciseDuration' does not exist on type '{ exercises: number; duration: number; rest: number; }'.
+src/services/workoutGenerator.ts(317,34): error TS2339: Property 'rest' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; } | { ...; }'.
+  Property 'rest' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; }'.
+src/services/workoutGenerator.ts(317,47): error TS2339: Property 'restBetweenExercises' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; } | { ...; }'.
+  Property 'restBetweenExercises' does not exist on type '{ exercises: number; duration: number; rest: number; }'.
+src/services/workoutGenerator.ts(362,35): error TS2339: Property 'sets' does not exist on type '{ minExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; maxExercises: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; exerciseDuration: { PRINCIPIANTE: number; INTERMEDIO: number; AVANZATO: number; }; restBetweenExercises: { ...; }; sets: { ...; }; } | { ...; }'.
+  Property 'sets' does not exist on type '{ exercises: number; duration: number; rest: number; }'.
