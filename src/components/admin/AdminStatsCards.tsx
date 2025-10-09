@@ -8,8 +8,13 @@ interface AdminStatsCardsProps {
 }
 
 export default function AdminStatsCards({ stats: propsStats, loading: propsLoading }: AdminStatsCardsProps) {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
+    payingUsers: 0,
+    activeToday: 0,
+    revenue: 0,
+    churnRate: 0,
+    conversionRate: 0,
     activeUsers: 0,
     inactiveUsers: 0,
     totalWorkouts: 0,
