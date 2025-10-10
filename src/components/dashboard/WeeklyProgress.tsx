@@ -43,15 +43,24 @@ export const WeeklyProgress = () => {
           .gte('scheduled_date', startOfWeek.toISOString().split('T')[0])
           .lte('scheduled_date', endOfWeek.toISOString().split('T')[0]);
 
+        console.log('📊 [DEBUG] WeeklyProgress: Query workout settimanali:', {
+          startOfWeek: startOfWeek.toISOString().split('T')[0],
+          endOfWeek: endOfWeek.toISOString().split('T')[0],
+          workoutsFound: workouts?.length || 0,
+          workouts: workouts
+        });
+
         // Conta i workout per giorno
         workouts?.forEach(workout => {
           const workoutDate = new Date(workout.scheduled_date);
           const dayIndex = (workoutDate.getDay() + 6) % 7; // Converte domenica=0 a lunedì=0
           if (dayIndex >= 0 && dayIndex < 7) {
             weeklyData[dayIndex].workouts++;
+            console.log(`📊 [DEBUG] Workout aggiunto al giorno ${weeklyData[dayIndex].name}:`, workoutDate.toISOString().split('T')[0]);
           }
         });
 
+        console.log('📊 [DEBUG] WeeklyProgress: Dati finali per grafico:', weeklyData);
         setData(weeklyData);
         setTotalWeeklyWorkouts(workouts?.length || 0);
       } catch (error) {

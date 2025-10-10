@@ -109,6 +109,10 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
         const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
         await updateWorkoutMetrics(user.id, currentWorkoutTime); // Passa i secondi direttamente
         console.log('✅ [DEBUG] Metriche aggiornate con tempo reale:', currentWorkoutTime, 'secondi');
+        
+        // Notifica il grafico settimanale per aggiornarsi
+        window.dispatchEvent(new CustomEvent('workoutCompleted'));
+        console.log('📊 [DEBUG] Evento workoutCompleted inviato per aggiornare grafico');
       }
       
       onClose();
