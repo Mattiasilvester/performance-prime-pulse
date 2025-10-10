@@ -35,11 +35,11 @@ export const ExerciseGifLink: React.FC<ExerciseGifLinkProps> = ({
         onClick={handleGifClick}
         variant="ghost"
         size="sm"
-        className="text-pp-gold hover:text-yellow-400 hover:bg-pp-gold/10 p-1 h-auto"
+        className="text-pp-gold hover:text-yellow-400 hover:bg-pp-gold/10 p-1 h-auto flex items-center"
         title="Visualizza GIF dell'esercizio"
       >
         <Play className="h-4 w-4 mr-1" />
-        <span className="text-xs font-medium">GIF</span>
+        <span className="text-sm font-medium">GIF</span>
       </Button>
 
       {/* Modal GIF */}
