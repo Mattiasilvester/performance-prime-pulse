@@ -33,14 +33,12 @@ export const WeeklyProgress = () => {
         const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
         const weeklyData: WeeklyData[] = weekDays.map(name => ({ name, workouts: 0 }));
 
-        // Query per ottenere TUTTI i workout completati (non solo questa settimana)
-        // per mostrare il progresso reale dell'utente
+        // Query per ottenere TUTTI i workout (completati e non) per debug
         const { data: workouts, error } = await supabase
           .from('custom_workouts')
-          .select('scheduled_date, completed_at, title, workout_type')
+          .select('scheduled_date, completed_at, title, workout_type, completed')
           .eq('user_id', user.id)
-          .eq('completed', true)
-          .order('completed_at', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(100); // Aumentato a 100 per trovare tutti i workout
 
         if (error) {
@@ -48,19 +46,28 @@ export const WeeklyProgress = () => {
           return;
         }
 
-        console.log('📊 [DEBUG] WeeklyProgress: Query TUTTI i workout completati:', {
-          workoutsFound: workouts?.length || 0,
+        console.log('📊 [DEBUG] WeeklyProgress: Query TUTTI i workout (completati e non):', {
+          totalWorkoutsFound: workouts?.length || 0,
           userId: user.id,
           workouts: workouts?.slice(0, 10) // Mostra i primi 10 per debug
         });
 
-        // Debug dettagliato di ogni workout
+        // Filtra solo i completati per il grafico
+        const completedWorkouts = workouts?.filter(workout => workout.completed === true) || [];
+        
+        console.log('📊 [DEBUG] WeeklyProgress: Workout completati filtrati:', {
+          completedWorkoutsFound: completedWorkouts.length,
+          allWorkoutsFound: workouts?.length || 0
+        });
+
+        // Debug dettagliato di tutti i workout
         workouts?.forEach((workout, index) => {
           console.log(`📊 [DEBUG] Workout ${index + 1}:`, {
             title: workout.title,
             type: workout.workout_type,
             scheduled_date: workout.scheduled_date,
-            completed_at: workout.completed_at
+            completed_at: workout.completed_at,
+            completed: workout.completed
           });
         });
 
@@ -73,10 +80,10 @@ export const WeeklyProgress = () => {
           endOfWeek: endOfWeek.toISOString().split('T')[0]
         });
 
-        workouts?.forEach((workout, index) => {
+        completedWorkouts.forEach((workout, index) => {
           const workoutDate = new Date(workout.scheduled_date);
           
-          console.log(`📊 [DEBUG] Analizzando workout ${index + 1}:`, {
+          console.log(`📊 [DEBUG] Analizzando workout completato ${index + 1}:`, {
             title: workout.title,
             scheduled_date: workout.scheduled_date,
             workoutDate: workoutDate.toISOString().split('T')[0],
