@@ -2,6 +2,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { RefreshCw } from 'lucide-react';
 
 interface WeeklyData {
   name: string;
@@ -12,6 +13,7 @@ export const WeeklyProgress = () => {
   const [data, setData] = useState<WeeklyData[]>([]);
   const [totalWeeklyWorkouts, setTotalWeeklyWorkouts] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const loadWeeklyData = async () => {
@@ -88,14 +90,16 @@ export const WeeklyProgress = () => {
     // Ascolta l'evento di completamento workout per refresh automatico
     const handleWorkoutCompleted = () => {
       console.log('🔄 [DEBUG] WeeklyProgress: Workout completato, ricarico dati settimanali...');
+      setRefreshKey(prev => prev + 1); // Forza re-render
       loadWeeklyData();
     };
 
-    // Refresh automatico ogni 30 secondi per assicurarsi che i dati siano sempre aggiornati
+    // Refresh automatico ogni 10 secondi per aggiornamento più frequente
     const refreshInterval = setInterval(() => {
       console.log('🔄 [DEBUG] WeeklyProgress: Refresh automatico dati...');
+      setRefreshKey(prev => prev + 1); // Forza re-render
       loadWeeklyData();
-    }, 30000);
+    }, 10000);
 
     window.addEventListener('workoutCompleted', handleWorkoutCompleted);
     
@@ -103,12 +107,28 @@ export const WeeklyProgress = () => {
       window.removeEventListener('workoutCompleted', handleWorkoutCompleted);
       clearInterval(refreshInterval);
     };
-  }, []);
+  }, [refreshKey]);
+
+  const handleManualRefresh = () => {
+    console.log('🔄 [DEBUG] WeeklyProgress: Refresh manuale richiesto');
+    setRefreshKey(prev => prev + 1);
+    setLoading(true);
+  };
+
   return (
     <div className="bg-black rounded-2xl p-6 shadow-lg border-2 border-pp-gold">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-pp-gold">Progressi Settimanali</h3>
-        <span className="text-sm text-white">Questa settimana</span>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-white">Questa settimana</span>
+          <button 
+            onClick={handleManualRefresh}
+            className="p-1 text-pp-gold hover:text-white transition-colors"
+            title="Aggiorna dati"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
+        </div>
       </div>
       
       <div className="h-64">
