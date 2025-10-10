@@ -219,7 +219,9 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
                 <h4 className="font-bold text-white text-lg leading-tight truncate">
                   {exercise.name}
                 </h4>
-                <ExerciseGifLink exerciseName={exercise.name} />
+                <div className="flex items-center">
+                  <ExerciseGifLink exerciseName={exercise.name} />
+                </div>
               </div>
               {/* Mostra Serie e Ripetizioni se disponibili */}
               {exercise.sets && exercise.reps && (
