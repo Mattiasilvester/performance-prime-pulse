@@ -19,6 +19,8 @@ interface ExerciseCardProps {
     name: string;
     duration: string;
     rest: string;
+    sets?: string;
+    reps?: string;
     completed?: boolean;
   };
   onStart: () => void;
@@ -219,6 +221,12 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
                 </h4>
                 <ExerciseGifLink exerciseName={exercise.name} />
               </div>
+              {/* Mostra Serie e Ripetizioni se disponibili */}
+              {exercise.sets && exercise.reps && (
+                <p className="text-sm text-white/70 truncate mb-1">
+                  {exercise.sets}x • {exercise.reps} rip
+                </p>
+              )}
               <p className="text-sm text-white/70 truncate mb-2">
                 {exercise.duration}
               </p>
