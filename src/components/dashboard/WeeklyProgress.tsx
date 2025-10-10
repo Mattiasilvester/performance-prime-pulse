@@ -33,13 +33,32 @@ export const WeeklyProgress = () => {
         const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
         const weeklyData: WeeklyData[] = weekDays.map(name => ({ name, workouts: 0 }));
 
-        // Query per ottenere TUTTI i workout (completati e non) per debug
-        // RIMUOVO il filtro user_id per vedere se ci sono workout di altri utenti
+        // SOLUZIONE: Leggi da ENTRAMBE le tabelle per avere i dati completi
+        
+        // 1. Query da custom_workouts (workout dettagliati)
         const { data: workouts, error } = await supabase
           .from('custom_workouts')
           .select('scheduled_date, completed_at, title, workout_type, completed, user_id')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(100); // Aumentato a 100 per trovare tutti i workout
+          .limit(100);
+
+        // 2. Query da user_workout_stats (statistiche aggregate)
+        const { data: userStats, error: statsError } = await supabase
+          .from('user_workout_stats')
+          .select('total_workouts, total_hours')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        console.log('📊 [DEBUG] WeeklyProgress: Dati da custom_workouts:', {
+          workoutsFound: workouts?.length || 0,
+          workouts: workouts
+        });
+
+        console.log('📊 [DEBUG] WeeklyProgress: Dati da user_workout_stats:', {
+          userStats,
+          statsError
+        });
 
         // Filtro client-side per il mio utente
         const myWorkouts = workouts?.filter(workout => workout.user_id === user.id) || [];
@@ -63,9 +82,27 @@ export const WeeklyProgress = () => {
         // Filtra solo i completati per il grafico
         const completedWorkouts = myWorkouts.filter(workout => workout.completed === true);
         
+        // VERIFICA DISCREPANZA: Se user_workout_stats ha più workout di custom_workouts
+        const statsWorkouts = userStats?.total_workouts || 0;
+        const customWorkouts = completedWorkouts.length;
+        
+        console.log('📊 [DEBUG] WeeklyProgress: Confronto dati:', {
+          customWorkoutsFound: customWorkouts,
+          statsWorkoutsFound: statsWorkouts,
+          discrepancy: statsWorkouts - customWorkouts
+        });
+
+        if (statsWorkouts > customWorkouts) {
+          console.log('⚠️ [DEBUG] WeeklyProgress: DISCREPANZA RILEVATA!');
+          console.log(`⚠️ [DEBUG] user_workout_stats: ${statsWorkouts} workout`);
+          console.log(`⚠️ [DEBUG] custom_workouts: ${customWorkouts} workout`);
+          console.log(`⚠️ [DEBUG] Mancanti: ${statsWorkouts - customWorkouts} workout`);
+        }
+        
         console.log('📊 [DEBUG] WeeklyProgress: Workout completati filtrati:', {
           completedWorkoutsFound: completedWorkouts.length,
-          allWorkoutsFound: workouts?.length || 0
+          allWorkoutsFound: workouts?.length || 0,
+          statsWorkouts: statsWorkouts
         });
 
         // Debug dettagliato di tutti i workout nel database
