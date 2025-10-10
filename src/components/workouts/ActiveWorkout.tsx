@@ -499,6 +499,13 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
     if (!user || !currentWorkout.exercises) return;
 
     try {
+      // Ottieni utente corrente
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Utente non autenticato');
+        return;
+      }
+      
       // Calcola la durata totale stimata (in minuti)
       const totalMinutes = currentWorkout.exercises.reduce((total: number, exercise: any) => {
         const workTime = parseInt(exercise.duration) || 30;
@@ -538,18 +545,20 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
         return;
       }
 
-      console.log('✅ [DEBUG] completeWorkout: Record creato con successo, trigger dovrebbe attivarsi');
+      console.log('✅ [DEBUG] completeWorkout: Record creato con successo');
       
-      // Forza il refresh della dashboard con delay per permettere al trigger di attivarsi
-      console.log('🚀 [DEBUG] completeWorkout: Emetto evento workoutCompleted tra 1 secondo...');
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('workoutCompleted', {
-          detail: { workoutId: workoutRecord.id }
-        }));
-        console.log('✅ [DEBUG] completeWorkout: Evento workoutCompleted emesso');
-      }, 1000);
+      // Aggiorna metriche manualmente (il trigger DB non si attiva su INSERT)
+      const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
+      await updateWorkoutMetrics(user.id, Math.round(totalMinutes));
+      console.log('✅ [DEBUG] Metriche aggiornate manualmente');
       
-      // Il trigger si attiverà automaticamente e aggiornerà user_workout_stats
+      // Emetti evento per refresh dashboard
+      console.log('🚀 [DEBUG] completeWorkout: Emetto evento workoutCompleted');
+      window.dispatchEvent(new CustomEvent('workoutCompleted', {
+        detail: { workoutId: workoutRecord.id }
+      }));
+      console.log('✅ [DEBUG] completeWorkout: Evento workoutCompleted emesso');
+      
       toast.success('Allenamento completato! Statistiche aggiornate.');
     } catch (error) {
       console.error('Errore durante il completamento:', error);
