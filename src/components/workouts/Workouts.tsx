@@ -52,7 +52,11 @@ export const Workouts = () => {
       setGeneratedWorkout(workout);
       setActiveWorkout('generated');
     } else if (duration && ['cardio', 'strength', 'hiit', 'mobility'].includes(workoutId)) {
-      const workout = generateWorkout(workoutId as any, duration, {}, userLevel || 'INTERMEDIO', quickMode || false);
+      // Converte userLevel a tipo valido con fallback sicuro
+      const validUserLevel = ['PRINCIPIANTE', 'INTERMEDIO', 'AVANZATO'].includes(userLevel || '') 
+        ? (userLevel as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO')
+        : 'INTERMEDIO';
+      const workout = generateWorkout(workoutId as any, duration, {}, validUserLevel, quickMode || false);
       setGeneratedWorkout(workout);
       setActiveWorkout('generated');
     } else {
