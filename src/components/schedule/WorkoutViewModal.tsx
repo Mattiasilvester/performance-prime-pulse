@@ -35,14 +35,22 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
 
   const handleDeleteWorkout = async () => {
     try {
-      const { error } = await supabase
+      console.log('🗑️ [DEBUG] Tentativo eliminazione allenamento:', workout.id);
+      
+      const { data, error } = await supabase
         .from('custom_workouts')
         .delete()
-        .eq('id', workout.id);
+        .eq('id', workout.id)
+        .select();
+
+      console.log('🗑️ [DEBUG] Risultato eliminazione:', { data, error });
 
       if (error) {
+        console.error('❌ [DEBUG] Errore eliminazione:', error);
         throw error;
       }
+
+      console.log('✅ [DEBUG] Allenamento eliminato con successo');
 
       toast({
         title: "Allenamento eliminato",
@@ -54,7 +62,7 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
         onWorkoutDeleted();
       }
     } catch (error) {
-      console.error('Error deleting workout:', error);
+      console.error('❌ [DEBUG] Error deleting workout:', error);
       toast({
         title: "Errore",
         description: "Si è verificato un errore durante l'eliminazione dell'allenamento.",
