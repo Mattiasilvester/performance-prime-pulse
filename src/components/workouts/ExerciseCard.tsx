@@ -224,7 +224,7 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
               {/* Mostra Serie e Ripetizioni se disponibili */}
               {exercise.sets && exercise.reps && (
                 <p className="text-sm text-white/70 truncate mt-2 mb-2">
-                  {exercise.sets}x • {exercise.reps} rip
+                  {exercise.sets} serie x {exercise.reps} rip
                 </p>
               )}
               <p className="text-sm text-white/70 truncate mb-2">
