@@ -45,3 +45,4 @@ CREATE TRIGGER update_workout_stats_trigger
 -- - INSERT di workout già completato (ActiveWorkout, QuickWorkout)
 -- - UPDATE da completed=false a completed=true (CustomWorkoutDisplay)
 
+
