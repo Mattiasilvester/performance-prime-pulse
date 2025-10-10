@@ -386,7 +386,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                   className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
                     selectedType === type.id
                       ? 'border-[#c89116] bg-[#c89116]/20 text-pp-gold'
-                      : 'border-white/20 text-white hover:border-white/40'
+                      : 'bg-gray-800 border-white/20 text-gray-100 hover:border-white/40'
                   }`}
                 >
                   {type.name}
@@ -406,7 +406,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
               type="text"
               value={customTitle}
               onChange={(e) => setCustomTitle(e.target.value)}
-              className="w-full p-3 bg-black border border-white/20 rounded-lg text-white"
+              className="w-full p-3 bg-gray-800 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400"
               placeholder="Inserisci il nome..."
             />
           </div>
@@ -505,9 +505,9 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
             </div>
             
             {exercises.map((exercise, index) => (
-              <div key={index} className="mb-3 p-3 border border-white/20 rounded-lg">
+              <div key={index} className="mb-3 p-3 bg-gray-800 border border-white/20 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-white text-sm">Esercizio {index + 1}</span>
+                  <span className="text-gray-100 text-sm">Esercizio {index + 1}</span>
                   {exercises.length > 1 && (
                     <button
                       onClick={() => removeExercise(index)}
@@ -523,7 +523,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                   value={exercise.name}
                   onChange={(e) => updateExercise(index, 'name', e.target.value)}
                   placeholder="Nome esercizio"
-                  className="w-full p-2 mb-2 bg-black border border-white/20 rounded text-white text-sm"
+                  className="w-full p-2 mb-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                 />
                 
                 <div className="grid grid-cols-3 gap-2">
@@ -532,21 +532,21 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                     value={exercise.sets}
                     onChange={(e) => updateExercise(index, 'sets', e.target.value)}
                     placeholder="Serie"
-                    className="p-2 bg-black border border-white/20 rounded text-white text-sm"
+                    className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                   <input
                     type="text"
                     value={exercise.reps}
                     onChange={(e) => updateExercise(index, 'reps', e.target.value)}
                     placeholder="Rip."
-                    className="p-2 bg-black border border-white/20 rounded text-white text-sm"
+                    className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                   <input
                     type="text"
                     value={exercise.rest}
                     onChange={(e) => updateExercise(index, 'rest', e.target.value)}
                     placeholder="Rec."
-                    className="p-2 bg-black border border-white/20 rounded text-white text-sm"
+                    className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                 </div>
               </div>
@@ -564,7 +564,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
               type="number"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
-              className="w-full p-3 bg-black border border-white/20 rounded-lg text-white"
+              className="w-full p-3 bg-gray-800 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400"
               placeholder="Es. 45"
             />
           </div>
