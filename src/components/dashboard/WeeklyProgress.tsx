@@ -117,14 +117,8 @@ export const WeeklyProgress = () => {
           });
         });
 
-        // Conta i workout per giorno della settimana corrente
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        
-        console.log('📊 [DEBUG] Settimana corrente:', {
-          startOfWeek: startOfWeek.toISOString().split('T')[0],
-          endOfWeek: endOfWeek.toISOString().split('T')[0]
-        });
+        // MODIFICA: Mostra TUTTI i workout completati, non solo quelli della settimana corrente
+        console.log('📊 [DEBUG] Analizzando TUTTI i workout completati per il grafico...');
 
         completedWorkouts.forEach((workout, index) => {
           const workoutDate = new Date(workout.scheduled_date);
@@ -133,20 +127,15 @@ export const WeeklyProgress = () => {
             title: workout.title,
             scheduled_date: workout.scheduled_date,
             workoutDate: workoutDate.toISOString().split('T')[0],
-            isInWeek: workoutDate >= startOfWeek && workoutDate <= endOfWeek,
             dayOfWeek: workoutDate.getDay(),
             dayName: ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'][workoutDate.getDay()]
           });
           
-          // Controlla se il workout è nella settimana corrente
-          if (workoutDate >= startOfWeek && workoutDate <= endOfWeek) {
-            const dayIndex = (workoutDate.getDay() + 6) % 7; // Converte domenica=0 a lunedì=0
-            if (dayIndex >= 0 && dayIndex < 7) {
-              weeklyData[dayIndex].workouts++;
-              console.log(`✅ [DEBUG] Workout aggiunto al giorno ${weeklyData[dayIndex].name}:`, workoutDate.toISOString().split('T')[0]);
-            }
-          } else {
-            console.log(`❌ [DEBUG] Workout NON aggiunto - fuori settimana:`, workoutDate.toISOString().split('T')[0]);
+          // Aggiungi TUTTI i workout completati al grafico, indipendentemente dalla settimana
+          const dayIndex = (workoutDate.getDay() + 6) % 7; // Converte domenica=0 a lunedì=0
+          if (dayIndex >= 0 && dayIndex < 7) {
+            weeklyData[dayIndex].workouts++;
+            console.log(`✅ [DEBUG] Workout aggiunto al giorno ${weeklyData[dayIndex].name}:`, workoutDate.toISOString().split('T')[0]);
           }
         });
 
@@ -200,7 +189,7 @@ export const WeeklyProgress = () => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-pp-gold">Progressi Settimanali</h3>
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-white">Questa settimana</span>
+          <span className="text-sm text-white">Tutti gli allenamenti</span>
           <button 
             onClick={handleManualRefresh}
             className="p-1 text-pp-gold hover:text-white transition-colors"
@@ -238,7 +227,7 @@ export const WeeklyProgress = () => {
         <p className="text-sm text-pp-gold/80">
           <span className="font-semibold text-pp-gold">
             {loading ? '...' : totalWeeklyWorkouts} allenamenti
-          </span> completati questa settimana
+          </span> completati totali
         </p>
       </div>
     </div>
