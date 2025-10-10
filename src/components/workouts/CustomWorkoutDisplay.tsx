@@ -90,20 +90,26 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
   const isCompleted = (index: number) => completedExercises.includes(index);
 
   const handleCompleteWorkout = async () => {
-    const endTime = Date.now();
-    const durationMinutes = Math.round((endTime - startTime) / 60000);
-
     try {
+      // Usa il tempo reale del timer invece del calcolo basato su startTime
       const { error } = await supabase
         .from('custom_workouts')
         .update({
           completed: true,
           completed_at: new Date().toISOString(),
-          total_duration: durationMinutes
+          total_duration: Math.round(currentWorkoutTime / 60) // Converti secondi in minuti per il database
         })
         .eq('id', workout.id);
 
       if (error) throw error;
+
+      // Aggiorna le metriche con il tempo reale del timer
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
+        await updateWorkoutMetrics(user.id, currentWorkoutTime); // Passa i secondi direttamente
+        console.log('✅ [DEBUG] Metriche aggiornate con tempo reale:', currentWorkoutTime, 'secondi');
+      }
       
       onClose();
     } catch (error) {
