@@ -325,15 +325,15 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
             </label>
             <div className="space-y-3">
               <Card 
-                className="bg-black border-2 border-[#c89116] hover:border-[#c89116]/80 cursor-pointer transition-all"
+                className="bg-gray-800 border-2 border-[#c89116] hover:border-[#c89116]/80 cursor-pointer transition-all"
                 onClick={handleManualCreation}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <Edit3 className="h-6 w-6 text-[#c89116]" />
                     <div>
-                      <h4 className="text-white font-medium">Inserimento Manuale</h4>
-                      <p className="text-gray-400 text-sm">Crea il tuo allenamento passo dopo passo</p>
+                      <h4 className="text-gray-100 font-medium">Inserimento Manuale</h4>
+                      <p className="text-gray-300 text-sm">Crea il tuo allenamento passo dopo passo</p>
                     </div>
                   </div>
                 </CardContent>
@@ -343,7 +343,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                 className={`border-2 transition-all ${
                   hasConsent === false 
                     ? 'bg-gray-800 border-gray-600 cursor-not-allowed opacity-50' 
-                    : 'bg-black border-[#c89116] hover:border-[#c89116]/80 cursor-pointer'
+                    : 'bg-gray-800 border-[#c89116] hover:border-[#c89116]/80 cursor-pointer'
                 }`}
                 onClick={hasConsent !== false ? handleFileCreation : undefined}
               >
@@ -351,8 +351,8 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                   <div className="flex items-center gap-3">
                     <Upload className={`h-6 w-6 ${hasConsent === false ? 'text-gray-500' : 'text-[#c89116]'}`} />
                     <div>
-                      <h4 className="text-white font-medium">Carica File</h4>
-                      <p className="text-gray-400 text-sm">
+                      <h4 className={`font-medium ${hasConsent === false ? 'text-gray-500' : 'text-gray-100'}`}>Carica File</h4>
+                      <p className={`text-sm ${hasConsent === false ? 'text-gray-500' : 'text-gray-300'}`}>
                         {hasConsent === false 
                           ? 'Consenso accesso file richiesto nelle impostazioni'
                           : 'Carica un\'immagine o PDF del tuo allenamento'
