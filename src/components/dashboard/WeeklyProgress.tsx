@@ -2,7 +2,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { RefreshCw } from 'lucide-react';
+// import { RefreshCw } from 'lucide-react'; // Rimosso - non più necessario
 
 interface WeeklyData {
   name: string;
@@ -215,26 +215,13 @@ export const WeeklyProgress = () => {
     };
   }, [refreshKey]);
 
-  const handleManualRefresh = () => {
-    console.log('🔄 [DEBUG] WeeklyProgress: Refresh manuale richiesto');
-    setRefreshKey(prev => prev + 1);
-    setLoading(true);
-  };
+  // Funzione per refresh manuale rimossa - non più necessaria
 
   return (
     <div className="bg-black rounded-2xl p-6 shadow-lg border-2 border-pp-gold">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-pp-gold">Progressi Settimanali</h3>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-white">Tutti gli allenamenti</span>
-          <button 
-            onClick={handleManualRefresh}
-            className="p-1 text-pp-gold hover:text-white transition-colors"
-            title="Aggiorna dati"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
-        </div>
+        <span className="text-sm text-white">Tutti gli allenamenti</span>
       </div>
       
       <div className="h-64">
