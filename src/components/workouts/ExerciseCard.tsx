@@ -134,7 +134,10 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
             clearInterval(interval);
             setTimerInterval(null);
             playSound('finish');
-            return 0;
+            // Reset al tempo di riposo originale
+            const restSeconds = parseRestTime(exercise.rest);
+            setTimerTime(restSeconds);
+            return restSeconds;
           }
           return prev - 1;
         });
