@@ -34,35 +34,56 @@ export const WeeklyProgress = () => {
         const weeklyData: WeeklyData[] = weekDays.map(name => ({ name, workouts: 0 }));
 
         // Query per ottenere TUTTI i workout (completati e non) per debug
+        // RIMUOVO il filtro user_id per vedere se ci sono workout di altri utenti
         const { data: workouts, error } = await supabase
           .from('custom_workouts')
-          .select('scheduled_date, completed_at, title, workout_type, completed')
-          .eq('user_id', user.id)
+          .select('scheduled_date, completed_at, title, workout_type, completed, user_id')
           .order('created_at', { ascending: false })
           .limit(100); // Aumentato a 100 per trovare tutti i workout
+
+        // Filtro client-side per il mio utente
+        const myWorkouts = workouts?.filter(workout => workout.user_id === user.id) || [];
 
         if (error) {
           console.error('📊 [ERROR] WeeklyProgress: Errore query workout:', error);
           return;
         }
 
-        console.log('📊 [DEBUG] WeeklyProgress: Query TUTTI i workout (completati e non):', {
-          totalWorkoutsFound: workouts?.length || 0,
-          userId: user.id,
+        console.log('📊 [DEBUG] WeeklyProgress: Query TUTTI i workout (TUTTI gli utenti):', {
+          totalWorkoutsInDB: workouts?.length || 0,
+          myUserId: user.id,
           workouts: workouts?.slice(0, 10) // Mostra i primi 10 per debug
         });
 
+        console.log('📊 [DEBUG] WeeklyProgress: I MIEI workout filtrati:', {
+          myWorkoutsFound: myWorkouts.length,
+          totalWorkoutsInDB: workouts?.length || 0
+        });
+
         // Filtra solo i completati per il grafico
-        const completedWorkouts = workouts?.filter(workout => workout.completed === true) || [];
+        const completedWorkouts = myWorkouts.filter(workout => workout.completed === true);
         
         console.log('📊 [DEBUG] WeeklyProgress: Workout completati filtrati:', {
           completedWorkoutsFound: completedWorkouts.length,
           allWorkoutsFound: workouts?.length || 0
         });
 
-        // Debug dettagliato di tutti i workout
+        // Debug dettagliato di tutti i workout nel database
         workouts?.forEach((workout, index) => {
-          console.log(`📊 [DEBUG] Workout ${index + 1}:`, {
+          console.log(`📊 [DEBUG] Workout ${index + 1} (TUTTI):`, {
+            title: workout.title,
+            type: workout.workout_type,
+            scheduled_date: workout.scheduled_date,
+            completed_at: workout.completed_at,
+            completed: workout.completed,
+            user_id: workout.user_id,
+            isMyWorkout: workout.user_id === user.id
+          });
+        });
+
+        // Debug dettagliato dei MIEI workout
+        myWorkouts.forEach((workout, index) => {
+          console.log(`📊 [DEBUG] MIO Workout ${index + 1}:`, {
             title: workout.title,
             type: workout.workout_type,
             scheduled_date: workout.scheduled_date,
