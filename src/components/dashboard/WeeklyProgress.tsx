@@ -19,7 +19,7 @@ export const WeeklyProgress = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Calcola l'inizio della settimana (lunedì)
+        // Calcola l'inizio della settimana corrente (lunedì)
         const now = new Date();
         const startOfWeek = new Date(now);
         const day = now.getDay();
@@ -31,38 +31,51 @@ export const WeeklyProgress = () => {
         const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
         const weeklyData: WeeklyData[] = weekDays.map(name => ({ name, workouts: 0 }));
 
-        // Query per ottenere i workout della settimana
+        // Query per ottenere TUTTI i workout completati (non solo questa settimana)
+        // per mostrare il progresso reale dell'utente
+        const { data: workouts, error } = await supabase
+          .from('custom_workouts')
+          .select('scheduled_date, completed_at')
+          .eq('user_id', user.id)
+          .eq('completed', true)
+          .order('completed_at', { ascending: false })
+          .limit(50); // Limita a 50 per performance
+
+        if (error) {
+          console.error('📊 [ERROR] WeeklyProgress: Errore query workout:', error);
+          return;
+        }
+
+        console.log('📊 [DEBUG] WeeklyProgress: Query TUTTI i workout completati:', {
+          workoutsFound: workouts?.length || 0,
+          workouts: workouts?.slice(0, 5) // Mostra solo i primi 5 per debug
+        });
+
+        // Conta i workout per giorno della settimana corrente
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6);
         
-        const { data: workouts } = await supabase
-          .from('custom_workouts')
-          .select('scheduled_date')
-          .eq('user_id', user.id)
-          .eq('completed', true)
-          .gte('scheduled_date', startOfWeek.toISOString().split('T')[0])
-          .lte('scheduled_date', endOfWeek.toISOString().split('T')[0]);
-
-        console.log('📊 [DEBUG] WeeklyProgress: Query workout settimanali:', {
-          startOfWeek: startOfWeek.toISOString().split('T')[0],
-          endOfWeek: endOfWeek.toISOString().split('T')[0],
-          workoutsFound: workouts?.length || 0,
-          workouts: workouts
-        });
-
-        // Conta i workout per giorno
         workouts?.forEach(workout => {
           const workoutDate = new Date(workout.scheduled_date);
-          const dayIndex = (workoutDate.getDay() + 6) % 7; // Converte domenica=0 a lunedì=0
-          if (dayIndex >= 0 && dayIndex < 7) {
-            weeklyData[dayIndex].workouts++;
-            console.log(`📊 [DEBUG] Workout aggiunto al giorno ${weeklyData[dayIndex].name}:`, workoutDate.toISOString().split('T')[0]);
+          
+          // Controlla se il workout è nella settimana corrente
+          if (workoutDate >= startOfWeek && workoutDate <= endOfWeek) {
+            const dayIndex = (workoutDate.getDay() + 6) % 7; // Converte domenica=0 a lunedì=0
+            if (dayIndex >= 0 && dayIndex < 7) {
+              weeklyData[dayIndex].workouts++;
+              console.log(`📊 [DEBUG] Workout aggiunto al giorno ${weeklyData[dayIndex].name}:`, workoutDate.toISOString().split('T')[0]);
+            }
           }
         });
 
+        // Conta solo i workout della settimana corrente per il totale
+        const weeklyWorkoutsCount = weeklyData.reduce((sum, day) => sum + day.workouts, 0);
+        
         console.log('📊 [DEBUG] WeeklyProgress: Dati finali per grafico:', weeklyData);
+        console.log('📊 [DEBUG] WeeklyProgress: Totale workout questa settimana:', weeklyWorkoutsCount);
+        
         setData(weeklyData);
-        setTotalWeeklyWorkouts(workouts?.length || 0);
+        setTotalWeeklyWorkouts(weeklyWorkoutsCount);
       } catch (error) {
         console.error('Error loading weekly data:', error);
       } finally {
@@ -78,10 +91,17 @@ export const WeeklyProgress = () => {
       loadWeeklyData();
     };
 
+    // Refresh automatico ogni 30 secondi per assicurarsi che i dati siano sempre aggiornati
+    const refreshInterval = setInterval(() => {
+      console.log('🔄 [DEBUG] WeeklyProgress: Refresh automatico dati...');
+      loadWeeklyData();
+    }, 30000);
+
     window.addEventListener('workoutCompleted', handleWorkoutCompleted);
     
     return () => {
       window.removeEventListener('workoutCompleted', handleWorkoutCompleted);
+      clearInterval(refreshInterval);
     };
   }, []);
   return (
