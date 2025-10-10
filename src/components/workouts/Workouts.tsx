@@ -23,7 +23,7 @@ export const Workouts = () => {
     try {
       const { data, error } = await supabase
         .from('custom_workouts')
-        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
+        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at, exercises')
         .eq('id', workoutId)
         .single();
 
