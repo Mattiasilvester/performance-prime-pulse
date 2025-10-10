@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useFileAccess } from '@/hooks/useFileAccess';
 import { FileAnalyzer, FileAnalysisResult, ExtractedExercise } from '../../services/fileAnalysis';
 import { FileAnalysisResults } from './FileAnalysisResults';
+import { updateWorkoutMetrics } from '@/services/updateWorkoutMetrics';
 
 interface Exercise {
   name: string;
@@ -213,6 +214,12 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         }
       }
 
+      // Aggiorna metriche se c'è una durata specificata
+      if (duration && parseInt(duration) > 0) {
+        await updateWorkoutMetrics(user.id, parseInt(duration));
+        console.log('✅ [DEBUG] Metriche aggiornate per allenamento creato:', parseInt(duration), 'minuti');
+      }
+
       onClose();
       if (onWorkoutCreated) {
         onWorkoutCreated();
@@ -291,6 +298,12 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
               mime_type: uploadedFile.type,
             });
         }
+      }
+
+      // Aggiorna metriche se c'è una durata specificata
+      if (duration && parseInt(duration) > 0) {
+        await updateWorkoutMetrics(user.id, parseInt(duration));
+        console.log('✅ [DEBUG] Metriche aggiornate per allenamento iniziato:', parseInt(duration), 'minuti');
       }
 
       onClose();
@@ -528,24 +541,27 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                 
                 <div className="grid grid-cols-3 gap-2">
                   <input
-                    type="text"
+                    type="number"
                     value={exercise.sets}
                     onChange={(e) => updateExercise(index, 'sets', e.target.value)}
                     placeholder="Serie"
+                    min="1"
                     className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                   <input
-                    type="text"
+                    type="number"
                     value={exercise.reps}
                     onChange={(e) => updateExercise(index, 'reps', e.target.value)}
                     placeholder="Rip."
+                    min="1"
                     className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                   <input
-                    type="text"
+                    type="number"
                     value={exercise.rest}
                     onChange={(e) => updateExercise(index, 'rest', e.target.value)}
                     placeholder="Rec."
+                    min="0"
                     className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                 </div>
@@ -564,6 +580,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
               type="number"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
+              min="1"
               className="w-full p-3 bg-gray-800 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400"
               placeholder="Es. 45"
             />
