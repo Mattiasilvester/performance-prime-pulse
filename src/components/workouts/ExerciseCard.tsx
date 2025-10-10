@@ -219,7 +219,7 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
                 <h4 className="font-bold text-white text-lg leading-tight truncate">
                   {exercise.name}
                 </h4>
-                <div className="flex items-center">
+                <div className="flex items-center self-center">
                   <ExerciseGifLink exerciseName={exercise.name} />
                 </div>
               </div>
