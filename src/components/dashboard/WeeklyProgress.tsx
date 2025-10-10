@@ -37,11 +37,11 @@ export const WeeklyProgress = () => {
         // per mostrare il progresso reale dell'utente
         const { data: workouts, error } = await supabase
           .from('custom_workouts')
-          .select('scheduled_date, completed_at')
+          .select('scheduled_date, completed_at, title, workout_type')
           .eq('user_id', user.id)
           .eq('completed', true)
           .order('completed_at', { ascending: false })
-          .limit(50); // Limita a 50 per performance
+          .limit(100); // Aumentato a 100 per trovare tutti i workout
 
         if (error) {
           console.error('📊 [ERROR] WeeklyProgress: Errore query workout:', error);
@@ -50,23 +50,50 @@ export const WeeklyProgress = () => {
 
         console.log('📊 [DEBUG] WeeklyProgress: Query TUTTI i workout completati:', {
           workoutsFound: workouts?.length || 0,
-          workouts: workouts?.slice(0, 5) // Mostra solo i primi 5 per debug
+          userId: user.id,
+          workouts: workouts?.slice(0, 10) // Mostra i primi 10 per debug
+        });
+
+        // Debug dettagliato di ogni workout
+        workouts?.forEach((workout, index) => {
+          console.log(`📊 [DEBUG] Workout ${index + 1}:`, {
+            title: workout.title,
+            type: workout.workout_type,
+            scheduled_date: workout.scheduled_date,
+            completed_at: workout.completed_at
+          });
         });
 
         // Conta i workout per giorno della settimana corrente
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6);
         
-        workouts?.forEach(workout => {
+        console.log('📊 [DEBUG] Settimana corrente:', {
+          startOfWeek: startOfWeek.toISOString().split('T')[0],
+          endOfWeek: endOfWeek.toISOString().split('T')[0]
+        });
+
+        workouts?.forEach((workout, index) => {
           const workoutDate = new Date(workout.scheduled_date);
+          
+          console.log(`📊 [DEBUG] Analizzando workout ${index + 1}:`, {
+            title: workout.title,
+            scheduled_date: workout.scheduled_date,
+            workoutDate: workoutDate.toISOString().split('T')[0],
+            isInWeek: workoutDate >= startOfWeek && workoutDate <= endOfWeek,
+            dayOfWeek: workoutDate.getDay(),
+            dayName: ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'][workoutDate.getDay()]
+          });
           
           // Controlla se il workout è nella settimana corrente
           if (workoutDate >= startOfWeek && workoutDate <= endOfWeek) {
             const dayIndex = (workoutDate.getDay() + 6) % 7; // Converte domenica=0 a lunedì=0
             if (dayIndex >= 0 && dayIndex < 7) {
               weeklyData[dayIndex].workouts++;
-              console.log(`📊 [DEBUG] Workout aggiunto al giorno ${weeklyData[dayIndex].name}:`, workoutDate.toISOString().split('T')[0]);
+              console.log(`✅ [DEBUG] Workout aggiunto al giorno ${weeklyData[dayIndex].name}:`, workoutDate.toISOString().split('T')[0]);
             }
+          } else {
+            console.log(`❌ [DEBUG] Workout NON aggiunto - fuori settimana:`, workoutDate.toISOString().split('T')[0]);
           }
         });
 
