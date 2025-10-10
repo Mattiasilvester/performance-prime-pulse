@@ -506,12 +506,18 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
         return;
       }
       
-      // Calcola la durata totale stimata (in minuti)
-      const totalMinutes = currentWorkout.exercises.reduce((total: number, exercise: any) => {
-        const workTime = parseInt(exercise.duration) || 30;
-        const restTime = parseInt(exercise.rest) || 10;
-        return total + (workTime + restTime) / 60;
-      }, 0);
+      // Calcola la durata totale per allenamenti preimpostati (tempi fissi)
+      const getPresetWorkoutDuration = (workoutName: string): number => {
+        const name = workoutName.toLowerCase();
+        if (name.includes('cardio')) return 20;
+        if (name.includes('forza') || name.includes('strength')) return 45;
+        if (name.includes('hiit')) return 45;
+        if (name.includes('mobilità') || name.includes('mobility')) return 15;
+        // Fallback per altri allenamenti preimpostati
+        return 30;
+      };
+      
+      const totalMinutes = getPresetWorkoutDuration(currentWorkout.name);
 
       // Crea un record in custom_workouts per attivare il trigger
       console.log('🔍 [DEBUG] completeWorkout: Creazione record custom_workouts...');
