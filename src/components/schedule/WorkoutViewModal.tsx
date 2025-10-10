@@ -91,11 +91,6 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
             >
               {workoutTypeInfo?.name || workout.workout_type}
             </span>
-            {workout.total_duration && (
-              <span className="text-white/70 text-sm">
-                {workout.total_duration} min
-              </span>
-            )}
           </div>
         </div>
 

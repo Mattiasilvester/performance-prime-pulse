@@ -38,7 +38,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
   const [exercises, setExercises] = useState<Exercise[]>([
     { name: '', sets: '', reps: '', rest: '' }
   ]);
-  const [duration, setDuration] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [creationMethod, setCreationMethod] = useState<'manual' | 'file' | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -53,7 +52,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
       setSelectedType('');
       setCustomTitle('');
       setExercises([{ name: '', sets: '', reps: '', rest: '' }]);
-      setDuration('');
       setCreationMethod(null);
       setUploadedFile(null);
       setFileAnalysis(null);
@@ -130,7 +128,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
 
     setExercises(convertedExercises);
     if (title) setCustomTitle(title);
-    if (duration) setDuration(duration);
     
     // Passa al metodo manuale per permettere modifiche
     setCreationMethod('manual');
@@ -180,7 +177,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           workout_type: workoutType,
           scheduled_date: selectedDate.toISOString().split('T')[0],
           exercises: exercisesData as any,
-          total_duration: duration ? parseInt(duration) : null,
         })
         .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .single();
@@ -214,11 +210,9 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         }
       }
 
-      // Aggiorna metriche se c'è una durata specificata
-      if (duration && parseInt(duration) > 0) {
-        await updateWorkoutMetrics(user.id, parseInt(duration));
-        console.log('✅ [DEBUG] Metriche aggiornate per allenamento creato:', parseInt(duration), 'minuti');
-      }
+      // Aggiorna metriche con durata standard di 30 minuti per allenamenti personalizzati
+      await updateWorkoutMetrics(user.id, 30);
+      console.log('✅ [DEBUG] Metriche aggiornate per allenamento creato: 30 minuti');
 
       onClose();
       if (onWorkoutCreated) {
@@ -266,7 +260,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           workout_type: workoutType,
           scheduled_date: todayString, // Sempre oggi per "Inizia Allenamento"
           exercises: exercisesData as any,
-          total_duration: duration ? parseInt(duration) : null,
         })
         .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .single();
@@ -300,11 +293,9 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         }
       }
 
-      // Aggiorna metriche se c'è una durata specificata
-      if (duration && parseInt(duration) > 0) {
-        await updateWorkoutMetrics(user.id, parseInt(duration));
-        console.log('✅ [DEBUG] Metriche aggiornate per allenamento iniziato:', parseInt(duration), 'minuti');
-      }
+      // Aggiorna metriche con durata standard di 30 minuti per allenamenti personalizzati
+      await updateWorkoutMetrics(user.id, 30);
+      console.log('✅ [DEBUG] Metriche aggiornate per allenamento iniziato: 30 minuti');
 
       onClose();
       if (onWorkoutCreated) {
@@ -568,22 +559,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           </div>
         )}
 
-        {/* Durata - solo se metodo manuale */}
-        {creationMethod === 'manual' && (
-          <div className="mb-6">
-            <label className="block text-white text-sm font-medium mb-2">
-              Durata (minuti)
-            </label>
-            <input
-              type="number"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              min="1"
-              className="w-full p-3 bg-gray-800 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400"
-              placeholder="Es. 45"
-            />
-          </div>
-        )}
 
         {/* Bottoni */}
         <div className="flex space-x-3">
