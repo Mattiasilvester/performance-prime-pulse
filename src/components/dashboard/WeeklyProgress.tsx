@@ -81,6 +81,31 @@ export const WeeklyProgress = () => {
           });
         });
 
+        // QUERY SPECIALE: Conta tutti i workout completati nel database
+        console.log('🔍 [DEBUG] Eseguo query speciale per contare TUTTI i workout completati...');
+        
+        const { data: allCompletedWorkouts, error: allCompletedError } = await supabase
+          .from('custom_workouts')
+          .select('id, title, user_id, completed_at, created_at')
+          .eq('completed', true)
+          .order('created_at', { ascending: false });
+
+        if (!allCompletedError && allCompletedWorkouts) {
+          console.log('🔍 [DEBUG] TUTTI I WORKOUT COMPLETATI NEL DATABASE:', {
+            totalCompletedInDB: allCompletedWorkouts.length,
+            myCompletedWorkouts: allCompletedWorkouts.filter(w => w.user_id === user.id).length,
+            allWorkouts: allCompletedWorkouts.map(w => ({
+              title: w.title,
+              user_id: w.user_id,
+              isMyWorkout: w.user_id === user.id,
+              completed_at: w.completed_at,
+              created_at: w.created_at
+            }))
+          });
+        } else {
+          console.error('❌ [ERROR] Errore query workout completati:', allCompletedError);
+        }
+
         // Debug dettagliato dei MIEI workout
         myWorkouts.forEach((workout, index) => {
           console.log(`📊 [DEBUG] MIO Workout ${index + 1}:`, {
