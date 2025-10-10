@@ -123,7 +123,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
     // Converti gli esercizi estratti nel formato del modal
     const convertedExercises = exercises.map(ex => ({
       name: ex.name,
-      sets: ex.sets || '3',
+      sets: String(ex.sets || '3'),
       reps: ex.reps || '10',
       rest: ex.rest || '2 min'
     }));
@@ -467,9 +467,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
             ) : (
               <FileAnalysisResults
                 result={fileAnalysis}
-                onAccept={handleAcceptAnalysis}
-                onReject={handleRejectAnalysis}
-                onEdit={handleEditAnalysis}
+                onClose={handleRejectAnalysis}
               />
             )}
             
