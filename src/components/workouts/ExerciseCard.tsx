@@ -99,11 +99,70 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
 
   // Funzione per convertire tempo di riposo in secondi
   const parseRestTime = (restStr: string): number => {
-    if (restStr.includes('min')) {
-      return parseInt(restStr) * 60;
-    } else if (restStr.includes('s')) {
-      return parseInt(restStr);
+    console.log('🕐 [DEBUG] Parsing rest time:', restStr);
+    
+    if (!restStr || restStr.trim() === '') {
+      return 30; // default 30 secondi
     }
+    
+    let totalSeconds = 0;
+    
+    // Gestisce formati come "1m,30sec", "2min 15sec", "1m 30sec"
+    if (restStr.includes(',') || (restStr.includes('m') && restStr.includes('sec'))) {
+      // Sostituisce virgole con spazi per parsing uniforme
+      const normalizedStr = restStr.replace(/,/g, ' ').toLowerCase();
+      
+      // Estrae minuti (m o min)
+      const minutesMatch = normalizedStr.match(/(\d+)\s*(m|min)/);
+      if (minutesMatch) {
+        totalSeconds += parseInt(minutesMatch[1]) * 60;
+      }
+      
+      // Estrae secondi (sec)
+      const secondsMatch = normalizedStr.match(/(\d+)\s*sec/);
+      if (secondsMatch) {
+        totalSeconds += parseInt(secondsMatch[1]);
+      }
+      
+      if (totalSeconds > 0) {
+        console.log('✅ [DEBUG] Parsed complex format:', restStr, '→', totalSeconds, 'seconds');
+        return totalSeconds;
+      }
+    }
+    
+    // Gestisce formati semplici come "1m", "30sec", "2min"
+    if (restStr.includes('min') || restStr.includes('m')) {
+      const match = restStr.match(/(\d+)/);
+      if (match) {
+        const seconds = parseInt(match[1]) * 60;
+        console.log('✅ [DEBUG] Parsed minutes:', restStr, '→', seconds, 'seconds');
+        return seconds;
+      }
+    } else if (restStr.includes('sec')) {
+      const match = restStr.match(/(\d+)/);
+      if (match) {
+        const seconds = parseInt(match[1]);
+        console.log('✅ [DEBUG] Parsed seconds:', restStr, '→', seconds, 'seconds');
+        return seconds;
+      }
+    } else if (restStr.includes('s')) {
+      const match = restStr.match(/(\d+)/);
+      if (match) {
+        const seconds = parseInt(match[1]);
+        console.log('✅ [DEBUG] Parsed seconds (s):', restStr, '→', seconds, 'seconds');
+        return seconds;
+      }
+    }
+    
+    // Fallback: prova a estrarre solo numeri
+    const numberMatch = restStr.match(/(\d+)/);
+    if (numberMatch) {
+      const seconds = parseInt(numberMatch[1]);
+      console.log('⚠️ [DEBUG] Fallback parsing:', restStr, '→', seconds, 'seconds');
+      return seconds;
+    }
+    
+    console.log('❌ [DEBUG] Failed to parse:', restStr, '→ using default 30 seconds');
     return 30; // default 30 secondi
   };
 
