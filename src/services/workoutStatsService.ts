@@ -30,25 +30,9 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
 
       console.log('📊 [DEBUG] fetchWorkoutStats: user_workout_stats result:', { stats, statsError });
 
-      if (!statsError && stats) {
-        console.log('✅ [DEBUG] fetchWorkoutStats: Usando statistiche pre-calcolate');
-        console.log('⚠️ [DEBUG] fetchWorkoutStats: VERIFICA DATI user_workout_stats:', stats);
-        
-        // Formatta in ore e minuti (Xh Ym)
-        const totalMinutes = stats.total_hours || 0;
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        const formattedTime = `${hours}h ${minutes}m`;
-        
-        console.log('⚠️ [DEBUG] fetchWorkoutStats: DATI user_workout_stats potrebbero essere OBSOLETI!');
-        console.log(`⚠️ [DEBUG] user_workout_stats dice: ${stats.total_workouts} workout, ${totalMinutes} minuti`);
-        
-        return {
-          total_workouts: stats.total_workouts || 0,
-          total_hours: formattedTime,
-          total_minutes: totalMinutes
-        };
-      }
+      // FORZA SEMPRE IL CALCOLO DA custom_workouts per avere dati reali
+      console.log('⚠️ [DEBUG] fetchWorkoutStats: IGNORO user_workout_stats - calcolo sempre da custom_workouts');
+      console.log('⚠️ [DEBUG] user_workout_stats potrebbe contenere dati obsoleti:', stats);
     } catch (error) {
       // Se la tabella non esiste o non ci sono dati, continua con il calcolo dai workout
       console.warn('⚠️ [DEBUG] user_workout_stats table not available, calculating from workouts:', error);

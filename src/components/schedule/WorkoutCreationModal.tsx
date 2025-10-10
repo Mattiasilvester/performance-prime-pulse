@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useFileAccess } from '@/hooks/useFileAccess';
 import { FileAnalyzer, FileAnalysisResult, ExtractedExercise } from '../../services/fileAnalysis';
 import { FileAnalysisResults } from './FileAnalysisResults';
-import { updateWorkoutMetrics } from '@/services/updateWorkoutMetrics';
+// import { updateWorkoutMetrics } from '@/services/updateWorkoutMetrics'; // Rimosso - metriche si aggiornano solo al completamento
 
 interface Exercise {
   name: string;
@@ -210,9 +210,8 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         }
       }
 
-      // Aggiorna metriche con durata standard di 30 minuti per allenamenti personalizzati
-      await updateWorkoutMetrics(user.id, 30);
-      console.log('✅ [DEBUG] Metriche aggiornate per allenamento creato: 30 minuti');
+      // NON aggiornare metriche qui - si aggiornano solo quando si COMPLETA un workout
+      console.log('✅ [DEBUG] Allenamento creato - metriche si aggiorneranno al completamento');
 
       onClose();
       if (onWorkoutCreated) {
@@ -293,9 +292,8 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         }
       }
 
-      // Aggiorna metriche con durata standard di 30 minuti per allenamenti personalizzati
-      await updateWorkoutMetrics(user.id, 30);
-      console.log('✅ [DEBUG] Metriche aggiornate per allenamento iniziato: 30 minuti');
+      // NON aggiornare metriche qui - si aggiornano solo quando si COMPLETA un workout
+      console.log('✅ [DEBUG] Allenamento iniziato - metriche si aggiorneranno al completamento');
 
       onClose();
       if (onWorkoutCreated) {

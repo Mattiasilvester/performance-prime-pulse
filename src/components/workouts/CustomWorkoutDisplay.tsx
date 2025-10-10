@@ -103,12 +103,13 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
 
       if (error) throw error;
 
-      // Aggiorna le metriche con il tempo reale del timer
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
-        await updateWorkoutMetrics(user.id, currentWorkoutTime); // Passa i secondi direttamente
-        console.log('✅ [DEBUG] Metriche aggiornate con tempo reale:', currentWorkoutTime, 'secondi');
+        // Aggiorna le metriche con il tempo reale del timer (convertito in minuti)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
+          const minutes = Math.round(currentWorkoutTime / 60); // Converti secondi in minuti
+          await updateWorkoutMetrics(user.id, minutes);
+          console.log('✅ [DEBUG] Metriche aggiornate con tempo reale:', currentWorkoutTime, 'secondi =', minutes, 'minuti');
         
         // Notifica il grafico settimanale per aggiornarsi
         window.dispatchEvent(new CustomEvent('workoutCompleted'));
