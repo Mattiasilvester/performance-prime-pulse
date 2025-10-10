@@ -546,11 +546,10 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                     className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                   <input
-                    type="number"
+                    type="text"
                     value={exercise.rest}
                     onChange={(e) => updateExercise(index, 'rest', e.target.value)}
-                    placeholder="Rec."
-                    min="0"
+                    placeholder="Es. 1m, 30sec"
                     className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                 </div>
