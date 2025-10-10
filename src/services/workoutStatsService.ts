@@ -32,12 +32,16 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
 
       if (!statsError && stats) {
         console.log('✅ [DEBUG] fetchWorkoutStats: Usando statistiche pre-calcolate');
+        console.log('⚠️ [DEBUG] fetchWorkoutStats: VERIFICA DATI user_workout_stats:', stats);
         
         // Formatta in ore e minuti (Xh Ym)
         const totalMinutes = stats.total_hours || 0;
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
         const formattedTime = `${hours}h ${minutes}m`;
+        
+        console.log('⚠️ [DEBUG] fetchWorkoutStats: DATI user_workout_stats potrebbero essere OBSOLETI!');
+        console.log(`⚠️ [DEBUG] user_workout_stats dice: ${stats.total_workouts} workout, ${totalMinutes} minuti`);
         
         return {
           total_workouts: stats.total_workouts || 0,
@@ -73,7 +77,28 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
     const minutes = totalMinutes % 60;
     const formattedTime = `${hours}h ${minutes}m`;
 
-    console.log('✅ [DEBUG] fetchWorkoutStats: Risultato finale:', { totalWorkouts, totalMinutes, formattedTime });
+    console.log('✅ [DEBUG] fetchWorkoutStats: Risultato finale DA custom_workouts:', { totalWorkouts, totalMinutes, formattedTime });
+
+    // SINCRONIZZA user_workout_stats con i dati reali
+    console.log('🔄 [DEBUG] fetchWorkoutStats: Sincronizzazione user_workout_stats...');
+    try {
+      const { error: syncError } = await supabase
+        .from('user_workout_stats')
+        .upsert({
+          user_id: user.id,
+          total_workouts: totalWorkouts,
+          total_hours: totalMinutes,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+      if (syncError) {
+        console.error('❌ [DEBUG] Errore sincronizzazione user_workout_stats:', syncError);
+      } else {
+        console.log('✅ [DEBUG] user_workout_stats sincronizzata con dati reali:', { totalWorkouts, totalMinutes });
+      }
+    } catch (syncError) {
+      console.error('❌ [DEBUG] Errore durante sincronizzazione:', syncError);
+    }
 
     return {
       total_workouts: totalWorkouts,
