@@ -1,0 +1,46 @@
+/* Fix per sidebar duplicata */
+.admin-layout-wrapper {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+.admin-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 256px;
+  z-index: 50;
+}
+
+.admin-content {
+  margin-left: 256px;
+  flex: 1;
+  width: calc(100% - 256px);
+}
+
+/* Rimuovi duplicati */
+aside + aside {
+  display: none !important;
+}
+
+/* Assicura che ci sia solo una sidebar */
+aside[class*="sidebar"]:not(:first-of-type) {
+  display: none !important;
+}
+
+/* Fix per layout admin */
+.min-h-screen.bg-gray-900.flex {
+  position: relative;
+}
+
+.min-h-screen.bg-gray-900.flex aside {
+  position: fixed !important;
+  z-index: 50 !important;
+}
+
+.min-h-screen.bg-gray-900.flex main {
+  margin-left: 256px !important;
+  width: calc(100% - 256px) !important;
+}

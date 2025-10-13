@@ -1,0 +1,39 @@
+# Supabase Configuration
+project_id = "kfxoyucatvvcgmqalxsg"
+
+[auth]
+# Disabilita validazione password pwned
+password_breach_detection = false
+# Disabilita validazione password deboli
+password_validation = false
+
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+port = 54325
+
+[realtime]
+enabled = true
+port = 54326
+
+[analytics]
+enabled = false
+port = 54327
+
+[functions]
+enabled = true
+port = 54328
