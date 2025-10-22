@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, ArrowLeft } from 'lucide-react';
+import { Play, Pause, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -9,10 +9,9 @@ interface WorkoutTimerProps {
   onTimerComplete?: () => void;
   autoStartTime?: { hours: number; minutes: number; seconds: number };
   autoStartRest?: { hours: number; minutes: number; seconds: number };
-  onBack?: () => void;
 }
 
-export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, autoStartRest, onBack }: WorkoutTimerProps) => {
+export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, autoStartRest }: WorkoutTimerProps) => {
   const { t } = useTranslation();
   
   const [time, setTime] = useState(0);
@@ -142,19 +141,6 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
 
   return (
     <div className="w-full min-h-[80vh] flex flex-col justify-between relative">
-      {/* Bottone Indietro - IN ALTO */}
-      <div className="w-full pt-8">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-white hover:bg-white/10 bg-transparent border-none ml-4"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('common.back')}
-        </Button>
-      </div>
-
       {/* Numeri del timer - AL CENTRO */}
       <div className="text-center w-full">
         <div className="text-7xl lg:text-8xl font-mono font-bold text-white">
