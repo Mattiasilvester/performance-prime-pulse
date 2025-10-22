@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Info,
-  Calendar
+  Calendar,
+  RefreshCcw
 } from 'lucide-react';
 import { FileAnalysisResult, ExtractedExercise, WorkoutSection } from '../../services/fileAnalysis';
 import { DebugPanel } from './DebugPanel';
@@ -41,180 +42,94 @@ export const FileAnalysisResults: React.FC<FileAnalysisResultsProps> = ({
   const getSectionColor = (sectionName: string) => {
     switch (sectionName.toLowerCase()) {
       case 'riscaldamento':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
       case 'esercizi principali':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-500/20 text-green-300 border border-green-500/30';
       case 'stretching':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-[#FFD700]/20 text-[#FFD700] border border-[#FFD700]/30';
     }
   };
 
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'bg-green-100 text-green-800';
-    if (confidence >= 60) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
-  };
 
   const renderExercise = (exercise: ExtractedExercise, index: number) => (
-    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-      <div className="flex-1">
-        <div className="font-medium text-gray-900">{exercise.name}</div>
-        <div className="text-sm text-gray-600 flex items-center gap-4 mt-1">
-          <span className="flex items-center gap-1">
-            <Repeat className="h-3 w-3" />
-            {exercise.sets} x {exercise.reps}
+    <div key={index} className="p-3 bg-[#2D3748] rounded-lg border border-[#FFD700]/20">
+      <div className="font-medium text-white mb-1">{exercise.name}</div>
+      <div className="text-sm text-[#9CA3AF] flex items-center gap-4">
+        <span className="flex items-center gap-1">
+          <Repeat className="h-3 w-3" />
+          {exercise.sets} x {exercise.reps}
+        </span>
+        {exercise.rest && (
+          <span className="text-sm text-[#9CA3AF] flex items-center gap-1">
+            <RefreshCcw className="h-3 w-3" />
+            Riposo: {exercise.rest.replace(/[🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄]\s*1\s*x\s*/g, '').replace(/^\s*/, '').trim().replace(/^[🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄]+\s*/, '')} tra le serie
           </span>
-          {exercise.rest && (
-            <span className="flex items-center gap-1">
-              <Coffee className="h-3 w-3" />
-              {exercise.rest}
-            </span>
-          )}
-        </div>
-        {exercise.notes && (
-          <div className="text-xs text-gray-500 mt-1 italic">
-            {exercise.notes}
-          </div>
         )}
       </div>
-      <Badge className={getConfidenceColor(exercise.confidence)}>
-        {exercise.confidence}%
-      </Badge>
     </div>
   );
 
   const renderSection = (section: WorkoutSection) => (
-    <Card key={section.name} className="mb-4">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
+    <div key={section.name} className="mb-4 bg-[#374151] rounded-lg border border-[#FFD700]/30">
+      <div className="p-4 border-b border-[#FFD700]/20">
+        <div className="flex items-center gap-2">
           {getSectionIcon(section.name)}
-          <span>{section.name}</span>
-          <Badge className={getSectionColor(section.name)}>
+          <span className="text-white font-medium text-lg">{section.name}</span>
+          <Badge className={`${getSectionColor(section.name)} border border-[#FFD700]/30`}>
             {section.exercises.length} esercizi
           </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {section.exercises.map((exercise, index) => renderExercise(exercise, index))}
-      </CardContent>
-    </Card>
+        </div>
+      </div>
+      <div className="p-4">
+        <div className="space-y-3">
+          {section.exercises.map((exercise, index) => renderExercise(exercise, index))}
+        </div>
+      </div>
+    </div>
   );
 
-  // Controlla se ci sono warnings critici
-  const hasCriticalWarnings = result.metadata.warnings.some(warning => 
-    warning.includes('PDF non contiene testo') || 
-    warning.includes('Regex non hanno trovato match')
-  );
 
   return (
-    <div className="space-y-4">
-      {/* Header con informazioni principali */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              {result.workoutTitle}
-            </div>
-            <Badge className={getConfidenceColor(result.metadata.confidence)}>
-              {result.metadata.confidence}% accuratezza
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <span>Durata stimata: {result.duration}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Dumbbell className="h-4 w-4 text-gray-500" />
-              <span>{result.exercises.length} esercizi totali</span>
-            </div>
+    <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+      {/* Header semplificato */}
+      <div className="mb-6 p-4 bg-[#374151] rounded-lg border border-[#FFD700]/30">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-500" />
+            {result.workoutTitle || 'Allenamento'}
+          </h3>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-[#FFD700]" />
+            <span className="text-sm text-[#9CA3AF]">
+              Durata: {result.duration}
+            </span>
           </div>
-          
-          {/* Multi-giorno info */}
-          {result.multiDay && result.daysFound && result.daysFound.length > 0 && (
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="h-4 w-4 text-blue-600" />
-                <span className="font-medium text-blue-800">Multi-Giorno Rilevato</span>
-              </div>
-              <div className="text-sm text-blue-700">
-                <p>Giorni trovati nel file:</p>
-                <ul className="list-disc list-inside mt-1">
-                  {result.daysFound.map((day, index) => (
-                    <li key={index}>{day}</li>
-                  ))}
-                </ul>
-                <p className="mt-2 text-blue-600">
-                  <strong>Nota:</strong> Viene mostrato solo il primo giorno. Per visualizzare altri giorni, 
-                  carica il file specifico per quel giorno.
-                </p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-2">
+            <Dumbbell className="h-4 w-4 text-[#FFD700]" />
+            <span className="text-sm text-[#9CA3AF]">
+              {result.exercises.length} esercizi
+            </span>
+          </div>
+        </div>
+      </div>
 
-      {/* Warnings critici */}
-      {hasCriticalWarnings && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertTriangle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-800">
-            <div className="space-y-1">
-              {result.metadata.warnings
-                .filter(warning => 
-                  warning.includes('PDF non contiene testo') || 
-                  warning.includes('Regex non hanno trovato match')
-                )
-                .map((warning, index) => (
-                  <div key={index} className="text-sm">• {warning}</div>
-                ))}
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
 
-      {/* Warnings non critici */}
-      {result.metadata.warnings.length > 0 && !hasCriticalWarnings && (
-        <Alert className="border-yellow-200 bg-yellow-50">
-          <Info className="h-4 w-4 text-yellow-600" />
-          <AlertDescription className="text-yellow-800">
-            <div className="space-y-1">
-              {result.metadata.warnings.map((warning, index) => (
-                <div key={index} className="text-sm">• {warning}</div>
-              ))}
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Sezioni esercizi */}
+      {/* Lista esercizi per sezioni */}
       {result.sections.length > 0 ? (
         <div className="space-y-4">
           {result.sections.map(renderSection)}
         </div>
       ) : (
-        <Card>
-          <CardContent className="text-center py-8">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">Nessun esercizio trovato nel file</p>
-          </CardContent>
-        </Card>
+        <div className="text-center py-8 bg-[#374151] rounded-lg border border-[#FFD700]/30">
+          <FileText className="h-12 w-12 text-[#9CA3AF] mx-auto mb-4" />
+          <p className="text-[#9CA3AF]">Nessun esercizio trovato nel file</p>
+        </div>
       )}
 
-      {/* Debug Panel (solo se DEBUG_ANALYSIS è attivo) */}
-      {result.metadata.debug && (
-        <DebugPanel
-          debugInfo={result.metadata.debug}
-          warnings={result.metadata.warnings}
-          confidence={result.metadata.confidence}
-          extractionSource={result.metadata.source}
-        />
-      )}
     </div>
   );
 };

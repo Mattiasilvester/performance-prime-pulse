@@ -22,7 +22,7 @@ export const StartTodayButton = () => {
       const today = new Date().toISOString().split('T')[0];
       const { data, error } = await supabase
         .from('custom_workouts')
-        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
+        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at, exercises')
         .eq('user_id', user.id)
         .eq('scheduled_date', today)
         .maybeSingle();

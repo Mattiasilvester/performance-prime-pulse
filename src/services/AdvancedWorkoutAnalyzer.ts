@@ -11,14 +11,17 @@ import { env } from '@/config/env';
 // Configurazione PDF.js per browser - fallback locale per evitare errori 406
 try {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  // FIX: Configurazione font per evitare errori FoxitDingbats.pfb
+  (pdfjsLib.GlobalWorkerOptions as any).standardFontDataUrl = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/standard_fonts/`;
 } catch (error) {
   // Fallback locale se CDN non disponibile
   console.warn('PDF.js CDN non disponibile, usando fallback locale');
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+  (pdfjsLib.GlobalWorkerOptions as any).standardFontDataUrl = '/standard_fonts/';
 }
 
 // Flag debug
-const DEBUG_ANALYSIS = env.DEBUG_MODE;
+const DEBUG_ANALYSIS = env.DEBUG_MODE; // Ripristinato normale
 
 // Interfacce aggiornate
 export interface ExtractedText {
@@ -87,8 +90,23 @@ const RX = {
   // Range reps sciolto (es. "Panca piana 8-10")
   repsLoose: /^(?<name>[\p{L}\d .,'()\/\-]+?)\s*[-–:]?\s*(?<reps_lo>\d{1,3})\s*[-–]\s*(?<reps_hi>\d{1,3})(?:\s*(?:rip|ripetizioni|reps))?(?:.*?(?:rec(?:upero)?|rest|pausa)\s*(?<rest_val>\d{1,3})\s*(?<rest_unit>["s]|sec|min))?(?:.*?(?<notes>\((?:[^)]+)\)|per gamba|per lato|totali|assistite))?$/u,
 
+  // FORMATO UNIVERSALE RIPETIZIONI: "4 sets x 8-10 repetitions"
+  universalReps: /^(?<name>[\p{L}\d .,'()\/\-]+?)\s*[-–:]?\s*(?<sets>\d{1,2})\s*(?:sets?|serie)\s*x\s*(?<reps_lo>\d{1,3})(?:\s*[-–]\s*(?<reps_hi>\d{1,3}))?\s*(?:repetitions?|reps?|ripetizioni?)(?:.*?(?:rec(?:upero)?|rest|pausa|recovery)\s*(?<rest_val>\d{1,3})\s*(?<rest_unit>["s]|sec|min|seconds?|minutes?))?(?:.*?(?<notes>\((?:[^)]+)\)|per gamba|per lato|totali|assistite))?$/iu,
+  
+  // FORMATO UNIVERSALE DURATA: "3 sets x 45-60 seconds"
+  universalTime: /^(?<name>[\p{L}\d .,'()\/\-]+?)\s*[-–:]?\s*(?<sets>\d{1,2})\s*(?:sets?|serie)\s*x\s*(?<dur_val>\d{1,3})(?:\s*[-–]\s*(?<dur_hi>\d{1,3}))?\s*(?<dur_unit>seconds?|sec|minutes?|min|minuti?)(?:.*?(?:rec(?:upero)?|rest|pausa|recovery)\s*(?<rest_val>\d{1,3})\s*(?<rest_unit>["s]|sec|min|seconds?|minutes?))?(?:.*?(?<notes>\((?:[^)]+)\)|per gamba|per lato|totali|assistite))?$/iu,
+  
+  // FORMATO "SETS X TIME NAME": "2 x 15 20 sec Jumping jacks"
+  universalTimeName: /^(?<sets>\d{1,2})\s*x\s*(?<dur_val>\d{1,3})(?:\s*[-–]\s*(?<dur_hi>\d{1,3}))?\s*(?<dur_unit>sec|min|seconds?|minutes?|minuti?)\s+(?<rest_val>\d{1,3})\s*(?<rest_unit>sec|min|seconds?|minutes?)\s+(?<name>[\p{L}\d .,'()\/\-]+?)$/iu,
+
+  // FORMATO TABELLA: "Esercizio | Serie x Ripetizioni | Recupero"
+  tableFormat: /^(?<name>[\p{L}\d .,'()\/\-]+?)\s*[|]\s*(?<sets>\d{1,2})\s*x\s*(?<reps_lo>\d{1,3})(?:\s*[-–]\s*(?<reps_hi>\d{1,3}))?\s*[|]\s*(?<rest_val>\d{1,3})\s*(?<rest_unit>["s]|sec|min)$/u,
+
   // Recupero standalone su riga successiva
   restOnly: /^(?:rec(?:upero)?|rest|pausa)\s*(?<rest_val>\d{1,3})\s*(?<rest_unit>["s]|sec|min)$/iu,
+  
+  // FORMATO "1 x 20sec" (recupero standalone)
+  restFormat: /^(?<rest_val>\d{1,3})\s*x\s*(?<rest_unit>\d{1,3})\s*(sec|min|seconds?|minutes?)$/iu,
 };
 
 export class AdvancedWorkoutAnalyzer {
@@ -117,6 +135,16 @@ export class AdvancedWorkoutAnalyzer {
       
       // 3. Parsing struttura
       const parsedResult = await this.parseWorkoutStructure(extractedText.text);
+      
+      // DEBUG: Log parsing results
+      if (DEBUG_ANALYSIS) {
+        console.log('🔍 [DEBUG PARSE] Risultati parsing:', {
+          riscaldamento: parsedResult.riscaldamento.length,
+          scheda: parsedResult.scheda.length,
+          stretching: parsedResult.stretching.length,
+          total: parsedResult.riscaldamento.length + parsedResult.scheda.length + parsedResult.stretching.length
+        });
+      }
       
       this.log('[PARSE]', `→ ${parsedResult.riscaldamento.length} riscaldamento, ${parsedResult.scheda.length} esercizi, ${parsedResult.stretching.length} stretching`);
       
@@ -255,8 +283,15 @@ export class AdvancedWorkoutAnalyzer {
         const page = await pdf.getPage(pageNum);
         const textContent = await page.getTextContent();
         
+        // FIX: Mantieni separazione righe durante estrazione PDF
         const pageText = textContent.items
-          .map((item: any) => item.str)
+          .map((item: any) => {
+            // Se l'item ha proprietà di posizione, aggiungi newline se necessario
+            if (item.hasEOL) {
+              return item.str + '\n';
+            }
+            return item.str;
+          })
           .join(' ');
         
         fullText += pageText + '\n';
@@ -264,6 +299,13 @@ export class AdvancedWorkoutAnalyzer {
       
       // Pulizia testo
       const cleanedText = this.normalizeText(fullText);
+      
+      // DEBUG: Log testo estratto per diagnostica
+      if (DEBUG_ANALYSIS) {
+        console.log('🔍 [DEBUG PDF] Testo estratto:', cleanedText);
+        console.log('🔍 [DEBUG PDF] Righe totali:', cleanedText.split('\n').length);
+        console.log('🔍 [DEBUG PDF] Prime 500 caratteri:', cleanedText.slice(0, 500));
+      }
       
       return {
         text: cleanedText,
@@ -307,6 +349,11 @@ export class AdvancedWorkoutAnalyzer {
    */
   private static normalizeText(text: string): string {
     return text
+      // FIX CRITICO: Standardizza TUTTI i tipi di interruzioni di riga PRIMA di tutto
+      .replace(/\r\n/g, '\n')  // Windows (\r\n)
+      .replace(/\r/g, '\n')    // Mac (\r)
+      .replace(/\u2028/g, '\n') // Line separator
+      .replace(/\u2029/g, '\n') // Paragraph separator
       // Normalizzazione Unicode
       .normalize('NFKC')
       // Sostituzioni simboli
@@ -318,12 +365,14 @@ export class AdvancedWorkoutAnalyzer {
       .replace(/ﬀ/g, 'ff')
       .replace(/ﬁ/g, 'fi')
       .replace(/ﬂ/g, 'fl')
-      // Rimuovi caratteri di controllo
+      // Rimuovi caratteri di controllo MA NON \n
       .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
       // Rimuovi bullet points all'inizio riga
       .replace(/^[•\-]\s*/gm, '')
-      // Collassa spazi multipli
-      .replace(/\s+/g, ' ')
+      // Collassa spazi multipli MA PRESERVA newlines
+      .replace(/[ \t]+/g, ' ')
+      .replace(/\n[ \t]+/g, '\n')
+      .replace(/[ \t]+\n/g, '\n')
       .trim();
   }
 
@@ -352,8 +401,14 @@ export class AdvancedWorkoutAnalyzer {
       });
     }
 
-    // Preprocessamento righe (logica esistente)
-    const processedLines = this.preprocessLines(text);
+    // Preprocessamento righe (usa testo normalizzato!)
+    const processedLines = this.preprocessLines(normalized);
+    
+    // DEBUG: Log righe processate
+    if (DEBUG_ANALYSIS) {
+      console.log('🔍 [DEBUG LINES] Righe processate:', processedLines.length);
+      console.log('🔍 [DEBUG LINES] Prime 10 righe:', processedLines.slice(0, 10));
+    }
     let currentSection: 'riscaldamento' | 'scheda' | 'stretching' = 'scheda';
     let multiDay = false;
     let daysFound: string[] = [];
@@ -398,6 +453,11 @@ export class AdvancedWorkoutAnalyzer {
         matches++;
         lastExercise = exercise;
         
+        // DEBUG: Log esercizio riconosciuto
+        if (DEBUG_ANALYSIS) {
+          console.log('✅ [DEBUG PARSE] Esercizio riconosciuto:', exercise.name, '- Linea:', line);
+        }
+        
         switch (currentSection) {
           case 'riscaldamento':
             result.riscaldamento.push(exercise);
@@ -412,7 +472,7 @@ export class AdvancedWorkoutAnalyzer {
         continue;
       }
       
-      // Controlla se è solo recupero
+      // Controlla se è solo recupero (formato "recupero 20sec")
       const restMatch = line.match(RX.restOnly);
       if (restMatch && lastExercise && !lastExercise.rest) {
         const restVal = restMatch.groups?.rest_val;
@@ -423,8 +483,25 @@ export class AdvancedWorkoutAnalyzer {
         }
       }
       
+      // Controlla se è formato "1 x 20sec" (recupero standalone)
+      const restFormatMatch = line.match(RX.restFormat);
+      if (restFormatMatch && lastExercise && !lastExercise.rest) {
+        const restVal = restFormatMatch.groups?.rest_unit; // Il secondo numero è il tempo
+        const restUnit = restFormatMatch.groups?.[3]; // sec|min|seconds?|minutes?
+        if (restVal && restUnit) {
+          lastExercise.rest = `${restVal}${restUnit.includes('sec') ? 'sec' : 'min'}`;
+          console.log('✅ [DEBUG] RestFormat riconosciuto:', line, '→', lastExercise.rest);
+          continue;
+        }
+      }
+      
       // Nessun match trovato
       reasons.push(`Linea ${i + 1}: "${line}" - nessun pattern match`);
+      
+      // DEBUG: Log riga non riconosciuta
+      if (DEBUG_ANALYSIS) {
+        console.log('❌ [DEBUG PARSE] Riga non riconosciuta:', line);
+      }
     }
     
     // Suggerimenti se mancanti
@@ -452,29 +529,16 @@ export class AdvancedWorkoutAnalyzer {
    * Preprocessamento righe
    */
   private static preprocessLines(text: string): string[] {
-    const lines = text.split('\n');
-    const processedLines: string[] = [];
+    // FIX: Usa direttamente le righe divise, non ricostruirle
+    const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
     
-    for (let i = 0; i < lines.length; i++) {
-      let line = lines[i].trim();
-      
-      // Unisci righe spezzate
-      if (i < lines.length - 1) {
-        const nextLine = lines[i + 1].trim();
-        
-        // Se la riga corrente finisce con : o non ha numeri e la successiva è solo quantità
-        if ((line.endsWith(':') || !/\d/.test(line)) && /\d+\s*x\s*\d+/.test(nextLine)) {
-          line = `${line} ${nextLine}`;
-          i++; // Salta la riga successiva
-        }
-      }
-      
-      if (line) {
-        processedLines.push(line);
-      }
+    // DEBUG: Log righe originali
+    if (DEBUG_ANALYSIS) {
+      console.log('🔍 [DEBUG PREPROCESS] Righe originali:', lines.length);
+      console.log('🔍 [DEBUG PREPROCESS] Prime 5 righe originali:', lines.slice(0, 5));
     }
     
-    return processedLines;
+    return lines;
   }
 
   /**
@@ -539,8 +603,12 @@ export class AdvancedWorkoutAnalyzer {
    * Parsing singola riga esercizio
    */
   private static parseExerciseLine(line: string): ParsedExercise | null {
-    // Prova tutti i pattern in ordine di priorità
+    // Prova tutti i pattern in ordine di priorità (aggiunte regex universali)
     const patterns = [
+      { name: 'universalTimeName', regex: RX.universalTimeName },
+      { name: 'universalReps', regex: RX.universalReps },
+      { name: 'universalTime', regex: RX.universalTime },
+      { name: 'tableFormat', regex: RX.tableFormat },
       { name: 'setsReps1', regex: RX.setsReps1 },
       { name: 'setsReps2', regex: RX.setsReps2 },
       { name: 'setsTime', regex: RX.setsTime },
@@ -568,15 +636,27 @@ export class AdvancedWorkoutAnalyzer {
           exercise.reps = groups.reps_hi ? `${groups.reps_lo}-${groups.reps_hi}` : groups.reps_lo;
         }
         
-        // Duration
+        // Duration (supporto per formato universale)
         if (groups.dur_val && groups.dur_unit) {
-          const unit = groups.dur_unit === '"' ? 's' : groups.dur_unit;
-          exercise.duration = `${groups.dur_val}${unit}`;
+          let unit = groups.dur_unit;
+          if (unit === '"') unit = 's';
+          if (unit.includes('second')) unit = 's';
+          if (unit.includes('minute') || unit.includes('minut')) unit = 'min';
+          
+          if (groups.dur_hi) {
+            exercise.duration = `${groups.dur_val}-${groups.dur_hi}${unit}`;
+          } else {
+            exercise.duration = `${groups.dur_val}${unit}`;
+          }
         }
         
-        // Rest
+        // Rest (supporto per formato universale)
         if (groups.rest_val && groups.rest_unit) {
-          const unit = groups.rest_unit === '"' ? 's' : groups.rest_unit;
+          let unit = groups.rest_unit;
+          if (unit === '"') unit = 's';
+          if (unit.includes('second')) unit = 's';
+          if (unit.includes('minute') || unit.includes('minut')) unit = 'min';
+          // FIX: Formato pulito senza "1 x"
           exercise.rest = `${groups.rest_val}${unit}`;
         }
         

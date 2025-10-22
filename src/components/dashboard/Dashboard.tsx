@@ -11,12 +11,20 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { useFeedback15Days } from '@/hooks/useFeedback15Days';
 import { useAuth } from '@/hooks/useAuth';
+import { checkMonthlyReset } from '@/services/monthlyStatsService';
 
 export const Dashboard = () => {
   const { profile: userProfile } = useUserProfile();
   const navigate = useNavigate();
   const { user } = useAuth();
   useFeedback15Days(user?.id);
+
+  // Controlla reset mensile all'avvio
+  useEffect(() => {
+    if (user?.id) {
+      checkMonthlyReset(user.id);
+    }
+  }, [user?.id]);
 
   const userName = userProfile?.name || 'Utente';
 
@@ -34,9 +42,9 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen pb-20 pt-24 dashboard-container">
+    <div className="pb-0 pt-0 dashboard-container min-h-screen">
       <Header />
-      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 space-y-4 sm:space-y-6 pt-4 sm:pt-6">
+      <div className="container mx-auto px-2 sm:px-4 py-0 space-y-1 sm:space-y-1 pt-0">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg sm:text-2xl font-bold text-pp-gold">Ciao, {userName}!</h2>

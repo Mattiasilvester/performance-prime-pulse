@@ -1,6 +1,14 @@
 import { MessageCircle } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 export default function FeedbackWidget() {
+  const location = useLocation();
+  
+  // Nascondi il bottone nella pagina timer
+  if (location.pathname === '/timer') {
+    return null;
+  }
+
   return (
     <button
       data-tally-open="mDL24Z"

@@ -139,8 +139,8 @@ export class FileAnalyzer {
     return {
       name: exercise.name,
       sets: exercise.sets ? parseInt(exercise.sets) : 1,
-      reps: exercise.reps || exercise.duration || 'N/A',
-      rest: exercise.rest || '',
+      reps: exercise.reps ? exercise.reps.replace(/1\s*x\s*/g, '') : (exercise.duration ? exercise.duration.replace(/1\s*x\s*/g, '') : 'N/A'),
+      rest: exercise.rest ? exercise.rest.replace(/[🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄]\s*1\s*x\s*/g, '').replace(/^\s*/, '').trim().replace(/^[🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄]+\s*/, '') : '',
       notes: exercise.notes || undefined,
       confidence: 80 // Confidence fissa per ora
     };

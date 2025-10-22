@@ -2,20 +2,48 @@ import { useState, useEffect, useRef } from 'react';
 import { CheckCircle, X, Play, Pause, RotateCcw, ArrowRight, Clock, Zap, Dumbbell, Heart, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExerciseCard } from './ExerciseCard';
+import { ExerciseGifLink } from './ExerciseGifLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMedalSystem } from '@/hooks/useMedalSystem';
 import { trackWorkoutForChallenge } from '@/utils/challengeTracking';
+import { updateWorkoutStats } from '@/services/workoutStatsService';
 import { toast } from 'sonner';
 
 // Helper function per convertire stringhe tempo in numeri
-const parseTimeToSeconds = (timeStr: string): number => {
-  if (timeStr.includes('min')) {
-    return parseInt(timeStr) * 60;
-  } else if (timeStr.includes('s')) {
-    return parseInt(timeStr);
+const parseTimeToSeconds = (timeStr: string | undefined | number): number => {
+  if (typeof timeStr === 'number') {
+    return timeStr;
   }
-  return 30; // default
+  
+  if (!timeStr || typeof timeStr !== 'string') {
+    return 30; // default se undefined o non stringa
+  }
+  
+  const str = timeStr.toString().toLowerCase().trim();
+  let totalSeconds = 0;
+  
+  // Match minuti e secondi
+  const minutesMatch = str.match(/(\d+)\s*m/);
+  const secondsMatch = str.match(/(\d+)\s*s/);
+  
+  if (minutesMatch) {
+    totalSeconds += parseInt(minutesMatch[1]) * 60;
+  }
+  
+  if (secondsMatch) {
+    totalSeconds += parseInt(secondsMatch[1]);
+  }
+  
+  // Se non trova né minuti né secondi, prova a parsare come numero
+  if (totalSeconds === 0) {
+    const numberMatch = str.match(/(\d+)/);
+    if (numberMatch) {
+      totalSeconds = parseInt(numberMatch[1]);
+    }
+  }
+  
+  return totalSeconds || 30; // Default 30 secondi
 };
 
 // Helper function per convertire secondi in formato MM:SS
@@ -86,10 +114,11 @@ const workoutData = {
 interface ActiveWorkoutProps {
   workoutId: string;
   generatedWorkout?: any;
+  customWorkout?: any;
   onClose: () => void;
 }
 
-export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWorkoutProps) => {
+export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onClose }: ActiveWorkoutProps) => {
   const { user } = useAuth();
   const { recordWorkoutCompletion } = useMedalSystem();
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
@@ -111,8 +140,8 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
   // Stati per i timer di ogni esercizio
   const [exerciseTimers, setExerciseTimers] = useState<Record<number, ExerciseTimerState>>({});
   
-  // Usa l'allenamento generato se disponibile, altrimenti usa quello statico
-  const currentWorkout = generatedWorkout || workoutData[workoutId as keyof typeof workoutData];
+  // Usa l'allenamento custom se disponibile, poi generato, altrimenti quello statico
+  const currentWorkout = customWorkout || generatedWorkout || workoutData[workoutId as keyof typeof workoutData];
 
   // Funzione per suonare beep con gestione errori
   const playBeep = (frequency: number = 800, duration: number = 200) => {
@@ -210,6 +239,15 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
       setWorkoutState('completed');
       setCompletedExercises([...currentWorkout.exercises?.map((_, i) => i) || []]);
       playBeep(1000, 500); // Beep di completamento
+      
+      // Aggiorna statistiche utente
+      if (user?.id) {
+        const workoutDuration = currentWorkout.exercises?.reduce((total, exercise) => {
+          return total + parseTimeToSeconds(exercise.duration);
+        }, 0) || 0;
+        
+        updateWorkoutStats(user.id, Math.round(workoutDuration / 60)); // Converti in minuti
+      }
     }
   };
 
@@ -307,37 +345,6 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
     }
   };
 
-  // Converte stringa tempo in secondi (es: "30s" -> 30, "1m 30s" -> 90)
-  const parseTimeToSeconds = (timeStr: string | number): number => {
-    if (typeof timeStr === 'number') {
-      return timeStr;
-    }
-    
-    const str = timeStr.toString().toLowerCase().trim();
-    let totalSeconds = 0;
-    
-    // Match minuti e secondi
-    const minutesMatch = str.match(/(\d+)\s*m/);
-    const secondsMatch = str.match(/(\d+)\s*s/);
-    
-    if (minutesMatch) {
-      totalSeconds += parseInt(minutesMatch[1]) * 60;
-    }
-    
-    if (secondsMatch) {
-      totalSeconds += parseInt(secondsMatch[1]);
-    }
-    
-    // Se non trova né minuti né secondi, prova a parsare come numero
-    if (totalSeconds === 0) {
-      const numberMatch = str.match(/(\d+)/);
-      if (numberMatch) {
-        totalSeconds = parseInt(numberMatch[1]);
-      }
-    }
-    
-    return totalSeconds || 30; // Default 30 secondi
-  };
 
   // Gestione timer automatico
   useEffect(() => {
@@ -499,18 +506,38 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
     if (!user || !currentWorkout.exercises) return;
 
     try {
-      // Calcola la durata totale stimata (in minuti)
-      const totalMinutes = currentWorkout.exercises.reduce((total: number, exercise: any) => {
-        const workTime = parseInt(exercise.duration) || 30;
-        const restTime = parseInt(exercise.rest) || 10;
-        return total + (workTime + restTime) / 60;
-      }, 0);
+      // Ottieni utente corrente
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Utente non autenticato');
+        return;
+      }
+      
+      // Calcola la durata totale per allenamenti preimpostati (tempi fissi)
+      const getPresetWorkoutDuration = (workoutName: string | undefined): number => {
+        if (!workoutName || typeof workoutName !== 'string') {
+          return 30; // Default se undefined o non stringa
+        }
+        
+        const name = workoutName.toLowerCase();
+        if (name.includes('cardio')) return 20;
+        if (name.includes('forza') || name.includes('strength')) return 45;
+        if (name.includes('hiit')) return 45;
+        if (name.includes('mobilità') || name.includes('mobility')) return 15;
+        // Fallback per altri allenamenti preimpostati
+        return 30;
+      };
+      
+      const totalMinutes = getPresetWorkoutDuration(currentWorkout?.name);
 
       // Crea un record in custom_workouts per attivare il trigger
       console.log('🔍 [DEBUG] completeWorkout: Creazione record custom_workouts...');
+      // Usa title se disponibile, altrimenti name, altrimenti fallback
+      const workoutTitle = currentWorkout?.title || currentWorkout?.name || 'Allenamento da File';
+      
       console.log('📊 [DEBUG] completeWorkout: Dati da inserire:', {
             user_id: user.id,
-        title: currentWorkout.name,
+        title: workoutTitle,
         total_duration: Math.round(totalMinutes),
         completed: true
       });
@@ -519,7 +546,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
         .from('custom_workouts')
         .insert({
           user_id: user.id,
-          title: currentWorkout.name,
+          title: workoutTitle,
           workout_type: 'personalizzato',
           scheduled_date: new Date().toISOString().split('T')[0],
           exercises: currentWorkout.exercises,
@@ -538,18 +565,20 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
         return;
       }
 
-      console.log('✅ [DEBUG] completeWorkout: Record creato con successo, trigger dovrebbe attivarsi');
+      console.log('✅ [DEBUG] completeWorkout: Record creato con successo');
       
-      // Forza il refresh della dashboard con delay per permettere al trigger di attivarsi
-      console.log('🚀 [DEBUG] completeWorkout: Emetto evento workoutCompleted tra 1 secondo...');
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('workoutCompleted', {
-          detail: { workoutId: workoutRecord.id }
-        }));
-        console.log('✅ [DEBUG] completeWorkout: Evento workoutCompleted emesso');
-      }, 1000);
+      // Aggiorna metriche manualmente (il trigger DB non si attiva su INSERT)
+      const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
+      await updateWorkoutMetrics(user.id, Math.round(totalMinutes));
+      console.log('✅ [DEBUG] Metriche aggiornate manualmente');
       
-      // Il trigger si attiverà automaticamente e aggiornerà user_workout_stats
+      // Emetti evento per refresh dashboard
+      console.log('🚀 [DEBUG] completeWorkout: Emetto evento workoutCompleted');
+      window.dispatchEvent(new CustomEvent('workoutCompleted', {
+        detail: { workoutId: workoutRecord.id }
+      }));
+      console.log('✅ [DEBUG] completeWorkout: Evento workoutCompleted emesso');
+      
       toast.success('Allenamento completato! Statistiche aggiornate.');
     } catch (error) {
       console.error('Errore durante il completamento:', error);
@@ -673,7 +702,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
           </div>
 
           {/* Lista esercizi con stato */}
-          <div className="flex flex-wrap gap-2 justify-center">
+          <div className="flex flex-wrap gap-1 justify-center max-w-full overflow-x-auto px-2">
           {currentWorkout.exercises?.map((exercise: any, index: number) => {
               const isCompleted = index < currentExerciseIndex;
               const isCurrent = index === currentExerciseIndex;
@@ -681,13 +710,14 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
             return (
                 <div
                   key={exercise.name}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200 ${
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200 flex-shrink-0 ${
                     isCompleted 
                       ? 'bg-green-500 text-white' 
                       : isCurrent 
                       ? 'bg-pp-gold text-black' 
                       : 'bg-gray-600 text-gray-400'
                   }`}
+                  title={`${index + 1}. ${exercise.name}`}
                 >
                   {isCompleted ? '✓' : index + 1}
                 </div>
@@ -701,9 +731,15 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
           <div className="text-center space-y-12 w-full max-w-md mx-auto">
             {/* Nome esercizio */}
             <div className="space-y-4">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-pp-gold leading-tight">
-                {currentExercise?.name || 'Esercizio'}
-              </h2>
+              <div className="flex flex-col items-center gap-4">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-pp-gold leading-tight text-center px-4">
+                  {currentExercise?.name || 'Esercizio'}
+                </h2>
+                <ExerciseGifLink 
+                  exerciseName={currentExercise?.name || 'Esercizio'}
+                  buttonClassName="bg-pp-gold hover:bg-pp-gold/80 text-black px-4 py-2 rounded-lg font-semibold transition-colors duration-200 flex items-center"
+                />
+              </div>
               <p className="text-lg sm:text-xl md:text-2xl text-pp-gold/80 leading-relaxed">
                 {currentExercise?.instructions || 'Esegui l\'esercizio'}
               </p>
@@ -827,9 +863,9 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
     // Nasconde header e footer quando completato - SCRIPT AGGGRESSIVO
     useEffect(() => {
       const hideElements = () => {
-        const header = document.querySelector('header');
-        const footer = document.querySelector('.bottom-navigation');
-        const feedback = document.querySelector('.feedback-widget');
+        const header = document.querySelector('header') as HTMLElement | null;
+        const footer = document.querySelector('.bottom-navigation') as HTMLElement | null;
+        const feedback = document.querySelector('.feedback-widget') as HTMLElement | null;
         
         if (header) {
           header.style.display = 'none !important';
@@ -859,9 +895,9 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, onClose }: ActiveWo
       
       return () => {
         clearInterval(interval);
-        const header = document.querySelector('header');
-        const footer = document.querySelector('.bottom-navigation');
-        const feedback = document.querySelector('.feedback-widget');
+        const header = document.querySelector('header') as HTMLElement | null;
+        const footer = document.querySelector('.bottom-navigation') as HTMLElement | null;
+        const feedback = document.querySelector('.feedback-widget') as HTMLElement | null;
         
         if (header) {
           header.style.display = '';

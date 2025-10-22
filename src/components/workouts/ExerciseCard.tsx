@@ -19,6 +19,8 @@ interface ExerciseCardProps {
     name: string;
     duration: string;
     rest: string;
+    sets?: string;
+    reps?: string;
     completed?: boolean;
   };
   onStart: () => void;
@@ -30,6 +32,10 @@ interface ExerciseCardProps {
 
 export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted, index, timer }: ExerciseCardProps) => {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const [showTimer, setShowTimer] = useState(false);
+  const [timerTime, setTimerTime] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
     // Fix per viewport height su mobile
@@ -50,8 +56,179 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
     };
   }, []);
 
+  // Funzioni per i suoni
+  const playSound = (type: 'start' | 'pause' | 'finish' | 'tick') => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      switch (type) {
+        case 'start':
+          oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + 0.2);
+          break;
+        case 'pause':
+          oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + 0.3);
+          break;
+        case 'finish':
+          oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+          gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + 0.5);
+          break;
+        case 'tick':
+          oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + 0.1);
+          break;
+      }
+    } catch (error) {
+      console.log('Audio non supportato');
+    }
+  };
+
+  // Funzione per convertire tempo di riposo in secondi
+  const parseRestTime = (restStr: string): number => {
+    console.log('🕐 [DEBUG] Parsing rest time:', restStr);
+    
+    if (!restStr || restStr.trim() === '') {
+      return 30; // default 30 secondi
+    }
+    
+    let totalSeconds = 0;
+    
+    // Gestisce formati come "1m,30sec", "2min 15sec", "1m 30sec"
+    if (restStr.includes(',') || (restStr.includes('m') && restStr.includes('sec'))) {
+      // Sostituisce virgole con spazi per parsing uniforme
+      const normalizedStr = restStr.replace(/,/g, ' ').toLowerCase();
+      
+      // Estrae minuti (m o min)
+      const minutesMatch = normalizedStr.match(/(\d+)\s*(m|min)/);
+      if (minutesMatch) {
+        totalSeconds += parseInt(minutesMatch[1]) * 60;
+      }
+      
+      // Estrae secondi (sec)
+      const secondsMatch = normalizedStr.match(/(\d+)\s*sec/);
+      if (secondsMatch) {
+        totalSeconds += parseInt(secondsMatch[1]);
+      }
+      
+      if (totalSeconds > 0) {
+        console.log('✅ [DEBUG] Parsed complex format:', restStr, '→', totalSeconds, 'seconds');
+        return totalSeconds;
+      }
+    }
+    
+    // Gestisce formati semplici come "1m", "30sec", "2min"
+    if (restStr.includes('min') || restStr.includes('m')) {
+      const match = restStr.match(/(\d+)/);
+      if (match) {
+        const seconds = parseInt(match[1]) * 60;
+        console.log('✅ [DEBUG] Parsed minutes:', restStr, '→', seconds, 'seconds');
+        return seconds;
+      }
+    } else if (restStr.includes('sec')) {
+      const match = restStr.match(/(\d+)/);
+      if (match) {
+        const seconds = parseInt(match[1]);
+        console.log('✅ [DEBUG] Parsed seconds:', restStr, '→', seconds, 'seconds');
+        return seconds;
+      }
+    } else if (restStr.includes('s')) {
+      const match = restStr.match(/(\d+)/);
+      if (match) {
+        const seconds = parseInt(match[1]);
+        console.log('✅ [DEBUG] Parsed seconds (s):', restStr, '→', seconds, 'seconds');
+        return seconds;
+      }
+    }
+    
+    // Fallback: prova a estrarre solo numeri
+    const numberMatch = restStr.match(/(\d+)/);
+    if (numberMatch) {
+      const seconds = parseInt(numberMatch[1]);
+      console.log('⚠️ [DEBUG] Fallback parsing:', restStr, '→', seconds, 'seconds');
+      return seconds;
+    }
+    
+    console.log('❌ [DEBUG] Failed to parse:', restStr, '→ using default 30 seconds');
+    return 30; // default 30 secondi
+  };
+
+  // Funzione per formattare il tempo in MM:SS
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Gestione del timer
+  const startTimer = () => {
+    if (isTimerRunning) {
+      // Pausa timer
+      setIsTimerRunning(false);
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        setTimerInterval(null);
+      }
+      playSound('pause');
+    } else {
+      // Avvia timer
+      setIsTimerRunning(true);
+      playSound('start');
+      
+      const interval = setInterval(() => {
+        setTimerTime(prev => {
+          if (prev <= 1) {
+            setIsTimerRunning(false);
+            clearInterval(interval);
+            setTimerInterval(null);
+            playSound('finish');
+            // Reset al tempo di riposo originale
+            const restSeconds = parseRestTime(exercise.rest);
+            setTimerTime(restSeconds);
+            return restSeconds;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      setTimerInterval(interval);
+    }
+  };
+
+  const resetTimer = () => {
+    setIsTimerRunning(false);
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+    const restSeconds = parseRestTime(exercise.rest);
+    setTimerTime(restSeconds);
+  };
+
+  // Cleanup del timer quando il componente viene smontato
+  useEffect(() => {
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    };
+  }, [timerInterval]);
+
   // Fix per il click che non funziona
-  const handleStartClick = (e: React.MouseEvent) => {
+  const handleStartClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -60,7 +237,12 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
       navigator.vibrate(50);
     }
     
-    // Log per debug
+    // Mostra il timer e imposta il tempo di riposo
+    if (!showTimer) {
+      const restSeconds = parseRestTime(exercise.rest);
+      setTimerTime(restSeconds);
+      setShowTimer(true);
+    }
     
     // Chiama la funzione solo se definita
     if (typeof onStart === 'function') {
@@ -70,7 +252,7 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
     }
   };
   
-  const handleCompleteClick = (e: React.MouseEvent) => {
+  const handleCompleteClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -96,13 +278,21 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
                 <h4 className="font-bold text-white text-lg leading-tight truncate">
                   {exercise.name}
                 </h4>
-                <ExerciseGifLink exerciseName={exercise.name} />
+                <div className="flex items-center self-center">
+                  <ExerciseGifLink exerciseName={exercise.name} />
+                </div>
               </div>
+              {/* Mostra Serie e Ripetizioni se disponibili */}
+              {exercise.sets && exercise.reps && (
+                <p className="text-sm text-white/70 truncate mt-2 mb-2">
+                  {exercise.sets} serie x {exercise.reps} rip
+                </p>
+              )}
               <p className="text-sm text-white/70 truncate mb-2">
                 {exercise.duration}
               </p>
               <p className="text-sm text-white/70 truncate">
-                Riposo: {exercise.rest}
+                Riposo: {exercise.rest ? exercise.rest.replace(/1 x /g, '') : 'N/A'} tra le serie
               </p>
             </div>
           </div>
@@ -135,6 +325,44 @@ export const ExerciseCard = ({ exercise, onStart, onToggleComplete, isCompleted,
           </div>
         </div>
       </CardContent>
+      
+      {/* Timer per il riposo */}
+      {showTimer && (
+        <div className="bg-gray-800 border-t border-[#EEBA2B] p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">
+                  {formatTime(timerTime)}
+                </div>
+                <div className="text-xs text-gray-400">Riposo</div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={startTimer}
+                size="sm"
+                className={`min-h-[36px] px-3 py-2 text-sm font-semibold ${
+                  isTimerRunning 
+                    ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
+              >
+                {isTimerRunning ? '⏸️ PAUSA' : '▶️ AVVIA'}
+              </Button>
+              
+              <Button
+                onClick={resetTimer}
+                size="sm"
+                className="min-h-[36px] px-3 py-2 text-sm font-semibold bg-gray-600 hover:bg-gray-700 text-white"
+              >
+                🔄 RESET
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };

@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { AdminStats } from '@/types/admin.types';
 
 interface AdminStatsCardsProps {
-  stats?: {
-    totalUsers: number;
-    activeUsers: number;
-    inactiveUsers: number;
-    totalWorkouts: number;
-    totalPT: number;
-    weeklyGrowth: number;
-    activationD0Rate: number;
-    retentionD7: number;
-  };
+  stats?: AdminStats;
   loading?: boolean;
 }
 
 export default function AdminStatsCards({ stats: propsStats, loading: propsLoading }: AdminStatsCardsProps) {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
+    payingUsers: 0,
+    activeToday: 0,
+    revenue: 0,
+    churnRate: 0,
+    conversionRate: 0,
     activeUsers: 0,
     inactiveUsers: 0,
     totalWorkouts: 0,
@@ -52,7 +49,7 @@ export default function AdminStatsCards({ stats: propsStats, loading: propsLoadi
       console.log('🎉 NUOVO UTENTE!', stats.totalUsers);
       
       // Highlight temporaneo della card obiettivo
-      const card = document.querySelector('[data-card="objective"]');
+      const card = document.querySelector('[data-card="objective"]') as HTMLElement | null;
       if (card) {
         card.style.boxShadow = '0 0 20px #00ff00';
         card.style.transform = 'scale(1.05)';

@@ -9,7 +9,7 @@ const categories = [
     id: 'cardio',
     name: 'Cardio',
     description: 'Brucia calorie e migliora la resistenza',
-    duration: '20-45 min',
+    duration: '60 min',
     icon: Heart,
     iconBgColor: 'bg-[#004AAD]',
     iconColor: '#38B6FF',
@@ -19,7 +19,7 @@ const categories = [
     id: 'strength',
     name: 'Forza',
     description: 'Costruisci massa muscolare',
-    duration: '30-60 min',
+    duration: '60 min',
     icon: Dumbbell,
     iconBgColor: 'bg-[#EF4136]',
     iconColor: '#BC1823',
@@ -29,7 +29,7 @@ const categories = [
     id: 'hiit',
     name: 'HIIT',
     description: 'Allenamento ad alta intensità',
-    duration: '15-30 min',
+    duration: '60 min',
     icon: Zap,
     iconBgColor: 'bg-[#FF5757]',
     iconColor: '#FFD400',
@@ -84,24 +84,25 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
 
   // Funzione per avviare allenamento FORZA con filtri
   const handleStartFilteredStrengthWorkout = () => {
-    const workout = generateFilteredStrengthWorkout(muscleGroupFilter, equipmentFilter, 45, userLevel as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO');
-    onStartWorkout('strength', 45, workout);
+    const workout = generateFilteredStrengthWorkout(muscleGroupFilter, equipmentFilter, 60, userLevel as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO');
+    onStartWorkout('strength', 60, workout);
     // Reset filtri dopo l'avvio
     setShowFilters(prev => ({ ...prev, strength: false }));
   };
 
   // Funzione per avviare allenamento HIIT con filtri
   const handleStartFilteredHIITWorkout = () => {
-    const workout = generateFilteredHIITWorkout(durationFilter, levelFilter, 45, userLevel as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO');
-    onStartWorkout('hiit', 45, workout);
+    const workout = generateFilteredHIITWorkout(durationFilter, levelFilter, 60, userLevel as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO');
+    onStartWorkout('hiit', 60, workout);
     // Reset filtri dopo l'avvio
     setShowFilters(prev => ({ ...prev, hiit: false }));
   };
 
   // Funzione per avviare allenamento CARDIO con filtri
   const handleStartCardioWorkout = (level: string, quick: boolean) => {
-    const duration = quick ? 10 : 20;
-    onStartWorkout('cardio', duration, undefined, level, quick);
+    const duration = quick ? 10 : 60;
+    const workout = generateWorkout('cardio', duration, {}, level as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO', quick);
+    onStartWorkout('cardio', duration, workout);
     setShowFilters({});
   };
 
@@ -112,7 +113,8 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
     const isQuickMode = quick !== undefined ? quick : false;
     const duration = isQuickMode ? 10 : 15;
     
-    onStartWorkout('mobility', duration, undefined, selectedLevel, isQuickMode);
+    const workout = generateWorkout('mobility', duration, {}, selectedLevel as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO', isQuickMode);
+    onStartWorkout('mobility', duration, workout);
     setShowFilters({});
   };
   return (

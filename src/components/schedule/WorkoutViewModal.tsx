@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +24,7 @@ const workoutTypes = [
 export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }: WorkoutViewModalProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (!isOpen || !workout) return null;
 
@@ -34,15 +36,26 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
   };
 
   const handleDeleteWorkout = async () => {
+    if (isDeleting) return; // Previeni doppi click
+    
+    setIsDeleting(true);
     try {
-      const { error } = await supabase
+      console.log('🗑️ [DEBUG] Tentativo eliminazione allenamento:', workout.id);
+      
+      const { data, error } = await supabase
         .from('custom_workouts')
         .delete()
-        .eq('id', workout.id);
+        .eq('id', workout.id)
+        .select();
+
+      console.log('🗑️ [DEBUG] Risultato eliminazione:', { data, error });
 
       if (error) {
+        console.error('❌ [DEBUG] Errore eliminazione:', error);
         throw error;
       }
+
+      console.log('✅ [DEBUG] Allenamento eliminato con successo');
 
       toast({
         title: "Allenamento eliminato",
@@ -50,16 +63,21 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
       });
 
       onClose();
+      // Delay callback per evitare race conditions
       if (onWorkoutDeleted) {
-        onWorkoutDeleted();
+        setTimeout(() => {
+          onWorkoutDeleted();
+        }, 100);
       }
     } catch (error) {
-      console.error('Error deleting workout:', error);
+      console.error('❌ [DEBUG] Error deleting workout:', error);
       toast({
         title: "Errore",
         description: "Si è verificato un errore durante l'eliminazione dell'allenamento.",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -83,11 +101,6 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
             >
               {workoutTypeInfo?.name || workout.workout_type}
             </span>
-            {workout.total_duration && (
-              <span className="text-white/70 text-sm">
-                {workout.total_duration} min
-              </span>
-            )}
           </div>
         </div>
 
@@ -119,13 +132,14 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
 
         {/* Bottoni */}
         <div className="flex space-x-3">
-          <Button
-            onClick={handleDeleteWorkout}
-            className="flex-1 bg-red-600 hover:bg-red-700 text-black font-medium"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Elimina
-          </Button>
+            <Button
+              onClick={handleDeleteWorkout}
+              disabled={isDeleting}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-black font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {isDeleting ? 'Eliminando...' : 'Elimina'}
+            </Button>
           <Button
             onClick={handleStartWorkout}
             className="flex-1 bg-[#c89116] hover:bg-[#c89116]/80 text-black font-medium"

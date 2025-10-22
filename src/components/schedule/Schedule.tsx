@@ -24,6 +24,7 @@ export const Schedule = () => {
 
   const handleWorkoutSaved = () => {
     setSelectedDate(null);
+    // Rate limiting per evitare aggiornamenti troppo frequenti
     setRefreshTrigger(prev => prev + 1);
   };
 
