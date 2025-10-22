@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import { Play, Pause, RotateCcw, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -9,9 +9,10 @@ interface WorkoutTimerProps {
   onTimerComplete?: () => void;
   autoStartTime?: { hours: number; minutes: number; seconds: number };
   autoStartRest?: { hours: number; minutes: number; seconds: number };
+  onBack?: () => void;
 }
 
-export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, autoStartRest }: WorkoutTimerProps) => {
+export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, autoStartRest, onBack }: WorkoutTimerProps) => {
   const { t } = useTranslation();
   
   const [time, setTime] = useState(0);
@@ -140,29 +141,28 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
   };
 
   return (
-    <div className="w-full rounded-2xl p-8 shadow-sm border-2 border-[#EEBA2B]" style={{
-      background: 'radial-gradient(circle at 50% 50%, #000000, #bf8b16)'
-    }}>
+    <div className="w-full min-h-[80vh] flex flex-col justify-between relative">
+      {/* Bottone Indietro - IN ALTO */}
+      <div className="w-full pt-8">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="text-white hover:bg-white/10 bg-transparent border-none ml-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t('common.back')}
+        </Button>
+      </div>
+
+      {/* Numeri del timer - AL CENTRO */}
       <div className="text-center w-full">
-        <div className="mb-6">
-          <div className="text-5xl lg:text-6xl font-mono font-bold mb-4 text-white">
-            {formatTime(time)}
-          </div>
-          <p className="text-white/80 text-lg">
-            {isRestPhase ? t('timer.restTime') : t('timer.workoutTime')}
-          </p>
+        <div className="text-7xl lg:text-8xl font-mono font-bold text-white">
+          {formatTime(time)}
         </div>
         
-        {/* Layout: Start | ore | min | sec | Reset on single horizontal row */}
-        <div className="flex items-center justify-center gap-2 md:gap-4 flex-nowrap">
-          <Button
-            onClick={toggleTimer}
-            size="lg"
-            className="bg-green-500 hover:bg-green-600 h-12 w-16 text-black flex-shrink-0"
-          >
-            {isRunning ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
-          </Button>
-          
+        {/* Tre caselle ore, min, sec - SOTTO I NUMERI */}
+        <div className="flex items-center justify-center gap-2 md:gap-4 flex-nowrap mt-4">
           <input
             type="text"
             value={inputHours}
@@ -186,15 +186,40 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             placeholder={t('timer.seconds') || 'sec'}
             className="w-12 md:w-16 h-12 text-center border border-gray-300 rounded px-1 md:px-2 bg-white text-black font-medium text-base md:text-base flex-shrink-0"
           />
-          
-          <Button 
-            onClick={resetTimer} 
-            size="lg"
-            className="bg-[#EEBA2B] hover:bg-[#d4a61a] h-12 w-16 text-black flex-shrink-0"
-          >
-            <RotateCcw className="h-6 w-6" />
-          </Button>
         </div>
+      </div>
+
+      {/* Contenitore dorato PICCOLO solo per i bottoni */}
+      <div className="w-auto max-w-md mx-auto rounded-2xl p-4 shadow-sm border-2 border-[#EEBA2B] flex flex-col justify-center" style={{
+        background: 'radial-gradient(circle at 50% 50%, #000000, #bf8b16)'
+      }}>
+        <div className="text-center w-full">
+          {/* Layout: Play e Reset */}
+          <div className="flex items-center justify-center gap-6 flex-nowrap">
+            <Button
+              onClick={toggleTimer}
+              size="lg"
+              className="bg-green-500 hover:bg-green-600 h-16 w-20 text-black flex-shrink-0"
+            >
+              {isRunning ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
+            </Button>
+            
+            <Button 
+              onClick={resetTimer} 
+              size="lg"
+              className="bg-[#EEBA2B] hover:bg-[#d4a61a] h-16 w-20 text-black flex-shrink-0"
+            >
+              <RotateCcw className="h-8 w-8" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Frase motivazionale - IN BASSO */}
+      <div className="text-center w-full">
+        <p className="text-[#EEBA2B] text-lg font-medium italic">
+          "Supera i tuoi limiti, un secondo alla volta."
+        </p>
       </div>
     </div>
   );
