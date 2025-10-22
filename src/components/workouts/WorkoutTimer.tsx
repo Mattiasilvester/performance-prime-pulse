@@ -140,7 +140,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-center space-y-6 py-6">
+    <div className="w-full min-h-[80vh] flex flex-col items-center justify-center space-y-20">
       {/* Numeri del timer - AL CENTRO */}
       <div className="text-center w-full">
         <div className="text-7xl lg:text-8xl font-mono font-bold text-white">
