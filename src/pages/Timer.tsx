@@ -34,11 +34,6 @@ const Timer = () => {
             <div className="w-full">
               <WorkoutTimer />
             </div>
-            <div className="mt-8 text-center">
-              <p className="text-[#EEBA2B] text-lg font-medium italic">
-                "{t('timer.motivationalQuote')}"
-              </p>
-            </div>
           </div>
         </div>
       </div>

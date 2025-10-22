@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -68,9 +68,21 @@ const AICoachWrapper = ({ session }: { session: any }) => {
         </Suspense>
       </div>
       {!isFullscreen && <BottomNavigation />}
-      <FeedbackWidget />
+      <ConditionalFeedbackWidget />
     </ProtectedRoute>
   );
+};
+
+// Componente wrapper per FeedbackWidget che nasconde il feedback nella pagina timer
+const ConditionalFeedbackWidget = () => {
+  const location = useLocation();
+  const isTimerPage = location.pathname === '/timer';
+  
+  if (isTimerPage) {
+    return null;
+  }
+  
+  return <FeedbackWidget />;
 };
 
 function App() {
@@ -141,7 +153,7 @@ function App() {
                       </Suspense>
                     </div>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/workouts" element={
@@ -153,7 +165,7 @@ function App() {
                       </Suspense>
                     </div>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/workout/quick" element={
@@ -170,7 +182,7 @@ function App() {
                       <Timer />
                     </Suspense>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/schedule" element={
@@ -182,7 +194,7 @@ function App() {
                       </Suspense>
                     </div>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/ai-coach" element={<AICoachWrapper session={session} />} />
@@ -193,7 +205,7 @@ function App() {
                       <Subscriptions />
                     </Suspense>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/profile" element={
@@ -205,7 +217,7 @@ function App() {
                       </Suspense>
                     </div>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/settings/personal-info" element={
@@ -215,7 +227,7 @@ function App() {
                       <PersonalInfo />
                     </Suspense>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/settings/security" element={
@@ -225,7 +237,7 @@ function App() {
                       <Security />
                     </Suspense>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/settings/notifications" element={
@@ -235,7 +247,7 @@ function App() {
                       <Notifications />
                     </Suspense>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/settings/language" element={
@@ -245,7 +257,7 @@ function App() {
                       <Language />
                     </Suspense>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/settings/privacy" element={
@@ -255,7 +267,7 @@ function App() {
                       <Privacy />
                     </Suspense>
                     <BottomNavigation />
-                    <FeedbackWidget />
+                    <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
                 <Route path="/settings/help" element={
