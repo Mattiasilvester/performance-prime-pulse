@@ -486,6 +486,14 @@ const QuickWorkout = () => {
       } else {
         console.log('✅ [DEBUG] QuickWorkout: Record creato con successo');
         
+        // Aggiorna metriche manualmente (il trigger DB non si attiva su INSERT)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
+          await updateWorkoutMetrics(user.id, 10); // 10 minuti
+          console.log('✅ [DEBUG] Metriche aggiornate manualmente');
+        }
+        
         // Emetti evento per aggiornare dashboard
         console.log('🚀 [DEBUG] QuickWorkout: Emetto evento workoutCompleted');
         window.dispatchEvent(new CustomEvent('workoutCompleted', {

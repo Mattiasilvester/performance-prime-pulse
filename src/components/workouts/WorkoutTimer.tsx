@@ -140,7 +140,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
   };
 
   return (
-    <div className="w-full min-h-[80vh] flex flex-col justify-between relative">
+    <div className="w-full flex flex-col items-center justify-center space-y-6 py-6">
       {/* Numeri del timer - AL CENTRO */}
       <div className="text-center w-full">
         <div className="text-7xl lg:text-8xl font-mono font-bold text-white">
@@ -176,7 +176,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
       </div>
 
       {/* Contenitore dorato PICCOLO solo per i bottoni */}
-      <div className="w-auto max-w-md mx-auto rounded-2xl p-4 shadow-sm border-2 border-[#EEBA2B] flex flex-col justify-center" style={{
+      <div className="w-auto max-w-md mx-auto rounded-2xl p-4 shadow-sm border-2 border-[#EEBA2B] flex flex-col justify-center mt-8" style={{
         background: 'radial-gradient(circle at 50% 50%, #000000, #bf8b16)'
       }}>
         <div className="text-center w-full">
@@ -202,7 +202,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
       </div>
 
       {/* Frase motivazionale - IN BASSO */}
-      <div className="text-center w-full">
+      <div className="text-center w-full mt-4">
         <p className="text-[#EEBA2B] text-lg font-medium italic">
           "Supera i tuoi limiti, un secondo alla volta."
         </p>

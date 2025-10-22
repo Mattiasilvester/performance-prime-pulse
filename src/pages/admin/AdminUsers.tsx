@@ -60,12 +60,12 @@ export default function AdminUsers() {
             
             // Verifica se ha fatto azioni recenti (login, attività) negli ultimi 5 min
             const isActiveNow = profile.last_login && 
-              new Date(profile.last_login) > fiveMinutesAgo;
+              new Date(profile.last_login as string) > fiveMinutesAgo;
 
             // Calcola tempo dall'ultimo accesso
-            const lastLoginTime = profile.last_login ? new Date(profile.last_login) : null;
+            const lastLoginTime = profile.last_login ? new Date(profile.last_login as string) : null;
             const minutesSinceLogin = lastLoginTime ? 
-              Math.floor((new Date() - lastLoginTime) / (1000 * 60)) : null;
+              Math.floor((new Date().getTime() - lastLoginTime.getTime()) / (1000 * 60)) : null;
 
             console.log(`👤 ${profile.email}: Last login: ${profile.last_login}, Online ORA: ${isActiveNow}, Minuti fa: ${minutesSinceLogin}`);
 
@@ -81,15 +81,14 @@ export default function AdminUsers() {
               last_login: profile.last_login,
               total_workouts: userWorkouts || 0,
               total_minutes: 0,
-              user_workouts: userWorkouts || 0, // Workout totali
-              is_active_user: isActiveNow, // Solo se online negli ultimi 5 min
-              is_active: profile.is_active !== false,
+              user_workouts: userWorkouts || 0,
               last_workout_date: lastWorkout?.created_at,
               minutes_since_login: minutesSinceLogin,
               last_login_formatted: lastLoginTime ? 
                 lastLoginTime.toLocaleString('it-IT') : 'Mai',
-              ...profile
-            };
+              is_active: (profile.status || 'active') === 'active',
+              is_active_user: isActiveNow
+            } as AdminUser;
           } catch (enrichError) {
             console.log('Enrich error for user:', profile.id, enrichError);
             return {
@@ -104,12 +103,9 @@ export default function AdminUsers() {
               last_login: profile.last_login,
               total_workouts: 0,
               total_minutes: 0,
-              user_workouts: 0,
-              last_workout_date: null,
               is_active_user: false,
-              is_active: profile.is_active !== false,
-              ...profile
-            };
+              is_active: (profile.status || 'active') === 'active'
+            } as AdminUser;
           }
         })
       );

@@ -28,7 +28,12 @@ export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrig
   const emptyDays = Array.from({ length: firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1 }, (_, i) => null);
 
   useEffect(() => {
-    loadWorkouts();
+    // Debounce loading per evitare chiamate multiple
+    const timeoutId = setTimeout(() => {
+      loadWorkouts();
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, [currentDate, refreshTrigger]);
 
   const loadWorkouts = async () => {

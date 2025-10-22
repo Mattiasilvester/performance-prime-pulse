@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { CheckCircle, X } from 'lucide-react';
+import { CheckCircle, X, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExerciseCard } from './ExerciseCard';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +15,9 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [startTime] = useState(Date.now());
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const [workoutStartTime, setWorkoutStartTime] = useState<number | null>(null);
+  const [currentWorkoutTime, setCurrentWorkoutTime] = useState(0);
+  const [isWorkoutTimerRunning, setIsWorkoutTimerRunning] = useState(false);
   
   const exercises = workout.exercises || [];
   
@@ -36,31 +39,82 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
       window.removeEventListener('orientationchange', handleResize);
     };
   }, []);
+
+  // Timer per l'allenamento totale
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (isWorkoutTimerRunning && workoutStartTime) {
+      interval = setInterval(() => {
+        setCurrentWorkoutTime(Math.floor((Date.now() - workoutStartTime) / 1000));
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isWorkoutTimerRunning, workoutStartTime]);
+
+  // Funzione per avviare il timer dell'allenamento
+  const startWorkoutTimer = () => {
+    if (!isWorkoutTimerRunning) {
+      setWorkoutStartTime(Date.now());
+      setIsWorkoutTimerRunning(true);
+      console.log('🏃‍♂️ [DEBUG] Timer allenamento avviato');
+    }
+  };
+
+  // Funzione per fermare il timer dell'allenamento
+  const stopWorkoutTimer = () => {
+    setIsWorkoutTimerRunning(false);
+    console.log('🏁 [DEBUG] Timer allenamento fermato');
+  };
+
+  // Funzione per formattare il tempo in MM:SS
+  const formatWorkoutTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
   
   const completeExercise = (index: number) => {
     setCompletedExercises([...completedExercises, index]);
     if (index < exercises.length - 1) {
       setCurrentExercise(index + 1);
+    } else {
+      // Ultimo esercizio completato - ferma il timer
+      stopWorkoutTimer();
     }
   };
 
   const isCompleted = (index: number) => completedExercises.includes(index);
 
   const handleCompleteWorkout = async () => {
-    const endTime = Date.now();
-    const durationMinutes = Math.round((endTime - startTime) / 60000);
-
     try {
+      // Usa il tempo reale del timer invece del calcolo basato su startTime
       const { error } = await supabase
         .from('custom_workouts')
         .update({
           completed: true,
           completed_at: new Date().toISOString(),
-          total_duration: durationMinutes
+          total_duration: Math.round(currentWorkoutTime / 60) // Converti secondi in minuti per il database
         })
         .eq('id', workout.id);
 
       if (error) throw error;
+
+        // Aggiorna le metriche con il tempo reale del timer (convertito in minuti)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
+          const minutes = Math.round(currentWorkoutTime / 60); // Converti secondi in minuti
+          await updateWorkoutMetrics(user.id, minutes);
+          console.log('✅ [DEBUG] Metriche aggiornate con tempo reale:', currentWorkoutTime, 'secondi =', minutes, 'minuti');
+        
+        // Notifica il grafico settimanale per aggiornarsi
+        window.dispatchEvent(new CustomEvent('workoutCompleted'));
+        console.log('📊 [DEBUG] Evento workoutCompleted inviato per aggiornare grafico');
+      }
       
       onClose();
     } catch (error) {
@@ -161,7 +215,10 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
                 isCompleted={isCompleted(index)}
                 onToggleComplete={completeExercise}
                 onStart={() => {
-                  // Logica per avviare esercizio se necessario
+                  // Avvia il timer dell'allenamento al primo esercizio
+                  if (index === 0) {
+                    startWorkoutTimer();
+                  }
                 }}
               />
             </div>
@@ -170,6 +227,25 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
             <p className="text-white animate-fade-in text-center py-8">NESSUN ESERCIZIO DISPONIBILE</p>
           )}
         </div>
+
+        {/* Timer Allenamento Totale */}
+        {exercises.length > 0 && (
+          <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-4 text-center animate-fade-in">
+            <div className="flex items-center justify-center space-x-3">
+              <Clock className="h-5 w-5 text-pp-gold" />
+              <span className="text-white font-medium">Tempo allenamento:</span>
+              <span className="text-pp-gold font-bold text-xl">
+                {formatWorkoutTime(currentWorkoutTime)}
+              </span>
+            </div>
+            {isWorkoutTimerRunning && (
+              <p className="text-green-400 text-sm mt-1">Timer attivo</p>
+            )}
+            {!isWorkoutTimerRunning && currentWorkoutTime > 0 && (
+              <p className="text-gray-400 text-sm mt-1">Allenamento completato</p>
+            )}
+          </div>
+        )}
 
         {completedExercises.length === exercises.length && exercises.length > 0 && (
           <div className="action-buttons-container bg-green-500/20 border border-green-500/50 rounded-lg p-4 text-center animate-scale-in">

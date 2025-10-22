@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useFileAccess } from '@/hooks/useFileAccess';
 import { FileAnalyzer, FileAnalysisResult, ExtractedExercise } from '../../services/fileAnalysis';
 import { FileAnalysisResults } from './FileAnalysisResults';
+// import { updateWorkoutMetrics } from '@/services/updateWorkoutMetrics'; // Rimosso - metriche si aggiornano solo al completamento
 
 interface Exercise {
   name: string;
@@ -37,7 +38,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
   const [exercises, setExercises] = useState<Exercise[]>([
     { name: '', sets: '', reps: '', rest: '' }
   ]);
-  const [duration, setDuration] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [creationMethod, setCreationMethod] = useState<'manual' | 'file' | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -52,7 +52,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
       setSelectedType('');
       setCustomTitle('');
       setExercises([{ name: '', sets: '', reps: '', rest: '' }]);
-      setDuration('');
       setCreationMethod(null);
       setUploadedFile(null);
       setFileAnalysis(null);
@@ -122,14 +121,13 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
     // Converti gli esercizi estratti nel formato del modal
     const convertedExercises = exercises.map(ex => ({
       name: ex.name,
-      sets: ex.sets || '3',
+      sets: String(ex.sets || '3'),
       reps: ex.reps || '10',
       rest: ex.rest || '2 min'
     }));
 
     setExercises(convertedExercises);
     if (title) setCustomTitle(title);
-    if (duration) setDuration(duration);
     
     // Passa al metodo manuale per permettere modifiche
     setCreationMethod('manual');
@@ -166,9 +164,9 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         workoutType = selectedType;
         exercisesData = exercises.filter(ex => ex.name.trim() !== '');
       } else if (creationMethod === 'file') {
-        workoutTitle = uploadedFile?.name.split('.')[0] || 'Allenamento da File';
+        workoutTitle = fileAnalysis?.workoutTitle || uploadedFile?.name.split('.')[0] || 'Allenamento da File';
         workoutType = 'personalizzato';
-        exercisesData = []; // Nessun esercizio per file
+        exercisesData = fileAnalysis?.exercises || []; // Usa gli esercizi estratti dal file
       }
 
       const { data, error } = await supabase
@@ -179,7 +177,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           workout_type: workoutType,
           scheduled_date: selectedDate.toISOString().split('T')[0],
           exercises: exercisesData as any,
-          total_duration: duration ? parseInt(duration) : null,
         })
         .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .single();
@@ -192,26 +189,35 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `workout-attachments/${data.id}/${fileName}`;
 
-        // Upload file
-        const { error: uploadError } = await supabase.storage
-          .from('workout-files')
-          .upload(filePath, uploadedFile);
+        // Upload file (con gestione errori per non bloccare il workout)
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('workout-files')
+            .upload(filePath, uploadedFile);
 
-        if (!uploadError) {
-          // Salva record allegato
-          await supabase
-            .from('workout_attachments')
-            .insert({
-              workout_id: data.id,
-              user_id: user.id,
-              file_name: uploadedFile.name,
-              file_path: filePath,
-              file_size: uploadedFile.size,
-              file_type: uploadedFile.type,
-              mime_type: uploadedFile.type,
-            });
+          if (!uploadError) {
+            // Salva record allegato
+            await supabase
+              .from('workout_attachments')
+              .insert({
+                workout_id: data.id,
+                user_id: user.id,
+                file_name: uploadedFile.name,
+                file_path: filePath,
+                file_size: uploadedFile.size,
+                file_type: uploadedFile.type,
+                mime_type: uploadedFile.type,
+              });
+          } else {
+            console.log('ℹ️ [DEBUG] Upload file saltato (bucket non configurato):', uploadError.message);
+          }
+        } catch (uploadErr) {
+          console.log('ℹ️ [DEBUG] Upload file saltato (errore non critico):', uploadErr);
         }
       }
+
+      // NON aggiornare metriche qui - si aggiornano solo quando si COMPLETA un workout
+      console.log('✅ [DEBUG] Allenamento creato - metriche si aggiorneranno al completamento');
 
       onClose();
       if (onWorkoutCreated) {
@@ -242,9 +248,9 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         workoutType = selectedType;
         exercisesData = exercises.filter(ex => ex.name.trim() !== '');
       } else if (creationMethod === 'file') {
-        workoutTitle = uploadedFile?.name.split('.')[0] || 'Allenamento da File';
+        workoutTitle = fileAnalysis?.workoutTitle || uploadedFile?.name.split('.')[0] || 'Allenamento da File';
         workoutType = 'personalizzato';
-        exercisesData = []; // Nessun esercizio per file
+        exercisesData = fileAnalysis?.exercises || []; // Usa gli esercizi estratti dal file
       }
 
       // SEMPRE creare l'allenamento per OGGI quando si clicca "Inizia Allenamento"
@@ -259,7 +265,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           workout_type: workoutType,
           scheduled_date: todayString, // Sempre oggi per "Inizia Allenamento"
           exercises: exercisesData as any,
-          total_duration: duration ? parseInt(duration) : null,
         })
         .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .single();
@@ -272,32 +277,48 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `workout-attachments/${data.id}/${fileName}`;
 
-        // Upload file
-        const { error: uploadError } = await supabase.storage
-          .from('workout-files')
-          .upload(filePath, uploadedFile);
+        // Upload file (con gestione errori per non bloccare il workout)
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('workout-files')
+            .upload(filePath, uploadedFile);
 
-        if (!uploadError) {
-          // Salva record allegato
-          await supabase
-            .from('workout_attachments')
-            .insert({
-              workout_id: data.id,
-              user_id: user.id,
-              file_name: uploadedFile.name,
-              file_path: filePath,
-              file_size: uploadedFile.size,
-              file_type: uploadedFile.type,
-              mime_type: uploadedFile.type,
-            });
+          if (!uploadError) {
+            // Salva record allegato
+            await supabase
+              .from('workout_attachments')
+              .insert({
+                workout_id: data.id,
+                user_id: user.id,
+                file_name: uploadedFile.name,
+                file_path: filePath,
+                file_size: uploadedFile.size,
+                file_type: uploadedFile.type,
+                mime_type: uploadedFile.type,
+              });
+          } else {
+            console.log('ℹ️ [DEBUG] Upload file saltato (bucket non configurato):', uploadError.message);
+          }
+        } catch (uploadErr) {
+          console.log('ℹ️ [DEBUG] Upload file saltato (errore non critico):', uploadErr);
         }
       }
+
+      // NON aggiornare metriche qui - si aggiornano solo quando si COMPLETA un workout
+      console.log('✅ [DEBUG] Allenamento iniziato - metriche si aggiorneranno al completamento');
 
       onClose();
       if (onWorkoutCreated) {
         onWorkoutCreated();
       }
-      navigate('/workouts', { state: { startCustomWorkout: data.id } });
+      // Avvia direttamente l'allenamento con gli esercizi estratti dal file
+      navigate('/workouts', { 
+        state: { 
+          startCustomWorkout: data.id,
+          customExercises: exercisesData,
+          workoutTitle: workoutTitle
+        } 
+      });
     } catch (error) {
       console.error('Error creating workout:', error);
     } finally {
@@ -325,15 +346,15 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
             </label>
             <div className="space-y-3">
               <Card 
-                className="bg-black border-2 border-[#c89116] hover:border-[#c89116]/80 cursor-pointer transition-all"
+                className="bg-gray-800 border-2 border-[#c89116] hover:border-[#c89116]/80 cursor-pointer transition-all"
                 onClick={handleManualCreation}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <Edit3 className="h-6 w-6 text-[#c89116]" />
                     <div>
-                      <h4 className="text-white font-medium">Inserimento Manuale</h4>
-                      <p className="text-gray-400 text-sm">Crea il tuo allenamento passo dopo passo</p>
+                      <h4 className="text-gray-100 font-medium">Inserimento Manuale</h4>
+                      <p className="text-gray-300 text-sm">Crea il tuo allenamento passo dopo passo</p>
                     </div>
                   </div>
                 </CardContent>
@@ -343,7 +364,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                 className={`border-2 transition-all ${
                   hasConsent === false 
                     ? 'bg-gray-800 border-gray-600 cursor-not-allowed opacity-50' 
-                    : 'bg-black border-[#c89116] hover:border-[#c89116]/80 cursor-pointer'
+                    : 'bg-gray-800 border-[#c89116] hover:border-[#c89116]/80 cursor-pointer'
                 }`}
                 onClick={hasConsent !== false ? handleFileCreation : undefined}
               >
@@ -351,8 +372,8 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                   <div className="flex items-center gap-3">
                     <Upload className={`h-6 w-6 ${hasConsent === false ? 'text-gray-500' : 'text-[#c89116]'}`} />
                     <div>
-                      <h4 className="text-white font-medium">Carica File</h4>
-                      <p className="text-gray-400 text-sm">
+                      <h4 className={`font-medium ${hasConsent === false ? 'text-gray-500' : 'text-gray-100'}`}>Carica File</h4>
+                      <p className={`text-sm ${hasConsent === false ? 'text-gray-500' : 'text-gray-300'}`}>
                         {hasConsent === false 
                           ? 'Consenso accesso file richiesto nelle impostazioni'
                           : 'Carica un\'immagine o PDF del tuo allenamento'
@@ -386,7 +407,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                   className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
                     selectedType === type.id
                       ? 'border-[#c89116] bg-[#c89116]/20 text-pp-gold'
-                      : 'border-white/20 text-white hover:border-white/40'
+                      : 'bg-gray-800 border-white/20 text-gray-100 hover:border-white/40'
                   }`}
                 >
                   {type.name}
@@ -406,7 +427,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
               type="text"
               value={customTitle}
               onChange={(e) => setCustomTitle(e.target.value)}
-              className="w-full p-3 bg-black border border-white/20 rounded-lg text-white"
+              className="w-full p-3 bg-gray-800 border border-white/20 rounded-lg text-gray-100 placeholder-gray-400"
               placeholder="Inserisci il nome..."
             />
           </div>
@@ -420,7 +441,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
             </label>
             
             {!fileAnalysis ? (
-              <div className="border-2 border-dashed border-[#c89116]/50 rounded-lg p-6 text-center">
+              <div className="border-2 border-dashed border-[#FFD700]/50 rounded-lg p-6 text-center bg-[#2D3748]">
                 <input
                   type="file"
                   accept=".jpg,.jpeg,.png,.pdf"
@@ -433,14 +454,14 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                   className="cursor-pointer block"
                 >
                   <div className="flex flex-col items-center">
-                    <Upload className="h-12 w-12 text-[#c89116] mb-4" />
+                    <Upload className="h-12 w-12 text-[#FFD700] mb-4" />
                     <p className="text-white font-medium mb-2">Clicca per caricare un file</p>
-                    <p className="text-gray-400 text-sm mb-4">
+                    <p className="text-[#9CA3AF] text-sm mb-4">
                       Supporta JPEG, PNG e PDF (max 10MB)
                     </p>
                     <Button 
                       type="button"
-                      className="bg-[#c89116] text-black hover:bg-[#c89116]/80"
+                      className="bg-[#374151] text-white hover:bg-[#4B5563] border border-[#FFD700]/30"
                       onClick={(e) => {
                         e.preventDefault();
                         document.getElementById('workout-file-upload')?.click();
@@ -454,9 +475,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
             ) : (
               <FileAnalysisResults
                 result={fileAnalysis}
-                onAccept={handleAcceptAnalysis}
-                onReject={handleRejectAnalysis}
-                onEdit={handleEditAnalysis}
+                onClose={handleRejectAnalysis}
               />
             )}
             
@@ -505,9 +524,9 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
             </div>
             
             {exercises.map((exercise, index) => (
-              <div key={index} className="mb-3 p-3 border border-white/20 rounded-lg">
+              <div key={index} className="mb-3 p-3 bg-gray-800 border border-white/20 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-white text-sm">Esercizio {index + 1}</span>
+                  <span className="text-gray-100 text-sm">Esercizio {index + 1}</span>
                   {exercises.length > 1 && (
                     <button
                       onClick={() => removeExercise(index)}
@@ -523,30 +542,32 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                   value={exercise.name}
                   onChange={(e) => updateExercise(index, 'name', e.target.value)}
                   placeholder="Nome esercizio"
-                  className="w-full p-2 mb-2 bg-black border border-white/20 rounded text-white text-sm"
+                  className="w-full p-2 mb-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                 />
                 
                 <div className="grid grid-cols-3 gap-2">
                   <input
-                    type="text"
+                    type="number"
                     value={exercise.sets}
                     onChange={(e) => updateExercise(index, 'sets', e.target.value)}
                     placeholder="Serie"
-                    className="p-2 bg-black border border-white/20 rounded text-white text-sm"
+                    min="1"
+                    className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                   <input
-                    type="text"
+                    type="number"
                     value={exercise.reps}
                     onChange={(e) => updateExercise(index, 'reps', e.target.value)}
                     placeholder="Rip."
-                    className="p-2 bg-black border border-white/20 rounded text-white text-sm"
+                    min="1"
+                    className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                   <input
                     type="text"
                     value={exercise.rest}
                     onChange={(e) => updateExercise(index, 'rest', e.target.value)}
-                    placeholder="Rec."
-                    className="p-2 bg-black border border-white/20 rounded text-white text-sm"
+                    placeholder="Es. 1m, 30sec"
+                    className="p-2 bg-gray-700 border border-white/20 rounded text-gray-100 placeholder-gray-400 text-sm"
                   />
                 </div>
               </div>
@@ -554,21 +575,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           </div>
         )}
 
-        {/* Durata - solo se metodo manuale */}
-        {creationMethod === 'manual' && (
-          <div className="mb-6">
-            <label className="block text-white text-sm font-medium mb-2">
-              Durata (minuti)
-            </label>
-            <input
-              type="number"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              className="w-full p-3 bg-black border border-white/20 rounded-lg text-white"
-              placeholder="Es. 45"
-            />
-          </div>
-        )}
 
         {/* Bottoni */}
         <div className="flex space-x-3">
@@ -594,14 +600,14 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
               <Button
                 onClick={handleSave}
                 disabled={!uploadedFile || isLoading}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-black font-medium"
+                className="flex-1 bg-[#2D3748] hover:bg-[#374151] text-white font-medium border border-[#FFD700]/30"
               >
                 Salva con File
               </Button>
               <Button
                 onClick={handleStartNow}
                 disabled={!uploadedFile || isLoading}
-                className="flex-1 bg-[#c89116] hover:bg-[#c89116]/80 text-black font-medium"
+                className="flex-1 bg-[#374151] hover:bg-[#4B5563] text-white font-medium border border-[#FFD700]/30"
               >
                 Inizia con File
               </Button>

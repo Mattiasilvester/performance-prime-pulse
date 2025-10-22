@@ -5,9 +5,10 @@ import { ObjectiveModal } from './ObjectiveModal';
 
 interface NewObjectiveCardProps {
   onObjectiveCreated?: () => void;
+  onClose?: () => void;
 }
 
-export const NewObjectiveCard = ({ onObjectiveCreated }: NewObjectiveCardProps) => {
+export const NewObjectiveCard = ({ onObjectiveCreated, onClose }: NewObjectiveCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -16,6 +17,9 @@ export const NewObjectiveCard = ({ onObjectiveCreated }: NewObjectiveCardProps) 
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    if (onClose) {
+      onClose();
+    }
   };
 
   const handleObjectiveCreated = () => {

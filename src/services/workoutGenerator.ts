@@ -12,23 +12,23 @@ interface Exercise {
 // Regole scientificamente validate per ogni livello
 const WORKOUT_RULES = {
   FORZA: {
-    minExercises: { PRINCIPIANTE: 4, INTERMEDIO: 5, AVANZATO: 7 },
-    maxExercises: { PRINCIPIANTE: 6, INTERMEDIO: 8, AVANZATO: 10 },
-    exerciseDuration: { PRINCIPIANTE: 30, INTERMEDIO: 45, AVANZATO: 60 },
+    minExercises: { PRINCIPIANTE: 8, INTERMEDIO: 10, AVANZATO: 12 },
+    maxExercises: { PRINCIPIANTE: 10, INTERMEDIO: 12, AVANZATO: 15 },
+    exerciseDuration: { PRINCIPIANTE: 45, INTERMEDIO: 60, AVANZATO: 75 },
     restBetweenExercises: { PRINCIPIANTE: 60, INTERMEDIO: 45, AVANZATO: 30 },
-    sets: { PRINCIPIANTE: 2, INTERMEDIO: 3, AVANZATO: 4 }
+    sets: { PRINCIPIANTE: 3, INTERMEDIO: 4, AVANZATO: 5 }
   },
   HIIT: {
-    minExercises: { PRINCIPIANTE: 4, INTERMEDIO: 5, AVANZATO: 6 },
-    maxExercises: { PRINCIPIANTE: 5, INTERMEDIO: 7, AVANZATO: 8 },
-    exerciseDuration: { PRINCIPIANTE: 20, INTERMEDIO: 30, AVANZATO: 40 },
-    restBetweenExercises: { PRINCIPIANTE: 40, INTERMEDIO: 30, AVANZATO: 20 },
-    sets: { PRINCIPIANTE: 2, INTERMEDIO: 3, AVANZATO: 3 }
+    minExercises: { PRINCIPIANTE: 12, INTERMEDIO: 15, AVANZATO: 18 },
+    maxExercises: { PRINCIPIANTE: 15, INTERMEDIO: 18, AVANZATO: 22 },
+    exerciseDuration: { PRINCIPIANTE: 30, INTERMEDIO: 45, AVANZATO: 60 },
+    restBetweenExercises: { PRINCIPIANTE: 60, INTERMEDIO: 45, AVANZATO: 30 },
+    sets: { PRINCIPIANTE: 3, INTERMEDIO: 4, AVANZATO: 5 }
   },
   CARDIO: {
-    minExercises: { PRINCIPIANTE: 3, INTERMEDIO: 4, AVANZATO: 5 },
-    maxExercises: { PRINCIPIANTE: 4, INTERMEDIO: 5, AVANZATO: 6 },
-    exerciseDuration: { PRINCIPIANTE: 120, INTERMEDIO: 180, AVANZATO: 240 },
+    minExercises: { PRINCIPIANTE: 8, INTERMEDIO: 10, AVANZATO: 12 },
+    maxExercises: { PRINCIPIANTE: 10, INTERMEDIO: 12, AVANZATO: 15 },
+    exerciseDuration: { PRINCIPIANTE: 180, INTERMEDIO: 240, AVANZATO: 300 },
     restBetweenExercises: { PRINCIPIANTE: 60, INTERMEDIO: 45, AVANZATO: 30 },
     sets: { PRINCIPIANTE: 1, INTERMEDIO: 1, AVANZATO: 1 }
   },
@@ -305,16 +305,16 @@ export const generateWorkout = (
   // Calcola numero esercizi
   let numExercises;
   if (quickMode) {
-    numExercises = rules.exercises;
+    numExercises = QUICK_MODE_RULES[categoryUpper].exercises;
   } else {
-    const min = rules.minExercises[userLevel];
-    const max = rules.maxExercises[userLevel];
+    const min = (rules as any).minExercises[userLevel];
+    const max = (rules as any).maxExercises[userLevel];
     numExercises = Math.floor(Math.random() * (max - min + 1)) + min;
   }
   
   // Usa valori specifici per livello (scientificamente validati)
-  const duration = quickMode ? rules.duration : rules.exerciseDuration[userLevel];
-  const rest = quickMode ? rules.rest : rules.restBetweenExercises[userLevel];
+  const duration = quickMode ? QUICK_MODE_RULES[categoryUpper].duration : (rules as any).exerciseDuration[userLevel];
+  const rest = quickMode ? QUICK_MODE_RULES[categoryUpper].rest : (rules as any).restBetweenExercises[userLevel];
   
   // Applica filtri esistenti per selezione esercizi
   let availableExercises = exerciseDatabase[category].exercises || [];
@@ -359,7 +359,7 @@ export const generateWorkout = (
       name: exercise,
       duration: `${duration}s`,
       rest: `${rest}s`,
-      sets: quickMode ? 1 : rules.sets[userLevel]
+      sets: quickMode ? 1 : (rules as any).sets[userLevel]
     });
     
     currentIndex++;

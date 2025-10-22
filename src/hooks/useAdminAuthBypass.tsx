@@ -175,7 +175,7 @@ export function useAdminAuthBypass() {
               is_active: true,
               created_at: new Date().toISOString()
             })
-            .select('id, user_id, email, created_at')
+            .select('id, user_id, email, created_at, role, full_name')
             .single();
             
           console.log('👤 Account creato:', { newProfile, createError });
@@ -213,12 +213,12 @@ export function useAdminAuthBypass() {
           
           localStorage.setItem('admin_session', JSON.stringify(sessionData));
           setAdmin({
-            id: finalProfile.id,
-            email: finalProfile.email,
-            name: finalProfile.full_name || 'Super Admin',
+            id: finalProfile.id as string,
+            email: finalProfile.email as string,
+            name: (finalProfile.full_name as string) || 'Super Admin',
             role: 'super_admin',
             status: 'active',
-            created_at: finalProfile.created_at || new Date().toISOString()
+            created_at: (finalProfile.created_at as string) || new Date().toISOString()
           });
           
           return { success: true };

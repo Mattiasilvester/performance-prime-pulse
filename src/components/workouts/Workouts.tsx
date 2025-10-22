@@ -15,7 +15,25 @@ export const Workouts = () => {
 
   useEffect(() => {
     if (location.state?.startCustomWorkout) {
-      loadCustomWorkout(location.state.startCustomWorkout);
+      // Se abbiamo esercizi estratti dal file, usali direttamente
+      if (location.state?.customExercises && location.state.customExercises.length > 0) {
+        console.log('✅ [DEBUG] Usando esercizi estratti dal file:', location.state.customExercises);
+        const customWorkoutData = {
+          id: location.state.startCustomWorkout,
+          title: location.state.workoutTitle || 'Allenamento da File',
+          workout_type: 'personalizzato',
+          exercises: location.state.customExercises,
+          total_duration: 0,
+          completed: false,
+          scheduled_date: new Date().toISOString().split('T')[0],
+          created_at: new Date().toISOString()
+        };
+        setCustomWorkout(customWorkoutData);
+        setActiveWorkout('custom');
+      } else {
+        // Altrimenti carica dal database
+        loadCustomWorkout(location.state.startCustomWorkout);
+      }
     }
   }, [location.state]);
 
@@ -23,7 +41,7 @@ export const Workouts = () => {
     try {
       const { data, error } = await supabase
         .from('custom_workouts')
-        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
+        .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at, exercises')
         .eq('id', workoutId)
         .single();
 
@@ -52,7 +70,11 @@ export const Workouts = () => {
       setGeneratedWorkout(workout);
       setActiveWorkout('generated');
     } else if (duration && ['cardio', 'strength', 'hiit', 'mobility'].includes(workoutId)) {
-      const workout = generateWorkout(workoutId as any, duration, {}, userLevel || 'INTERMEDIO', quickMode || false);
+      // Converte userLevel a tipo valido con fallback sicuro
+      const validUserLevel = ['PRINCIPIANTE', 'INTERMEDIO', 'AVANZATO'].includes(userLevel || '') 
+        ? (userLevel as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO')
+        : 'INTERMEDIO';
+      const workout = generateWorkout(workoutId as any, duration, {}, validUserLevel, quickMode || false);
       setGeneratedWorkout(workout);
       setActiveWorkout('generated');
     } else {
@@ -65,10 +87,19 @@ export const Workouts = () => {
     return (
       <>
         {activeWorkout === 'custom' && customWorkout ? (
-          <CustomWorkoutDisplay 
-            workout={customWorkout} 
-            onClose={handleCloseWorkout} 
-          />
+          // Se gli esercizi vengono da un file, usa ActiveWorkout (esecuzione attiva)
+          customWorkout.exercises && customWorkout.exercises.length > 0 ? (
+            <ActiveWorkout 
+              workoutId="custom"
+              customWorkout={customWorkout}
+              onClose={handleCloseWorkout}
+            />
+          ) : (
+            <CustomWorkoutDisplay 
+              workout={customWorkout} 
+              onClose={handleCloseWorkout} 
+            />
+          )
         ) : activeWorkout === 'generated' && generatedWorkout ? (
           <ActiveWorkout 
             workoutId="generated"

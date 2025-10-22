@@ -9,12 +9,12 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-black">
+    <div className="bg-black">
       {/* Header */}
       <Header />
       
       {/* Main Content */}
-      <main className="pb-24">
+      <main className="pb-0">
         {children}
       </main>
       

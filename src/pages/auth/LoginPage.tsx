@@ -120,6 +120,35 @@ export default function LoginPage() {
     }
   }
 
+  const handleAppleLogin = async () => {
+    setIsLoading(true)
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      })
+      
+      if (error) {
+        toast({
+          title: "Errore durante il login con Apple",
+          description: error.message,
+          variant: "destructive",
+        })
+        setIsLoading(false)
+      }
+    } catch (error: any) {
+      toast({
+        title: "Errore durante il login con Apple",
+        description: "Si è verificato un errore imprevisto",
+        variant: "destructive",
+      })
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-surface-primary border-2 border-brand-primary">
