@@ -168,7 +168,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             value={inputHours}
             onChange={handleHoursChange}
             placeholder={t('timer.hours') || 'ore'}
-            className="w-12 md:w-16 h-12 text-center border border-gray-300 rounded px-1 md:px-2 bg-white text-black font-medium text-sm md:text-base flex-shrink-0"
+            className="w-12 md:w-16 h-12 text-center border border-gray-300 rounded px-1 md:px-2 bg-white text-black font-medium text-base md:text-base flex-shrink-0"
           />
           
           <input
@@ -176,7 +176,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             value={inputMinutes}
             onChange={handleMinutesChange}
             placeholder={t('timer.minutes') || 'min'}
-            className="w-12 md:w-16 h-12 text-center border border-gray-300 rounded px-1 md:px-2 bg-white text-black font-medium text-sm md:text-base flex-shrink-0"
+            className="w-12 md:w-16 h-12 text-center border border-gray-300 rounded px-1 md:px-2 bg-white text-black font-medium text-base md:text-base flex-shrink-0"
           />
           
           <input
@@ -184,7 +184,7 @@ export const WorkoutTimer = ({ workoutType, onTimerComplete, autoStartTime, auto
             value={inputSeconds}
             onChange={handleSecondsChange}
             placeholder={t('timer.seconds') || 'sec'}
-            className="w-12 md:w-16 h-12 text-center border border-gray-300 rounded px-1 md:px-2 bg-white text-black font-medium text-sm md:text-base flex-shrink-0"
+            className="w-12 md:w-16 h-12 text-center border border-gray-300 rounded px-1 md:px-2 bg-white text-black font-medium text-base md:text-base flex-shrink-0"
           />
           
           <Button 
