@@ -46,6 +46,8 @@ export class FileAnalyzer {
    * Gestisce PDF, immagini e OCR con fallback automatico
    */
   static async analyzeFile(file: File | string): Promise<FileAnalysisResult> {
+    console.log('🔴 [DEBUG] FileAnalyzer - File ricevuto:', typeof file === 'string' ? file : file.name, typeof file === 'string' ? 'URL' : file.type);
+    
     try {
       // Validazione file
       if (file instanceof File && file.size > 10 * 1024 * 1024) {
@@ -54,9 +56,12 @@ export class FileAnalyzer {
 
       // Analisi con il nuovo sistema
       const result = await AdvancedWorkoutAnalyzer.analyzeWorkoutFile(file);
+      console.log('🔴 [DEBUG] FileAnalyzer - Risultato da AdvancedWorkoutAnalyzer:', result);
       
       // Conversione al formato compatibile con UI
-      return this.convertToFileAnalysisResult(result);
+      const convertedResult = this.convertToFileAnalysisResult(result);
+      console.log('🔴 [DEBUG] FileAnalyzer - Risultato finale convertito:', convertedResult);
+      return convertedResult;
       
     } catch (error) {
       console.error('Errore analisi file:', error);

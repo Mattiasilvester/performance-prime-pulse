@@ -4,6 +4,7 @@ import HeroSection from '../components/Hero/HeroSection';
 import FeaturesSection from '../components/Features/FeaturesSection';
 import CTASection from '../components/CTA/CTASection';
 import Footer from '../components/Footer/Footer';
+import { OrganizationSchema, MobileAppSchema, FAQSchema } from '@/components/seo/SchemaComponents';
 import '../styles/landing.css';
 
 const LandingPage = () => {
@@ -47,26 +48,33 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="landing-page">
-      {/* Banner Beta - SOLO nella landing */}
-      <div className="w-full bg-[#EEBA2B] text-black text-center py-3 font-semibold">
-        <div className="container mx-auto px-4">
-          🚀 BETA GRATUITA - Accesso Early Adopters • Limitato fino a Febbraio 2026
+    <>
+      {/* Schema.org per SEO - Invisibili all'utente */}
+      <OrganizationSchema />
+      <MobileAppSchema />
+      <FAQSchema />
+
+      <div className="landing-page">
+        {/* Banner Beta - SOLO nella landing */}
+        <div className="w-full bg-[#EEBA2B] text-black text-center py-3 font-semibold">
+          <div className="container mx-auto px-4">
+            🚀 BETA GRATUITA - Accesso Early Adopters • Limitato fino a Febbraio 2026
+          </div>
         </div>
+        
+        {/* Hero Section */}
+        <HeroSection onCTAClick={handleCTAClick} />
+        
+        {/* Features Section */}
+        <FeaturesSection />
+        
+        {/* Call to Action Section */}
+        <CTASection onCTAClick={handleCTAClick} />
+        
+        {/* Footer */}
+        <Footer />
       </div>
-      
-      {/* Hero Section */}
-      <HeroSection onCTAClick={handleCTAClick} />
-      
-      {/* Features Section */}
-      <FeaturesSection />
-      
-      {/* Call to Action Section */}
-      <CTASection onCTAClick={handleCTAClick} />
-      
-      {/* Footer */}
-      <Footer />
-    </div>
+    </>
   );
 };
 

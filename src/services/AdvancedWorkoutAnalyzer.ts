@@ -107,6 +107,9 @@ const RX = {
   
   // FORMATO "1 x 20sec" (recupero standalone)
   restFormat: /^(?<rest_val>\d{1,3})\s*x\s*(?<rest_unit>\d{1,3})\s*(sec|min|seconds?|minutes?)$/iu,
+  
+  // 🔥 NUOVO PATTERN ITALIANO: "Lunedì Squat 4 12 60s"
+  italianFormat: /(?:Lunedì|Martedì|Mercoledì|Giovedì|Venerdì|Sabato|Domenica)?\s*(?<name>[A-Za-z\s]+?)\s+(?<sets>\d+)\s*(?:x)?\s*(?<reps_lo>\d+)\s*(?<notes>per gamba)?\s*(?<rest_val>\d+)(?<rest_unit>s|sec|min)/gi,
 };
 
 export class AdvancedWorkoutAnalyzer {
@@ -118,6 +121,7 @@ export class AdvancedWorkoutAnalyzer {
     
     // Log iniziale
     this.log('[ANALYSIS]', `File ricevuto → ${typeof file === 'string' ? 'URL' : 'File'}: ${typeof file === 'string' ? file : file.name} (${typeof file === 'string' ? 'N/A' : file.size} bytes)`);
+    console.log('🔴 [DEBUG] AdvancedWorkoutAnalyzer - File ricevuto:', typeof file === 'string' ? file : file.name);
     
     try {
       // 1. Gestione input (file o URL)
@@ -135,6 +139,8 @@ export class AdvancedWorkoutAnalyzer {
       
       // 3. Parsing struttura
       const parsedResult = await this.parseWorkoutStructure(extractedText.text);
+      console.log('🔴 [DEBUG] PDF testo estratto:', extractedText.text);
+      console.log('🔴 [DEBUG] Esercizi trovati nel testo:', parsedResult);
       
       // DEBUG: Log parsing results
       if (DEBUG_ANALYSIS) {
@@ -605,6 +611,7 @@ export class AdvancedWorkoutAnalyzer {
   private static parseExerciseLine(line: string): ParsedExercise | null {
     // Prova tutti i pattern in ordine di priorità (aggiunte regex universali)
     const patterns = [
+      { name: 'italianFormat', regex: RX.italianFormat },
       { name: 'universalTimeName', regex: RX.universalTimeName },
       { name: 'universalReps', regex: RX.universalReps },
       { name: 'universalTime', regex: RX.universalTime },
