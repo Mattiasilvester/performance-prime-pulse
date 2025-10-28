@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { FileAnalyzer } from '@/services/fileAnalysis';
 
 interface WorkoutAttachment {
   id: string;
@@ -124,7 +125,7 @@ export const WorkoutAttachments = ({ workoutId, onAttachmentsChange }: WorkoutAt
             file_type: file.type,
             mime_type: file.type,
           })
-          .select('id, workout_id, user_id, filename, file_url, file_size, mime_type, created_at')
+          .select('*')
           .single();
 
         if (dbError) {
@@ -140,6 +141,48 @@ export const WorkoutAttachments = ({ workoutId, onAttachmentsChange }: WorkoutAt
         }
 
         uploadedFiles.push(attachment);
+
+        // 🔥 FIX CRITICO: Parsing PDF per estrarre esercizi
+        if (file.type === 'application/pdf') {
+          console.log('[PDF_DEBUG] Iniziando parsing PDF:', file.name);
+          try {
+            const analysisResult = await FileAnalyzer.analyzeFile(file);
+            console.log('[PDF_DEBUG] Esercizi parsati:', analysisResult.exercises);
+            
+            if (analysisResult.exercises.length > 0) {
+              // Salva gli esercizi estratti nel database
+              const { error: exercisesError } = await supabase
+                .from('custom_workouts')
+                .insert({
+                  user_id: user.id,
+                  title: analysisResult.workoutTitle,
+                  workout_type: 'pdf_import',
+                  exercises: analysisResult.exercises,
+                  total_duration: 0,
+                  completed: false,
+                  scheduled_date: new Date().toISOString().split('T')[0],
+                  source_file: file.name
+                });
+
+              if (exercisesError) {
+                console.error('[PDF_DEBUG] Errore salvataggio esercizi:', exercisesError);
+              } else {
+                console.log('[PDF_DEBUG] Esercizi salvati nel database con successo');
+                toast({
+                  title: "PDF analizzato!",
+                  description: `${analysisResult.exercises.length} esercizi estratti dal PDF.`,
+                });
+              }
+            }
+          } catch (parseError) {
+            console.error('[PDF_DEBUG] Errore parsing PDF:', parseError);
+            toast({
+              title: "Errore analisi PDF",
+              description: "Impossibile estrarre esercizi dal PDF.",
+              variant: "destructive",
+            });
+          }
+        }
       }
 
       if (uploadedFiles.length > 0) {

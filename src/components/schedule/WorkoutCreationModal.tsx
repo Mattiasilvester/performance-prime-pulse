@@ -99,6 +99,9 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
       setIsAnalyzing(true);
       try {
         const analysis = await FileAnalyzer.analyzeFile(file);
+        console.log('🔴 [DEBUG] Analysis risultato completo:', analysis);
+        console.log('🔴 [DEBUG] Esercizi estratti:', analysis?.exercises);
+        console.log('🔴 [DEBUG] Numero esercizi:', analysis?.exercises?.length);
         setFileAnalysis(analysis);
       } catch (error) {
         console.error('Errore analisi file:', error);
@@ -147,6 +150,8 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
   };
 
   const handleSave = async () => {
+    console.log('🔴 [DEBUG] handleSave - fileAnalysis:', fileAnalysis);
+    console.log('🔴 [DEBUG] handleSave - exercises:', fileAnalysis?.exercises);
     if ((creationMethod === 'manual' && !selectedType) || (creationMethod === 'file' && !uploadedFile)) return;
     
     setIsLoading(true);
@@ -231,6 +236,8 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
   };
 
   const handleStartNow = async () => {
+    console.log('🔴 [DEBUG] handleStartNow - fileAnalysis:', fileAnalysis);
+    console.log('🔴 [DEBUG] handleStartNow - exercises:', fileAnalysis?.exercises);
     if ((creationMethod === 'manual' && !selectedType) || (creationMethod === 'file' && !uploadedFile)) return;
     
     setIsLoading(true);
