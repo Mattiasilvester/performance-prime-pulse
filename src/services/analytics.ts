@@ -183,6 +183,57 @@ class Analytics {
 // Istanza globale
 export const analytics = new Analytics();
 
+// Tracking specifico per onboarding
+export const trackOnboarding = {
+  started: () => {
+    analytics.track('onboarding_started', {
+      event_category: 'engagement',
+      event_label: 'onboarding'
+    });
+  },
+
+  stepViewed: (step: number) => {
+    analytics.track('onboarding_step_viewed', {
+      event_category: 'engagement',
+      event_label: 'onboarding',
+      step_number: step
+    });
+  },
+
+  stepCompleted: (step: number, data: any) => {
+    analytics.track('onboarding_step_completed', {
+      event_category: 'engagement',
+      event_label: 'onboarding',
+      step_number: step,
+      step_data: JSON.stringify(data)
+    });
+  },
+
+  completed: () => {
+    analytics.track('onboarding_completed', {
+      event_category: 'engagement',
+      event_label: 'onboarding'
+    });
+  },
+
+  dropped: (lastStep: number) => {
+    analytics.track('onboarding_dropped', {
+      event_category: 'engagement',
+      event_label: 'onboarding',
+      last_step: lastStep
+    });
+  }
+};
+
+// Tracking per landing page version
+export const trackLandingVersion = (version: 'new' | 'old') => {
+  analytics.track('landing_page_view', {
+    event_category: 'engagement',
+    page_variant: version,
+    test_group: version === 'new' ? 'treatment' : 'control'
+  });
+};
+
 // Hook React per analytics
 export const useAnalytics = () => {
   return {

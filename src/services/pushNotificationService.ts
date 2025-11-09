@@ -66,7 +66,7 @@ class PushNotificationService {
   }
 
   // Salva stato permessi
-  private savePermissionStatus(status: PushPermissionStatus): void {
+  savePermissionStatus(status: PushPermissionStatus): void {
     localStorage.setItem(PERMISSION_KEY, JSON.stringify(status));
   }
 

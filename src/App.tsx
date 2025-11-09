@@ -12,9 +12,13 @@ import { Toaster as SonnerToaster } from '@/components/ui/sonner'
 import { Header } from '@/components/layout/Header'
 import BottomNavigation from '@/components/layout/BottomNavigation'
 import FeedbackWidget from '@/components/feedback/FeedbackWidget'
+import { FeatureFlagDebug } from '@/components/FeatureFlagDebug'
 
 // Import componenti core (non lazy)
 import LandingPage from '@/landing/pages/LandingPage'
+import { NewLandingPage } from '@/pages/landing/NewLandingPage'
+import { OnboardingPage } from '@/pages/onboarding/OnboardingPage'
+import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import TermsAndConditions from '@/pages/TermsAndConditions'
@@ -85,6 +89,14 @@ const ConditionalFeedbackWidget = () => {
   return <FeedbackWidget />;
 };
 
+// Componente wrapper per A/B testing landing page
+const LandingPageWrapper = () => {
+  const { useNewLanding } = useFeatureFlag();
+  const showNewLanding = useNewLanding();
+  
+  return showNewLanding ? <NewLandingPage /> : <LandingPage />;
+};
+
 function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -132,7 +144,10 @@ function App() {
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 {/* ROUTE PUBBLICHE */}
-                <Route path="/" element={<LandingPage />} />
+                <Route path="/" element={<LandingPageWrapper />} />
+                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/landing-v1" element={<LandingPage />} />
+                <Route path="/landing-new" element={<NewLandingPage />} />
                 <Route path="/auth/login" element={
                   session ? <Navigate to="/dashboard" /> : <LoginPage />
                 } />
@@ -344,6 +359,7 @@ function App() {
           </Router>
           <Toaster />
           <SonnerToaster />
+          {import.meta.env.DEV && <FeatureFlagDebug />}
         </PrimeBotProvider>
       </NotificationProvider>
     </AuthProvider>

@@ -108,7 +108,7 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
         return null;
       }
 
-      const newNote = data as Note;
+      const newNote = data as unknown as Note;
       setNotes(prev => [newNote, ...prev]);
       
       toast({
@@ -155,7 +155,7 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
         return null;
       }
 
-      const updatedNote = data as Note;
+      const updatedNote = data as unknown as Note;
       setNotes(prev => prev.map(note => note.id === id ? updatedNote : note));
       
       toast({

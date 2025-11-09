@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import WorkoutParser, { ParsedWorkoutResult } from '../services/WorkoutParser';
+import { parseWorkoutFile, ParsedWorkoutResult } from '../services/WorkoutParser';
 import ManualWorkoutInput from './ManualWorkoutInput';
 import WorkoutResults from './WorkoutResults';
 import { Button } from './ui/button';
@@ -51,7 +51,7 @@ const WorkoutUploader: React.FC<WorkoutUploaderProps> = ({ onWorkoutLoaded }) =>
     
     try {
       // Usa il nuovo parser
-      const result = await WorkoutParser.parseWorkoutFile(file);
+      const result = await parseWorkoutFile(file);
       setParsedWorkout(result);
       
       // Callback per notificare il componente padre
@@ -100,13 +100,6 @@ const WorkoutUploader: React.FC<WorkoutUploaderProps> = ({ onWorkoutLoaded }) =>
     setShowFileUpload(false);
     const input = document.getElementById('file-input') as HTMLInputElement;
     if (input) input.value = '';
-  };
-
-  // Handler per mostrare opzioni
-  const handleShowOptions = () => {
-    setShowOptions(true);
-    setShowManualInput(false);
-    setShowFileUpload(false);
   };
 
   // Handler per opzioni

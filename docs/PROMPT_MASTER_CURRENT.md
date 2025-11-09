@@ -1,9 +1,41 @@
 # 🎯 PROMPT MASTER AGGIORNATO - PERFORMANCE PRIME PULSE
-**Ultimo aggiornamento: 12 Gennaio 2025 - Sessione 10**
+**Ultimo aggiornamento: 01 Ottobre 2025 - Sessione Onboarding e Landing**
 
 ## ⚠️ ISTRUZIONI CRITICHE
 Stai lavorando su Performance Prime Pulse, applicazione React/TypeScript per fitness tracking.
 **LEGGI TUTTO PRIMA DI AGIRE. NON MODIFICARE NULLA SENZA VERIFICARE.**
+
+## 📅 SESSIONE ONBOARDING E LANDING - 01/10/2025
+
+### FILE MODIFICATI:
+- ✨ 21 file nuovi creati (onboarding, landing, store, hooks)
+- ✏️ 10 file modificati (routing, analytics, CSS, config)
+
+### NUOVI LOCKED:
+- Sistema Onboarding completo (6 componenti)
+- Sistema Landing Page completo (6 componenti)
+- Store e Config (3 file)
+
+### REGOLE AGGIUNTE:
+- Navigazione centralizzata in OnboardingPage
+- Feature flags con A/B testing basato su sessione
+- Generazione piano allenamento dinamica
+- Background transparent per evitare conflitti
+
+### BUG FIXATI:
+- Rettangolo nero lungo (4 cause)
+- Contrasto CTA e Problem Section
+- Bottoni navigazione duplicati
+- Allineamento bottoni verticale
+- Card altezza disuguale
+
+### TODO NEXT:
+- Test completo flusso onboarding end-to-end
+- Integrazione generazione piano con backend
+- Ottimizzazione bundle size
+- Aggiungere più esercizi al database
+
+---
 
 ## 🚀 ULTIMI SVILUPPI - SESSIONE 10 (12 GENNAIO 2025)
 

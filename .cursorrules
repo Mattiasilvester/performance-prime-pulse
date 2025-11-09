@@ -1,6 +1,16 @@
 # PERFORMANCE PRIME PULSE - REGOLE DI SVILUPPO
 # 3 Settembre 2025 - PROGETTO IN SVILUPPO ATTIVO
 
+## ⚠️ REGOLA CRITICA: CONFLITTI E PROBLEMI
+**SE INCONTRI CONFLITTI, PROBLEMI O ALTRO FERMATI E DIMMELO - NON CONTINUARE**
+
+- Se trovi conflitti con codice esistente → FERMATI
+- Se trovi problemi di import o dipendenze → FERMATI  
+- Se trovi errori TypeScript non risolti → FERMATI
+- Se trovi incompatibilità con pattern esistenti → FERMATI
+- **NON procedere** senza aver segnalato e risolto il problema
+- Se un prompt richiede modifiche già esistenti, fermati, avvisa l'utente e non duplicare il lavoro
+
 ## ⚠️ CRITICAL VITE COMPATIBILITY RULE
 - This project uses Vite and is NOT compatible with styled-jsx
 - NEVER use <style jsx> or styled-jsx syntax
@@ -1156,7 +1166,103 @@ python3 -m http.server 8083
 
 ---
 
-*Ultimo aggiornamento: 1 Ottobre 2025 - 18:00*
-*Stato: APP COMPLETA CON SISTEMA IBRIDO PRIMEBOT OTTIMIZZATO, PRONTA PER PRODUZIONE 🚀*
-*Versione: 8.1 - Fix Risposte Preimpostate PrimeBot e Sistema Ibrido Ottimizzato*
+---
+
+## 🚀 **SESIONE 14 - 1 OTTOBRE 2025: FIX LANDING PAGE E RIMOZIONE RETTANGOLO NERO**
+### **🎯 OBIETTIVI RAGGIUNTI:**
+- ✅ **Risolto Rettangolo Nero Lungo** - Rimossi tutti i background globali problematici
+- ✅ **Ottimizzato Contrasto CTA Section** - Card CTA ora perfettamente leggibile
+- ✅ **Creato Footer Component** - Footer completo con 3 colonne e copyright
+- ✅ **Fix Background Globali** - Sistema background pulito e ottimizzato
+
+### **🔧 MODIFICHE TECNICHE COMPLETATE:**
+#### **1. RIMOZIONE RETTANGOLO NERO (1 Ottobre 2025)**
+**Problema**: Rettangolo nero fisso visibile in basso a destra della pagina
+**4 Cause Identificate**:
+1. Script in `index.html` che forzava `backgroundColor = 'black'` su elementi con classe `bottom-0`
+2. Background globale `#1A1A1A` su `body/html` che appariva quando c'era overflow
+3. Background nero sul container principale `NewLandingPage`
+4. `#root` senza background esplicito
+
+**Soluzione**: 
+- Rimosso script che forzava background nero in `index.html`
+- Cambiato background `body/html` da `#1A1A1A` a `transparent` in `src/index.css`
+- Rimosso `bg-black` dal container principale `NewLandingPage.tsx`
+- Aggiunto `background: transparent` a `#root` in `src/index.css`
+
+**File Modificati**:
+- `index.html` - Rimosso script problematico
+- `src/index.css` - Background transparent per body/html/#root
+- `src/pages/landing/NewLandingPage.tsx` - Rimosso bg-black container
+
+#### **2. OTTIMIZZAZIONE CONTRASTO CTA SECTION (1 Ottobre 2025)**
+**Problema**: Testo nella card CTA non leggibile su sfondo giallo chiaro
+**Soluzione**: 
+- Cambiato sfondo card da `bg-gradient-to-br from-[#FFD700]/20 to-[#FFD700]/5` a `bg-black`
+- Aggiunto bordo `border-2 border-[#FFD700]` per contrasto
+- Migliorato contrasto testo da `text-gray-300` a `text-gray-200`
+- Cambiato sfondo sezione da `bg-black` a `bg-white`
+
+**File Modificati**:
+- `src/components/landing-new/CTASection.tsx` - Contrasto ottimizzato
+
+#### **3. CREAZIONE FOOTER COMPONENT (1 Ottobre 2025)**
+**Problema**: Mancava footer nella nuova landing page
+**Soluzione**: Creato componente Footer completo con:
+- 3 colonne: Performance Prime, Link Utili, Contatti
+- Separator line gialla
+- Copyright notice
+- Colore `bg-[#212121]` coerente con card recensioni
+
+**File Creati**:
+- `src/components/landing-new/Footer.tsx` - Footer component nuovo
+
+### **🐛 PROBLEMI RISOLTI:**
+#### **1. Rettangolo Nero Lungo**
+**Problema**: Rettangolo nero fisso visibile in basso a destra
+**Causa**: 4 cause identificate (script inline, background body/html, background container, #root)
+**Soluzione**: Rimosso script problematico, background transparent per body/html/#root, rimosso bg-black container
+**Risultato**: ✅ Rettangolo nero completamente rimosso
+
+#### **2. Contrasto CTA Section**
+**Problema**: Testo non leggibile su sfondo giallo chiaro
+**Causa**: Card con gradient giallo chiaro e testo bianco
+**Soluzione**: Card nera con bordo oro, testo chiaro
+**Risultato**: ✅ Testo perfettamente leggibile
+
+#### **3. Colore Footer**
+**Problema**: Footer aveva colore diverso da quello desiderato
+**Causa**: Sfondo inizialmente `bg-black`, poi `bg-gray-900`, poi `bg-gray-800`
+**Soluzione**: Impostato `bg-[#212121]` per matchare colore card recensioni
+**Risultato**: ✅ Footer con colore coerente
+
+### **📐 PATTERN/REGOLE EMERSE:**
+1. **Background Management**: Container principali devono avere `background: transparent`
+2. **Script Inline**: Evitare script in index.html che modificano stili inline
+3. **Contrasto Colori**: Card scure = testo chiaro, card chiare = testo scuro
+
+### **🔒 COMPONENTI LOCKED:**
+- ✅ `src/components/landing-new/Footer.tsx` - Footer completo e funzionante
+- ✅ `src/components/landing-new/CTASection.tsx` - CTA Section con contrasto ottimizzato
+- ✅ `src/components/landing-new/HeroSection.tsx` - Hero section completa con animazioni e metriche
+- ✅ `src/components/landing-new/ProblemSection.tsx` - Sezione problemi ottimizzata con contrasto
+- ✅ `src/components/landing-new/SolutionSection.tsx` - Sezione soluzioni con features
+- ✅ `src/components/landing-new/SocialProof.tsx` - Social proof con testimonianze e statistiche
+- ✅ `src/pages/landing/NewLandingPage.tsx` - Nuova landing page completa
+- ✅ `src/pages/onboarding/OnboardingPage.tsx` - Container principale con navigazione centralizzata
+- ✅ `src/pages/onboarding/steps/Step1Goals.tsx` - Step 1 con card interattive per obiettivi
+- ✅ `src/pages/onboarding/steps/Step2Experience.tsx` - Step 2 con slider giorni e livello esperienza
+- ✅ `src/pages/onboarding/steps/Step3Preferences.tsx` - Step 3 con multi-select luoghi e tempo
+- ✅ `src/pages/onboarding/steps/Step4Personalization.tsx` - Step 4 con dati personali e professionisti
+- ✅ `src/pages/onboarding/steps/CompletionScreen.tsx` - Completion screen con piano giornaliero
+- ✅ `src/stores/onboardingStore.ts` - Store Zustand con persistenza localStorage
+- ✅ `src/config/features.ts` - Sistema feature flags per A/B testing
+- ✅ `src/hooks/useFeatureFlag.ts` - Hook feature flags con logica A/B testing
+- ✅ Sistema background globali (body/html/#root) - Configurazione ottimale
+
+---
+
+*Ultimo aggiornamento: 1 Ottobre 2025 - 22:00*
+*Stato: APP COMPLETA CON ONBOARDING GAMIFICATO E NUOVA LANDING PAGE 🚀*
+*Versione: 9.0 - Sistema Onboarding Completo e Nuova Landing Page*
 *Autore: Mattia Silvestrelli + AI Assistant* 

@@ -6,12 +6,29 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { generateWorkout, generateRecommendedWorkout } from '@/services/workoutGenerator';
+import { Sparkles, Clock, Dumbbell } from 'lucide-react';
 
 export const Workouts = () => {
   const [activeWorkout, setActiveWorkout] = useState<string | null>(null);
   const [customWorkout, setCustomWorkout] = useState<any>(null);
   const [generatedWorkout, setGeneratedWorkout] = useState<any>(null);
+  const [personalizedWorkout, setPersonalizedWorkout] = useState<{
+    startCustomWorkout?: string;
+    customExercises?: any[];
+    workoutTitle?: string;
+    workoutType?: string;
+    duration?: number;
+  } | null>(null);
   const location = useLocation();
+
+  useEffect(() => {
+    if (location.state) {
+      setPersonalizedWorkout(location.state as any);
+      console.log('Custom workout data:', location.state);
+    } else {
+      setPersonalizedWorkout(null);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (location.state?.startCustomWorkout) {
@@ -26,7 +43,13 @@ export const Workouts = () => {
           total_duration: 0,
           completed: false,
           scheduled_date: new Date().toISOString().split('T')[0],
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          meta: {
+            workoutTitle: location.state.workoutTitle,
+            workoutType: location.state.workoutType,
+            duration: location.state.duration,
+            startCustomWorkout: location.state.startCustomWorkout,
+          }
         };
         setCustomWorkout(customWorkoutData);
         setActiveWorkout('custom');
@@ -58,6 +81,7 @@ export const Workouts = () => {
     setActiveWorkout(null);
     setCustomWorkout(null);
     setGeneratedWorkout(null);
+    setPersonalizedWorkout(null);
   };
 
   const handleStartWorkout = (workoutId: string, duration?: number, generatedWorkout?: any, userLevel?: string, quickMode?: boolean) => {
@@ -109,7 +133,17 @@ export const Workouts = () => {
         ) : (
           <ActiveWorkout 
             workoutId={activeWorkout} 
-            onClose={() => setActiveWorkout(null)}
+            generatedWorkout={generatedWorkout}
+            customWorkout={customWorkout || (personalizedWorkout?.customExercises ? {
+              title: personalizedWorkout?.workoutTitle,
+              workout_type: personalizedWorkout?.workoutType,
+              exercises: personalizedWorkout?.customExercises,
+              duration: personalizedWorkout?.duration,
+              meta: personalizedWorkout
+            } : undefined)}
+            onClose={() => {
+              setActiveWorkout(null);
+            }}
           />
         )}
       </>
