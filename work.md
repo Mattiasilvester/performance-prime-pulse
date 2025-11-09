@@ -2026,3 +2026,23 @@ cd dist && python3 -m http.server 8083
 *Stato: APP COMPLETA CON ONBOARDING GAMIFICATO E NUOVA LANDING PAGE 🚀*
 *Versione: 9.0 - Sistema Onboarding Completo e Nuova Landing Page*
 *Autore: Mattia Silvestrelli + AI Assistant*
+
+### **9 Novembre 2025 - Sessione Setup Git: FIX SSL CERTIFICATI macOS**
+- **Ora Inizio**: 21:00
+- **Ora Fine**: 21:30
+- **Durata**: 30 minuti
+
+#### Problema Risolto
+- **✅ CERTIFICATI SSL macOS 14/15** - Git push falliva con errore certificate verify
+  - **Causa**: macOS 14/15 ha cambiato path certificati SSL da `/etc/ssl/cert.pem`
+  - **Soluzione**: Generato bundle certificati da Keychain di sistema
+  - **File**: `~/.config/git/cacert.pem` (230KB)
+  - **Configurazione**: `git config --global http.sslCAinfo`
+
+#### Verifiche Completate
+- ✅ Git push da Terminal Mac funzionante
+- ✅ Git push da Terminal Cursor funzionante
+- ✅ Repository sincronizzato con GitHub
+
+#### File Creati
+- `docs/GIT_SETUP_MACOS.md` - Documentazione setup Git
