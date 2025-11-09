@@ -410,7 +410,7 @@ button[type="button"],
 /* ——— Colore di sfondo globale ——— */
 html,
 body {
-  background: #1A1A1A;         /* grigio scuro invece di nero puro */
+  background: transparent;     /* rimosso background globale per evitare rettangolo nero */
   color-scheme: dark;       /* status-bar e controlli di sistema in versione dark */
   min-height: 100vh;
   height: auto;
@@ -753,6 +753,7 @@ body, #root, .app-container {
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  background: transparent; /* Rimosso background per evitare rettangolo nero */
 }
 
 /* Previeni scroll su body quando in admin */

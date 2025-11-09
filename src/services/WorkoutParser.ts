@@ -12,6 +12,9 @@ export interface WorkoutExercise {
   note: string | null;
   origine: 'file' | 'suggerito';
   confidence: number;
+  // Proprietà opzionali per compatibilità con WorkoutResults
+  ripetizioni?: number | string;
+  tempo?: string;
 }
 
 export interface ParsedWorkoutResult {

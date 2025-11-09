@@ -7,6 +7,21 @@ export interface Esercizio {
   note?: string;
   durata?: number;
   riposo?: number;
+  confidence?: number;
+  ripetute?: number; // Alias per ripetizioni per compatibilità
+}
+
+export interface SchedaSezione {
+  esercizi: Esercizio[];
+  generato: boolean;
+  presente: boolean;
+}
+
+export interface SchedaMetadata {
+  tipoAllenamento?: string;
+  durataStimata?: string;
+  difficolta?: string;
+  fonte?: string;
 }
 
 export interface SchedaAllenamento {
@@ -19,6 +34,11 @@ export interface SchedaAllenamento {
   categoria?: string;
   difficolta?: 'Principiante' | 'Intermedio' | 'Avanzato';
   durata?: number;
+  // Proprietà estese per SchedaView
+  metadata?: SchedaMetadata;
+  riscaldamento?: SchedaSezione;
+  schedaGiornaliera?: SchedaSezione;
+  stretching?: SchedaSezione;
 }
 
 
