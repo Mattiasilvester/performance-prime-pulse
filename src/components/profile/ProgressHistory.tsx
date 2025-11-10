@@ -1,8 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { fetchProgressStats, ProgressData } from '@/services/statsService';
-import ProgressChart from '@/components/ProgressChart';
 import { useTranslation } from '@/hooks/useTranslation';
+
+const ProgressChart = lazy(() => import('@/components/ProgressChart'));
 
 const PERIOD_OPTIONS = [
   { label: 'progressHistory.lastWeek', key: 'week' },
@@ -88,7 +89,9 @@ export const ProgressHistory = () => {
             <div className="text-gray-400">Caricamento dati...</div>
           </div>
         ) : (
-          <ProgressChart data={chartData || []} />
+          <Suspense fallback={<div className="h-64 w-full rounded-lg bg-white/5 animate-pulse" />}>
+            <ProgressChart data={chartData || []} />
+          </Suspense>
         )}
       </div>
 

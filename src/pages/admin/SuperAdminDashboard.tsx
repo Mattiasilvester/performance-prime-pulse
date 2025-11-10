@@ -24,7 +24,7 @@ export default function SuperAdminDashboard() {
 
   // 🔄 AUTO-REFRESH DASHBOARD ogni 60 secondi (ottimizzato)
   useEffect(() => {
-    let isRefreshing = false; // Evita refresh multipli simultanei
+    const isRefreshing = false; // Evita refresh multipli simultanei
     
     const refreshData = async () => {
       if (isRefreshing) {

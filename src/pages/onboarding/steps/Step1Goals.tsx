@@ -1,5 +1,4 @@
-import { motion, Variants } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { trackOnboarding } from '@/services/analytics';
 import { 
@@ -75,12 +74,19 @@ export function Step1Goals() {
   const [selectedGoal, setSelectedGoal] = useState<string | null>(data.obiettivo || null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const { saveAndContinue, trackStepStarted } = useOnboardingNavigation();
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     trackStepStarted(1);
   }, [trackStepStarted]);
 
-  const handleSelectGoal = (goalId: Goal['id']) => {
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const handleSelectGoal = async (goalId: Goal['id']) => {
     if (isTransitioning) return;
     
     setSelectedGoal(goalId);
@@ -94,96 +100,58 @@ export function Step1Goals() {
     // Track selection
     trackOnboarding.stepCompleted(1, { obiettivo: goalId });
 
-    // Update store and advance after animation
-    setTimeout(() => {
-      updateData({ obiettivo: goalId });
-    saveAndContinue(1, { obiettivo: goalId });
-    }, 500);
-  };
+    // Aggiorna lo store immediatamente
+    updateData({ obiettivo: goalId });
 
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
+    // Breve delay per permettere alle animazioni di completarsi
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
-  const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }
+    await saveAndContinue(1, { obiettivo: goalId });
+
+    if (isMountedRef.current) {
+      setIsTransitioning(false);
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="max-w-3xl mx-auto w-full"
-    >
+    <div className="max-w-3xl mx-auto w-full animate-slide-up" style={{ animationDelay: '0.05s' }}>
       {/* Header */}
-      <div className="text-center mb-8">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-          className="text-5xl mb-4"
-        >
+      <div className="text-center mb-8 space-y-3">
+        <div className="text-5xl mb-4 animate-scale-in" style={{ animationDelay: '0.15s' }}>
           🎯
-        </motion.div>
+        </div>
         
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-3xl md:text-4xl font-bold text-white mb-3"
+        <h2
+          className="text-3xl md:text-4xl font-bold text-white mb-3 animate-slide-up"
+          style={{ animationDelay: '0.2s' }}
         >
           Ciao! Sono PrimeBot 🤖
-        </motion.h2>
+        </h2>
         
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="text-lg text-gray-400"
+        <p
+          className="text-lg text-gray-400 animate-slide-up"
+          style={{ animationDelay: '0.25s' }}
         >
           Qual è il tuo obiettivo principale?
-        </motion.p>
+        </p>
         
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-sm text-gray-500 mt-2"
+        <p
+          className="text-sm text-gray-500 mt-2 animate-fade-in"
+          style={{ animationDelay: '0.3s' }}
         >
           Non preoccuparti, potrai sempre modificarlo in seguito
-        </motion.p>
+        </p>
       </div>
 
       {/* Goals Grid */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
-      >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {goals.map((goal) => {
           const Icon = goal.icon;
           const isSelected = selectedGoal === goal.id;
           
           return (
-            <motion.button
+            <button
               key={goal.id}
-              variants={cardVariants}
-              whileHover={!isSelected ? { scale: 1.02 } : {}}
-              whileTap={!isSelected ? { scale: 0.98 } : {}}
               onClick={() => handleSelectGoal(goal.id)}
               disabled={isTransitioning && !isSelected}
               className={`
@@ -197,31 +165,24 @@ export function Step1Goals() {
             >
               {/* Icon */}
               <div className="flex items-start gap-4 mb-4">
-                <motion.div
-                  animate={isSelected ? { rotate: 360 } : {}}
-                  transition={{ duration: 0.5 }}
+                <div
                   className={`
-                    p-3 rounded-xl transition-colors
+                    p-3 rounded-xl transition-colors ${isSelected ? 'animate-spin-once' : ''}
                     ${isSelected 
                       ? `bg-gradient-to-br ${goal.gradient}` 
                       : goal.bgColor}
                   `}
                 >
                   <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : goal.color}`} />
-                </motion.div>
+                </div>
 
                 {/* Selected indicator */}
                 {isSelected && (
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: 'spring', stiffness: 200 }}
-                    className="absolute top-4 right-4"
-                  >
-                    <div className="w-8 h-8 bg-[#FFD700] rounded-full flex items-center justify-center">
+                  <div className="absolute top-4 right-4 animate-scale-in">
+                    <div className="w-8 h-8 bg-[#FFD700] rounded-full flex items-center justify-center shadow-lg">
                       <CheckCircle className="w-5 h-5 text-black" />
                     </div>
-                  </motion.div>
+                  </div>
                 )}
               </div>
 
@@ -237,20 +198,23 @@ export function Step1Goals() {
                 {/* Benefits */}
                 <div className="flex flex-wrap gap-2">
                   {goal.benefits.map((benefit, index) => (
-                    <motion.span
+                    <span
                       key={index}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: isSelected ? 0.1 * index : 0 }}
                       className={`
                         text-xs px-2 py-1 rounded-full transition-all
                         ${isSelected 
-                          ? 'bg-white/20 text-white' 
+                          ? 'bg-white/20 text-white animate-fade-in' 
                           : 'bg-white/5 text-gray-500'}
                       `}
+                      style={
+                        isSelected
+                          ? { animationDelay: `${index * 0.1}s` }
+                          : undefined
+                      }
+                      data-animated={isSelected}
                     >
                       {benefit}
-                    </motion.span>
+                    </span>
                   ))}
                 </div>
               </div>
@@ -262,23 +226,18 @@ export function Step1Goals() {
                   bg-gradient-to-r ${goal.gradient}
                 `} />
               )}
-            </motion.button>
+            </button>
           );
         })}
-      </motion.div>
+      </div>
 
       {/* Footer hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        className="text-center mt-8"
-      >
+      <div className="text-center mt-8 animate-fade-in" style={{ animationDelay: '0.6s' }}>
         <p className="text-sm text-gray-500">
           Seleziona un obiettivo per continuare →
         </p>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 

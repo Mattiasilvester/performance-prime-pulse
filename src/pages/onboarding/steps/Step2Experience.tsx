@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion';
 import { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
 import { useOnboardingStore } from '@/stores/onboardingStore';
+import type { OnboardingData } from '@/stores/onboardingStore';
 import { trackOnboarding } from '@/services/analytics';
 import { Slider } from '@/components/ui/slider';
 import { 
@@ -90,7 +90,7 @@ const dayMessages = [
 const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
   ({ onComplete }, ref) => {
     const { data, updateData } = useOnboardingStore();
-    const [selectedLevel, setSelectedLevel] = useState<string | null>(
+    const [selectedLevel, setSelectedLevel] = useState<ExperienceLevel['id'] | null>(
       data.livelloEsperienza || null
     );
     const [daysPerWeek, setDaysPerWeek] = useState<number>(
@@ -134,8 +134,8 @@ const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
 
         console.log('✅ Step 2: validazione OK, procedo');
 
-        const payload = {
-          livelloEsperienza: selectedLevel,
+        const payload: Partial<OnboardingData> = {
+          livelloEsperienza: selectedLevel ?? undefined,
           giorniSettimana: daysPerWeek
         };
 
@@ -154,64 +154,43 @@ const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
     };
 
     return (
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        className="max-w-4xl mx-auto w-full"
-      >
+      <div className="max-w-4xl mx-auto w-full animate-slide-up" style={{ animationDelay: '0.05s' }}>
         {/* Header */}
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-            className="text-5xl mb-4"
-          >
+        <div className="text-center mb-8 space-y-3">
+          <div className="text-5xl mb-4 animate-scale-in" style={{ animationDelay: '0.15s' }}>
             💪
-          </motion.div>
+          </div>
           
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-3xl md:text-4xl font-bold text-white mb-3"
+          <h2
+            className="text-3xl md:text-4xl font-bold text-white mb-3 animate-slide-up"
+            style={{ animationDelay: '0.2s' }}
           >
             Qual è il tuo livello di esperienza?
-          </motion.h2>
+          </h2>
           
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="text-lg text-gray-400"
+          <p
+            className="text-lg text-gray-400 animate-slide-up"
+            style={{ animationDelay: '0.25s' }}
           >
             Questo mi aiuta a calibrare l'intensità degli allenamenti
-          </motion.p>
+          </p>
         </div>
 
         {/* Experience Level Cards */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+        <div
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 animate-fade-in"
+          style={{ animationDelay: '0.3s' }}
         >
           {experienceLevels.map((level, index) => {
             const Icon = level.icon;
             const isSelected = selectedLevel === level.id;
             
             return (
-              <motion.button
+              <button
                 key={level.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
                 onClick={() => handleSelectLevel(level.id)}
                 className={`
-                  relative p-6 rounded-2xl border-2 transition-all duration-300
+                  relative p-6 rounded-2xl border-2 transition-all duration-300 transform
                   text-left group
                   ${isSelected 
                     ? 'bg-white/10 border-[#FFD700]/50 shadow-lg' 
@@ -261,39 +240,30 @@ const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
 
                 {/* Selected indicator */}
                 {isSelected && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 200 }}
-                    className="absolute top-3 right-3 w-6 h-6 bg-[#FFD700] rounded-full flex items-center justify-center"
-                  >
+                  <div className="absolute top-3 right-3 w-6 h-6 bg-[#FFD700] rounded-full flex items-center justify-center animate-scale-in">
                     <span className="text-black text-sm">✓</span>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* Recommended badge */}
                 {isSelected && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="mt-3 text-xs text-[#FFD700]"
+                  <div
+                    className="mt-3 text-xs text-[#FFD700] animate-slide-up"
+                    style={{ animationDelay: '0.1s' }}
                   >
                     Consigliati: {level.recommendedDays.min}-{level.recommendedDays.max} giorni/settimana
-                  </motion.div>
+                  </div>
                 )}
-              </motion.button>
+              </button>
             );
           })}
-        </motion.div>
+        </div>
 
         {/* Days per Week Slider */}
         {selectedLevel && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 mb-6"
+          <div
+            className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 mb-6 animate-slide-up"
+            style={{ animationDelay: '0.35s' }}
           >
             <div className="flex items-center gap-3 mb-4">
               <Calendar className="w-5 h-5 text-[#FFD700]" />
@@ -304,11 +274,9 @@ const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
 
             {/* Days Display */}
             <div className="text-center mb-4">
-              <motion.div
+              <div
                 key={daysPerWeek}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="inline-block"
+                className="inline-block animate-scale-in"
               >
                 <span className="text-5xl font-bold text-[#FFD700]">
                   {daysPerWeek}
@@ -316,7 +284,7 @@ const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
                 <span className="text-2xl text-white ml-2">
                   {daysPerWeek === 1 ? 'giorno' : 'giorni'}
                 </span>
-              </motion.div>
+              </div>
             </div>
 
             {/* Slider */}
@@ -344,14 +312,13 @@ const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
             </div>
 
             {/* Message */}
-            <motion.div
+            <div
               key={daysPerWeek}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className={`text-center mt-4 font-medium ${getCurrentMessage().color}`}
+              className={`text-center mt-4 font-medium animate-fade-in ${getCurrentMessage().color}`}
+              style={{ animationDelay: '0.4s' }}
             >
               {getCurrentMessage().message}
-            </motion.div>
+            </div>
 
             {/* Info box */}
             <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl">
@@ -363,10 +330,10 @@ const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
-      </motion.div>
+      </div>
     );
   }
 );

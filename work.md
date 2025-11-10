@@ -9,6 +9,40 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **10 Novembre 2025 - Sessione 15: Ottimizzazione Onboarding e Lazy Landing**
+- **Ora Inizio**: 18:00
+- **Ora Fine**: 21:00
+- **Durata**: 3 ore
+
+#### Implementazioni
+1. Refactor Step 0/1/2 onboarding con animazioni Tailwind conservative e cleanup Framer Motion.
+2. Wrapper `WeeklyProgressChart` + lazy import grafici Recharts in dashboard.
+3. Lazy load sezioni landing (SocialProof, CTA, Footer) con Suspense e fallback controllati.
+4. Aggiornate regole `.cursorrules` con linea guida sviluppo conservativo.
+5. Esteso lazy loading delle pagine onboarding e nuovi keyframe in `tailwind.config.ts`.
+
+#### Bug Risolti
+- Ripristinato auto-avanzamento automatico Step 1 dell'onboarding dopo selezione obiettivo.
+
+#### File Modificati
+- ✏️ `src/pages/onboarding/steps/Step0Registration.tsx`
+- ✏️ `src/pages/onboarding/steps/Step1Goals.tsx`
+- ✏️ `src/pages/onboarding/steps/Step2Experience.tsx`
+- ✏️ `src/hooks/useOnboardingNavigation.ts`
+- ✏️ `tailwind.config.ts`
+- ✏️ `src/components/dashboard/WeeklyProgress.tsx`
+- ✨ `src/components/dashboard/WeeklyProgressChart.tsx`
+- ✏️ `src/components/ProgressChart.tsx`
+- ✏️ `src/pages/onboarding/OnboardingPage.tsx`
+- ✏️ `src/pages/landing/NewLandingPage.tsx`
+- ✏️ `.cursorrules`
+- ✏️ `vite.config.ts`
+
+#### Risultati
+- Bundle principale: 700.97 KB (prima 710.88 KB)
+- Chunk SocialProof: 5.71 KB | CTA: 3.52 KB | Footer: 1.65 KB
+- Errori TypeScript: 0 (invariato)
+
 ### **01 Ottobre 2025 - Sessione 14: FIX LANDING PAGE E RIMOZIONE RETTANGOLO NERO**
 - **Ora Inizio**: 18:00
 - **Ora Fine**: 20:00
@@ -2020,29 +2054,16 @@ cd dist && python3 -m http.server 8083
 4. **Contrasto Problem Section** → Background chiaro con testo scuro
 5. **Card Altezza Disuguale** → Flex layout con items-stretch
 
+
+## Sessione 14 - 01/10/2025
+- Implementato tracking onboarding (eventi started/completed + durata reale)
+- Stabilizzato step navigation con override payload e ref condivisi
+- Rifinita card professionisti (contenuto, layout, responsive)
+- Ripuliti hint UI non necessari su mobile
+- Aggiornato copy della landing per il nuovo posizionamento “community in Italia”
 ---
 
 *Ultimo aggiornamento: 1 Ottobre 2025 - 22:00*
 *Stato: APP COMPLETA CON ONBOARDING GAMIFICATO E NUOVA LANDING PAGE 🚀*
 *Versione: 9.0 - Sistema Onboarding Completo e Nuova Landing Page*
 *Autore: Mattia Silvestrelli + AI Assistant*
-
-### **9 Novembre 2025 - Sessione Setup Git: FIX SSL CERTIFICATI macOS**
-- **Ora Inizio**: 21:00
-- **Ora Fine**: 21:30
-- **Durata**: 30 minuti
-
-#### Problema Risolto
-- **✅ CERTIFICATI SSL macOS 14/15** - Git push falliva con errore certificate verify
-  - **Causa**: macOS 14/15 ha cambiato path certificati SSL da `/etc/ssl/cert.pem`
-  - **Soluzione**: Generato bundle certificati da Keychain di sistema
-  - **File**: `~/.config/git/cacert.pem` (230KB)
-  - **Configurazione**: `git config --global http.sslCAinfo`
-
-#### Verifiche Completate
-- ✅ Git push da Terminal Mac funzionante
-- ✅ Git push da Terminal Cursor funzionante
-- ✅ Repository sincronizzato con GitHub
-
-#### File Creati
-- `docs/GIT_SETUP_MACOS.md` - Documentazione setup Git

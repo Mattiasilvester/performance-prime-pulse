@@ -66,9 +66,13 @@ export const Workouts = () => {
         .from('custom_workouts')
         .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at, exercises')
         .eq('id', workoutId)
-        .single();
+        .maybeSingle();
 
-      if (data && !error) {
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
         setCustomWorkout(data);
         setActiveWorkout('custom');
       }

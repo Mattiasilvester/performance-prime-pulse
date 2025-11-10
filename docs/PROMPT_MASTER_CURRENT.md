@@ -1,5 +1,25 @@
 # 🎯 PROMPT MASTER AGGIORNATO - PERFORMANCE PRIME PULSE
-**Ultimo aggiornamento: 01 Ottobre 2025 - Sessione Onboarding e Landing**
+**Ultimo aggiornamento: 10 Novembre 2025 - Sessione 15 (Onboarding Guardians + Lazy Landing)**
+
+## 📅 SESSIONE 15 - 10/11/2025
+
+### HIGHLIGHTS
+- Refactor conservativo Step 0/1/2 (animazioni CSS + cleanup Framer Motion) con nuove utility in `tailwind.config.ts`.
+- Ripristinato auto-avanzamento Step 1 onboarding con delay controllato e `saveAndContinue`.
+- Onboarding e dashboard: lazy load Step components e grafici Recharts (`WeeklyProgressChart`).
+- Landing `/`: lazy load SocialProof, CTA, Footer con fallback neri per zero layout shift.
+- Aggiornate `.cursorrules` con sezione “Regole Sviluppo Conservativo”.
+
+### LOCKED AGGIUNTI
+- `src/components/dashboard/WeeklyProgressChart.tsx`
+- `.cursorrules` → sezione “Regole Sviluppo Conservativo”
+
+### TODO DERIVATI
+- QA mobile/desktop landing per confermare animazioni post lazy load.
+- Monitorare bundle principale (target < 700 KB).
+- Valutare ulteriori split solo se sicuri (Hero/Problem/Solution restano eager).
+
+---
 
 ## ⚠️ ISTRUZIONI CRITICHE
 Stai lavorando su Performance Prime Pulse, applicazione React/TypeScript per fitness tracking.

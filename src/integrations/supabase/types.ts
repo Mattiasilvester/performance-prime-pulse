@@ -390,6 +390,109 @@ export type Database = {
         }
         Relationships: []
       }
+      primebot_interactions: {
+        Row: {
+          bot_intent: string | null
+          bot_response: string
+          created_at: string | null
+          id: string
+          interaction_type: string
+          session_id: string
+          timestamp: string | null
+          user_context: Json | null
+          user_id: string
+        }
+        Insert: {
+          bot_intent?: string | null
+          bot_response: string
+          created_at?: string | null
+          id?: string
+          interaction_type: string
+          session_id: string
+          timestamp?: string | null
+          user_context?: Json | null
+          user_id: string
+        }
+        Update: {
+          bot_intent?: string | null
+          bot_response?: string
+          created_at?: string | null
+          id?: string
+          interaction_type?: string
+          session_id?: string
+          timestamp?: string | null
+          user_context?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "primebot_interactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      primebot_preferences: {
+        Row: {
+          communication_style: string | null
+          created_at: string | null
+          favorite_topics: string[] | null
+          fitness_level: string | null
+          goals: string[] | null
+          has_trainer: boolean | null
+          last_interaction: string | null
+          onboarding_completed: boolean | null
+          preferred_workout_types: string[] | null
+          reminder_frequency: string | null
+          subscription_status: string | null
+          total_messages: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          communication_style?: string | null
+          created_at?: string | null
+          favorite_topics?: string[] | null
+          fitness_level?: string | null
+          goals?: string[] | null
+          has_trainer?: boolean | null
+          last_interaction?: string | null
+          onboarding_completed?: boolean | null
+          preferred_workout_types?: string[] | null
+          reminder_frequency?: string | null
+          subscription_status?: string | null
+          total_messages?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          communication_style?: string | null
+          created_at?: string | null
+          favorite_topics?: string[] | null
+          fitness_level?: string | null
+          goals?: string[] | null
+          has_trainer?: boolean | null
+          last_interaction?: string | null
+          onboarding_completed?: boolean | null
+          preferred_workout_types?: string[] | null
+          reminder_frequency?: string | null
+          subscription_status?: string | null
+          total_messages?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "primebot_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_objectives: {
         Row: {
           completed: boolean

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState, MouseEvent } from 'react';
+import { useEffect, useState, MouseEvent, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { safeLocalStorage } from '@/utils/domHelpers';
 import { calculateWorkoutParameters, mapExperienceLevel } from '@/utils/workoutParameters';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { User } from '@supabase/supabase-js';
 
 // Mappatura obiettivi tradotti
 const OBIETTIVI_TRADOTTI: Record<string, string> = {
@@ -44,6 +45,66 @@ interface WorkoutPlan {
   esercizi: Exercise[];
   obiettivoTradotto: string;
 }
+
+interface OnboardingResponsesSnapshot {
+  obiettivo?: string | null;
+  livello?: string | null;
+  giorni?: number | null;
+  luoghi?: string[] | null;
+  tempo?: number | null;
+}
+
+interface WorkoutPlanMetadata {
+  obiettivo?: string | null;
+  livello?: string | null;
+  giorni_settimana?: number | null;
+  luoghi?: string[] | null;
+  tempo_sessione?: number | null;
+  generated_at?: string;
+  responses_hash?: string;
+}
+
+const DEFAULT_SESSION_DURATION = 45;
+
+const normalizeTempoSessione = (value: unknown): number | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  return null;
+};
+
+const normalizeLuoghi = (value: unknown): string[] | null => {
+  if (Array.isArray(value)) {
+    const valid = value.filter((item): item is string => typeof item === 'string' && item.length > 0);
+    return valid.length > 0 ? valid : null;
+  }
+  if (typeof value === 'string' && value.length > 0) {
+    return [value];
+  }
+  return null;
+};
+
+const capitalizeFirst = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+
+const formatGeneratedDay = (iso?: string | null) => {
+  const date = iso ? new Date(iso) : new Date();
+  if (Number.isNaN(date.getTime())) {
+    return 'Piano personalizzato';
+  }
+  const formatted = date.toLocaleDateString('it-IT', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+};
 
 // Props per componente card
 interface WorkoutPlanCardProps {
@@ -253,8 +314,31 @@ export function CompletionScreen() {
   const { data, completeOnboarding, resetOnboarding } = useOnboardingStore();
   const [piani, setPiani] = useState<WorkoutPlan[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [user, setUser] = useState<User | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [currentResponses, setCurrentResponses] = useState<OnboardingResponsesSnapshot | null>(null);
+  const [latestMetadata, setLatestMetadata] = useState<WorkoutPlanMetadata | null>(null);
   const { toast } = useToast();
   
+  useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getUser().then(({ data: authData, error }) => {
+      if (error) {
+        console.error('Errore recupero utente:', error);
+        return;
+      }
+
+      if (isMounted) {
+        setUser(authData?.user ?? null);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Debug: Verifica store direttamente
   useEffect(() => {
     const storeState = useOnboardingStore.getState();
@@ -265,6 +349,276 @@ export function CompletionScreen() {
     console.log('Store tempoSessione:', storeState.data.tempoSessione);
     console.log('=== FINE STORE DEBUG ===');
   }, []);
+
+  const buildResponsesSnapshot = (
+    obiettivoData?: Record<string, any> | null,
+    esperienzaData?: Record<string, any> | null,
+    preferencesData?: Record<string, any> | null
+  ): OnboardingResponsesSnapshot => {
+    const luoghiFromDb = normalizeLuoghi(preferencesData?.luoghi_allenamento);
+    const luoghiFromStore = normalizeLuoghi(data.luoghiAllenamento);
+    const tempoFromDb = normalizeTempoSessione(preferencesData?.tempo_sessione);
+    const tempoFromStore = normalizeTempoSessione(data.tempoSessione);
+
+    return {
+      obiettivo: obiettivoData?.obiettivo ?? data.obiettivo ?? null,
+      livello: esperienzaData?.livello_esperienza ?? data.livelloEsperienza ?? null,
+      giorni: esperienzaData?.giorni_settimana ?? null,
+      luoghi: luoghiFromDb ?? luoghiFromStore ?? ['casa'],
+      tempo: tempoFromDb ?? tempoFromStore ?? DEFAULT_SESSION_DURATION
+    };
+  };
+
+  const buildResponsesHash = (snapshot: OnboardingResponsesSnapshot) =>
+    JSON.stringify({
+      obiettivo: snapshot.obiettivo ?? null,
+      livello: snapshot.livello ?? null,
+      giorni: snapshot.giorni ?? null,
+      luoghi: snapshot.luoghi ?? null,
+      tempo: snapshot.tempo ?? null
+    });
+
+  const buildPlanMetadata = (snapshot: OnboardingResponsesSnapshot): WorkoutPlanMetadata => ({
+    obiettivo: snapshot.obiettivo ?? null,
+    livello: snapshot.livello ?? null,
+    giorni_settimana: snapshot.giorni ?? null,
+    luoghi: snapshot.luoghi ?? null,
+    tempo_sessione: snapshot.tempo ?? null,
+    generated_at: new Date().toISOString(),
+    responses_hash: buildResponsesHash(snapshot)
+  });
+
+  const mapSupabasePlanToWorkoutPlan = useCallback((plan: any): WorkoutPlan => {
+    const rawTipo = typeof plan?.tipo === 'string' ? plan.tipo : undefined;
+    const tipoValue: WorkoutPlan['tipo'] =
+      rawTipo === 'Forza' || rawTipo === 'Cardio' || rawTipo === 'HIIT' || rawTipo === 'Recupero'
+        ? rawTipo
+        : 'Forza';
+
+    const obiettivoValue = (plan?.obiettivo as string | undefined) ?? data.obiettivo ?? 'dimagrire';
+    const durataValue =
+      typeof plan?.durata === 'number'
+        ? plan.durata
+        : normalizeTempoSessione(data.tempoSessione) ?? DEFAULT_SESSION_DURATION;
+    const eserciziValue: Exercise[] = Array.isArray(plan?.esercizi) ? (plan.esercizi as Exercise[]) : [];
+
+    const luogoValue =
+      typeof plan?.luogo === 'string' && plan.luogo.length > 0 ? capitalizeFirst(plan.luogo) : 'Personalizzato';
+
+    const metadata = (plan?.metadata ?? null) as Record<string, any> | null;
+
+    return {
+      giorno: formatGeneratedDay(metadata?.generated_at),
+      tipo: tipoValue,
+      luogo: luogoValue,
+      durata: durataValue,
+      esercizi: eserciziValue,
+      obiettivoTradotto: OBIETTIVI_TRADOTTI[obiettivoValue] || obiettivoValue
+    };
+  }, [data]);
+
+  const fetchOnboardingSections = useCallback(async () => {
+    if (!user?.id) {
+      return null;
+    }
+
+    const { data: obiettivoData, error: obiettivoError } = await supabase
+      .from('onboarding_obiettivo_principale')
+      .select('obiettivo')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (obiettivoError) {
+      throw obiettivoError;
+    }
+
+    const { data: esperienzaData, error: esperienzaError } = await supabase
+      .from('onboarding_esperienza')
+      .select('livello_esperienza, giorni_settimana')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (esperienzaError) {
+      throw esperienzaError;
+    }
+
+    const { data: preferencesData, error: preferencesError } = await supabase
+      .from('onboarding_preferenze')
+      .select('luoghi_allenamento, tempo_sessione')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (preferencesError) {
+      throw preferencesError;
+    }
+
+    return {
+      obiettivoData,
+      esperienzaData,
+      preferencesData
+    };
+  }, [user?.id]);
+
+  const checkAndRegeneratePlan = useCallback(async () => {
+    if (!user?.id) {
+      return false;
+    }
+
+    try {
+      const onboardingData = await fetchOnboardingSections();
+
+      if (!onboardingData) {
+        return false;
+      }
+
+      const snapshot = buildResponsesSnapshot(
+        onboardingData.obiettivoData,
+        onboardingData.esperienzaData,
+        onboardingData.preferencesData
+      );
+      setCurrentResponses(snapshot);
+
+      const { data: existingPlans, error: existingPlansError } = await supabase
+        .from('workout_plans')
+        .select('id, metadata')
+        .eq('user_id', user.id)
+        .eq('source', 'onboarding');
+
+      if (existingPlansError) {
+        throw existingPlansError;
+      }
+
+      if (!existingPlans || existingPlans.length === 0) {
+        return false;
+      }
+
+      const planMetadata = (existingPlans[0]?.metadata ?? null) as WorkoutPlanMetadata | null;
+
+      if (planMetadata) {
+        setLatestMetadata(planMetadata);
+      }
+
+      const currentHash = buildResponsesHash(snapshot);
+
+      if (planMetadata?.responses_hash === currentHash) {
+        console.log('✅ Risposte non modificate, piano esistente OK');
+        return false;
+      }
+
+      console.log('🔄 Risposte modificate - eliminazione vecchio piano...');
+      await supabase
+        .from('workout_plans')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('source', 'onboarding');
+
+      console.log('🔄 Rigenerazione piano con nuove risposte...');
+      return true;
+    } catch (error) {
+      console.error('Errore controllo rigenerazione:', error);
+      return false;
+    }
+  }, [data, fetchOnboardingSections, user?.id]);
+
+  const generateWorkoutPlans = useCallback(async () => {
+    if (!user?.id) {
+      return;
+    }
+
+    try {
+      let snapshot = currentResponses;
+
+      if (!snapshot) {
+        const onboardingData = await fetchOnboardingSections();
+        if (!onboardingData) {
+          return;
+        }
+        snapshot = buildResponsesSnapshot(
+          onboardingData.obiettivoData,
+          onboardingData.esperienzaData,
+          onboardingData.preferencesData
+        );
+        setCurrentResponses(snapshot);
+      }
+
+      const luoghi = snapshot.luoghi && snapshot.luoghi.length > 0 ? snapshot.luoghi : ['casa'];
+      const tempoSessione = normalizeTempoSessione(snapshot.tempo) ?? DEFAULT_SESSION_DURATION;
+      const obiettivoSelezionato = snapshot.obiettivo ?? data.obiettivo ?? 'dimagrire';
+      const livelloSelezionato = snapshot.livello ?? data.livelloEsperienza ?? 'intermedio';
+
+      const oggi = new Date();
+      const giornoFormattato = oggi.toLocaleDateString('it-IT', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+      const giornoCapitalizzato = giornoFormattato.charAt(0).toUpperCase() + giornoFormattato.slice(1);
+
+      const pianiGenerati = luoghi.map((luogo) => {
+        const piano = generateDailyWorkout(
+          obiettivoSelezionato,
+          livelloSelezionato,
+          [luogo],
+          tempoSessione
+        );
+
+        return {
+          ...piano,
+          luogo: capitalizeFirst(luogo),
+          giorno: giornoCapitalizzato,
+          obiettivoTradotto: OBIETTIVI_TRADOTTI[obiettivoSelezionato] || obiettivoSelezionato,
+          durata: tempoSessione
+        };
+      });
+
+      const metadata = buildPlanMetadata({
+        obiettivo: obiettivoSelezionato,
+        livello: livelloSelezionato,
+        giorni: snapshot.giorni ?? null,
+        luoghi,
+        tempo: tempoSessione
+      });
+      setLatestMetadata(metadata);
+
+      const timestamp = new Date().toISOString();
+      const payload = pianiGenerati.map((piano) => ({
+        user_id: user.id,
+        nome: `Piano ${piano.luogo}`,
+        tipo: piano.tipo,
+        luogo: piano.luogo,
+        obiettivo: obiettivoSelezionato,
+        durata: piano.durata,
+        esercizi: piano.esercizi,
+        created_at: timestamp,
+        updated_at: timestamp,
+        is_active: true,
+        saved_for_later: false,
+        source: 'onboarding',
+        metadata
+      }));
+
+      const { error } = await supabase
+        .from('workout_plans')
+        .upsert(payload, {
+          onConflict: 'user_id,luogo'
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      setPiani(pianiGenerati);
+    } catch (error) {
+      console.error('Errore generazione piani onboarding:', error);
+      toast({
+        title: 'Errore generazione piano',
+        description: 'Non è stato possibile generare il piano personalizzato. Riprova più tardi.',
+        duration: 4000,
+        className: 'bg-gradient-to-br from-gray-900 to-black border-2 border-red-500 text-white'
+      });
+    }
+  }, [currentResponses, data, fetchOnboardingSections, toast, user?.id]);
 
   // Funzione per generare l'allenamento giornaliero (MANTENUTA DAL CODICE ESISTENTE)
   const generateDailyWorkout = (
@@ -399,81 +753,72 @@ export function CompletionScreen() {
     };
   };
 
-  // Genera piani multipli basati sui luoghi
   useEffect(() => {
-    completeOnboarding();
-    
-    const generaPiani = () => {
-      console.log('=== GENERAZIONE PIANI DEBUG ===');
-      console.log('1. Data completa:', data);
-      console.log('2. Luoghi allenamento:', data.luoghiAllenamento);
-      console.log('3. Tipo luoghi:', Array.isArray(data.luoghiAllenamento) ? 'Array' : typeof data.luoghiAllenamento);
-      console.log('4. Numero luoghi:', data.luoghiAllenamento?.length || 0);
-      console.log('5. Tempo sessione:', data.tempoSessione);
-      console.log('6. Tipo tempo sessione:', typeof data.tempoSessione);
-      
-      const oggi = new Date();
-      const giornoFormattato = oggi.toLocaleDateString('it-IT', { 
-        weekday: 'long', 
-        day: 'numeric', 
-        month: 'long',
-        year: 'numeric'
-      });
-      
-      // Capitalizza prima lettera
-      const giornoCapitalizzato = giornoFormattato.charAt(0).toUpperCase() + giornoFormattato.slice(1);
-      
-      // FIX BUG 1: Verifica che luoghiAllenamento sia un array valido
-      const luoghi = Array.isArray(data.luoghiAllenamento) && data.luoghiAllenamento.length > 0 
-        ? data.luoghiAllenamento 
-        : ['casa']; // Fallback solo se non c'è array o è vuoto
-      
-      console.log('7. Luoghi da processare:', luoghi);
-      console.log('8. Inizio mapping luoghi...');
-      
-      const pianiGenerati = luoghi.map((luogo, index) => {
-        console.log(`9.${index + 1}. Generazione piano per luogo:`, luogo);
-        
-        // FIX BUG 2: Usa il tempo sessione corretto (senza fallback a 45)
-        const tempoSessione = data.tempoSessione || 45;
-        console.log(`10.${index + 1}. Tempo sessione per questo piano:`, tempoSessione);
-        
-        const piano = generateDailyWorkout(
-          data.obiettivo || 'dimagrire',
-          data.livelloEsperienza || 'intermedio',
-          [luogo], // Solo questo luogo specifico
-          tempoSessione
-        );
-        
-        console.log(`11.${index + 1}. Piano generato:`, piano);
-        
-        const pianoCompleto = {
-          ...piano,
-          luogo: luogo.charAt(0).toUpperCase() + luogo.slice(1),
-          giorno: giornoCapitalizzato,
-          obiettivoTradotto: OBIETTIVI_TRADOTTI[data.obiettivo || 'dimagrire'] || data.obiettivo || 'Cardio e Resistenza',
-          durata: tempoSessione // FIX BUG 2: Usa il valore corretto
-        };
-        
-        console.log(`12.${index + 1}. Piano completo con durata:`, pianoCompleto.durata);
-        
-        return pianoCompleto;
-      });
-      
-      console.log('13. Piani generati totali:', pianiGenerati.length);
-      console.log('14. Dettaglio piani:', pianiGenerati);
-      console.log('15. Durate piani:', pianiGenerati.map(p => p.durata));
-      
-      setPiani(pianiGenerati);
-      console.log('16. State piani aggiornato');
-      console.log('=== FINE GENERAZIONE PIANI ===');
+    const initializePlans = async () => {
+      if (!user?.id) {
+        return;
+      }
+
+      completeOnboarding();
+
+      try {
+        setIsGenerating(true);
+
+        const needsRegeneration = await checkAndRegeneratePlan();
+
+        if (needsRegeneration) {
+          toast({
+            title: 'Aggiornamento piano',
+            description: '🔄 Rilevate modifiche alle risposte, aggiornamento piano in corso...',
+            duration: 3500,
+            className: 'bg-gradient-to-br from-gray-900 to-black border-2 border-[#FFD700] text-white'
+          });
+        }
+
+        const { data: existingPlans, error } = await supabase
+          .from('workout_plans')
+          .select('id, nome, tipo, luogo, durata, esercizi, metadata, obiettivo, saved_for_later, user_id, source, created_at, updated_at')
+          .eq('user_id', user.id)
+          .eq('source', 'onboarding');
+
+        if (error) {
+          throw error;
+        }
+
+        if (!existingPlans || existingPlans.length === 0) {
+          await generateWorkoutPlans();
+
+          if (needsRegeneration) {
+            toast({
+              title: 'Piano aggiornato',
+              description: '✅ Piano aggiornato con le tue nuove risposte!',
+              duration: 3500,
+              className: 'bg-gradient-to-br from-gray-900 to-black border-2 border-[#FFD700] text-white'
+            });
+          }
+        } else {
+          setPiani(existingPlans.map(mapSupabasePlanToWorkoutPlan));
+
+          const firstMetadata = (existingPlans[0]?.metadata ?? null) as WorkoutPlanMetadata | null;
+          if (firstMetadata) {
+            setLatestMetadata(firstMetadata);
+          }
+        }
+      } catch (error) {
+        console.error('Errore inizializzazione piani:', error);
+        toast({
+          title: 'Errore durante la generazione',
+          description: 'Si è verificato un problema durante il recupero del piano. Riprova.',
+          duration: 4000,
+          className: 'bg-gradient-to-br from-gray-900 to-black border-2 border-red-500 text-white'
+        });
+      } finally {
+        setIsGenerating(false);
+      }
     };
 
-    // Simula generazione del piano
-    setTimeout(() => {
-      generaPiani();
-    }, 1000);
-  }, [data, completeOnboarding]);
+    initializePlans();
+  }, [user?.id, completeOnboarding, checkAndRegeneratePlan, generateWorkoutPlans, mapSupabasePlanToWorkoutPlan, toast]);
 
   const normalizeTimeValue = (value?: string | null, fallback: string = '45s') => {
     if (!value) return fallback;
@@ -533,6 +878,19 @@ export function CompletionScreen() {
       const { data: userData } = await supabase.auth.getUser();
 
       if (userData?.user) {
+        const metadataPayload =
+          latestMetadata ??
+          buildPlanMetadata({
+            obiettivo: data.obiettivo ?? null,
+            livello: data.livelloEsperienza ?? null,
+            giorni: currentResponses?.giorni ?? null,
+            luoghi: currentResponses?.luoghi ?? [piano.luogo.toLowerCase()],
+            tempo:
+              currentResponses?.tempo ??
+              normalizeTempoSessione(data.tempoSessione) ??
+              DEFAULT_SESSION_DURATION
+          });
+
         const { error } = await supabase
           .from('workout_plans')
           .upsert({
@@ -544,7 +902,10 @@ export function CompletionScreen() {
             durata: piano.durata,
             esercizi: piano.esercizi,
             created_at: new Date().toISOString(),
-            is_active: true
+            updated_at: new Date().toISOString(),
+            is_active: true,
+            source: 'onboarding',
+            metadata: metadataPayload
           }, {
             onConflict: 'user_id,luogo'
           });
@@ -597,6 +958,20 @@ export function CompletionScreen() {
       }
 
       const timestamp = new Date().toISOString();
+      const metadataPayload =
+        latestMetadata ??
+        buildPlanMetadata({
+          obiettivo: data.obiettivo ?? null,
+          livello: data.livelloEsperienza ?? null,
+          giorni: currentResponses?.giorni ?? null,
+          luoghi:
+            currentResponses?.luoghi ??
+            (piani.length > 0 ? piani.map((plan) => plan.luogo.toLowerCase()) : null),
+            tempo:
+              currentResponses?.tempo ??
+              normalizeTempoSessione(data.tempoSessione) ??
+              DEFAULT_SESSION_DURATION
+        });
 
       const pianiDaSalvare = piani.map(piano => ({
         user_id: userData.user.id,
@@ -609,7 +984,9 @@ export function CompletionScreen() {
         created_at: timestamp,
         updated_at: timestamp,
         is_active: true,
-        saved_for_later: true
+        saved_for_later: true,
+        source: 'onboarding',
+        metadata: metadataPayload
       }));
 
       console.log('Salvataggio di', pianiDaSalvare.length, 'piani...');
@@ -758,7 +1135,9 @@ export function CompletionScreen() {
             >
               <Dumbbell className="w-8 h-8 text-[#FFD700]" />
             </motion.div>
-            <p className="text-white font-medium">Generazione piani in corso...</p>
+            <p className="text-white font-medium">
+              {isGenerating ? 'Generazione piani in corso...' : 'Nessun piano disponibile.'}
+            </p>
           </div>
         )}
 

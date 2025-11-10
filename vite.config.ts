@@ -15,8 +15,8 @@ export default defineConfig(({ command, mode }) => {
     react(),
     mode === 'development' && componentTagger(),
     !isDev && visualizer({
-      filename: './dist/stats.html',
-      open: false,
+      filename: 'bundle-analysis.html',
+      open: true,
       gzipSize: true,
       brotliSize: true,
       template: 'treemap'

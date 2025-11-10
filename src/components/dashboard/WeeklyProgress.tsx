@@ -1,10 +1,11 @@
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 // import { RefreshCw } from 'lucide-react'; // Rimosso - non più necessario
 
-interface WeeklyData {
+const WeeklyProgressChart = lazy(() => import('./WeeklyProgressChart'));
+
+export interface WeeklyData {
   name: string;
   workouts: number;
 }
@@ -225,26 +226,9 @@ export const WeeklyProgress = () => {
       </div>
       
       <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" />
-            <XAxis 
-              dataKey="name" 
-              tick={{ fill: '#EEBA2B', fontSize: 12 }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
-            />
-            <YAxis 
-              tick={{ fill: '#EEBA2B', fontSize: 12 }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
-            />
-            <Bar 
-              dataKey="workouts" 
-              fill="#EEBA2B" 
-              radius={[4, 4, 0, 0]}
-              className="hover:opacity-80 transition-opacity"
-            />
-          </BarChart>
-        </ResponsiveContainer>
+        <Suspense fallback={<div className="h-full w-full rounded-lg bg-white/5 animate-pulse" />}>
+          <WeeklyProgressChart data={data} />
+        </Suspense>
       </div>
       
       <div className="mt-4 text-center">

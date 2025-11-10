@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { FileAnalyzer } from '@/services/fileAnalysis';
 
 interface WorkoutAttachment {
   id: string;
@@ -146,6 +145,7 @@ export const WorkoutAttachments = ({ workoutId, onAttachmentsChange }: WorkoutAt
         if (file.type === 'application/pdf') {
           console.log('[PDF_DEBUG] Iniziando parsing PDF:', file.name);
           try {
+            const { FileAnalyzer } = await import('@/services/fileAnalysis');
             const analysisResult = await FileAnalyzer.analyzeFile(file);
             console.log('[PDF_DEBUG] Esercizi parsati:', analysisResult.exercises);
             

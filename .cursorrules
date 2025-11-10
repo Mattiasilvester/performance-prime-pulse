@@ -1260,6 +1260,119 @@ python3 -m http.server 8083
 - ✅ `src/hooks/useFeatureFlag.ts` - Hook feature flags con logica A/B testing
 - ✅ Sistema background globali (body/html/#root) - Configurazione ottimale
 
+## 🛡️ REGOLE SVILUPPO CONSERVATIVO (PRIORITÀ MASSIMA)
+
+### PRINCIPIO FONDAMENTALE
+
+**"Se funziona, non romperlo"** - Ogni modifica deve preservare funzionalità esistenti.
+
+### REGOLE OBBLIGATORIE
+
+1. **ZERO BREAKING CHANGES**
+   - Mai modificare logiche funzionanti senza richiesta esplicita
+   - Mai cambiare comportamenti UX consolidati
+   - Mai rimuovere funzionalità esistenti
+
+2. **ANALISI PRIMA DI MODIFICARE**
+   - Prima di modificare un componente, analizza:
+     * Quali funzionalità ha
+     * Chi lo usa (altri componenti/pagine)
+     * Quali animazioni/interazioni ha
+     * Quali side effects può causare la modifica
+   - Se l'analisi rileva rischi → FERMARSI e riferire
+
+3. **CONFERMA ESPLICITA RICHIESTA**
+   - Non fare ottimizzazioni non richieste
+   - Non refactorare codice "perché si può fare meglio"
+   - Implementare SOLO ciò che è esplicitamente richiesto nel prompt
+
+4. **IN CASO DI DUBBIO**
+   - **FERMARSI IMMEDIATAMENTE**
+   - Documentare il dubbio
+   - Chiedere conferma all'utente
+   - NON procedere con supposizioni
+
+5. **MODIFICHE GRADUALI**
+   - Mai cambiare più componenti insieme
+   - Una modifica alla volta
+   - Test dopo ogni modifica
+   - Se una modifica rompe qualcosa → rollback immediato
+
+6. **PRESERVAZIONE UX**
+   - Animazioni devono rimanere identiche visivamente
+   - Timing delle animazioni deve essere preservato
+   - Hover/click effects devono funzionare identicamente
+   - Mobile responsiveness deve rimanere uguale
+
+7. **COMPONENTI CRITICI (EXTRA ATTENZIONE)**
+   - Landing page (acquisizione utenti)
+   - Onboarding flow (conversione utenti)
+   - Authentication (sicurezza)
+   - Payment flow (revenue)
+   - Dashboard (retention)
+
+   **Per questi componenti:**
+   - Doppia verifica prima di modificare
+   - Test manuali obbligatori post-modifica
+   - Documentare ogni cambiamento
+
+8. **LAZY LOADING SICURO**
+   - Lazy load SOLO componenti below-fold o non critici
+   - MAI lazy load componenti above-fold critici
+   - Sempre fallback Suspense appropriato
+   - Verificare che loading non degradi UX
+
+9. **SOSTITUZIONI CSS/LIBRERIE**
+   - Sostituire librerie SOLO se:
+     * Animazione è ultra-semplice (fade, scale, slide base)
+     * Nessun hook complesso (useScroll, useInView, useAnimation)
+     * Nessun AnimatePresence
+     * Nessun gesture handler con logica
+   - Test visivo obbligatorio: nuovo === vecchio pixel-perfect
+
+10. **DOCUMENTAZIONE MODIFICHE**
+    - Ogni modifica deve documentare:
+      * Cosa è stato modificato
+      * Perché è stato modificato
+      * Test eseguiti
+      * Possibili side effects
+
+### ESEMPI DI QUANDO FERMARSI
+
+❌ **FERMARSI e chiedere conferma:**
+- "Questo componente usa useScroll, la sostituzione CSS potrebbe non essere equivalente"
+- "Modificando questo componente potrei rompere la logica di auto-avanzamento"
+- "Non sono sicuro se questo lazy load impatta le performance above-fold"
+- "Questa animazione sembra semplice ma ha orchestration complessa"
+- "Rimuovendo questa dipendenza potrei causare errori in altri componenti"
+
+✅ **Procedere (ma con cautela):**
+- "Lazy load componente footer (non critico, below-fold)"
+- "Sostituzione hover scale semplice con CSS (verificato equivalente)"
+- "Aggiunto useCallback per ottimizzare re-render (preserva logica)"
+
+### TESTING OBBLIGATORIO POST-MODIFICA
+
+Dopo OGNI modifica:
+1. `npx tsc --noEmit` → deve passare
+2. `npm run build` → deve passare
+3. Test visivo componente modificato
+4. Test funzionale (click, navigation, forms)
+5. Test mobile responsive
+6. Console browser pulita (no errori)
+
+Se anche UNO di questi test fallisce → ROLLBACK immediato.
+
+### PRIORITÀ IN CASO DI CONFLITTO
+
+In ordine di priorità:
+1. 🔴 **Funzionalità** - L'app deve funzionare
+2. 🟡 **UX** - L'esperienza utente deve rimanere identica
+3. 🟢 **Performance** - Ottimizzare solo se non impatta 1 e 2
+4. ⚪ **Pulizia codice** - Fare solo se richiesto esplicitamente
+
+**MAI sacrificare 1 o 2 per ottenere 3 o 4.**
+
 ---
 
 *Ultimo aggiornamento: 1 Ottobre 2025 - 22:00*
