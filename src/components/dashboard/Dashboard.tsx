@@ -1,9 +1,15 @@
 
-import { StatsOverview } from './StatsOverview';
-import QuickActions from './QuickActions';
-import { RecentActivity } from './RecentActivity';
-import { WeeklyProgress } from './WeeklyProgress';
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+const StatsOverview = lazy(() =>
+  import('./StatsOverview').then((module) => ({ default: module.StatsOverview }))
+);
+const QuickActions = lazy(() => import('./QuickActions'));
+const RecentActivity = lazy(() =>
+  import('./RecentActivity').then((module) => ({ default: module.RecentActivity }))
+);
+const WeeklyProgress = lazy(() =>
+  import('./WeeklyProgress').then((module) => ({ default: module.WeeklyProgress }))
+);
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { OnboardingBot } from '@/components/OnboardingBot';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,7 +71,9 @@ export const Dashboard = () => {
           onFocusChat={handleFocusChat}
         />
 
-        <StatsOverview />
+        <Suspense fallback={<div className="text-white">Caricamento statistiche...</div>}>
+          <StatsOverview />
+        </Suspense>
         
         {/* Bottone Workout Rapido - CTA Principale */}
         <div className="w-full mb-4">
@@ -80,11 +88,17 @@ export const Dashboard = () => {
           </button>
         </div>
         
-        <QuickActions />
+        <Suspense fallback={<div className="text-white">Caricamento azioni rapide...</div>}>
+          <QuickActions />
+        </Suspense>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          <WeeklyProgress />
-          <RecentActivity />
+          <Suspense fallback={<div className="text-white">Caricamento progressi...</div>}>
+            <WeeklyProgress />
+          </Suspense>
+          <Suspense fallback={<div className="text-white">Caricamento attività...</div>}>
+            <RecentActivity />
+          </Suspense>
         </div>
       </div>
     </div>

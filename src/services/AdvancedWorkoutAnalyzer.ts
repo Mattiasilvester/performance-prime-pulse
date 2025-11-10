@@ -3,7 +3,7 @@
  * Con logging dettagliato, fallback OCR e gestione URL firmati Supabase
  */
 
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
 import { createWorker } from 'tesseract.js';
 import { supabase } from '@/integrations/supabase/client';
 import { env } from '@/config/env';
@@ -283,7 +283,7 @@ export class AdvancedWorkoutAnalyzer {
       const pdf = await loadingTask.promise;
       
       let fullText = '';
-      let totalPages = pdf.numPages;
+      const totalPages = pdf.numPages;
       
       for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
@@ -389,7 +389,7 @@ export class AdvancedWorkoutAnalyzer {
     const DEBUG = env.DEBUG_MODE;
 
     // Step 1: Normalizzazione base
-    let normalized = text
+    const normalized = text
       .replace(/×/g, "x")
       .replace(/–/g, "-")
       .replace(/•/g, "")
@@ -417,7 +417,7 @@ export class AdvancedWorkoutAnalyzer {
     }
     let currentSection: 'riscaldamento' | 'scheda' | 'stretching' = 'scheda';
     let multiDay = false;
-    let daysFound: string[] = [];
+    const daysFound: string[] = [];
     
     const result: ParsedDay = {
       riscaldamento: [],

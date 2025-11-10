@@ -1,11 +1,20 @@
 
-import { useState } from 'react';
-import { AppointmentCalendar } from './AppointmentCalendar';
-import { UpcomingAppointments } from './UpcomingAppointments';
-import { ProfessionalsList } from './ProfessionalsList';
-import { WorkoutCreationModal } from './WorkoutCreationModal';
-import { WorkoutViewModal } from './WorkoutViewModal';
-import { Lock } from 'lucide-react';
+import { lazy, Suspense, useState } from 'react';
+const AppointmentCalendar = lazy(() =>
+  import('./AppointmentCalendar').then((module) => ({ default: module.AppointmentCalendar }))
+);
+const UpcomingAppointments = lazy(() =>
+  import('./UpcomingAppointments').then((module) => ({ default: module.UpcomingAppointments }))
+);
+const ProfessionalsList = lazy(() =>
+  import('./ProfessionalsList').then((module) => ({ default: module.ProfessionalsList }))
+);
+const WorkoutCreationModal = lazy(() =>
+  import('./WorkoutCreationModal').then((module) => ({ default: module.WorkoutCreationModal }))
+);
+const WorkoutViewModal = lazy(() =>
+  import('./WorkoutViewModal').then((module) => ({ default: module.WorkoutViewModal }))
+);
 
 export const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -43,40 +52,50 @@ export const Schedule = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AppointmentCalendar 
-          onDateSelect={handleDateSelect}
-          onWorkoutSelect={handleWorkoutSelect}
-          refreshTrigger={refreshTrigger}
-        />
+        <Suspense fallback={<div className="text-white">Caricamento calendario...</div>}>
+          <AppointmentCalendar 
+            onDateSelect={handleDateSelect}
+            onWorkoutSelect={handleWorkoutSelect}
+            refreshTrigger={refreshTrigger}
+          />
+        </Suspense>
         
         <div className="space-y-6">
           <div className="relative">
-            <UpcomingAppointments />
+            <Suspense fallback={<div className="text-white">Caricamento appuntamenti...</div>}>
+              <UpcomingAppointments />
+            </Suspense>
           </div>
           
           <div className="relative">
-            <ProfessionalsList />
+            <Suspense fallback={<div className="text-white">Caricamento professionisti...</div>}>
+              <ProfessionalsList />
+            </Suspense>
           </div>
         </div>
       </div>
 
-      {selectedDate && (
-        <WorkoutCreationModal
-          isOpen={!!selectedDate}
-          selectedDate={selectedDate}
-          onClose={handleCloseModals}
-          onWorkoutCreated={handleWorkoutSaved}
-        />
-      )}
+      <Suspense fallback={null}>
+        {selectedDate && (
+          <WorkoutCreationModal
+            isOpen={!!selectedDate}
+            selectedDate={selectedDate}
+            onClose={handleCloseModals}
+            onWorkoutCreated={handleWorkoutSaved}
+          />
+        )}
+      </Suspense>
 
-      {selectedWorkout && (
-        <WorkoutViewModal
-          isOpen={!!selectedWorkout}
-          workout={selectedWorkout}
-          onClose={handleCloseModals}
-          onWorkoutDeleted={handleWorkoutSaved}
-        />
-      )}
+      <Suspense fallback={null}>
+        {selectedWorkout && (
+          <WorkoutViewModal
+            isOpen={!!selectedWorkout}
+            workout={selectedWorkout}
+            onClose={handleCloseModals}
+            onWorkoutDeleted={handleWorkoutSaved}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };

@@ -502,14 +502,12 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
     return () => clearInterval(interval);
   }, [completedExercises]);
   
-  if (!currentWorkout) {
-    return (
-      <div className="text-white text-center">
-        <p>Allenamento non trovato</p>
-        <Button onClick={onClose} className="mt-4">Torna indietro</Button>
-      </div>
-    );
-  }
+  const missingWorkoutContent = (
+    <div className="text-white text-center">
+      <p>Allenamento non trovato</p>
+      <Button onClick={onClose} className="mt-4">Torna indietro</Button>
+    </div>
+  );
 
   // Funzione per avviare il timer di un esercizio
   const startExerciseTimer = (index: number, exercise: any) => {
@@ -612,13 +610,18 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
           completed_at: new Date().toISOString()
         })
         .select('id, title, total_duration, completed, completed_at')
-        .single();
+        .maybeSingle();
 
       console.log('📊 [DEBUG] completeWorkout: Risultato inserimento:', { workoutRecord, createError });
 
       if (createError) {
         console.error('❌ [DEBUG] Errore creazione workout record:', createError);
         toast.error('Errore nel salvataggio dell\'allenamento');
+        return;
+      }
+
+      if (!workoutRecord) {
+        console.warn('⚠️ [DEBUG] completeWorkout: nessun record restituito dall\'inserimento');
         return;
       }
 
@@ -765,6 +768,10 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
     setRestTimeLeft(0);
     setIsRestTimerPaused(false);
   }, [currentExerciseIndex]);
+
+  if (!currentWorkout) {
+    return missingWorkoutContent;
+  }
 
   if (workoutState === 'running' || workoutState === 'paused' || workoutState === 'rest') {
     const totalProgress = ((currentExerciseIndex + 1) / (currentWorkout.exercises?.length || 1)) * 100;

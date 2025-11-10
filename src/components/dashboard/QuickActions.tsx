@@ -1,10 +1,22 @@
 import { Calendar, Clock, Bot, Home, Dumbbell, TreePine, Target, X } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { NewObjectiveCard } from '@/components/profile/NewObjectiveCard';
+
+type QuickAction = {
+  label: string;
+  description: string;
+  icon: LucideIcon;
+  color: string;
+  textColor: string;
+  onClick: () => void;
+  accessible: boolean;
+  disabled?: boolean;
+};
 
 const QuickActions = () => {
   const [isObjectiveModalOpen, setIsObjectiveModalOpen] = useState(false);
@@ -28,7 +40,7 @@ const QuickActions = () => {
 
         const { data, error } = await supabase
           .from('workout_plans')
-          .select('*')
+          .select('id, nome, tipo, luogo, obiettivo, durata, esercizi, is_active, saved_for_later, created_at, updated_at')
           .eq('user_id', currentUser.id)
           .eq('is_active', true)
           .order('created_at', { ascending: false });
@@ -117,7 +129,7 @@ const QuickActions = () => {
     : `${savedPlans.length} piani attivi`;
 
   // Azioni rapide aggiornate con Timer, Calendario e PrimeBot
-  const actions = [
+  const actions: QuickAction[] = [
     {
       label: 'Timer',
       description: 'Timer per allenamenti',
@@ -126,6 +138,7 @@ const QuickActions = () => {
       textColor: 'text-white',
       onClick: handleTimerClick,
       accessible: true,
+      disabled: false,
     },
     {
       label: 'Calendario',
@@ -135,6 +148,7 @@ const QuickActions = () => {
       textColor: 'text-white',
       onClick: handleScheduleClick,
       accessible: true,
+      disabled: false,
     },
     {
       label: 'PrimeBot',
@@ -144,6 +158,7 @@ const QuickActions = () => {
       textColor: 'text-white',
       onClick: handlePrimeBotClick,
       accessible: true,
+      disabled: false,
     },
   ];
 
@@ -175,7 +190,7 @@ const QuickActions = () => {
         <Target className="h-4 w-4 sm:h-6 sm:w-6" />
         <div className="text-center">
           <p className="font-medium text-xs sm:text-sm">Piano Personalizzato</p>
-          <p className="text-xs opacity-90 hidden sm:block">
+          <p className="text-xs sm:text-sm text-white/80 mt-1">
             {planCountLabel}
           </p>
         </div>

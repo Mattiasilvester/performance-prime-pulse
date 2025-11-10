@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useFileAccess } from '@/hooks/useFileAccess';
-import { FileAnalyzer, FileAnalysisResult, ExtractedExercise } from '../../services/fileAnalysis';
+import type { FileAnalysisResult, ExtractedExercise } from '../../services/fileAnalysis';
 import { FileAnalysisResults } from './FileAnalysisResults';
 // import { updateWorkoutMetrics } from '@/services/updateWorkoutMetrics'; // Rimosso - metriche si aggiornano solo al completamento
 
@@ -98,6 +98,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
       // Analizza il file automaticamente
       setIsAnalyzing(true);
       try {
+        const { FileAnalyzer } = await import('../../services/fileAnalysis');
         const analysis = await FileAnalyzer.analyzeFile(file);
         console.log('🔴 [DEBUG] Analysis risultato completo:', analysis);
         console.log('🔴 [DEBUG] Esercizi estratti:', analysis?.exercises);

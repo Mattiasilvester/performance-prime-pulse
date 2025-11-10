@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 
@@ -66,7 +66,7 @@ export function useOnboardingNavigation() {
     },
   };
 
-  const saveAnalyticsEvent = async (
+  const saveAnalyticsEvent = useCallback(async (
     step: OnboardingStep,
     eventType: 'started' | 'completed' | 'abandoned',
     startTime?: number
@@ -130,7 +130,7 @@ export function useOnboardingNavigation() {
     } catch (err) {
       console.error(`❌ Errore imprevisto analytics step ${step}:`, err);
     }
-  };
+  }, []);
 
   const saveAndContinue = async (
     step: OnboardingStep,
@@ -173,18 +173,20 @@ export function useOnboardingNavigation() {
     }
   };
 
+  const trackStepStarted = useCallback((step: OnboardingStep) => {
+    if (!stepStartTimes.current[step]) {
+      stepStartTimes.current[step] = Date.now();
+      console.log(`🕐 Timestamp step ${step} salvato:`, new Date().toLocaleTimeString());
+      saveAnalyticsEvent(step, 'started');
+    } else {
+      console.log(`⚠️ Timestamp step ${step} già esistente, non sovrascrivo`);
+    }
+  }, [saveAnalyticsEvent]);
+
   return {
     saveAndContinue,
     stepConfig,
-    trackStepStarted: (step: OnboardingStep) => {
-      if (!stepStartTimes.current[step]) {
-        stepStartTimes.current[step] = Date.now();
-        console.log(`🕐 Timestamp step ${step} salvato:`, new Date().toLocaleTimeString());
-        saveAnalyticsEvent(step, 'started');
-      } else {
-        console.log(`⚠️ Timestamp step ${step} già esistente, non sovrascrivo`);
-      }
-    },
+    trackStepStarted,
   };
 }
 
@@ -198,7 +200,7 @@ async function saveStep1ToDatabase(payload: { obiettivo: string }) {
   console.log('User ID:', user.id);
   console.log('Obiettivo:', payload.obiettivo);
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('onboarding_obiettivo_principale')
     .upsert(
       {
@@ -206,13 +208,11 @@ async function saveStep1ToDatabase(payload: { obiettivo: string }) {
         obiettivo: payload.obiettivo,
       },
       { onConflict: 'user_id' }
-    )
-    .select()
-    .single();
+    );
 
   if (error) throw error;
 
-  console.log('Risultato salvataggio:', data);
+  console.log('Risultato salvataggio Step 1 completato');
 }
 
 async function saveStep2ToDatabase(payload: { livelloEsperienza: string; giorniSettimana: number }) {
@@ -226,7 +226,7 @@ async function saveStep2ToDatabase(payload: { livelloEsperienza: string; giorniS
   console.log('Livello esperienza:', payload.livelloEsperienza);
   console.log('Giorni settimana:', payload.giorniSettimana);
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('onboarding_esperienza')
     .upsert(
       {
@@ -235,13 +235,11 @@ async function saveStep2ToDatabase(payload: { livelloEsperienza: string; giorniS
         giorni_settimana: payload.giorniSettimana,
       },
       { onConflict: 'user_id' }
-    )
-    .select()
-    .single();
+    );
 
   if (error) throw error;
 
-  console.log('Risultato salvataggio:', data);
+  console.log('Risultato salvataggio Step 2 completato');
 }
 
 async function saveStep3ToDatabase(payload: { luoghiAllenamento: string[]; tempoSessione: number }) {
@@ -255,7 +253,7 @@ async function saveStep3ToDatabase(payload: { luoghiAllenamento: string[]; tempo
   console.log('Luoghi allenamento:', payload.luoghiAllenamento);
   console.log('Tempo sessione:', payload.tempoSessione);
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('onboarding_preferenze')
     .upsert(
       {
@@ -264,13 +262,11 @@ async function saveStep3ToDatabase(payload: { luoghiAllenamento: string[]; tempo
         tempo_sessione: payload.tempoSessione,
       },
       { onConflict: 'user_id' }
-    )
-    .select()
-    .single();
+    );
 
   if (error) throw error;
 
-  console.log('Risultato salvataggio:', data);
+  console.log('Risultato salvataggio Step 3 completato');
 }
 
 async function saveStep4ToDatabase(payload: {
@@ -293,7 +289,7 @@ async function saveStep4ToDatabase(payload: {
   console.log('Altezza:', payload.altezza);
   console.log('Consigli nutrizionali:', payload.consigliNutrizionali);
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('onboarding_personalizzazione')
     .upsert(
       {
@@ -305,12 +301,10 @@ async function saveStep4ToDatabase(payload: {
         consigli_nutrizionali: payload.consigliNutrizionali,
       },
       { onConflict: 'user_id' }
-    )
-    .select()
-    .single();
+    );
 
   if (error) throw error;
 
-  console.log('Risultato salvataggio:', data);
+  console.log('Risultato salvataggio Step 4 completato');
 }
 

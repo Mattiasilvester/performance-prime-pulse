@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -232,56 +231,36 @@ export function Step0Registration() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="max-w-2xl mx-auto w-full px-4"
-    >
+    <div className="max-w-2xl mx-auto w-full px-4 animate-slide-up" style={{ animationDelay: '0.05s' }}>
       {/* Header */}
-      <div className="text-center mb-8">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-          className="text-5xl mb-4"
-        >
+      <div className="text-center mb-8 space-y-3">
+        <div className="text-5xl mb-4 animate-scale-in" style={{ animationDelay: '0.15s' }}>
           👋
-        </motion.div>
+        </div>
 
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-3xl md:text-4xl font-bold text-white mb-3"
+        <h2
+          className="text-3xl md:text-4xl font-bold text-white mb-3 animate-slide-up"
+          style={{ animationDelay: '0.2s' }}
         >
           Benvenuto su Performance Prime
-        </motion.h2>
+        </h2>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="text-lg text-gray-400"
+        <p
+          className="text-lg text-gray-400 animate-fade-in"
+          style={{ animationDelay: '0.25s' }}
         >
           Crea il tuo account per iniziare il percorso
-        </motion.p>
+        </p>
       </div>
 
       {/* Form Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8"
+      <div
+        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 animate-scale-in"
+        style={{ animationDelay: '0.3s' }}
       >
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* PRIMO: Bottone Google */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
+          <div className="animate-slide-up" style={{ animationDelay: '0.35s' }}>
             <Button
               type="button"
               onClick={handleGoogleSignIn}
@@ -296,28 +275,24 @@ export function Step0Registration() {
               </svg>
               Accedi con Google
             </Button>
-          </motion.div>
+          </div>
 
           {/* Divisore corretto */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="relative flex items-center my-6"
+          <div
+            className="relative flex items-center my-6 animate-fade-in"
+            style={{ animationDelay: '0.4s' }}
           >
             <div className="flex-grow border-t border-white/10"></div>
             <span className="flex-shrink mx-4 text-sm text-gray-500">
               oppure continua con email
             </span>
             <div className="flex-grow border-t border-white/10"></div>
-          </motion.div>
+          </div>
 
           {/* Nome e Cognome in grid 2 colonne su desktop */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-up"
+            style={{ animationDelay: '0.45s' }}
           >
             <div>
               <Label htmlFor="firstName" className="text-sm font-medium text-gray-400 mb-2 block">
@@ -334,13 +309,9 @@ export function Step0Registration() {
                 required
               />
               {errors.firstName && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-red-500 text-sm mt-1"
-                >
+                <p className="text-red-500 text-sm mt-1 animate-fade-in">
                   {errors.firstName}
-                </motion.p>
+                </p>
               )}
             </div>
 
@@ -359,23 +330,15 @@ export function Step0Registration() {
                 required
               />
               {errors.lastName && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-red-500 text-sm mt-1"
-                >
+                <p className="text-red-500 text-sm mt-1 animate-fade-in">
                   {errors.lastName}
-                </motion.p>
+                </p>
               )}
             </div>
-          </motion.div>
+          </div>
 
           {/* Email */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-          >
+          <div className="animate-slide-up" style={{ animationDelay: '0.5s' }}>
             <Label htmlFor="email" className="text-sm font-medium text-gray-400 mb-2 block">
               Email
             </Label>
@@ -390,22 +353,14 @@ export function Step0Registration() {
               required
             />
             {errors.email && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-red-500 text-sm mt-1"
-              >
+              <p className="text-red-500 text-sm mt-1 animate-fade-in">
                 {errors.email}
-              </motion.p>
+              </p>
             )}
-          </motion.div>
+          </div>
 
           {/* Password */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
-          >
+          <div className="animate-slide-up" style={{ animationDelay: '0.55s' }}>
             <Label htmlFor="password" className="text-sm font-medium text-gray-400 mb-2 block">
               Password
             </Label>
@@ -434,22 +389,14 @@ export function Step0Registration() {
               </button>
             </div>
             {errors.password && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-red-500 text-sm mt-1"
-              >
+              <p className="text-red-500 text-sm mt-1 animate-fade-in">
                 {errors.password}
-              </motion.p>
+              </p>
             )}
-          </motion.div>
+          </div>
 
           {/* Conferma Password */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1 }}
-          >
+          <div className="animate-slide-up" style={{ animationDelay: '0.6s' }}>
             <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-400 mb-2 block">
               Conferma Password
             </Label>
@@ -478,33 +425,21 @@ export function Step0Registration() {
               </button>
             </div>
             {errors.confirmPassword && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-red-500 text-sm mt-1"
-              >
+              <p className="text-red-500 text-sm mt-1 animate-fade-in">
                 {errors.confirmPassword}
-              </motion.p>
+              </p>
             )}
-          </motion.div>
+          </div>
 
           {/* Messaggio errore generale */}
           {generalError && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-red-500/10 border border-red-500/50 rounded-xl p-4"
-            >
+            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 animate-slide-down">
               <p className="text-red-500 text-sm">{generalError}</p>
-            </motion.div>
+            </div>
           )}
 
           {/* Bottone Submit */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2 }}
-          >
+          <div className="animate-slide-up" style={{ animationDelay: '0.65s' }}>
             <Button
               type="submit"
               disabled={isLoading}
@@ -512,11 +447,7 @@ export function Step0Registration() {
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <motion.span
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="inline-block w-4 h-4 border-2 border-black border-t-transparent rounded-full"
-                  />
+                  <span className="inline-block w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
                   Creazione account...
                 </span>
               ) : (
@@ -526,15 +457,13 @@ export function Step0Registration() {
                 </span>
               )}
             </Button>
-          </motion.div>
+          </div>
         </form>
 
         {/* Link login */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.3 }}
-          className="text-center mt-4"
+        <div
+          className="text-center mt-4 animate-fade-in"
+          style={{ animationDelay: '0.7s' }}
         >
           <p className="text-sm text-gray-400">
             Hai già un account?{' '}
@@ -546,9 +475,9 @@ export function Step0Registration() {
               Accedi
             </button>
           </p>
-        </motion.div>
-      </motion.div>
-    </motion.div>
+        </div>
+      </div>
+    </div>
   );
 }
 

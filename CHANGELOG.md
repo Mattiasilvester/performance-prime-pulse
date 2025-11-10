@@ -5,6 +5,16 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [9.0.1] - 2025-11-10
+
+### ✨ Added
+- Lazy loading delle sezioni Social Proof, CTA e Footer nella nuova landing page per ottimizzare il caricamento below-the-fold.
+
+### 🐛 Fixed
+- Ripristinato l'auto-avanzamento dello Step 1 dell'onboarding dopo la selezione dell'obiettivo.
+
+---
+
 ## [9.0.0] - 2025-10-01
 
 ### ✨ Added
@@ -75,6 +85,21 @@ e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 - Fix risposte preimpostate PrimeBot
 - Sistema ibrido fallback + AI ottimizzato
 
+
+## [0.9.0] - 2025-10-01
+### Added
+- Tracciamento onboarding con eventi Supabase (started/completed, durata, metadata device)
+- Nuovo copy landing hero allineato al posizionamento community
+
+### Changed
+- Rifattorizzati Step1-4 onboarding con hook `useOnboardingNavigation` e override payload
+- Card “Vuoi risultati ancora più veloci?”: contenuti aggiornati e layout responsive mobile/desktop
+
+### Fixed
+- Eliminato hint fisso “Tocca per vedere gli esercizi” sulle card piani
+- Durata onboarding corretta (nessun valore a 0s)
+- Badge professionisti compatti su mobile
+- Rimosso badge “Mental Coach” non più disponibile
 ---
 
 *Per versioni precedenti, consulta i commit git.*

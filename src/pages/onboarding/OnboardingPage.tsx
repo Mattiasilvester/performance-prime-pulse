@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useOnboardingStore } from '@/stores/onboardingStore';
@@ -9,12 +9,28 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { safeLocalStorage } from '@/utils/domHelpers';
 import { supabase } from '@/integrations/supabase/client';
 // Import steps
-import { Step0Registration } from './steps/Step0Registration';
-import { Step1Goals } from './steps/Step1Goals';
-import Step2Experience, { Step2ExperienceHandle } from './steps/Step2Experience';
-import Step3Preferences, { Step3PreferencesHandle } from './steps/Step3Preferences';
-import Step4Personalization, { Step4PersonalizationHandle } from './steps/Step4Personalization';
-import { CompletionScreen } from './steps/CompletionScreen';
+import type { Step2ExperienceHandle } from './steps/Step2Experience';
+import type { Step3PreferencesHandle } from './steps/Step3Preferences';
+import type { Step4PersonalizationHandle } from './steps/Step4Personalization';
+
+const Step0Registration = lazy(() =>
+  import('./steps/Step0Registration').then((mod) => ({ default: mod.Step0Registration }))
+);
+const Step1Goals = lazy(() =>
+  import('./steps/Step1Goals').then((mod) => ({ default: mod.Step1Goals }))
+);
+const Step2Experience = lazy(() => import('./steps/Step2Experience'));
+const Step3Preferences = lazy(() => import('./steps/Step3Preferences'));
+const Step4Personalization = lazy(() => import('./steps/Step4Personalization'));
+const CompletionScreen = lazy(() =>
+  import('./steps/CompletionScreen').then((mod) => ({ default: mod.CompletionScreen }))
+);
+
+const StepFallback = () => (
+  <div className="flex h-64 items-center justify-center text-gray-400">
+    Caricamento...
+  </div>
+);
 
 export function OnboardingPage() {
   const navigate = useNavigate();
@@ -176,39 +192,48 @@ export function OnboardingPage() {
         <div className="w-full">
           <AnimatePresence mode="wait">
             {currentStep === 0 && (
-              <Step0Registration key="step0" />
+              <Suspense key="step0" fallback={<StepFallback />}>
+                <Step0Registration />
+              </Suspense>
             )}
 
             {currentStep === 1 && (
-              <Step1Goals key="step1" />
+              <Suspense key="step1" fallback={<StepFallback />}>
+                <Step1Goals />
+              </Suspense>
             )}
 
             {currentStep === 2 && (
-              <Step2Experience 
-                key="step2" 
-                ref={step2Ref}
-                onComplete={nextStep}
-              />
+              <Suspense key="step2" fallback={<StepFallback />}>
+                <Step2Experience 
+                  ref={step2Ref}
+                  onComplete={nextStep}
+                />
+              </Suspense>
             )}
 
             {currentStep === 3 && (
-              <Step3Preferences 
-                key="step3" 
-                ref={step3Ref}
-                onComplete={nextStep}
-              />
+              <Suspense key="step3" fallback={<StepFallback />}>
+                <Step3Preferences 
+                  ref={step3Ref}
+                  onComplete={nextStep}
+                />
+              </Suspense>
             )}
 
             {currentStep === 4 && (
-              <Step4Personalization 
-                key="step4" 
-                ref={step4Ref}
-                onComplete={nextStep}
-              />
+              <Suspense key="step4" fallback={<StepFallback />}>
+                <Step4Personalization 
+                  ref={step4Ref}
+                  onComplete={nextStep}
+                />
+              </Suspense>
             )}
 
             {currentStep === 5 && (
-              <CompletionScreen key="completion" />
+              <Suspense key="completion" fallback={<StepFallback />}>
+                <CompletionScreen />
+              </Suspense>
             )}
           </AnimatePresence>
 
