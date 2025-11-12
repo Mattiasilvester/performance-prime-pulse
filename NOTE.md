@@ -2,6 +2,23 @@
 
 ## Decisioni Architetturali
 
+### **Sessione 16 - Edge Functions SuperAdmin (12/11/2025)**
+
+#### **1. Edge Functions vs Service Role Key lato frontend**
+**Decisione**: Spostare tutte le operazioni amministrative su Edge Functions (`admin-stats`, `admin-users`) e rimuovere `supabaseAdmin` dal bundle.
+
+**Motivazioni**:
+- Evitare esposizione della Service Role Key (`service_role`) in client pubblico.
+- Applicare controlli di autorizzazione consistenti lato server (ruolo `super_admin` verificato su Supabase).
+- Limitare payload a metodi supportati (GET/PATCH/DELETE) con single entry point e logging centralizzato.
+- Consentire evoluzione futura (audit logging, rate limiting) senza rilasci frontend.
+
+**Implementazione**:
+- Edge Function `admin-users` con multi-switch su HTTP verb e validazione payload.
+- Helper `src/lib/adminApi.ts` con fetch autenticato (Bearer token) e mapping profili → `AdminUser`.
+- Migrazione `AdminUsers`/`UserManagementTable` a chiamate fetch + Sonner toast + stati loading.
+- Aggiornamento `supabase/config.toml` al formato CLI 2.x + redeploy funzioni.
+
 ### **Sessione Onboarding e Landing - 01/10/2025**
 
 #### **1. Zustand vs Context API**
@@ -161,7 +178,7 @@
 
 ---
 
-*Ultimo aggiornamento: 01 Ottobre 2025*
+*Ultimo aggiornamento: 12 Novembre 2025*
 
 
 

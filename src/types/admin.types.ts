@@ -8,11 +8,14 @@ export interface AdminUser {
   status: 'active' | 'suspended' | 'deleted'
   is_active?: boolean // Calcolato da status
   is_active_user?: boolean // Calcolato da last_login
+  minutes_since_login?: number | null
   subscription_status?: 'active' | 'inactive' | 'cancelled'
   created_at: string
   last_login?: string
   total_workouts?: number
   total_minutes?: number
+  user_workouts?: number
+  last_workout_date?: string | null
 }
 
 export interface AdminStats {
@@ -34,9 +37,16 @@ export interface AdminStats {
   growth?: number
   engagement?: number
   newUsersThisMonth?: number
+  newUsersLast7Days?: number
   activationD0Rate?: number
+  activationRate?: number
   retentionD7?: number
   weeklyGrowth?: number
+  workoutAnalytics?: {
+    totalWorkouts: number
+    avgWorkoutsPerUser: number
+    mostActiveUsers: number
+  }
 }
 
 export interface AdminAuditLog {

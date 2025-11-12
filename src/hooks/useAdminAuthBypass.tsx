@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../integrations/supabase/client'
-import { supabaseAdmin } from '../lib/supabaseAdmin'
 import { AdminUser, AdminSession } from '@/types/admin.types'
+
+const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET_KEY ?? ''
 
 export function useAdminAuthBypass() {
   const [admin, setAdmin] = useState<AdminUser | null>(null)
@@ -115,208 +116,100 @@ export function useAdminAuthBypass() {
       // Step 2: Query diretta con logging
       console.log('📊 Cerco profilo per:', credentials.email);
       
+      console.log('📊 Cerco profilo per:', credentials.email);
+
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('id, email, role, first_name, last_name, created_at')
+        .eq('email', credentials.email);
+
+      if (error) {
+        console.warn('Query profilo fallita, uso bypass:', error);
+        throw error;
+      }
+
+      const profile = profiles?.[0];
+
+      if (!profile || profile.role !== 'super_admin') {
+        console.error('Ruolo non autorizzato o profilo mancante');
+        throw new Error('Account non autorizzato');
+      }
+
+      const ADMIN_PASSWORD = 'SuperAdmin2025!'
+      if (credentials.password !== ADMIN_PASSWORD) {
+        console.error('❌ Password non valida');
+        throw new Error('Password non valida');
+      }
+
+      console.log('✅ SuperAdmin verificato:', profile);
+
+      const sessionData = {
+        admin_id: profile.id,
+        email: profile.email,
+        role: profile.role,
+        logged_at: new Date().toISOString()
+      };
+      
+      localStorage.setItem('admin_session', JSON.stringify(sessionData));
+      setAdmin({
+        id: profile.id,
+        email: profile.email,
+        name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Super Admin',
+        role: 'super_admin',
+        status: 'active',
+        created_at: profile.created_at || new Date().toISOString()
+      });
+      
       try {
-        // 🔍 DEBUG DETTAGLIATO - Test diretto del tuo account
-        console.log('🔍 DEBUG LOGIN - Cercando:', credentials.email);
-        
-        const { data: testProfile, error: testError } = await supabaseAdmin
-          .from('profiles')
-          .select('*')
-          .eq('email', credentials.email)
-          .single();
-          
-        console.log('🔍 Profile test result:', { testProfile, testError });
-        
-        // TEST GENERALE - conta tutti i profili
-        const { count: totalProfiles, error: countError } = await supabaseAdmin
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-          
-        console.log('🔍 Total profiles count:', { totalProfiles, countError });
-        
-        // TEST - primi 5 profili per vedere struttura
-        const { data: sampleProfiles, error: sampleError } = await supabaseAdmin
-          .from('profiles')
-          .select('*')
-          .limit(5);
-          
-        console.log('🔍 Sample profiles:', { sampleProfiles, sampleError });
-        
-        // Controlla struttura tabella
-        if (sampleProfiles && sampleProfiles[0]) {
-          console.log('📋 Colonne tabella profiles:', Object.keys(sampleProfiles[0]));
-        }
-        
-        // Usa una query SELECT base senza RLS
-        const { data: profiles, error } = await supabase
-          .from('profiles')
-          .select('id, email, role, first_name, last_name, created_at')
-          .eq('email', credentials.email);
-        
-        console.log('Query result:', { profiles, error });
-        
-        if (error) {
-          console.error('Database error:', error);
-          throw new Error(`Errore database: ${error.message}`);
-        }
-        
-        const profile = profiles?.[0];
-        
-        if (!profile) {
-          // FALLBACK - Se il profilo non esiste, crealo automaticamente
-          console.log('👤 Account non trovato, creo automaticamente...');
-          
-          const { data: newProfile, error: createError } = await supabaseAdmin
-            .from('profiles')
-            .insert({
-              email: credentials.email,
-              full_name: 'Super Admin',
-              role: 'super_admin',
-              is_active: true,
-              created_at: new Date().toISOString()
-            })
-            .select('id, user_id, email, created_at, role, full_name')
-            .single();
-            
-          console.log('👤 Account creato:', { newProfile, createError });
-          
-          if (createError) {
-            console.error('❌ Errore creazione account:', createError);
-            throw new Error(`Errore creazione account: ${createError.message}`);
-          }
-          
-          // Usa il nuovo profilo creato
-          const finalProfile = newProfile;
-          
-          if (finalProfile.role !== 'super_admin') {
-            console.error('Ruolo non autorizzato:', finalProfile.role);
-            throw new Error('Account non autorizzato');
-          }
-          
-          // Step 3: Verifica password (usando una password hardcoded per il bypass)
-          const ADMIN_PASSWORD = 'SuperAdmin2025!'
-          if (credentials.password !== ADMIN_PASSWORD) {
-            console.error('❌ Password non valida');
-            throw new Error('Password non valida');
-          }
-          
-          // Step 4: Login semplificato (bypass password per test)
-          console.log('✅ SuperAdmin verificato (nuovo account):', finalProfile);
-          
-          // Step 5: Crea sessione semplificata
-          const sessionData = {
-            admin_id: finalProfile.id,
-            email: finalProfile.email,
-            role: finalProfile.role,
-            logged_at: new Date().toISOString()
-          };
-          
-          localStorage.setItem('admin_session', JSON.stringify(sessionData));
-          setAdmin({
-            id: finalProfile.id as string,
-            email: finalProfile.email as string,
-            name: (finalProfile.full_name as string) || 'Super Admin',
-            role: 'super_admin',
-            status: 'active',
-            created_at: (finalProfile.created_at as string) || new Date().toISOString()
-          });
-          
-          return { success: true };
-        }
-        
-        if (profile.role !== 'super_admin') {
-          console.error('Ruolo non autorizzato:', profile.role);
-          throw new Error('Account non autorizzato');
-        }
-        
-        // Step 3: Verifica password (usando una password hardcoded per il bypass)
-        const ADMIN_PASSWORD = 'SuperAdmin2025!'
-        if (credentials.password !== ADMIN_PASSWORD) {
-          console.error('❌ Password non valida');
-          throw new Error('Password non valida');
-        }
-        
-        // Step 4: Login semplificato (bypass password per test)
-        console.log('✅ SuperAdmin verificato:', profile);
-        
-        // Step 5: Crea sessione semplificata
-        const sessionData = {
+        await supabase.from('admin_audit_logs').insert({
           admin_id: profile.id,
-          email: profile.email,
-          role: profile.role,
+          action: 'login',
+          details: { email: profile.email }
+        });
+        console.log('✅ Audit log creato');
+      } catch (auditError) {
+        console.warn('⚠️ Audit log failed:', auditError);
+      }
+      
+      return { success: true };
+
+    } catch (error: any) {
+      console.error('❌ Login fallito, attivo emergency bypass:', error);
+      
+      if (credentials.email === 'mattiasilvester@gmail.com' && 
+          credentials.password === 'SuperAdmin2025!' &&
+          credentials.secretKey === ADMIN_SECRET) {
+        
+        console.log('🔓 BYPASS LOGIN - Accesso diretto');
+        
+        const HARDCODED_ADMIN = {
+          id: 'admin-bypass-001',
+          email: 'mattiasilvester@gmail.com',
+          role: 'super_admin',
+          full_name: 'Super Admin'
+        };
+        
+        const adminSession = {
+          admin_id: HARDCODED_ADMIN.id,
+          email: HARDCODED_ADMIN.email,
+          role: HARDCODED_ADMIN.role,
           logged_at: new Date().toISOString()
         };
         
-        localStorage.setItem('admin_session', JSON.stringify(sessionData));
+        localStorage.setItem('admin_session', JSON.stringify(adminSession));
         setAdmin({
-          id: profile.id,
-          email: profile.email,
-          name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Super Admin',
+          id: HARDCODED_ADMIN.id,
+          email: HARDCODED_ADMIN.email,
+          name: HARDCODED_ADMIN.full_name,
           role: 'super_admin',
           status: 'active',
-          created_at: profile.created_at || new Date().toISOString()
+          created_at: new Date().toISOString()
         });
         
-        // Step 6: Log audit (opzionale, può fallire)
-        try {
-          await supabase.from('admin_audit_logs').insert({
-            admin_id: profile.id,
-            action: 'login',
-            details: { email: profile.email }
-          });
-          console.log('✅ Audit log creato');
-        } catch (auditError) {
-          console.warn('⚠️ Audit log failed:', auditError);
-        }
-        
+        console.log('✅ EMERGENCY BYPASS ACTIVATED');
         return { success: true };
-        
-      } catch (error: any) {
-        console.error('❌ Login fallito:', error);
-        
-        // EMERGENCY BYPASS - Solo per test
-        console.log('🚨 ATTIVAZIONE EMERGENCY BYPASS');
-        
-        // BYPASS temporaneo - Login senza database
-        if (credentials.email === 'mattiasilvester@gmail.com' && 
-            credentials.password === 'SuperAdmin2025!' &&
-            credentials.secretKey === ADMIN_SECRET) {
-          
-          console.log('🔓 BYPASS LOGIN - Accesso diretto');
-          
-          const HARDCODED_ADMIN = {
-            id: 'admin-bypass-001',
-            email: 'mattiasilvester@gmail.com',
-            role: 'super_admin',
-            full_name: 'Super Admin'
-          };
-          
-          const adminSession = {
-            admin_id: HARDCODED_ADMIN.id,
-            email: HARDCODED_ADMIN.email,
-            role: HARDCODED_ADMIN.role,
-            logged_at: new Date().toISOString()
-          };
-          
-          localStorage.setItem('admin_session', JSON.stringify(adminSession));
-          setAdmin({
-            id: HARDCODED_ADMIN.id,
-            email: HARDCODED_ADMIN.email,
-            name: HARDCODED_ADMIN.full_name,
-            role: 'super_admin',
-            status: 'active',
-            created_at: new Date().toISOString()
-          });
-          
-          console.log('✅ EMERGENCY BYPASS ACTIVATED');
-          return { success: true };
-        }
-        
-        throw error;
       }
-      
-    } catch (error: any) {
-      console.error('❌ Login fallito:', error);
+
       throw error;
     }
   }

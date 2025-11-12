@@ -9,6 +9,41 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **12 Novembre 2025 - Sessione 16: Migrazione Edge Functions & Audit Finale**
+- **Ora Inizio**: 17:30
+- **Ora Fine**: 21:00
+- **Durata**: 3 ore e 30 minuti
+
+#### Implementazioni
+1. Edge Function `admin-users` con CRUD sicuro (GET/PATCH/DELETE) e validazione ruolo `super_admin`.
+2. Helpr frontend `src/lib/adminApi.ts` con fetch autenticato e mapping profili → `AdminUser`.
+3. Migrazione SuperAdmin (`AdminUsers`, `UserManagementTable`) alla nuova API con messaggistica Sonner e stati loading.
+4. Aggiornamento `supabase/config.toml` al nuovo formato CLI 2.x e redeploy funzioni `admin-stats`/`admin-users`.
+5. Audit finale sicurezza/performance/code quality con report consolidato e TODO prioritari.
+
+#### Bug Risolti
+- Service Role Key esposta nel bundle → Rimossa dal frontend e gestita tramite Edge Function `admin-users`.
+- Admin dashboard inutilizzabile → Ripristinata UI con azioni toggle/delete funzionanti lato API.
+
+#### File Modificati
+- ✨ `src/lib/adminApi.ts`
+- ✨ `supabase/functions/admin-users/index.ts`
+- ✏️ `supabase/functions/admin-stats/index.ts`
+- ✏️ `supabase/config.toml`
+- ✏️ `src/pages/admin/AdminUsers.tsx`
+- ✏️ `src/components/admin/UserManagementTable.tsx`
+- ✏️ `src/hooks/useAdminAuthBypass.tsx`
+- ✏️ `src/pages/admin/SuperAdminDashboard.tsx`
+- ❌ `src/lib/supabaseAdmin.ts`
+
+#### Risultati
+- Utenti Edge Function: n.d. (era n.d.)
+- Bundle principale: 655 KB (era 778 KB)
+- Vulnerabilità npm: 6 (era 9)
+- Errori TypeScript: 0 (era 0)
+
+---
+
 ### **10 Novembre 2025 - Sessione 15: Ottimizzazione Onboarding e Lazy Landing**
 - **Ora Inizio**: 18:00
 - **Ora Fine**: 21:00

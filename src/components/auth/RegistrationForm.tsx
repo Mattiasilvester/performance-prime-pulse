@@ -11,6 +11,32 @@ import { useNavigate } from 'react-router-dom';
 import { validateInput } from '@/lib/security';
 import './RegistrationForm.css';
 
+type EmailValidationChecks = {
+  format: boolean;
+  disposable: boolean;
+  dns: boolean;
+};
+
+type EmailValidationResult = {
+  valid: boolean;
+  score: number;
+  errors: string[];
+  warnings: string[];
+  checks: EmailValidationChecks;
+};
+
+function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number) {
+  let timeout: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 const RegistrationForm = () => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -22,7 +48,7 @@ const RegistrationForm = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationResult, setValidationResult] = useState(null);
+  const [validationResult, setValidationResult] = useState<EmailValidationResult | null>(null);
   const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong'>('weak');
   const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -48,7 +74,7 @@ const RegistrationForm = () => {
   
   // Debounced validation
   const validateEmailDebounced = useCallback(
-    debounce(async (emailValue) => {
+    debounce(async (emailValue: string) => {
       if (!emailValue) {
         setEmailError('');
         setEmailWarning('');
@@ -106,12 +132,12 @@ const RegistrationForm = () => {
     }
   }, [email, validateEmailDebounced]);
   
-  const handleEmailChange = (e) => {
-    const value = e.target.value;
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
     setEmail(value);
   };
   
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (isValidating) {
@@ -170,18 +196,18 @@ const RegistrationForm = () => {
         toast.error(result.message || 'Errore durante la registrazione. Riprova più tardi.');
       }
       
-    } catch (error: any) {
-      
-      // Gestione errori di rete o sistema
-      if (error?.message) {
-        if (error.message.includes('network') || error.message.includes('fetch')) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : null;
+
+      if (message) {
+        if (message.includes('network') || message.includes('fetch')) {
           toast.error('Problema di connessione. Verifica la tua connessione internet.');
-        } else if (error.message.includes('timeout')) {
+        } else if (message.includes('timeout')) {
           toast.error('Timeout della richiesta. Riprova più tardi.');
-        } else if (error.message.includes('supabase')) {
+        } else if (message.includes('supabase')) {
           toast.error('Errore del servizio. Riprova più tardi.');
         } else {
-          toast.error(`Errore imprevisto: ${error.message}`);
+          toast.error(`Errore imprevisto: ${message}`);
         }
       } else {
         toast.error('Errore imprevisto durante la registrazione. Riprova più tardi.');
@@ -199,19 +225,6 @@ const RegistrationForm = () => {
     if (validationScore >= 60) return '#f59e0b'; // arancione
     return '#ef4444'; // rosso
   };
-  
-  // Funzione debounce helper
-  function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  }
   
   return (
     <Card className="w-full max-w-md mx-auto">

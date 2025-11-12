@@ -5,6 +5,21 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [9.0.2] - 2025-11-12
+
+### ✨ Added
+- Edge Function `admin-users` (GET/PATCH/DELETE) con validazione ruolo `super_admin`.
+- Helper `src/lib/adminApi.ts` per chiamate amministrative sicure dal frontend.
+
+### 🔧 Changed
+- `AdminUsers` e `UserManagementTable` ora usano la nuova API edge con feedback Sonner e filtri locali.
+- `supabase/config.toml` aggiornato al formato CLI 2.x con redeploy `admin-stats`/`admin-users`.
+
+### 🐛 Fixed
+- Rimossa `supabaseAdmin` dal bundle frontend e chiusa esposizione Service Role Key.
+
+---
+
 ## [9.0.1] - 2025-11-10
 
 ### ✨ Added

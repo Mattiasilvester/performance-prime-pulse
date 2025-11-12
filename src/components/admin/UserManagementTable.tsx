@@ -1,57 +1,42 @@
-import React, { useState, useEffect } from 'react'
-import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import React, { useMemo, useState } from 'react'
 import { AdminUser } from '@/types/admin.types'
-import { toast } from 'sonner'
 
-// Componente per azioni utente
-const UserActions = ({ user, onUserUpdate }: { user: any, onUserUpdate: () => void }) => {
-  const [loading, setLoading] = useState(false);
+interface UserActionsProps {
+  user: AdminUser
+  onToggleActive: (user: AdminUser) => Promise<void> | void
+  onDeleteUser: (user: AdminUser) => Promise<void> | void
+  disabled?: boolean
+}
+
+const UserActions = ({ user, onToggleActive, onDeleteUser, disabled }: UserActionsProps) => {
+  const [loading, setLoading] = useState(false)
+  const isBusy = loading || disabled
 
   const toggleUserStatus = async () => {
-    setLoading(true);
+    if (isBusy) return
+    setLoading(true)
     try {
-      const { error } = await supabaseAdmin
-        .from('profiles')
-        .update({ is_active: !user.is_active })
-        .eq('id', user.id);
-
-      if (error) throw error;
-      
-      toast.success(`Utente ${user.is_active ? 'sospeso' : 'riattivato'}`);
-      onUserUpdate();
-    } catch (error) {
-      toast.error('Errore nell\'aggiornamento');
+      await onToggleActive(user)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const deleteUser = async () => {
-    if (!confirm(`Eliminare definitivamente ${user.email}?`)) return;
-    
-    setLoading(true);
+    if (isBusy) return
+    setLoading(true)
     try {
-      const { error } = await supabaseAdmin
-        .from('profiles')
-        .delete()
-        .eq('id', user.id);
-
-      if (error) throw error;
-      
-      toast.success('Utente eliminato');
-      onUserUpdate();
-    } catch (error) {
-      toast.error('Errore nell\'eliminazione');
+      await onDeleteUser(user)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="flex gap-2">
       <button
         onClick={toggleUserStatus}
-        disabled={loading}
+        disabled={isBusy}
         className={`px-3 py-1 rounded text-xs font-medium ${
           user.is_active 
             ? 'bg-orange-600 hover:bg-orange-700 text-white' 
@@ -63,7 +48,7 @@ const UserActions = ({ user, onUserUpdate }: { user: any, onUserUpdate: () => vo
       
       <button
         onClick={deleteUser}
-        disabled={loading}
+        disabled={isBusy}
         className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium"
       >
         🗑️ Elimina
@@ -74,53 +59,60 @@ const UserActions = ({ user, onUserUpdate }: { user: any, onUserUpdate: () => vo
 
 interface UserManagementTableProps {
   users: AdminUser[]
-  onAction: (userId: string, action: string) => void
-  onUserUpdate: () => void
+  loading?: boolean
+  isMutating?: boolean
+  totalCount?: number
+  onToggleActive: (user: AdminUser) => Promise<void> | void
+  onDeleteUser: (user: AdminUser) => Promise<void> | void
 }
 
-export default function UserManagementTable({ users, onAction, onUserUpdate }: UserManagementTableProps) {
+export default function UserManagementTable({
+  users,
+  loading = false,
+  isMutating = false,
+  totalCount,
+  onToggleActive,
+  onDeleteUser,
+}: UserManagementTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [filter, setFilter] = useState('all')
-  const [loading, setLoading] = useState(false)
+  const totalUsers = totalCount ?? users.length
 
-  // Filtri semplici per gestire 500 utenti
-  const filterOptions = [
+  const filterOptions = useMemo(() => ([
     { value: 'all', label: 'Tutti gli utenti', count: users.length },
     { value: 'active', label: 'Solo attivi', count: users.filter(u => u.is_active_user).length },
     { value: 'inactive', label: 'Solo inattivi', count: users.filter(u => !u.is_active_user).length },
-    { value: 'suspended', label: 'Sospesi', count: users.filter(u => !u.is_active).length }
-  ];
+    { value: 'suspended', label: 'Sospesi', count: users.filter(u => !u.is_active).length },
+  ]), [users])
 
-  const getFilteredUsers = () => {
-    let filtered = users;
-    
-    // Applica filtro
+  const filteredUsers = useMemo(() => {
+    let filtered = [...users]
+
     switch (filter) {
       case 'active':
-        filtered = users.filter(user => user.is_active_user);
-        break;
+        filtered = filtered.filter(user => user.is_active_user)
+        break
       case 'inactive':
-        filtered = users.filter(user => !user.is_active_user);
-        break;
+        filtered = filtered.filter(user => !user.is_active_user)
+        break
       case 'suspended':
-        filtered = users.filter(user => !user.is_active);
-        break;
+        filtered = filtered.filter(user => !user.is_active)
+        break
       default:
-        filtered = users;
+        filtered = filtered
     }
-    
-    // Applica search
-    if (searchTerm) {
-      filtered = filtered.filter(user => 
-        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    return filtered;
-  };
 
-  const filteredUsers = getFilteredUsers();
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase()
+      filtered = filtered.filter(user =>
+        user.email?.toLowerCase().includes(term) ||
+        user.full_name?.toLowerCase().includes(term) ||
+        user.name?.toLowerCase().includes(term)
+      )
+    }
+
+    return filtered
+  }, [users, filter, searchTerm])
 
   const columns = [
     { 
@@ -189,7 +181,14 @@ export default function UserManagementTable({ users, onAction, onUserUpdate }: U
     {
       key: 'actions',
       label: 'Azioni',
-      render: (user: any) => <UserActions user={user} onUserUpdate={onUserUpdate} />
+      render: (user: AdminUser) => (
+        <UserActions
+          user={user}
+          onToggleActive={onToggleActive}
+          onDeleteUser={onDeleteUser}
+          disabled={isMutating}
+        />
+      )
     }
   ];
 
@@ -239,15 +238,29 @@ export default function UserManagementTable({ users, onAction, onUserUpdate }: U
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
-            {filteredUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-700/50">
-                {columns.map((column) => (
-                  <td key={column.key} className="px-6 py-4 whitespace-nowrap">
-                    {column.render ? column.render(user) : user[column.key]}
-                  </td>
-                ))}
+            {loading ? (
+              <tr>
+                <td colSpan={columns.length} className="px-6 py-6 text-center text-gray-400">
+                  Caricamento utenti...
+                </td>
               </tr>
-            ))}
+            ) : filteredUsers.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length} className="px-6 py-6 text-center text-gray-400">
+                  Nessun utente trovato con i filtri selezionati.
+                </td>
+              </tr>
+            ) : (
+              filteredUsers.map((user) => (
+                <tr key={user.id} className="hover:bg-gray-700/50">
+                  {columns.map((column) => (
+                    <td key={column.key} className="px-6 py-4 whitespace-nowrap">
+                      {column.render ? column.render(user) : (user as any)[column.key]}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -256,7 +269,7 @@ export default function UserManagementTable({ users, onAction, onUserUpdate }: U
       <div className="px-6 py-4 border-t border-gray-700">
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-400">
-            Mostrando {filteredUsers.length} di {users.length} utenti
+            Mostrando {filteredUsers.length} di {totalUsers} utenti
             {filter !== 'all' && ` (filtro: ${filterOptions.find(f => f.value === filter)?.label})`}
           </div>
           <div className="text-sm text-gray-400">

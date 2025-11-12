@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useState, lazy, Suspense } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AuthProvider } from './hooks/useAuth'
@@ -8,7 +9,6 @@ import { PrimeBotProvider, usePrimeBot } from './contexts/PrimeBotContext'
 import MobileScrollFix from '@/components/MobileScrollFix'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
-import { Toaster as SonnerToaster } from '@/components/ui/sonner'
 import { Header } from '@/components/layout/Header'
 import BottomNavigation from '@/components/layout/BottomNavigation'
 import FeedbackWidget from '@/components/feedback/FeedbackWidget'
@@ -20,9 +20,10 @@ import { NewLandingPage } from '@/pages/landing/NewLandingPage'
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage'
 import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 import LoginPage from '@/pages/auth/LoginPage'
-import RegisterPage from '@/pages/auth/RegisterPage'
-import TermsAndConditions from '@/pages/TermsAndConditions'
-import PrivacyPolicy from '@/pages/PrivacyPolicy'
+const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
+const TermsAndConditions = lazy(() => import('@/pages/TermsAndConditions'))
+const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
+const SonnerToaster = lazy(() => import('@/components/ui/sonner').then(m => ({ default: m.Toaster })))
 
 // Lazy loading per componenti pesanti
 const Dashboard = lazy(() => import('@/components/dashboard/Dashboard').then(m => ({ default: m.Dashboard })))
@@ -60,7 +61,7 @@ const LoadingSpinner = () => (
 )
 
 // Componente wrapper per ai-coach che gestisce il footer condizionalmente
-const AICoachWrapper = ({ session }: { session: any }) => {
+const AICoachWrapper = ({ session }: { session: Session | null }) => {
   const { isFullscreen } = usePrimeBot();
   
   return (
@@ -98,7 +99,7 @@ const LandingPageWrapper = () => {
 };
 
 function App() {
-  const [session, setSession] = useState(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
   // Force cache invalidation and scroll fix
@@ -153,10 +154,22 @@ function App() {
                 } />
                 <Route path="/auth" element={<LoginPage />} />
                 <Route path="/auth/register" element={
-                  session ? <Navigate to="/dashboard" /> : <RegisterPage />
+                  session ? <Navigate to="/dashboard" /> : (
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-black text-white">Caricamento...</div>}>
+                      <RegisterPage />
+                    </Suspense>
+                  )
                 } />
-                <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-and-conditions" element={
+                  <Suspense fallback={<div className="min-h-screen bg-black" />}>
+                    <TermsAndConditions />
+                  </Suspense>
+                } />
+                <Route path="/privacy-policy" element={
+                  <Suspense fallback={<div className="min-h-screen bg-black" />}>
+                    <PrivacyPolicy />
+                  </Suspense>
+                } />
                 
                 {/* ROUTE PROTETTE */}
                 <Route path="/dashboard" element={
@@ -358,7 +371,9 @@ function App() {
             </Suspense>
           </Router>
           <Toaster />
-          <SonnerToaster />
+          <Suspense fallback={null}>
+            <SonnerToaster />
+          </Suspense>
           {import.meta.env.DEV && <FeatureFlagDebug />}
         </PrimeBotProvider>
       </NotificationProvider>

@@ -98,8 +98,7 @@ export function ProblemSection() {
               <motion.div
                 key={index}
                 variants={itemVariants}
-                whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
-                className="relative group"
+                className="relative group transition-transform duration-200 hover:scale-[1.02]"
               >
                 <div className={`
                   p-6 rounded-2xl border-2 transition-all duration-300 bg-white

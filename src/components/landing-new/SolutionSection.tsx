@@ -89,8 +89,7 @@ export function SolutionSection() {
               <motion.div
                 key={index}
                 variants={cardVariants}
-                whileHover={{ y: -5 }}
-                className="group"
+                className="group transition-transform duration-300 hover:-translate-y-1"
               >
                 <div className="bg-gray-50 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
                   {/* Image Container */}
