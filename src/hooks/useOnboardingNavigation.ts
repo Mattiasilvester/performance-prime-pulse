@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useOnboardingStore } from '@/stores/onboardingStore';
+import type { OnboardingData } from '@/stores/onboardingStore';
 
 type OnboardingStep = 1 | 2 | 3 | 4;
 
@@ -11,17 +12,46 @@ const STEP_NAMES: Record<OnboardingStep, string> = {
   4: 'personalizzazione',
 };
 
-interface StepConfig {
-  shouldAutoAdvance: boolean;
-  collectPayload: () => Record<string, any>;
-  save: (payload: any) => Promise<void>;
-}
+type StepPayloads = {
+  1: Pick<OnboardingData, 'obiettivo'>;
+  2: Pick<OnboardingData, 'livelloEsperienza' | 'giorniSettimana'>;
+  3: Pick<OnboardingData, 'luoghiAllenamento' | 'tempoSessione'>;
+  4: Pick<OnboardingData, 'nome' | 'eta' | 'peso' | 'altezza' | 'consigliNutrizionali'>;
+};
+
+type StepConfigMap = {
+  [S in OnboardingStep]: {
+    shouldAutoAdvance: boolean;
+    collectPayload: () => StepPayloads[S];
+    save: (payload: StepPayloads[S]) => Promise<void>;
+  };
+};
+
+type AnalyticsMetadata = {
+  device: 'mobile' | 'desktop';
+  browser: string;
+  screen_width: number | null;
+  screen_height: number | null;
+  platform: string;
+  language: string;
+};
+
+type AnalyticsPayload = {
+  user_id: string;
+  step_number: OnboardingStep;
+  step_name: string;
+  event_type: 'started' | 'completed' | 'abandoned';
+  metadata: AnalyticsMetadata;
+  started_at?: string;
+  completed_at?: string;
+  time_spent_seconds?: number;
+};
 
 export function useOnboardingNavigation() {
   const { data, nextStep } = useOnboardingStore();
   const stepStartTimes = useRef<Record<number, number>>({});
 
-  const stepConfig: Record<OnboardingStep, StepConfig> = {
+  const stepConfig: StepConfigMap = {
     1: {
       shouldAutoAdvance: true,
       collectPayload: () => ({
@@ -83,7 +113,7 @@ export function useOnboardingNavigation() {
         ? Math.floor((Date.now() - startTime) / 1000)
         : null;
 
-      const metadata = {
+      const metadata: AnalyticsMetadata = {
         device: typeof navigator !== 'undefined' && /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop',
         browser: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
         screen_width: typeof window !== 'undefined' ? window.innerWidth : null,
@@ -98,7 +128,7 @@ export function useOnboardingNavigation() {
         metadata,
       });
 
-      const analyticsData: Record<string, any> = {
+      const analyticsData: AnalyticsPayload = {
         user_id: user.id,
         step_number: step,
         step_name: STEP_NAMES[step],
@@ -132,9 +162,9 @@ export function useOnboardingNavigation() {
     }
   }, []);
 
-  const saveAndContinue = async (
-    step: OnboardingStep,
-    overridePayload?: Record<string, any>
+  const saveAndContinue = async <S extends OnboardingStep>(
+    step: S,
+    overridePayload?: StepPayloads[S]
   ) => {
     const config = stepConfig[step];
     if (!config) {
@@ -148,7 +178,7 @@ export function useOnboardingNavigation() {
 
     try {
       const storePayload = config.collectPayload();
-      const payload = overridePayload || storePayload;
+      const payload: StepPayloads[S] = overridePayload ?? storePayload;
       console.log('Payload:', payload);
 
       await config.save(payload);
@@ -190,10 +220,15 @@ export function useOnboardingNavigation() {
   };
 }
 
-async function saveStep1ToDatabase(payload: { obiettivo: string }) {
+async function saveStep1ToDatabase(payload: StepPayloads[1]) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     console.log('Step 1: utente non autenticato, skip salvataggio');
+    return;
+  }
+
+  if (!payload.obiettivo) {
+    console.warn('Step 1: obiettivo mancante, skip salvataggio');
     return;
   }
 
@@ -215,10 +250,15 @@ async function saveStep1ToDatabase(payload: { obiettivo: string }) {
   console.log('Risultato salvataggio Step 1 completato');
 }
 
-async function saveStep2ToDatabase(payload: { livelloEsperienza: string; giorniSettimana: number }) {
+async function saveStep2ToDatabase(payload: StepPayloads[2]) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     console.log('Step 2: utente non autenticato, skip salvataggio');
+    return;
+  }
+
+  if (!payload.livelloEsperienza || typeof payload.giorniSettimana !== 'number') {
+    console.warn('Step 2: dati incompleti, skip salvataggio');
     return;
   }
 
@@ -242,10 +282,15 @@ async function saveStep2ToDatabase(payload: { livelloEsperienza: string; giorniS
   console.log('Risultato salvataggio Step 2 completato');
 }
 
-async function saveStep3ToDatabase(payload: { luoghiAllenamento: string[]; tempoSessione: number }) {
+async function saveStep3ToDatabase(payload: StepPayloads[3]) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     console.log('Step 3: utente non autenticato, skip salvataggio');
+    return;
+  }
+
+  if (!payload.luoghiAllenamento || typeof payload.tempoSessione !== 'number') {
+    console.warn('Step 3: dati incompleti, skip salvataggio');
     return;
   }
 
@@ -269,16 +314,21 @@ async function saveStep3ToDatabase(payload: { luoghiAllenamento: string[]; tempo
   console.log('Risultato salvataggio Step 3 completato');
 }
 
-async function saveStep4ToDatabase(payload: {
-  nome: string;
-  eta: number;
-  peso: number;
-  altezza: number;
-  consigliNutrizionali: boolean;
-}) {
+async function saveStep4ToDatabase(payload: StepPayloads[4]) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     console.log('Step 4: utente non autenticato, skip salvataggio');
+    return;
+  }
+
+  if (
+    !payload.nome ||
+    typeof payload.eta !== 'number' ||
+    typeof payload.peso !== 'number' ||
+    typeof payload.altezza !== 'number' ||
+    typeof payload.consigliNutrizionali !== 'boolean'
+  ) {
+    console.warn('Step 4: dati incompleti, skip salvataggio');
     return;
   }
 

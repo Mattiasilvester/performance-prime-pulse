@@ -1,5 +1,26 @@
 # 🎯 PROMPT MASTER AGGIORNATO - PERFORMANCE PRIME PULSE
-**Ultimo aggiornamento: 10 Novembre 2025 - Sessione 15 (Onboarding Guardians + Lazy Landing)**
+**Ultimo aggiornamento: 12 Novembre 2025 - Sessione 16 (SuperAdmin Edge Functions + Audit Finale)**
+
+## 📅 SESSIONE 16 - 12/11/2025
+
+### HIGHLIGHTS
+- Edge Function `admin-users` con CRUD completo (GET/PATCH/DELETE) e validazione ruolo `super_admin` lato server.
+- Helper `src/lib/adminApi.ts` + migrazione `AdminUsers` e `UserManagementTable` a fetch autenticati con Sonner feedback.
+- Aggiornamento `supabase/config.toml` al nuovo formato CLI 2.x con redeploy `admin-stats`/`admin-users`, rimozione `supabaseAdmin`.
+- Security/Performance/Code audit finale: bundle 655 KB, 6 vulnerabilità npm residue, TypeScript/ESLint da riallineare.
+
+### LOCKED AGGIUNTI
+- `src/lib/adminApi.ts`
+- `supabase/functions/admin-users/index.ts`
+- `src/components/admin/UserManagementTable.tsx`
+- `src/pages/admin/AdminUsers.tsx`
+
+### TODO DERIVATI
+- Sanare errori TypeScript (`ADMIN_SECRET`, `AdminStats.workoutAnalytics`) e ripristinare `npm run lint`.
+- Ruotare/sradicare `VITE_ADMIN_SECRET_KEY` dal bundle (spostare in Edge Function/Secret manager).
+- Aggiornare dipendenze vulnerabili (`pdfjs-dist`, `esbuild`, `path-to-regexp`, `undici`) e rieseguire QA SuperAdmin.
+
+---
 
 ## 📅 SESSIONE 15 - 10/11/2025
 

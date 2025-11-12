@@ -1,169 +1,109 @@
-import { useState, useEffect } from 'react';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import UserManagementTable from '@/components/admin/UserManagementTable';
-import { AdminUser } from '@/types/admin.types';
+import { useCallback, useEffect, useState } from 'react'
+import UserManagementTable from '@/components/admin/UserManagementTable'
+import { AdminUser } from '@/types/admin.types'
+import { deleteUser, getUsers, updateUser } from '@/lib/adminApi'
+import { toast } from 'sonner'
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [isMutating, setIsMutating] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
+  const [totalCount, setTotalCount] = useState<number>(0)
+
+  const fetchUsers = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await getUsers({ limit: 200 })
+      setUsers(response.users)
+      setTotalCount(response.count)
+      setError(null)
+    } catch (err) {
+      console.error('Error fetching users:', err)
+      setError(err instanceof Error ? err.message : 'Errore durante il caricamento utenti')
+      toast.error('Errore nel caricamento degli utenti')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    loadUsers();
-  }, []);
+    fetchUsers()
+  }, [fetchUsers])
 
-  const loadUsers = async () => {
-    console.log('📊 Loading users with ADMIN client...');
-    setLoading(true);
-    
+  const handleToggleActive = useCallback(async (user: AdminUser) => {
+    setIsMutating(true)
     try {
-      // USA supabaseAdmin per bypassare RLS
-      const { data: profiles, error, count } = await supabaseAdmin
-        .from('profiles')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
-      
-      console.log('Users query with ADMIN:', { count, error, sample: profiles?.[0] });
-      
-      if (error) {
-        console.error('❌ Users error:', error);
-        throw error;
-      }
-      
-      if (!profiles || profiles.length === 0) {
-        console.warn('⚠️ No users found');
-        setUsers([]);
-        return;
-      }
-      
-      // Arricchisci dati utente
-      const enrichedUsers = await Promise.all(
-        profiles.map(async (profile) => {
-          try {
-            // Conta allenamenti totali (per info)
-            const { count: userWorkouts } = await supabaseAdmin
-              .from('custom_workouts')
-              .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at', { count: 'exact', head: true })
-              .eq('user_id', profile.id);
-
-            // Ultimo workout (per info)
-            const { data: lastWorkout } = await supabaseAdmin
-              .from('custom_workouts')
-              .select('created_at')
-              .eq('user_id', profile.id)
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .single();
-
-            // LOGICA CORRETTA: Attivo solo se online negli ultimi 5-10 minuti
-            const fiveMinutesAgo = new Date();
-            fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
-            
-            // Verifica se ha fatto azioni recenti (login, attività) negli ultimi 5 min
-            const isActiveNow = profile.last_login && 
-              new Date(profile.last_login as string) > fiveMinutesAgo;
-
-            // Calcola tempo dall'ultimo accesso
-            const lastLoginTime = profile.last_login ? new Date(profile.last_login as string) : null;
-            const minutesSinceLogin = lastLoginTime ? 
-              Math.floor((new Date().getTime() - lastLoginTime.getTime()) / (1000 * 60)) : null;
-
-            console.log(`👤 ${profile.email}: Last login: ${profile.last_login}, Online ORA: ${isActiveNow}, Minuti fa: ${minutesSinceLogin}`);
-
-            return {
-              id: profile.id,
-              email: profile.email || 'N/A',
-              full_name: profile.full_name || profile.name || 'Senza nome',
-              name: profile.full_name || profile.name || 'Senza nome',
-              role: profile.role || 'user',
-              status: profile.status || 'active',
-              subscription_status: profile.subscription_status || 'free',
-              created_at: profile.created_at,
-              last_login: profile.last_login,
-              total_workouts: userWorkouts || 0,
-              total_minutes: 0,
-              user_workouts: userWorkouts || 0,
-              last_workout_date: lastWorkout?.created_at,
-              minutes_since_login: minutesSinceLogin,
-              last_login_formatted: lastLoginTime ? 
-                lastLoginTime.toLocaleString('it-IT') : 'Mai',
-              is_active: (profile.status || 'active') === 'active',
-              is_active_user: isActiveNow
-            } as AdminUser;
-          } catch (enrichError) {
-            console.log('Enrich error for user:', profile.id, enrichError);
-            return {
-              id: profile.id,
-              email: profile.email || 'N/A',
-              full_name: profile.full_name || profile.name || 'Senza nome',
-              name: profile.full_name || profile.name || 'Senza nome',
-              role: profile.role || 'user',
-              status: profile.status || 'active',
-              subscription_status: profile.subscription_status || 'free',
-              created_at: profile.created_at,
-              last_login: profile.last_login,
-              total_workouts: 0,
-              total_minutes: 0,
-              is_active_user: false,
-              is_active: (profile.status || 'active') === 'active'
-            } as AdminUser;
-          }
-        })
-      );
-      
-      console.log(`✅ Loaded ${enrichedUsers.length} users with fitness data`);
-      setUsers(enrichedUsers);
-      
-    } catch (err: any) {
-      console.error('❌ Error loading users:', err);
-      setUsers([]);
+      await updateUser(user.id, { is_active: !user.is_active })
+      toast.success(
+        user.is_active
+          ? `Utente ${user.email} sospeso`
+          : `Utente ${user.email} riattivato`
+      )
+      await fetchUsers()
+    } catch (err) {
+      console.error('Error updating user:', err)
+      toast.error('Errore durante l\'aggiornamento utente')
     } finally {
-      setLoading(false);
+      setIsMutating(false)
     }
-  };
+  }, [fetchUsers])
 
-  const handleUserAction = async (userId: string, action: string) => {
+  const handleDeleteUser = useCallback(async (user: AdminUser) => {
+    if (!window.confirm(`Disattivare definitivamente ${user.email}?`)) {
+      return
+    }
+
+    setIsMutating(true)
     try {
-      console.log(`🔧 Executing action: ${action} for user: ${userId}`);
-      
-      // Log azione
-      const { error: logError } = await supabaseAdmin.from('admin_audit_logs').insert({
-        admin_id: 'system',
-        action,
-        target_user_id: userId,
-        details: `Action: ${action}`,
-        created_at: new Date().toISOString()
-      });
-
-      if (logError) {
-        console.warn('⚠️ Could not log action:', logError);
-      }
-
-      // Ricarica utenti dopo azione
-      await loadUsers();
-      
-    } catch (error) {
-      console.error('❌ Error executing action:', error);
+      await deleteUser(user.id)
+      toast.success(`Utente ${user.email} disattivato`)
+      await fetchUsers()
+    } catch (err) {
+      console.error('Error deleting user:', err)
+      toast.error('Errore durante la disattivazione utente')
+    } finally {
+      setIsMutating(false)
     }
-  };
-
-  if (loading) {
-    return (
-      <div className="p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-white">Caricamento utenti...</div>
-        </div>
-      </div>
-    );
-  }
+  }, [fetchUsers])
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold text-white mb-8">Gestione Utenti</h1>
-      <UserManagementTable 
-        users={users} 
-        onAction={handleUserAction}
-        onUserUpdate={loadUsers}
+    <div className="p-8 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Gestione Utenti</h1>
+          <p className="text-gray-400 mt-1">
+            Controlla lo stato degli utenti, sospendi o riattiva gli account e monitora l&apos;attività in tempo reale.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchUsers}
+            disabled={loading || isMutating}
+            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            🔄 Aggiorna
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-red-600/10 border border-red-500/40 text-red-200 px-4 py-3 rounded-lg">
+          <div className="font-semibold">Errore: {error}</div>
+          <div className="text-sm mt-1">
+            Verifica la connessione o riprova tra qualche istante.
+          </div>
+        </div>
+      )}
+
+      <UserManagementTable
+        users={users}
+        loading={loading}
+        isMutating={isMutating}
+        totalCount={totalCount}
+        onToggleActive={handleToggleActive}
+        onDeleteUser={handleDeleteUser}
       />
     </div>
-  );
+  )
 }

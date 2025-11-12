@@ -94,13 +94,11 @@ export function CTASection() {
               initial={{ scale: 0 }}
               animate={isInView ? { scale: 1 } : {}}
               transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
             >
               <Button
                 onClick={handleStartOnboarding}
                 size="lg"
-                className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold text-lg px-8 py-6 rounded-full group shadow-xl hover:shadow-[#FFD700]/30 transition-all duration-300"
+                className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold text-lg px-8 py-6 rounded-full group shadow-xl hover:shadow-[#FFD700]/30 hover:scale-105 active:scale-95 transition-transform duration-200"
               >
                 Inizia ora gratuitamente
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />

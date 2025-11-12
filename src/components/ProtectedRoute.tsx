@@ -1,9 +1,11 @@
-import { Navigate, useLocation } from 'react-router-dom'
-import { safeLocalStorage } from '@/utils/domHelpers'
+import type { ReactNode } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import { Navigate, useLocation } from 'react-router-dom';
+import { safeLocalStorage } from '@/utils/domHelpers';
 
 interface ProtectedRouteProps {
-  session: any
-  children: React.ReactNode
+  session: Session | null;
+  children: ReactNode;
 }
 
 export default function ProtectedRoute({ session, children }: ProtectedRouteProps) {
@@ -18,8 +20,8 @@ export default function ProtectedRoute({ session, children }: ProtectedRouteProp
   }
 
   if (!session) {
-    return <Navigate to="/auth/login" replace />
+    return <Navigate to="/auth/login" replace />;
   }
   
-  return <>{children}</>
+  return <>{children}</>;
 } 

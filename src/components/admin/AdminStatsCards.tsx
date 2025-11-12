@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { AdminStats } from '@/types/admin.types';
 
 interface AdminStatsCardsProps {

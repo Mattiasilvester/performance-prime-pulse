@@ -44,6 +44,13 @@
 - `Dashboard.tsx` - App principale con logout
 - `ProtectedRoute.tsx` - Protezione route autenticate
 
+### **Componenti SuperAdmin (LOCKED)**
+- `src/lib/adminApi.ts`
+- `src/components/admin/UserManagementTable.tsx`
+- `src/pages/admin/AdminUsers.tsx`
+- `supabase/functions/admin-users/index.ts`
+- `supabase/functions/_shared/cors.ts`
+
 ---
 
 ## 🔧 **STEP COMPLETATI CON SUCCESSO**

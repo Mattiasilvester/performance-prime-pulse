@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { NewObjectiveCard } from '@/components/profile/NewObjectiveCard';
 
 type QuickAction = {
@@ -18,20 +17,57 @@ type QuickAction = {
   disabled?: boolean;
 };
 
+type SavedPlan = {
+  id: string;
+  nome: string | null;
+  tipo: string | null;
+  luogo: string | null;
+  obiettivo: string | null;
+  durata: number | null;
+  esercizi: unknown;
+  is_active: boolean | null;
+  saved_for_later: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+type CustomExercisePayload = {
+  name: string;
+  duration?: number | string;
+  rest?: number | string;
+  sets?: number | string;
+  instructions?: string;
+  muscleGroup?: string | null;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const pickString = (value: unknown): string | undefined =>
+  typeof value === 'string' ? value : undefined;
+
+const pickNumberOrString = (value: unknown): number | string | undefined => {
+  if (typeof value === 'number' || typeof value === 'string') {
+    return value;
+  }
+  return undefined;
+};
+
 const QuickActions = () => {
   const [isObjectiveModalOpen, setIsObjectiveModalOpen] = useState(false);
-  const [savedPlans, setSavedPlans] = useState<any[]>([]);
+  const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
   const [isLoadingPlans, setIsLoadingPlans] = useState(true);
   const [showPlanModal, setShowPlanModal] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   useEffect(() => {
     const loadSavedPlans = async () => {
       try {
         setIsLoadingPlans(true);
 
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
         if (!currentUser) {
           setSavedPlans([]);
           setIsLoadingPlans(false);
@@ -45,12 +81,12 @@ const QuickActions = () => {
           .eq('is_active', true)
           .order('created_at', { ascending: false });
 
-        if (error) {
+        if (error || !data) {
           console.error('Errore caricamento piani:', error);
           setSavedPlans([]);
         } else {
           console.log('Piani caricati:', data);
-          setSavedPlans(data || []);
+          setSavedPlans(data);
         }
       } catch (error) {
         console.error('Errore:', error);
@@ -83,35 +119,70 @@ const QuickActions = () => {
     navigate('/ai-coach');
   };
 
-  const getPlanIcon = (luogo: string) => {
-    const l = luogo?.toLowerCase?.() || '';
-    if (l.includes('casa') || l.includes('home')) return Home;
-    if (l.includes('palestra') || l.includes('gym')) return Dumbbell;
-    if (l.includes('outdoor') || l.includes('aperto')) return TreePine;
+  const getPlanIcon = (luogo?: string | null) => {
+    const normalized = luogo?.toLowerCase?.() ?? '';
+    if (normalized.includes('casa') || normalized.includes('home')) return Home;
+    if (normalized.includes('palestra') || normalized.includes('gym')) return Dumbbell;
+    if (normalized.includes('outdoor') || normalized.includes('aperto')) return TreePine;
     return Dumbbell;
   };
 
-  const handleStartPlan = (plan: any) => {
+  const toCustomExercisePayload = (exercise: unknown, fallbackName: string, muscleGroup: string | null): CustomExercisePayload => {
+    if (!isRecord(exercise)) {
+      return {
+        name: fallbackName,
+        muscleGroup,
+      };
+    }
+
+    const name =
+      pickString(exercise.nome) ??
+      pickString(exercise.name) ??
+      fallbackName;
+
+    const duration =
+      pickNumberOrString(exercise.ripetizioni) ??
+      pickNumberOrString(exercise.duration);
+
+    const rest =
+      pickNumberOrString(exercise.riposo) ??
+      pickNumberOrString(exercise.rest);
+
+    const sets =
+      pickNumberOrString(exercise.serie) ??
+      pickNumberOrString(exercise.sets);
+
+    const instructions =
+      pickString(exercise.note) ??
+      pickString(exercise.instructions);
+
+    return {
+      name,
+      duration,
+      rest,
+      sets,
+      instructions,
+      muscleGroup,
+    };
+  };
+
+  const handleStartPlan = (plan: SavedPlan) => {
     console.log('Avvio piano:', plan);
     setShowPlanModal(false);
 
-    const exercisesFormatted = (plan?.esercizi || []).map((ex: any) => ({
-      name: ex?.nome || ex?.name,
-      duration: ex?.ripetizioni || ex?.duration,
-      rest: ex?.riposo || ex?.rest,
-      sets: ex?.serie || ex?.sets,
-      instructions: ex?.note || ex?.instructions,
-      muscleGroup: plan?.obiettivo
-    }));
+    const exercises = Array.isArray(plan.esercizi) ? plan.esercizi : [];
+    const exercisesFormatted: CustomExercisePayload[] = exercises.map((exercise) =>
+      toCustomExercisePayload(exercise, plan.nome ?? 'Esercizio personalizzato', plan.obiettivo)
+    );
 
     navigate('/workouts', {
       state: {
         startCustomWorkout: 'personalized',
         customExercises: exercisesFormatted,
-        workoutTitle: plan?.nome,
-        workoutType: plan?.tipo,
-        duration: plan?.durata
-      }
+        workoutTitle: plan.nome,
+        workoutType: plan.tipo,
+        duration: plan.durata,
+      },
     });
   };
 
@@ -124,9 +195,8 @@ const QuickActions = () => {
     }
   };
 
-  const planCountLabel = savedPlans.length === 1
-    ? '1 piano attivo'
-    : `${savedPlans.length} piani attivi`;
+  const planCountLabel =
+    savedPlans.length === 1 ? '1 piano attivo' : `${savedPlans.length} piani attivi`;
 
   // Azioni rapide aggiornate con Timer, Calendario e PrimeBot
   const actions: QuickAction[] = [
@@ -280,6 +350,7 @@ const QuickActions = () => {
             <div className="space-y-4">
               {savedPlans.map((plan) => {
                 const Icon = getPlanIcon(plan.luogo);
+                const exerciseCount = Array.isArray(plan.esercizi) ? plan.esercizi.length : 0;
                 return (
                   <div
                     key={plan.id}
@@ -296,7 +367,7 @@ const QuickActions = () => {
                     </div>
 
                     <div className="flex items-center gap-4 mb-4 text-sm text-gray-400">
-                      <span>💪 {plan.esercizi?.length || 0} esercizi</span>
+                      <span>💪 {exerciseCount} esercizi</span>
                       <span>⏱️ ~{plan.durata} min</span>
                     </div>
 
