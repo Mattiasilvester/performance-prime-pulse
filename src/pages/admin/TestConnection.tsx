@@ -84,7 +84,7 @@ export default function TestConnection() {
           <div className="space-y-2 text-sm">
             <p><strong>VITE_SUPABASE_URL:</strong> {import.meta.env.VITE_SUPABASE_URL ? '✅' : '❌'}</p>
             <p><strong>VITE_SUPABASE_ANON_KEY:</strong> {import.meta.env.VITE_SUPABASE_ANON_KEY ? '✅' : '❌'}</p>
-            <p><strong>VITE_ADMIN_SECRET_KEY:</strong> {import.meta.env.VITE_ADMIN_SECRET_KEY ? '✅' : '❌'}</p>
+            <p><strong>VITE_ADMIN_SECRET_KEY:</strong> ❌ (rimossa per sicurezza - validazione tramite Edge Function)</p>
             <p><strong>VITE_ADMIN_EMAIL:</strong> {import.meta.env.VITE_ADMIN_EMAIL || 'Non impostata'}</p>
           </div>
         </div>

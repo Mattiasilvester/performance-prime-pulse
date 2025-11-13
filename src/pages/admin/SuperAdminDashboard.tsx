@@ -138,6 +138,7 @@ export default function SuperAdminDashboard() {
         retentionD7: 0,
         weeklyGrowth: 0,
         newUsersLast7Days: 0,
+        workoutAnalytics: undefined,
       });
     } finally {
       setLoading(false);

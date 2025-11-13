@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../integrations/supabase/client'
 import { AdminUser, AdminSession } from '@/types/admin.types'
 
-const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET_KEY ?? ''
+// ADMIN_SECRET rimosso - validazione ora tramite Edge Function
 
 export function useAdminAuthBypass() {
   const [admin, setAdmin] = useState<AdminUser | null>(null)
@@ -104,11 +104,25 @@ export function useAdminAuthBypass() {
     console.log('🔐 Tentativo login SuperAdmin:', credentials.email);
     
     try {
-      // Step 1: Verifica secret key
-      const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET_KEY
-      console.log('🔑 Verifica secret key...', { provided: credentials.secretKey, expected: ADMIN_SECRET });
+      // Step 1: Verifica secret key tramite Edge Function (sicuro, senza autenticazione richiesta)
+      const validateResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-auth-validate`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ secretKey: credentials.secretKey }),
+        },
+      );
+
+      if (!validateResponse.ok) {
+        throw new Error('Errore durante validazione secret key');
+      }
+
+      const { valid } = await validateResponse.json();
       
-      if (credentials.secretKey !== ADMIN_SECRET) {
+      if (!valid) {
         console.error('❌ Secret key non valida');
         throw new Error('Chiave segreta non valida');
       }
@@ -174,42 +188,10 @@ export function useAdminAuthBypass() {
       return { success: true };
 
     } catch (error: any) {
-      console.error('❌ Login fallito, attivo emergency bypass:', error);
+      console.error('❌ Login fallito:', error);
       
-      if (credentials.email === 'mattiasilvester@gmail.com' && 
-          credentials.password === 'SuperAdmin2025!' &&
-          credentials.secretKey === ADMIN_SECRET) {
-        
-        console.log('🔓 BYPASS LOGIN - Accesso diretto');
-        
-        const HARDCODED_ADMIN = {
-          id: 'admin-bypass-001',
-          email: 'mattiasilvester@gmail.com',
-          role: 'super_admin',
-          full_name: 'Super Admin'
-        };
-        
-        const adminSession = {
-          admin_id: HARDCODED_ADMIN.id,
-          email: HARDCODED_ADMIN.email,
-          role: HARDCODED_ADMIN.role,
-          logged_at: new Date().toISOString()
-        };
-        
-        localStorage.setItem('admin_session', JSON.stringify(adminSession));
-        setAdmin({
-          id: HARDCODED_ADMIN.id,
-          email: HARDCODED_ADMIN.email,
-          name: HARDCODED_ADMIN.full_name,
-          role: 'super_admin',
-          status: 'active',
-          created_at: new Date().toISOString()
-        });
-        
-        console.log('✅ EMERGENCY BYPASS ACTIVATED');
-        return { success: true };
-      }
-
+      // Emergency bypass rimosso per sicurezza
+      // La validazione secret key deve sempre passare tramite Edge Function
       throw error;
     }
   }
