@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState, MouseEvent, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState, MouseEvent, useCallback, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { Button } from '@/components/ui/button';
 import { 
@@ -18,6 +18,7 @@ import { calculateWorkoutParameters, mapExperienceLevel } from '@/utils/workoutP
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
+import { OnboardingPreferencesCard } from '@/components/onboarding/OnboardingPreferencesCard';
 
 // Mappatura obiettivi tradotti
 const OBIETTIVI_TRADOTTI: Record<string, string> = {
@@ -311,7 +312,27 @@ function WorkoutPlanCard({ piano, index, isExpanded, onToggle, onIniziaPiano, on
 
 export function CompletionScreen() {
   const navigate = useNavigate();
-  const { data, completeOnboarding, resetOnboarding } = useOnboardingStore();
+  const [searchParams] = useSearchParams();
+  const isEditMode = searchParams.get('mode') === 'edit';
+  const { data, completeOnboarding, resetOnboarding, setStep, currentStep } = useOnboardingStore();
+  
+  // ✅ FIX URGENTE: Ref per prevenire loop infinito
+  const step5SetRef = useRef(false);
+  
+  // ✅ FIX FINALE: In edit mode, forza currentStep a 5 SOLO al mount (una volta)
+  useEffect(() => {
+    // Esegui SOLO quando isEditMode diventa true e non abbiamo ancora impostato step 5
+    if (isEditMode && !step5SetRef.current) {
+      const currentStepValue = useOnboardingStore.getState().currentStep;
+      if (currentStepValue !== 5) {
+        console.log('🔧 CompletionScreen: forcing currentStep to 5 (one time only)');
+        step5SetRef.current = true;
+        setStep(5);
+      } else {
+        step5SetRef.current = true; // Già a 5, marca come fatto
+      }
+    }
+  }, [isEditMode]); // ✅ SOLO isEditMode nelle dependencies, NO currentStep, NO setStep!
   const [piani, setPiani] = useState<WorkoutPlan[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<User | null>(null);
@@ -319,6 +340,9 @@ export function CompletionScreen() {
   const [currentResponses, setCurrentResponses] = useState<OnboardingResponsesSnapshot | null>(null);
   const [latestMetadata, setLatestMetadata] = useState<WorkoutPlanMetadata | null>(null);
   const { toast } = useToast();
+  
+  // ✅ FIX: Ref per prevenire loop infinito
+  const hasInitialized = useRef(false);
   
   useEffect(() => {
     let isMounted = true;
@@ -754,16 +778,68 @@ export function CompletionScreen() {
   };
 
   useEffect(() => {
+    // ✅ FIX: Prevenire loop infinito con ref
+    if (hasInitialized.current || !user?.id) {
+      return;
+    }
+
+    // ✅ FIX PERFORMANCE: Mostra la pagina immediatamente, completa onboarding subito
+    hasInitialized.current = true;
+    completeOnboarding();
+
     const initializePlans = async () => {
-      if (!user?.id) {
-        return;
-      }
-
-      completeOnboarding();
-
       try {
         setIsGenerating(true);
 
+        // ✅ FIX PERFORMANCE: Carica PRIMA i piani esistenti (veloce, non bloccante)
+        const { data: existingPlans, error } = await supabase
+          .from('workout_plans')
+          .select('id, nome, tipo, luogo, durata, esercizi, metadata, obiettivo, saved_for_later, user_id, source, created_at, updated_at')
+          .eq('user_id', user.id)
+          .eq('source', 'onboarding');
+
+        if (error) {
+          throw error;
+        }
+
+        // ✅ FIX: Se ci sono piani esistenti, mostrali SUBITO (non aspettare checkAndRegeneratePlan)
+        if (existingPlans && existingPlans.length > 0) {
+          setPiani(existingPlans.map(mapSupabasePlanToWorkoutPlan));
+
+          const firstMetadata = (existingPlans[0]?.metadata ?? null) as WorkoutPlanMetadata | null;
+          if (firstMetadata) {
+            setLatestMetadata(firstMetadata);
+          }
+          
+          setIsGenerating(false); // ✅ Mostra la pagina immediatamente
+
+          // ✅ Verifica se serve rigenerare in background (non bloccante)
+          const needsRegeneration = await checkAndRegeneratePlan();
+          
+          if (needsRegeneration) {
+            toast({
+              title: 'Aggiornamento piano',
+              description: '🔄 Rilevate modifiche alle risposte, aggiornamento piano in corso...',
+              duration: 3500,
+              className: 'bg-gradient-to-br from-gray-900 to-black border-2 border-[#FFD700] text-white'
+            });
+            // Rigenera in background
+            await generateWorkoutPlans();
+          }
+          
+          // ✅ FASE 3: Toast per edit mode anche quando ci sono piani esistenti
+          if (isEditMode) {
+            toast({
+              title: 'Preferenze aggiornate',
+              description: '✅ Le tue preferenze sono state aggiornate con successo!',
+              duration: 4000,
+              className: 'bg-gradient-to-br from-gray-900 to-black border-2 border-[#FFD700] text-white'
+            });
+          }
+          return; // ✅ Esci subito, pagina già mostrata
+        }
+
+        // ✅ Nessun piano esistente, genera nuovi (questo è lento ma necessario)
         const needsRegeneration = await checkAndRegeneratePlan();
 
         if (needsRegeneration) {
@@ -775,34 +851,17 @@ export function CompletionScreen() {
           });
         }
 
-        const { data: existingPlans, error } = await supabase
-          .from('workout_plans')
-          .select('id, nome, tipo, luogo, durata, esercizi, metadata, obiettivo, saved_for_later, user_id, source, created_at, updated_at')
-          .eq('user_id', user.id)
-          .eq('source', 'onboarding');
+        await generateWorkoutPlans();
 
-        if (error) {
-          throw error;
-        }
-
-        if (!existingPlans || existingPlans.length === 0) {
-          await generateWorkoutPlans();
-
-          if (needsRegeneration) {
-            toast({
-              title: 'Piano aggiornato',
-              description: '✅ Piano aggiornato con le tue nuove risposte!',
-              duration: 3500,
-              className: 'bg-gradient-to-br from-gray-900 to-black border-2 border-[#FFD700] text-white'
-            });
-          }
-        } else {
-          setPiani(existingPlans.map(mapSupabasePlanToWorkoutPlan));
-
-          const firstMetadata = (existingPlans[0]?.metadata ?? null) as WorkoutPlanMetadata | null;
-          if (firstMetadata) {
-            setLatestMetadata(firstMetadata);
-          }
+        if (needsRegeneration || isEditMode) {
+          toast({
+            title: isEditMode ? 'Preferenze aggiornate' : 'Piano aggiornato',
+            description: isEditMode 
+              ? '✅ Le tue preferenze sono state aggiornate con successo!'
+              : '✅ Piano aggiornato con le tue nuove risposte!',
+            duration: 4000,
+            className: 'bg-gradient-to-br from-gray-900 to-black border-2 border-[#FFD700] text-white'
+          });
         }
       } catch (error) {
         console.error('Errore inizializzazione piani:', error);
@@ -818,7 +877,8 @@ export function CompletionScreen() {
     };
 
     initializePlans();
-  }, [user?.id, completeOnboarding, checkAndRegeneratePlan, generateWorkoutPlans, mapSupabasePlanToWorkoutPlan, toast]);
+    // ✅ FIX: Solo user?.id nelle dipendenze, altre funzioni sono memoizzate o stabili
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const normalizeTimeValue = (value?: string | null, fallback: string = '45s') => {
     if (!value) return fallback;
@@ -1105,6 +1165,11 @@ export function CompletionScreen() {
           <p className="text-gray-400 text-lg">
             Abbiamo creato {piani.length} {piani.length === 1 ? 'piano' : 'piani'} su misura per te
           </p>
+        </div>
+
+        {/* CARD PREFERENZE - AGGIUNTA NUOVA */}
+        <div className="mb-8">
+          <OnboardingPreferencesCard />
         </div>
 
         {/* Grid di card (1, 2 o 3 colonne) */}

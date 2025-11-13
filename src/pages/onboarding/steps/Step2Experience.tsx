@@ -19,6 +19,7 @@ export interface Step2ExperienceHandle {
 
 interface Step2ExperienceProps {
   onComplete: () => void;
+  isEditMode?: boolean;
 }
 
 interface ExperienceLevel {
@@ -88,7 +89,7 @@ const dayMessages = [
 ];
 
 const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
-  ({ onComplete }, ref) => {
+  ({ onComplete, isEditMode = false }, ref) => {
     const { data, updateData } = useOnboardingStore();
     const [selectedLevel, setSelectedLevel] = useState<ExperienceLevel['id'] | null>(
       data.livelloEsperienza || null
@@ -97,11 +98,14 @@ const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
       data.giorniSettimana || 3
     );
     const [canProceed, setCanProceed] = useState(false);
-    const { saveAndContinue, trackStepStarted } = useOnboardingNavigation();
+    const { saveAndContinue, trackStepStarted } = useOnboardingNavigation(isEditMode);
 
     useEffect(() => {
-      trackStepStarted(2);
-    }, [trackStepStarted]);
+      // ✅ FIX: Non trackare in edit mode (temporaneo per debug)
+      if (!isEditMode) {
+        trackStepStarted(2);
+      }
+    }, [trackStepStarted, isEditMode]);
 
     useEffect(() => {
       setCanProceed(!!selectedLevel);

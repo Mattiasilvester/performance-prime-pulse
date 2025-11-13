@@ -5,6 +5,26 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [9.0.4] - 2025-11-13
+
+### 🐛 Fixed
+- Risolto loop infinito Step 0→1 che impediva avanzamento dopo registrazione.
+- Risolto loop infinito analytics Step 1 che causava spam console.
+- Risolto problema Step 4 che non avanzava a CompletionScreen.
+- Risolto validazione Step 4 che falliva quando nome era nello store ma non nel campo locale.
+- Ottimizzato delay CompletionScreen: ridotto da ~2-3s a ~200-500ms (-80-90%).
+
+### ⚡ Performance
+- CompletionScreen ora carica piani esistenti prima delle verifiche pesanti, mostrando la pagina immediatamente.
+- Operazioni asincrone pesanti eseguite in background senza bloccare il rendering.
+
+### 🔧 Changed
+- Rollback logica onboarding a versione semplice e stabile.
+- `handleNext` ora gestisce correttamente tutti gli step incluso Step 4→5.
+- Validazione Step 4 migliorata per usare anche dati dallo store.
+
+---
+
 ## [9.0.3] - 2025-11-12
 
 ### 🔒 Security

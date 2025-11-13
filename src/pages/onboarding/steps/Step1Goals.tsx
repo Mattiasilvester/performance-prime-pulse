@@ -69,16 +69,27 @@ const goals: Goal[] = [
   }
 ];
 
-export function Step1Goals() {
+interface Step1GoalsProps {
+  isEditMode?: boolean;
+}
+
+export function Step1Goals({ isEditMode = false }: Step1GoalsProps) {
   const { data, updateData } = useOnboardingStore();
   const [selectedGoal, setSelectedGoal] = useState<string | null>(data.obiettivo || null);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const { saveAndContinue, trackStepStarted } = useOnboardingNavigation();
+  const { saveAndContinue, trackStepStarted } = useOnboardingNavigation(isEditMode);
   const isMountedRef = useRef(true);
+  // ✅ FIX CRITICO: Ref per prevenire loop infinito - traccia se trackStepStarted è già stato chiamato
+  const hasTrackedRef = useRef(false);
 
   useEffect(() => {
-    trackStepStarted(1);
-  }, [trackStepStarted]);
+    // ✅ FIX: Non trackare in edit mode e solo UNA VOLTA
+    if (!isEditMode && !hasTrackedRef.current) {
+      trackStepStarted(1);
+      hasTrackedRef.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode]); // ✅ RIMOSSO trackStepStarted dalle dipendenze per evitare loop
 
   useEffect(() => {
     return () => {
