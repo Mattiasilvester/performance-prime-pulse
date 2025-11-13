@@ -21,30 +21,44 @@ export interface Step4PersonalizationHandle {
 
 interface Step4PersonalizationProps {
   onComplete: () => void;
+  isEditMode?: boolean;
 }
 
 const Step4Personalization = forwardRef<Step4PersonalizationHandle, Step4PersonalizationProps>(
-  ({ onComplete }, ref) => {
+  ({ onComplete, isEditMode = false }, ref) => {
     const { data, updateData } = useOnboardingStore();
   
-    const [nome, setNome] = useState(data.nome || '');
-    const [eta, setEta] = useState(data.eta || 25);
-    const [peso, setPeso] = useState(data.peso || 70);
-    const [altezza, setAltezza] = useState(data.altezza || 170);
-    const [isValid, setIsValid] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [consigliNutrizionali] = useState<boolean>(
-      data.consigliNutrizionali ?? false
-    );
-    const { saveAndContinue, trackStepStarted } = useOnboardingNavigation();
-
-    useEffect(() => {
-      trackStepStarted(4);
-    }, [trackStepStarted]);
+  const [nome, setNome] = useState(data.nome || '');
+  const [eta, setEta] = useState(data.eta || 25);
+  const [peso, setPeso] = useState(data.peso || 70);
+  const [altezza, setAltezza] = useState(data.altezza || 170);
+  const [isValid, setIsValid] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [consigliNutrizionali] = useState<boolean>(
+    data.consigliNutrizionali ?? false
+  );
+  const { saveAndContinue, trackStepStarted } = useOnboardingNavigation(isEditMode);
 
   useEffect(() => {
-    setIsValid(nome.trim().length > 0);
-  }, [nome]);
+    // ✅ FIX: Non trackare in edit mode (temporaneo per debug)
+    if (!isEditMode) {
+      trackStepStarted(4);
+    }
+  }, [trackStepStarted, isEditMode]);
+
+  // ✅ FIX CRITICO: Sincronizza nome dallo store se esiste ma il campo è vuoto
+  useEffect(() => {
+    if (data.nome && data.nome.trim().length > 0 && !nome.trim()) {
+      console.log('🔄 Syncing nome from store:', data.nome);
+      setNome(data.nome);
+    }
+  }, [data.nome]);
+
+  useEffect(() => {
+    // ✅ FIX: Valida anche se nome è nello store ma non nel campo locale
+    const nomeValue = nome.trim() || data.nome?.trim() || '';
+    setIsValid(nomeValue.length > 0);
+  }, [nome, data.nome]);
 
   // Salva i dati nello store quando cambiano (solo se validi)
   useEffect(() => {
@@ -62,17 +76,28 @@ const Step4Personalization = forwardRef<Step4PersonalizationHandle, Step4Persona
 
   useImperativeHandle(ref, () => ({
     handleContinue: async () => {
-      if (!isValid || isGenerating) {
-        console.log('⚠️ Step 4: validazione non passata o generazione in corso');
+      console.log('═══════════════════════════════════════════');
+      console.log('🔵 handleContinue STARTED');
+      console.log('State:', { isValid, isGenerating, isEditMode });
+      console.log('═══════════════════════════════════════════');
+      
+      // ✅ FIX CRITICO: Usa nome dallo store se il campo locale è vuoto
+      const nomeToUse = nome.trim() || data.nome?.trim() || '';
+      
+      if (!nomeToUse || isGenerating) {
+        console.log('❌ Validation failed:', { 
+          nomeLocal: nome, 
+          nomeStore: data.nome, 
+          nomeToUse, 
+          isGenerating 
+        });
         return;
       }
-
-      console.log('✅ Step 4: validazione OK, procedo');
 
       setIsGenerating(true);
 
       const payload = {
-        nome,
+        nome: nomeToUse,
         eta,
         peso,
         altezza,
@@ -80,25 +105,41 @@ const Step4Personalization = forwardRef<Step4PersonalizationHandle, Step4Persona
       };
 
       try {
+        console.log('📦 Payload:', payload);
+        
+        // 1. Aggiorna dati
+        console.log('▶️ Step 1/4: updateData');
         updateData(payload);
+        console.log('✅ Step 1/4: updateData OK');
 
+        // 2. Salva nel database
+        console.log('▶️ Step 2/4: saveAndContinue');
         await saveAndContinue(4, payload);
+        console.log('✅ Step 2/4: saveAndContinue OK');
 
+        // 3. Analytics
+        console.log('▶️ Step 3/4: trackOnboarding');
         trackOnboarding.stepCompleted(4, {
-          nome: nome.trim().length,
+          nome: nomeToUse.length,
           eta,
           peso,
           altezza,
           consigliNutrizionali
         });
+        console.log('✅ Step 3/4: trackOnboarding OK');
 
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
+        // 4. SEMPRE chiama onComplete - lascia che gestisca lui edit/normal mode
+        console.log('▶️ Step 4/4: onComplete');
         onComplete();
+        console.log('✅ Step 4/4: onComplete OK');
+
       } catch (error) {
-        console.error('❌ Errore durante il completamento dello Step 4:', error);
+        console.error('❌ ERROR in handleContinue:', error);
       } finally {
         setIsGenerating(false);
+        console.log('═══════════════════════════════════════════');
+        console.log('🔵 handleContinue FINISHED');
+        console.log('═══════════════════════════════════════════');
       }
     }
   }));

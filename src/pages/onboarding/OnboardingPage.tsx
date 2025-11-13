@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { safeLocalStorage } from '@/utils/domHelpers';
 import { supabase } from '@/integrations/supabase/client';
+import { onboardingService } from '@/services/onboardingService';
+import { useAuth } from '@/hooks/useAuth';
+import { useOnboardingNavigation } from '@/hooks/useOnboardingNavigation';
 // Import steps
 import type { Step2ExperienceHandle } from './steps/Step2Experience';
 import type { Step3PreferencesHandle } from './steps/Step3Preferences';
@@ -35,13 +38,16 @@ const StepFallback = () => (
 export function OnboardingPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
+  const isEditMode = searchParams.get('mode') === 'edit';
   const { 
     currentStep, 
     data,
     previousStep,
     nextStep,
     resetOnboarding,
-    setStep
+    setStep,
+    updateData
   } = useOnboardingStore();
 
   const [animatedProgress, setAnimatedProgress] = useState(0);
@@ -49,37 +55,196 @@ export function OnboardingPage() {
   const step3Ref = useRef<Step3PreferencesHandle>(null);
   const step4Ref = useRef<Step4PersonalizationHandle>(null);
   
+  // ✅ FIX CRITICO: Ref per prevenire loop infinito in sync URL
+  const urlSyncInProgress = useRef(false);
+  
+  // ✅ FIX: Usa handleNext e handleBack dal hook per aggiornare anche l'URL
+  const { handleNext, handleBack: handleBackFromHook } = useOnboardingNavigation(isEditMode);
+  
+  // ✅ DEBUG: Log ogni cambio di currentStep
+  useEffect(() => {
+    console.log('🔢 currentStep changed to:', currentStep);
+    console.log('📍 URL step param:', searchParams.get('step'));
+    console.log('🎭 isEditMode:', isEditMode);
+  }, [currentStep, searchParams, isEditMode]);
+  
+  // ✅ FASE 3: Carica dati esistenti in edit mode
+  useEffect(() => {
+    const loadExistingData = async () => {
+      if (!isEditMode || !user?.id) return;
+
+      try {
+        console.log('📥 Edit mode: caricamento dati esistenti...');
+        const existingData = await onboardingService.loadOnboardingData(user.id);
+
+        if (existingData) {
+          // Pre-compila lo store con i dati esistenti
+          updateData({
+            obiettivo: existingData.obiettivo,
+            livelloEsperienza: existingData.livello_esperienza,
+            giorniSettimana: existingData.giorni_settimana,
+            luoghiAllenamento: existingData.luoghi_allenamento || [],
+            tempoSessione: existingData.tempo_sessione,
+            nome: existingData.nome,
+            eta: existingData.eta,
+            peso: existingData.peso,
+            altezza: existingData.altezza,
+            consigliNutrizionali: existingData.consigli_nutrizionali,
+          });
+
+          console.log('✅ Dati esistenti caricati:', existingData);
+        }
+      } catch (error) {
+        console.error('❌ Errore caricamento dati esistenti:', error);
+      }
+    };
+
+    loadExistingData();
+  }, [isEditMode, user?.id, updateData]);
+
+  // ✅ FASE 3: Inizializza step corrente in edit mode
+  useEffect(() => {
+    if (isEditMode) {
+      // In edit mode, salta Step 0 e vai a Step 1
+      if (currentStep === 0) {
+        setStep(1);
+      }
+    }
+  }, [isEditMode, currentStep, setStep]);
+  
   // PRIMA: Leggi step dalla query string e imposta nello store (priorità alta)
+  // ✅ FIX CRITICO: Questo useEffect deve reagire SOLO ai cambiamenti dell'URL, NON ai cambiamenti dello store
+  // Rimuoviamo currentStep dalle dipendenze per evitare loop infinito
   useEffect(() => {
     const stepParam = searchParams.get('step');
-    if (stepParam !== null) {
+    const mode = searchParams.get('mode');
+    
+    // Leggi currentStep direttamente dallo store per evitare dipendenze
+    const currentStepValue = useOnboardingStore.getState().currentStep;
+    
+    console.log('🔄 useEffect sync step triggered:', { stepParam, mode, currentStepValue });
+    
+    // ✅ FIX: In edit mode, sincronizza SOLO UNA VOLTA all'inizio
+    if (mode === 'edit' && stepParam) {
+      const stepNum = parseInt(stepParam, 10);
+      
+      // ✅ FIX FINALE: Se siamo su Completion (step 5), NON fare sync
+      if (stepNum === 5) {
+        console.log('✅ Edit mode: su Completion, skip sync');
+        return;
+      }
+      
+      // Se step è già quello giusto, NON fare nulla
+      if (stepNum === currentStepValue) {
+        console.log('✅ Edit mode: step già corretto, skip sync');
+        return;
+      }
+      
+      // Se step è diverso, sincronizza UNA VOLTA
+      if (!isNaN(stepNum) && stepNum >= 1 && stepNum <= 4) {
+        console.log('📥 Edit mode: syncing step from URL:', stepNum);
+        setStep(stepNum);
+        return;
+      }
+    }
+    
+    // ✅ FIX: In edit mode senza step nell'URL, vai a step 1
+    if (mode === 'edit' && !stepParam) {
+      console.log('📥 Edit mode: no step in URL, defaulting to 1');
+      setStep(1);
+      setSearchParams({ mode: 'edit', step: '1' }, { replace: true });
+      return;
+    }
+    
+    // Comportamento normale per nuovo onboarding (non edit mode)
+    // ✅ FIX CRITICO: Solo se c'è uno stepParam nell'URL E non corrisponde allo store, sincronizza
+    if (stepParam !== null && mode !== 'edit') {
       const stepNum = parseInt(stepParam, 10);
       if (!isNaN(stepNum) && stepNum >= 0 && stepNum <= 5) {
-        // Solo aggiorna se lo step nell'URL è diverso da quello nello store
-        // Questo evita loop infiniti quando nextStep() aggiorna lo store
-        if (stepNum !== currentStep) {
-          console.log('URL step parameter detected:', stepNum, 'Setting step in store...');
+        if (stepNum !== currentStepValue) {
+          console.log('📥 Normal mode: syncing step from URL:', stepNum, 'to store (current:', currentStepValue, ')');
           setStep(stepNum);
         }
       }
-    } else {
-      // Se non c'è parametro step nell'URL, aggiorna l'URL con lo step corrente dallo store
-      setSearchParams({ step: currentStep.toString() }, { replace: true });
     }
-  }, [searchParams, setStep, setSearchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, setStep, setSearchParams, isEditMode]); // ✅ RIMOSSO currentStep dalle dipendenze!
   
   // Sincronizza URL quando cambia currentStep (ma solo se non c'è già un parametro step nell'URL)
   useEffect(() => {
+    console.log('=== useEffect sync URL START ===');
+    console.log('📊 State:', {
+      currentStep,
+      isEditMode,
+      urlStepParam: searchParams.get('step'),
+      urlMode: searchParams.get('mode'),
+      urlSyncInProgress: urlSyncInProgress.current
+    });
+    
+    // ✅ FIX CRITICO: Previeni loop infinito
+    if (urlSyncInProgress.current) {
+      console.log('⏸️ URL sync already in progress, skipping');
+      console.log('=== useEffect sync URL END (skipped - in progress) ===');
+      return;
+    }
+    
+    // ✅ FIX: In edit mode, NON modificare URL se è già corretto
+    if (isEditMode) {
+      const stepParam = searchParams.get('step');
+      const mode = searchParams.get('mode');
+      
+      console.log('🎭 Edit mode detected');
+      console.log('🔍 Checking:', {
+        mode,
+        stepParam,
+        currentStep,
+        stepParamParsed: stepParam ? parseInt(stepParam, 10) : null,
+        shouldSkip: mode === 'edit' && stepParam && parseInt(stepParam, 10) === currentStep
+      });
+      
+      // Se URL ha già mode=edit e step corretto, NON fare nulla
+      if (mode === 'edit' && stepParam && parseInt(stepParam, 10) === currentStep) {
+        console.log('✅ Edit mode: URL già corretto, skip update');
+        console.log('=== useEffect sync URL END (skipped - already correct) ===');
+        return;
+      }
+      
+      // Se URL non è corretto, aggiornalo UNA VOLTA
+      console.log('📤 Edit mode: updating URL to match currentStep:', currentStep);
+      console.log('🔧 Calling setSearchParams with:', { mode: 'edit', step: currentStep.toString() });
+      
+      urlSyncInProgress.current = true;
+      setSearchParams({ mode: 'edit', step: currentStep.toString() }, { replace: true });
+      
+      // Reset dopo un breve delay
+      setTimeout(() => {
+        urlSyncInProgress.current = false;
+        console.log('🔄 urlSyncInProgress reset to false');
+      }, 100);
+      
+      console.log('=== useEffect sync URL END (updated) ===');
+      return;
+    }
+    
+    // Comportamento normale per nuovo onboarding
     const stepParam = searchParams.get('step');
+    console.log('🆕 Normal mode');
     if (stepParam === null || parseInt(stepParam, 10) !== currentStep) {
-      // Aggiorna URL solo se non c'è parametro o se è diverso dallo step corrente
+      console.log('📤 Normal mode: updating URL to match currentStep:', currentStep);
       setSearchParams({ step: currentStep.toString() }, { replace: true });
     }
-  }, [currentStep, setSearchParams]);
+    console.log('=== useEffect sync URL END ===');
+  }, [currentStep, setSearchParams, isEditMode]); // ✅ FIX CRITICO: searchParams RIMOSSO dalle dependencies!
 
   // SECONDO: Controllo se utente è già loggato - redirect a dashboard (solo se non c'è step nell'URL E non siamo in onboarding)
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
+      // ✅ FASE 3: Se siamo in edit mode, NON fare redirect (utente vuole modificare preferenze)
+      if (isEditMode) {
+        console.log('Edit mode attivo, skipping auth redirect');
+        return;
+      }
+      
       // Se c'è un parametro step nell'URL, NON fare redirect (permette navigazione diretta)
       const stepParam = searchParams.get('step');
       if (stepParam !== null) {
@@ -106,7 +271,7 @@ export function OnboardingPage() {
     };
   
     checkAuthAndRedirect();
-  }, [navigate, searchParams, currentStep]);
+  }, [navigate, searchParams, currentStep, isEditMode]);
 
   useEffect(() => {
     safeLocalStorage.setItem('isOnboarding', 'true');
@@ -143,9 +308,8 @@ export function OnboardingPage() {
       // Questo caso dovrebbe essere irraggiungibile se il bottone "Indietro" è nascosto su step 0
       navigate('/');
     } else {
-      // Per tutti gli altri step (da 1 a 4), torna allo step precedente
-      // previousStep() gestirà correttamente il passaggio da 1 a 0
-      previousStep();
+      // ✅ FIX: Usa handleBack dal hook per aggiornare anche l'URL in edit mode
+      handleBackFromHook();
     }
   };
 
@@ -164,6 +328,27 @@ export function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex flex-col">
+      {/* ✅ MODIFICA 2: Banner solo durante edit attivo (Step 1-4), non su Completion */}
+      {isEditMode && currentStep >= 1 && currentStep <= 4 && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-[#FFD700]/20 to-[#FFA500]/20 border-b border-[#FFD700]/30 py-3 px-4"
+        >
+          <div className="max-w-2xl mx-auto flex items-center gap-3">
+            <span className="text-2xl">✏️</span>
+            <div>
+              <p className="text-white font-semibold text-sm">
+                Modifica delle Preferenze
+              </p>
+              <p className="text-gray-300 text-xs">
+                Aggiorna le tue preferenze di allenamento
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Progress Bar - Hidden on step 0 and completion screen */}
       {currentStep >= 1 && currentStep < 5 && (
         <div className="p-4 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
@@ -199,7 +384,7 @@ export function OnboardingPage() {
 
             {currentStep === 1 && (
               <Suspense key="step1" fallback={<StepFallback />}>
-                <Step1Goals />
+                <Step1Goals isEditMode={isEditMode} />
               </Suspense>
             )}
 
@@ -207,7 +392,8 @@ export function OnboardingPage() {
               <Suspense key="step2" fallback={<StepFallback />}>
                 <Step2Experience 
                   ref={step2Ref}
-                  onComplete={nextStep}
+                  onComplete={handleNext}
+                  isEditMode={isEditMode}
                 />
               </Suspense>
             )}
@@ -216,7 +402,8 @@ export function OnboardingPage() {
               <Suspense key="step3" fallback={<StepFallback />}>
                 <Step3Preferences 
                   ref={step3Ref}
-                  onComplete={nextStep}
+                  onComplete={handleNext}
+                  isEditMode={isEditMode}
                 />
               </Suspense>
             )}
@@ -225,7 +412,8 @@ export function OnboardingPage() {
               <Suspense key="step4" fallback={<StepFallback />}>
                 <Step4Personalization 
                   ref={step4Ref}
-                  onComplete={nextStep}
+                  onComplete={handleNext}
+                  isEditMode={isEditMode}
                 />
               </Suspense>
             )}
@@ -262,7 +450,7 @@ export function OnboardingPage() {
                   onClick={() => {
                     if (currentStep === 1) {
                       trackOnboarding.stepCompleted(1, { obiettivo: data.obiettivo });
-                      nextStep();
+                      handleNext(); // ✅ ROLLBACK: Ripristina handleNext
                     } else if (currentStep === 2) {
                       step2Ref.current?.handleContinue();
                     } else if (currentStep === 3) {
@@ -272,7 +460,7 @@ export function OnboardingPage() {
                   size="lg"
                   className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold h-12"
                 >
-                  Continua
+                  {isEditMode ? 'Salva e Continua' : 'Continua'}
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               )}
@@ -280,11 +468,29 @@ export function OnboardingPage() {
               {/* Bottone Completa solo su step 4 */}
               {currentStep === 4 && (
                 <Button
-                  onClick={() => step4Ref.current?.handleContinue()}
+                  onClick={() => {
+                    console.log('╔════════════════════════════════════════╗');
+                    console.log('║   BUTTON SALVA MODIFICHE CLICKED       ║');
+                    console.log('╚════════════════════════════════════════╝');
+                    console.log('🖱️ User clicked "Salva Modifiche"');
+                    console.log('📊 State before handleContinue:', {
+                      isEditMode,
+                      currentStep,
+                      step4RefExists: !!step4Ref.current,
+                      step4HandleContinueExists: !!step4Ref.current?.handleContinue
+                    });
+                    
+                    step4Ref.current?.handleContinue();
+                    
+                    console.log('📤 handleContinue() called');
+                    console.log('╔════════════════════════════════════════╗');
+                    console.log('║   BUTTON CLICK HANDLER ENDED           ║');
+                    console.log('╚════════════════════════════════════════╝');
+                  }}
                   size="lg"
                   className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold h-12"
                 >
-                  Completa Onboarding
+                  {isEditMode ? 'Salva Modifiche' : 'Completa Onboarding'}
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               )}

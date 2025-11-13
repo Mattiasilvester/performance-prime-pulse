@@ -1,7 +1,9 @@
 import { useCallback, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import type { OnboardingData } from '@/stores/onboardingStore';
+import { onboardingService } from '@/services/onboardingService';
 
 type OnboardingStep = 1 | 2 | 3 | 4;
 
@@ -47,8 +49,10 @@ type AnalyticsPayload = {
   time_spent_seconds?: number;
 };
 
-export function useOnboardingNavigation() {
-  const { data, nextStep } = useOnboardingStore();
+export function useOnboardingNavigation(isEditMode: boolean = false) {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { data, nextStep, previousStep, currentStep } = useOnboardingStore();
   const stepStartTimes = useRef<Record<number, number>>({});
 
   const stepConfig: StepConfigMap = {
@@ -194,9 +198,19 @@ export function useOnboardingNavigation() {
         await saveAnalyticsEvent(step, 'completed');
       }
 
+      // ✅ SOLUZIONE DEFINITIVA: Rimossa logica Step 4 edit mode da qui
+      // La navigazione Step 4 → Step 5 è gestita da handleNext()
+
       if (config.shouldAutoAdvance) {
         console.log('Auto-advance attivo, passo allo step successivo');
+        const nextStepNum = currentStep + 1;
         nextStep();
+        
+        // ✅ FIX: In edit mode, aggiorna anche l'URL
+        if (isEditMode) {
+          console.log('📤 Edit mode: auto-advance to step', nextStepNum, 'and updating URL');
+          setSearchParams({ mode: 'edit', step: nextStepNum.toString() }, { replace: true });
+        }
       }
     } catch (error) {
       console.error(`❌ Errore salvataggio Step ${step}:`, error);
@@ -213,10 +227,52 @@ export function useOnboardingNavigation() {
     }
   }, [saveAnalyticsEvent]);
 
+  // ✅ FIX: Gestisce TUTTI gli step incluso Step 4→5 (completion)
+  const handleNext = useCallback(() => {
+    // Gestisce Step 0→1, 1→2, 2→3, 3→4, 4→5
+    if (currentStep >= 0 && currentStep < 5) {
+      const nextStepNum = currentStep + 1;
+      
+      console.log(`📤 Advancing from step ${currentStep} to step ${nextStepNum}`);
+      
+      if (isEditMode) {
+        console.log('🎨 Edit mode: updating both store and URL');
+        nextStep();
+        setSearchParams({ mode: 'edit', step: nextStepNum.toString() }, { replace: true });
+      } else {
+        // Comportamento normale
+        console.log('🎨 Normal mode: updating store only');
+        nextStep();
+      }
+    } else {
+      console.log(`⚠️ Cannot advance: currentStep is ${currentStep} (must be 0-4)`);
+    }
+  }, [currentStep, isEditMode, nextStep, setSearchParams]);
+
+  // ✅ FIX: Funzione wrapper per tornare allo step precedente aggiornando anche l'URL
+  const handleBack = useCallback(() => {
+    if (currentStep > 1) {
+      const prevStepNum = currentStep - 1;
+      
+      // ✅ FIX: In edit mode, aggiorna anche l'URL
+      if (isEditMode) {
+        console.log('📤 Edit mode: going back to step', prevStepNum, 'and updating URL');
+        previousStep();
+        setSearchParams({ mode: 'edit', step: prevStepNum.toString() }, { replace: true });
+      } else {
+        // Comportamento normale
+        previousStep();
+      }
+    }
+  }, [currentStep, isEditMode, previousStep, setSearchParams]);
+
   return {
     saveAndContinue,
     stepConfig,
     trackStepStarted,
+    isEditMode,
+    handleNext,
+    handleBack,
   };
 }
 
@@ -235,6 +291,7 @@ async function saveStep1ToDatabase(payload: StepPayloads[1]) {
   console.log('User ID:', user.id);
   console.log('Obiettivo:', payload.obiettivo);
 
+  // ✅ SALVATAGGIO VECCHIA TABELLA (mantieni esistente)
   const { error } = await supabase
     .from('onboarding_obiettivo_principale')
     .upsert(
@@ -246,8 +303,18 @@ async function saveStep1ToDatabase(payload: StepPayloads[1]) {
     );
 
   if (error) throw error;
+  console.log('Step 1: salvato in tabella vecchia');
 
-  console.log('Risultato salvataggio Step 1 completato');
+  // ✅ NUOVO: SALVATAGGIO TABELLA UNIFICATA
+  try {
+    await onboardingService.saveOnboardingData(user.id, {
+      obiettivo: payload.obiettivo,
+    });
+    console.log('Step 1: salvato in tabella unificata');
+  } catch (error) {
+    console.error('Step 1: errore salvataggio tabella unificata:', error);
+    // Non bloccare il flusso se fallisce
+  }
 }
 
 async function saveStep2ToDatabase(payload: StepPayloads[2]) {
@@ -266,6 +333,7 @@ async function saveStep2ToDatabase(payload: StepPayloads[2]) {
   console.log('Livello esperienza:', payload.livelloEsperienza);
   console.log('Giorni settimana:', payload.giorniSettimana);
 
+  // ✅ SALVATAGGIO VECCHIA TABELLA (mantieni esistente)
   const { error } = await supabase
     .from('onboarding_esperienza')
     .upsert(
@@ -278,8 +346,19 @@ async function saveStep2ToDatabase(payload: StepPayloads[2]) {
     );
 
   if (error) throw error;
+  console.log('Step 2: salvato in tabella vecchia');
 
-  console.log('Risultato salvataggio Step 2 completato');
+  // ✅ NUOVO: SALVATAGGIO TABELLA UNIFICATA
+  try {
+    await onboardingService.saveOnboardingData(user.id, {
+      livello_esperienza: payload.livelloEsperienza,
+      giorni_settimana: payload.giorniSettimana,
+    });
+    console.log('Step 2: salvato in tabella unificata');
+  } catch (error) {
+    console.error('Step 2: errore salvataggio tabella unificata:', error);
+    // Non bloccare il flusso se fallisce
+  }
 }
 
 async function saveStep3ToDatabase(payload: StepPayloads[3]) {
@@ -298,6 +377,7 @@ async function saveStep3ToDatabase(payload: StepPayloads[3]) {
   console.log('Luoghi allenamento:', payload.luoghiAllenamento);
   console.log('Tempo sessione:', payload.tempoSessione);
 
+  // ✅ SALVATAGGIO VECCHIA TABELLA (mantieni esistente)
   const { error } = await supabase
     .from('onboarding_preferenze')
     .upsert(
@@ -310,8 +390,19 @@ async function saveStep3ToDatabase(payload: StepPayloads[3]) {
     );
 
   if (error) throw error;
+  console.log('Step 3: salvato in tabella vecchia');
 
-  console.log('Risultato salvataggio Step 3 completato');
+  // ✅ NUOVO: SALVATAGGIO TABELLA UNIFICATA
+  try {
+    await onboardingService.saveOnboardingData(user.id, {
+      luoghi_allenamento: payload.luoghiAllenamento,
+      tempo_sessione: payload.tempoSessione,
+    });
+    console.log('Step 3: salvato in tabella unificata');
+  } catch (error) {
+    console.error('Step 3: errore salvataggio tabella unificata:', error);
+    // Non bloccare il flusso se fallisce
+  }
 }
 
 async function saveStep4ToDatabase(payload: StepPayloads[4]) {
@@ -339,6 +430,7 @@ async function saveStep4ToDatabase(payload: StepPayloads[4]) {
   console.log('Altezza:', payload.altezza);
   console.log('Consigli nutrizionali:', payload.consigliNutrizionali);
 
+  // ✅ SALVATAGGIO VECCHIA TABELLA (mantieni esistente)
   const { error } = await supabase
     .from('onboarding_personalizzazione')
     .upsert(
@@ -354,7 +446,25 @@ async function saveStep4ToDatabase(payload: StepPayloads[4]) {
     );
 
   if (error) throw error;
+  console.log('Step 4: salvato in tabella vecchia');
 
-  console.log('Risultato salvataggio Step 4 completato');
+  // ✅ NUOVO: SALVATAGGIO TABELLA UNIFICATA + MARK AS COMPLETE
+  try {
+    await onboardingService.saveOnboardingData(user.id, {
+      nome: payload.nome,
+      eta: payload.eta,
+      peso: payload.peso,
+      altezza: payload.altezza,
+      consigli_nutrizionali: payload.consigliNutrizionali,
+    });
+
+    // ✅ IMPORTANTE: Marca onboarding come completato
+    await onboardingService.markOnboardingComplete(user.id);
+
+    console.log('Step 4: salvato in tabella unificata e marcato come completo');
+  } catch (error) {
+    console.error('Step 4: errore salvataggio tabella unificata:', error);
+    // Non bloccare il flusso se fallisce
+  }
 }
 

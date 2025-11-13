@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
+import { forwardRef, useImperativeHandle, useState, useEffect, useRef } from 'react';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { trackOnboarding } from '@/services/analytics';
 import { 
@@ -19,6 +19,7 @@ export interface Step3PreferencesHandle {
 
 interface Step3PreferencesProps {
   onComplete: () => void;
+  isEditMode?: boolean;
 }
 
 interface TrainingLocation {
@@ -101,26 +102,58 @@ const timeOptions: TimeOption[] = [
 ];
 
 const Step3Preferences = forwardRef<Step3PreferencesHandle, Step3PreferencesProps>(
-  ({ onComplete }, ref) => {
+  ({ onComplete, isEditMode = false }, ref) => {
     const { data, updateData } = useOnboardingStore();
-    const [selectedLocations, setSelectedLocations] = useState<string[]>(
-      data.luoghiAllenamento || []
-    );
-    const [selectedTime, setSelectedTime] = useState<15 | 30 | 45 | 60>(
-      data.tempoSessione || 30
-    );
+    const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+    const [selectedTime, setSelectedTime] = useState<15 | 30 | 45 | 60>(30);
     const [canProceed, setCanProceed] = useState(false);
-    const { saveAndContinue, trackStepStarted } = useOnboardingNavigation();
+    const { saveAndContinue, trackStepStarted } = useOnboardingNavigation(isEditMode);
+    
+    // ✅ FIX: Ref per distinguere aggiornamenti manuali da automatici
+    const isManualLocationUpdate = useRef(false);
 
     useEffect(() => {
-      trackStepStarted(3);
-    }, [trackStepStarted]);
+      // ✅ FIX: Non trackare in edit mode (temporaneo per debug)
+      if (!isEditMode) {
+        trackStepStarted(3);
+      }
+    }, [trackStepStarted, isEditMode]);
+
+    // ✅ FIX: Sincronizza stati con data usando useEffect invece di inizializzazione diretta
+    useEffect(() => {
+      // Solo se NON è un aggiornamento manuale (evita loop)
+      if (data.luoghiAllenamento && !isManualLocationUpdate.current) {
+        setSelectedLocations(data.luoghiAllenamento);
+      }
+    }, [data.luoghiAllenamento]);
+
+    useEffect(() => {
+      if (data.tempoSessione) {
+        setSelectedTime(data.tempoSessione);
+      }
+    }, [data.tempoSessione]);
 
     useEffect(() => {
       setCanProceed(selectedLocations.length > 0);
     }, [selectedLocations]);
 
+    // ✅ FIX: Nuovo useEffect per sincronizzare selectedLocations → store
+    useEffect(() => {
+      // Solo se è un aggiornamento manuale (da toggleLocation)
+      if (isManualLocationUpdate.current) {
+        updateData({
+          luoghiAllenamento: selectedLocations
+        });
+        // Reset flag dopo aggiornamento store
+        isManualLocationUpdate.current = false;
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedLocations]); // updateData è stabile, non serve nelle deps
+
     const toggleLocation = (locationId: string) => {
+      // ✅ FIX: Marca come aggiornamento manuale PRIMA di chiamare setState
+      isManualLocationUpdate.current = true;
+      
       setSelectedLocations(prev => {
         const newLocations = prev.includes(locationId)
           ? prev.filter(id => id !== locationId)
@@ -128,9 +161,7 @@ const Step3Preferences = forwardRef<Step3PreferencesHandle, Step3PreferencesProp
 
         console.log('Luoghi aggiornati:', newLocations);
 
-        updateData({
-          luoghiAllenamento: newLocations
-        });
+        // ✅ FIX: RIMOSSO updateData da qui - sarà gestito dal useEffect
 
         return newLocations;
       });

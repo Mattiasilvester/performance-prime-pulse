@@ -172,7 +172,7 @@ export function Step0Registration() {
         
         console.log('7. Form cleared');
 
-        // Vai allo step successivo
+        // ✅ ROLLBACK: Torna a nextStep() diretto come era originalmente
         console.log('8. Calling nextStep()...');
         const currentStepBefore = useOnboardingStore.getState().currentStep;
         console.log('8a. Current step before nextStep:', currentStepBefore);
