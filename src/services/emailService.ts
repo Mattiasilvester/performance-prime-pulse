@@ -8,19 +8,14 @@ interface EmailUser {
   };
 }
 
-// Configurazione webhook n8n
-const N8N_WEBHOOKS = {
-  welcome: 'https://gurfadigitalsolution.app.n8n.cloud/webhook/pp-welcome',
-  passwordReset: 'https://gurfadigitalsolution.app.n8n.cloud/webhook/pp-password-reset',
-  verification: 'https://gurfadigitalsolution.app.n8n.cloud/webhook/pp-email-verification'
-} as const;
+// N8N_WEBHOOKS rimosso - ora gestito tramite Edge Function proxy
+// Le URL sono configurate server-side in supabase/functions/n8n-webhook-proxy/index.ts
+// La secret è gestita server-side e non è più esposta nel bundle frontend
 
 /**
- * Invia email di benvenuto tramite webhook n8n
+ * Invia email di benvenuto tramite webhook n8n (via Edge Function proxy)
  */
 export async function sendWelcomeEmail(user: EmailUser): Promise<void> {
-  const webhookUrl = N8N_WEBHOOKS.welcome;
-  
   // Estrai nome dall'user o usa email come fallback
   const name = user.user_metadata?.full_name || 
                user.user_metadata?.firstName || 
@@ -34,19 +29,14 @@ export async function sendWelcomeEmail(user: EmailUser): Promise<void> {
   };
 
   try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    };
+    // Usa Edge Function proxy invece di chiamare direttamente N8N (secret server-side)
+    const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-webhook-proxy?type=welcome`;
     
-    // Aggiungi secret se configurato
-    const secret = import.meta.env.VITE_N8N_WEBHOOK_SECRET;
-    if (secret) {
-      headers['x-pp-secret'] = secret;
-    }
-    
-    const response = await fetch(webhookUrl, {
+    const response = await fetch(proxyUrl, {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(payload)
     });
 
@@ -64,37 +54,29 @@ export async function sendWelcomeEmail(user: EmailUser): Promise<void> {
 }
 
 /**
- * Invia email reset password tramite webhook n8n
+ * Invia email reset password tramite webhook n8n (via Edge Function proxy)
  */
 export async function sendPasswordResetEmail(email: string, resetLink: string): Promise<void> {
-  const webhookUrl = N8N_WEBHOOKS.passwordReset;
-  
   const payload = {
     email: email,
     reset_link: resetLink
   };
 
   try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    };
+    // Usa Edge Function proxy invece di chiamare direttamente N8N (secret server-side)
+    const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-webhook-proxy?type=passwordReset`;
     
-    // Aggiungi secret se configurato
-    const secret = import.meta.env.VITE_N8N_WEBHOOK_SECRET;
-    if (secret) {
-      headers['x-pp-secret'] = secret;
-    }
-    
-    const response = await fetch(webhookUrl, {
+    const response = await fetch(proxyUrl, {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
       throw new Error(`Webhook n8n fallito: ${response.status}`);
     }
-    
     
   } catch (error) {
     console.error('⚠️ Errore invio email reset (non bloccante):', error);
@@ -102,37 +84,29 @@ export async function sendPasswordResetEmail(email: string, resetLink: string): 
 }
 
 /**
- * Invia email verifica account tramite webhook n8n
+ * Invia email verifica account tramite webhook n8n (via Edge Function proxy)
  */
 export async function sendVerificationEmail(email: string, verificationLink: string): Promise<void> {
-  const webhookUrl = N8N_WEBHOOKS.verification;
-  
   const payload = {
     email: email,
     verification_link: verificationLink
   };
 
   try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    };
+    // Usa Edge Function proxy invece di chiamare direttamente N8N (secret server-side)
+    const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-webhook-proxy?type=verification`;
     
-    // Aggiungi secret se configurato
-    const secret = import.meta.env.VITE_N8N_WEBHOOK_SECRET;
-    if (secret) {
-      headers['x-pp-secret'] = secret;
-    }
-    
-    const response = await fetch(webhookUrl, {
+    const response = await fetch(proxyUrl, {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
       throw new Error(`Webhook n8n fallito: ${response.status}`);
     }
-    
     
   } catch (error) {
     console.error('⚠️ Errore invio email verifica (non bloccante):', error);

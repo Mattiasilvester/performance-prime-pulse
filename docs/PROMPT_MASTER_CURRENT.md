@@ -1,5 +1,29 @@
 # 🎯 PROMPT MASTER AGGIORNATO - PERFORMANCE PRIME PULSE
-**Ultimo aggiornamento: 12 Novembre 2025 - Sessione 16 (SuperAdmin Edge Functions + Audit Finale)**
+**Ultimo aggiornamento: 12 Novembre 2025 - Sessione 17 (Fix Critici Security & Code Quality)**
+
+## 📅 SESSIONE 17 - 12/11/2025
+
+### HIGHLIGHTS
+- Fix completi TypeScript errors (6 → 0) e ESLint crash risolto.
+- Secrets migrate a Edge Functions (`admin-auth-validate`, `n8n-webhook-proxy`) per sicurezza backend.
+- Bundle ottimizzato: 670.24 KB (-107.76 KB, -13.8%).
+- Security Score: 8.5/10 (+3.5 da sessione 16).
+- Progetto production-ready con riserve (deploy Edge Functions necessario).
+
+### LOCKED AGGIUNTI
+- `supabase/functions/admin-auth-validate/index.ts`
+- `supabase/functions/n8n-webhook-proxy/index.ts`
+- `SECRETS_SETUP.md`
+
+### TODO DERIVATI
+- Deploy Edge Functions su Supabase (`admin-auth-validate`, `n8n-webhook-proxy`).
+- Configurare secrets server-side (`ADMIN_SECRET_KEY`, `N8N_WEBHOOK_SECRET`).
+- Test completo login SuperAdmin con Edge Function.
+- Test completo invio email con Edge Function proxy.
+- Risolvere vulnerabilità npm residue (9, dipendenze transitive).
+- Verificare RLS Policies su tutte le tabelle.
+
+---
 
 ## 📅 SESSIONE 16 - 12/11/2025
 

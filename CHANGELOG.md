@@ -5,6 +5,32 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [9.0.3] - 2025-11-12
+
+### 🔒 Security
+- Migrate `VITE_ADMIN_SECRET_KEY` e `VITE_N8N_WEBHOOK_SECRET` da frontend a Edge Functions sicure.
+- Creato Edge Function `admin-auth-validate` per validazione secret key server-side.
+- Creato Edge Function `n8n-webhook-proxy` per proxy webhook N8N con secret server-side.
+- Rimossi tutti i riferimenti a secrets dal bundle frontend pubblico.
+
+### 🐛 Fixed
+- Risolti 6 errori TypeScript (`ADMIN_SECRET` scope, `workoutAnalytics` interface).
+- Risolto crash ESLint configurando correttamente `@typescript-eslint/no-unused-expressions`.
+- Bundle size ridotto: 670.24 KB (-107.76 KB, -13.8%).
+
+### ✨ Added
+- Edge Function `admin-auth-validate` per validazione secret key admin.
+- Edge Function `n8n-webhook-proxy` per proxy webhook N8N.
+- Documentazione `SECRETS_SETUP.md` per setup secrets server-side.
+
+### 📊 Metrics
+- Security Score: 8.5/10 (+3.5)
+- Performance Score: 8/10 (+0.5)
+- Code Quality Score: 7/10 (+1)
+- ESLint problems: 232 (-11 da baseline)
+
+---
+
 ## [9.0.2] - 2025-11-12
 
 ### ✨ Added

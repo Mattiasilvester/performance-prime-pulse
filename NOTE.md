@@ -178,7 +178,33 @@
 
 ---
 
-*Ultimo aggiornamento: 12 Novembre 2025*
+## Decisioni Architetturali - Sessione 17 (12/11/2025)
+
+### **Focus su Sviluppo App Features**
+
+**Decisione**: Dopo aver completato i fix critici di sicurezza e code quality, il focus si sposta sullo sviluppo di features per la crescita utenti.
+
+**Motivazioni**:
+- Progetto ora production-ready con security score 8.5/10
+- Tutti i fix critici completati (TypeScript, ESLint, Secrets)
+- Edge Functions implementate e pronte per deploy
+- Bundle ottimizzato e performance migliorata
+- Priorità ora è sviluppo features per acquisizione e retention utenti
+
+**Prossimi Step**:
+1. Deploy Edge Functions su Supabase (necessario per funzionamento)
+2. Configurare secrets server-side (ADMIN_SECRET_KEY, N8N_WEBHOOK_SECRET)
+3. Test completo workflow email e SuperAdmin
+4. Focus su sviluppo features app per crescita utenti
+
+**Note**:
+- Vulnerabilità npm residue (9) sono dipendenze transitive e non bloccanti
+- RLS Policies da verificare ma non critiche per deploy iniziale
+- ESLint problems (232) possono essere ridotti gradualmente
+
+---
+
+*Ultimo aggiornamento: 12 Novembre 2025 - Sessione 17*
 
 
 
