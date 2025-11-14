@@ -9,7 +9,8 @@ import {
   MapPin, 
   Clock,
   Edit,
-  Loader2
+  Loader2,
+  Package
 } from 'lucide-react';
 
 interface OnboardingPreferencesCardProps {
@@ -37,6 +38,14 @@ export const OnboardingPreferencesCard = ({}: OnboardingPreferencesCardProps) =>
     casa: 'Casa',
     palestra: 'Palestra',
     outdoor: 'Outdoor',
+  };
+
+  const attrezziLabels: Record<string, string> = {
+    manubri: 'Manubri',
+    bilanciere: 'Bilanciere',
+    kettlebell: 'Kettlebell',
+    elastici: 'Elastici di resistenza',
+    panca: 'Panca',
   };
 
   const luoghi = summary?.luoghi || [];
@@ -147,7 +156,48 @@ export const OnboardingPreferencesCard = ({}: OnboardingPreferencesCardProps) =>
               </p>
             </div>
           )}
+
+          {/* Attrezzatura (mostra solo se presente e se ha Casa/Outdoor) */}
+          {summary.attrezzatura !== undefined && 
+           luoghi.some((l: string) => l === 'casa' || l === 'outdoor') && (
+            <div className="bg-white/5 rounded-lg p-2.5 sm:p-3 border border-white/10 flex-shrink-0 min-w-[100px] sm:min-w-0">
+              <div className="flex items-center justify-center mb-1.5 sm:mb-2">
+                <Package className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
+              </div>
+              <p className="text-[10px] sm:text-xs text-gray-400 text-center mb-1">Attrezzatura</p>
+              <p className="text-xs sm:text-sm text-white font-medium text-center truncate">
+                {summary.attrezzatura ? 'Sì' : 'No'}
+              </p>
+            </div>
+          )}
         </div>
+
+        {/* Lista Attrezzi (mostra solo se attrezzatura = Sì e ha attrezzi) */}
+        {summary.attrezzatura === true && 
+         summary.attrezzi && 
+         summary.attrezzi.length > 0 && 
+         luoghi.some((l: string) => l === 'casa' || l === 'outdoor') && (
+          <div className="mt-3 pt-3 border-t border-white/10">
+            <p className="text-xs text-gray-400 mb-2">Attrezzi posseduti:</p>
+            <div className="flex flex-wrap gap-2">
+              {summary.attrezzi
+                .filter((a: string) => a !== 'altro')
+                .map((attrezzo: string) => (
+                  <span
+                    key={attrezzo}
+                    className="text-xs px-2 py-1 bg-white/10 text-white rounded-full border border-white/20"
+                  >
+                    {attrezziLabels[attrezzo] || attrezzo}
+                  </span>
+                ))}
+              {summary.attrezzi.includes('altro') && summary.altriAttrezzi && (
+                <span className="text-xs px-2 py-1 bg-white/10 text-white rounded-full border border-white/20">
+                  {summary.altriAttrezzi}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ✅ MODIFICA 1: Solo bottone "Modifica Preferenze", rimosso "Crea Piano" */}
         <div className="pt-2">

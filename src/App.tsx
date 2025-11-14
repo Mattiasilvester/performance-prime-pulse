@@ -98,6 +98,23 @@ const LandingPageWrapper = () => {
   return showNewLanding ? <NewLandingPage /> : <LandingPage />;
 };
 
+// Componente wrapper per FeatureFlagDebug che accede alla location
+function FeatureFlagDebugWrapper() {
+  const location = useLocation();
+  const isDashboardRoute = location.pathname.startsWith('/dashboard');
+  
+  return (
+    <>
+      {/* 
+        🔒 FEATURE FLAGS DEBUG
+        Visibile solo in landing page, nascosto in dashboard e route protette
+        TODO: Rimuovere definitivamente in futuro
+      */}
+      {import.meta.env.DEV && !isDashboardRoute && <FeatureFlagDebug />}
+    </>
+  );
+}
+
 function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
@@ -369,12 +386,12 @@ function App() {
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </Suspense>
+            <FeatureFlagDebugWrapper />
           </Router>
           <Toaster />
           <Suspense fallback={null}>
             <SonnerToaster />
           </Suspense>
-          {import.meta.env.DEV && <FeatureFlagDebug />}
         </PrimeBotProvider>
       </NotificationProvider>
     </AuthProvider>
