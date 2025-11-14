@@ -5,6 +5,25 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [Unreleased] - 2025-11-14
+
+### Added ✨
+- Domanda condizionale "Possiedi attrezzatura?" in Step 3 onboarding (appare solo con Casa/Outdoor)
+- Selezione multipla attrezzi con 6 opzioni (Manubri, Bilanciere, Kettlebell, Elastici, Panca, Altro)
+- Campo "Altro" personalizzato con textarea per attrezzi custom
+- Bottone "Conferma attrezzi" con salvataggio immediato e toast feedback
+- Migration SQL completa per colonne attrezzi nel database (`possiede_attrezzatura`, `attrezzi`, `altri_attrezzi`)
+
+### Changed 🔄
+- Feature Flags Debug ora nascosto in dashboard (visibile solo in landing page)
+- Validazione Step 3 aggiornata: campo "Altro" opzionale per step "Continua" (ha bottone dedicato)
+
+### Fixed 🐛
+- Risolto errore 400 colonne database mancanti per attrezzi
+- Feature Flags Debug non appare più in dashboard
+
+---
+
 ## [9.0.4] - 2025-11-13
 
 ### 🐛 Fixed
