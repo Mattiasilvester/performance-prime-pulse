@@ -92,6 +92,9 @@ export const useOnboardingSummary = () => {
     frequenza?: number;
     luoghi?: string[];
     durata?: number;
+    attrezzatura?: boolean;
+    attrezzi?: string[];
+    altriAttrezzi?: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 

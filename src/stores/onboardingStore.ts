@@ -10,6 +10,9 @@ export interface OnboardingData {
   // Step 3
   luoghiAllenamento?: string[];
   tempoSessione?: 15 | 30 | 45 | 60;
+  possiedeAttrezzatura?: boolean;
+  attrezzi?: string[];
+  altriAttrezzi?: string;
   // Step 4
   nome?: string;
   eta?: number;

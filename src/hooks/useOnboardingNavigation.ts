@@ -17,7 +17,7 @@ const STEP_NAMES: Record<OnboardingStep, string> = {
 type StepPayloads = {
   1: Pick<OnboardingData, 'obiettivo'>;
   2: Pick<OnboardingData, 'livelloEsperienza' | 'giorniSettimana'>;
-  3: Pick<OnboardingData, 'luoghiAllenamento' | 'tempoSessione'>;
+  3: Pick<OnboardingData, 'luoghiAllenamento' | 'tempoSessione' | 'possiedeAttrezzatura' | 'attrezzi' | 'altriAttrezzi'>;
   4: Pick<OnboardingData, 'nome' | 'eta' | 'peso' | 'altezza' | 'consigliNutrizionali'>;
 };
 
@@ -80,6 +80,9 @@ export function useOnboardingNavigation(isEditMode: boolean = false) {
       collectPayload: () => ({
         luoghiAllenamento: data.luoghiAllenamento,
         tempoSessione: data.tempoSessione,
+        possiedeAttrezzatura: data.possiedeAttrezzatura,
+        attrezzi: data.attrezzi,
+        altriAttrezzi: data.altriAttrezzi,
       }),
       save: async (payload) => {
         await saveStep3ToDatabase(payload);
@@ -376,6 +379,9 @@ async function saveStep3ToDatabase(payload: StepPayloads[3]) {
   console.log('User ID:', user.id);
   console.log('Luoghi allenamento:', payload.luoghiAllenamento);
   console.log('Tempo sessione:', payload.tempoSessione);
+  console.log('Possiede attrezzatura:', payload.possiedeAttrezzatura);
+  console.log('Attrezzi:', payload.attrezzi);
+  console.log('Altri attrezzi:', payload.altriAttrezzi);
 
   // ✅ SALVATAGGIO VECCHIA TABELLA (mantieni esistente)
   const { error } = await supabase
@@ -385,6 +391,9 @@ async function saveStep3ToDatabase(payload: StepPayloads[3]) {
         user_id: user.id,
         luoghi_allenamento: payload.luoghiAllenamento,
         tempo_sessione: payload.tempoSessione,
+        possiede_attrezzatura: payload.possiedeAttrezzatura ?? null,
+        attrezzi: payload.attrezzi ?? null,
+        altri_attrezzi: payload.altriAttrezzi ?? null,
       },
       { onConflict: 'user_id' }
     );
@@ -397,6 +406,9 @@ async function saveStep3ToDatabase(payload: StepPayloads[3]) {
     await onboardingService.saveOnboardingData(user.id, {
       luoghi_allenamento: payload.luoghiAllenamento,
       tempo_sessione: payload.tempoSessione,
+      possiede_attrezzatura: payload.possiedeAttrezzatura ?? null,
+      attrezzi: payload.attrezzi ?? null,
+      altri_attrezzi: payload.altriAttrezzi ?? null,
     });
     console.log('Step 3: salvato in tabella unificata');
   } catch (error) {

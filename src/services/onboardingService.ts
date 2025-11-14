@@ -10,6 +10,9 @@ export interface OnboardingResponse {
   giorni_settimana?: number | null;
   luoghi_allenamento?: string[] | null;
   tempo_sessione?: 15 | 30 | 45 | 60 | null;
+  possiede_attrezzatura?: boolean | null;
+  attrezzi?: string[] | null;
+  altri_attrezzi?: string | null;
   nome?: string | null;
   eta?: number | null;
   peso?: number | null;
@@ -27,6 +30,9 @@ export interface OnboardingInsert {
   giorni_settimana?: number | null;
   luoghi_allenamento?: string[] | null;
   tempo_sessione?: 15 | 30 | 45 | 60 | null;
+  possiede_attrezzatura?: boolean | null;
+  attrezzi?: string[] | null;
+  altri_attrezzi?: string | null;
   nome?: string | null;
   eta?: number | null;
   peso?: number | null;
@@ -159,6 +165,9 @@ export const onboardingService = {
     frequenza?: number;
     luoghi?: string[];
     durata?: number;
+    attrezzatura?: boolean;
+    attrezzi?: string[];
+    altriAttrezzi?: string;
   } | null> {
     console.log('🔍 onboardingService.getOnboardingSummary called for:', userId);
     
@@ -178,6 +187,9 @@ export const onboardingService = {
         frequenza: data.giorni_settimana || undefined,
         luoghi: data.luoghi_allenamento || undefined,
         durata: data.tempo_sessione || undefined,
+        attrezzatura: data.possiede_attrezzatura ?? undefined,
+        attrezzi: data.attrezzi || undefined,
+        altriAttrezzi: data.altri_attrezzi || undefined,
       };
 
       console.log('✅ Summary built:', summary);

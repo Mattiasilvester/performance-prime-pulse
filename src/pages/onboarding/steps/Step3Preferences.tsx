@@ -9,9 +9,16 @@ import {
   Clock,
   Info,
   CheckCircle,
-  Sparkles
+  Sparkles,
+  Package,
+  Check,
+  Loader2
 } from 'lucide-react';
 import { useOnboardingNavigation } from '@/hooks/useOnboardingNavigation';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 export interface Step3PreferencesHandle {
   handleContinue: () => void;
@@ -101,13 +108,34 @@ const timeOptions: TimeOption[] = [
   }
 ];
 
+interface Attrezzo {
+  id: string;
+  label: string;
+  icon: string;
+}
+
+const listaAttrezzi: Attrezzo[] = [
+  { id: 'manubri', label: 'Manubri', icon: '🏋️' },
+  { id: 'bilanciere', label: 'Bilanciere', icon: '💪' },
+  { id: 'kettlebell', label: 'Kettlebell', icon: '🔔' },
+  { id: 'elastici', label: 'Elastici di resistenza', icon: '🎗️' },
+  { id: 'panca', label: 'Panca', icon: '🪑' },
+  { id: 'altro', label: 'Altro', icon: '➕' }
+];
+
 const Step3Preferences = forwardRef<Step3PreferencesHandle, Step3PreferencesProps>(
   ({ onComplete, isEditMode = false }, ref) => {
     const { data, updateData } = useOnboardingStore();
     const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
     const [selectedTime, setSelectedTime] = useState<15 | 30 | 45 | 60>(30);
+    const [possiedeAttrezzatura, setPossiedeAttrezzatura] = useState<boolean | undefined>(undefined);
+    const [attrezzi, setAttrezzi] = useState<string[]>([]);
+    const [altriAttrezzi, setAltriAttrezzi] = useState<string>('');
+    const [isSavingAltri, setIsSavingAltri] = useState(false);
+    const [justSaved, setJustSaved] = useState(false);
     const [canProceed, setCanProceed] = useState(false);
     const { saveAndContinue, trackStepStarted } = useOnboardingNavigation(isEditMode);
+    const { toast } = useToast();
     
     // ✅ FIX: Ref per distinguere aggiornamenti manuali da automatici
     const isManualLocationUpdate = useRef(false);
@@ -134,16 +162,69 @@ const Step3Preferences = forwardRef<Step3PreferencesHandle, Step3PreferencesProp
     }, [data.tempoSessione]);
 
     useEffect(() => {
-      setCanProceed(selectedLocations.length > 0);
-    }, [selectedLocations]);
+      if (data.possiedeAttrezzatura !== undefined) {
+        setPossiedeAttrezzatura(data.possiedeAttrezzatura);
+      }
+    }, [data.possiedeAttrezzatura]);
+
+    useEffect(() => {
+      if (data.attrezzi) {
+        setAttrezzi(data.attrezzi);
+      }
+    }, [data.attrezzi]);
+
+    useEffect(() => {
+      if (data.altriAttrezzi !== undefined) {
+        setAltriAttrezzi(data.altriAttrezzi);
+      }
+    }, [data.altriAttrezzi]);
+
+    // Determina se mostrare domanda attrezzatura
+    const mostraAttrezzatura = selectedLocations.includes('casa') || selectedLocations.includes('outdoor');
+
+    useEffect(() => {
+      // Validazione completa
+      const locationsValid = selectedLocations.length > 0;
+      
+      let attrezzaturaValid = true;
+      if (mostraAttrezzatura) {
+        // Se mostra attrezzatura, deve rispondere Sì/No
+        if (possiedeAttrezzatura === undefined) {
+          attrezzaturaValid = false;
+        } else if (possiedeAttrezzatura === true) {
+          // Se "Sì", deve selezionare almeno 1 attrezzo
+          // ✅ RIMOSSO: validazione campo "Altro" perché ha bottone dedicato
+          if (attrezzi.length === 0) {
+            attrezzaturaValid = false;
+          }
+        }
+      }
+      
+      setCanProceed(locationsValid && attrezzaturaValid);
+    }, [selectedLocations, mostraAttrezzatura, possiedeAttrezzatura, attrezzi]);
 
     // ✅ FIX: Nuovo useEffect per sincronizzare selectedLocations → store
     useEffect(() => {
       // Solo se è un aggiornamento manuale (da toggleLocation)
       if (isManualLocationUpdate.current) {
-        updateData({
+        const newData: any = {
           luoghiAllenamento: selectedLocations
-        });
+        };
+        
+        // Se rimuove Casa/Outdoor, resetta attrezzatura
+        const hadCasaOrOutdoor = data.luoghiAllenamento?.some(l => l === 'casa' || l === 'outdoor');
+        const hasCasaOrOutdoor = selectedLocations.some(l => l === 'casa' || l === 'outdoor');
+        
+        if (hadCasaOrOutdoor && !hasCasaOrOutdoor) {
+          newData.possiedeAttrezzatura = undefined;
+          newData.attrezzi = undefined;
+          newData.altriAttrezzi = undefined;
+          setPossiedeAttrezzatura(undefined);
+          setAttrezzi([]);
+          setAltriAttrezzi('');
+        }
+        
+        updateData(newData);
         // Reset flag dopo aggiornamento store
         isManualLocationUpdate.current = false;
       }
@@ -183,6 +264,121 @@ const Step3Preferences = forwardRef<Step3PreferencesHandle, Step3PreferencesProp
       }
     };
 
+    const handleAttrezzaturaSelect = (value: boolean) => {
+      setPossiedeAttrezzatura(value);
+      console.log('Attrezzatura aggiornata:', value);
+      
+      const newData: any = { possiedeAttrezzatura: value };
+      
+      // Se risponde "No", resetta attrezzi
+      if (value === false) {
+        newData.attrezzi = [];
+        newData.altriAttrezzi = '';
+        setAttrezzi([]);
+        setAltriAttrezzi('');
+      }
+      
+      updateData(newData);
+      
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate(20);
+      }
+    };
+
+    const toggleAttrezzo = (attrezzoId: string) => {
+      setAttrezzi(prev => {
+        const newAttrezzi = prev.includes(attrezzoId)
+          ? prev.filter(id => id !== attrezzoId)
+          : [...prev, attrezzoId];
+        
+        console.log('Attrezzi aggiornati:', newAttrezzi);
+        
+        // Se deseleziona "Altro", resetta campo testo
+        if (!newAttrezzi.includes('altro')) {
+          setAltriAttrezzi('');
+          updateData({ attrezzi: newAttrezzi, altriAttrezzi: '' });
+        } else {
+          updateData({ attrezzi: newAttrezzi });
+        }
+        
+        return newAttrezzi;
+      });
+      
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate(20);
+      }
+    };
+
+    const handleAltriAttrezziChange = (value: string) => {
+      setAltriAttrezzi(value);
+      updateData({ altriAttrezzi: value });
+      // Reset stato "justSaved" quando modifica testo
+      if (justSaved) {
+        setJustSaved(false);
+      }
+    };
+
+    const salvaAltriAttrezziDatabase = async (altriAttrezzi: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Salva in user_onboarding_responses
+      const { error: error1 } = await supabase
+        .from('user_onboarding_responses')
+        .update({ altri_attrezzi: altriAttrezzi })
+        .eq('user_id', user.id);
+
+      if (error1) throw error1;
+
+      // Salva anche in onboarding_preferenze se esiste
+      const { error: error2 } = await supabase
+        .from('onboarding_preferenze')
+        .update({ altri_attrezzi: altriAttrezzi })
+        .eq('user_id', user.id);
+
+      // Non bloccare se tabella non esiste
+      if (error2 && !error2.message.includes('does not exist')) {
+        console.warn('Errore salvataggio onboarding_preferenze:', error2);
+      }
+    };
+
+    const handleSalvaAltriAttrezzi = async () => {
+      if (!altriAttrezzi?.trim() || altriAttrezzi.trim().length < 3) {
+        return;
+      }
+
+      setIsSavingAltri(true);
+
+      try {
+        // 1. Salva in database SUBITO (non aspettare "Continua")
+        await salvaAltriAttrezziDatabase(altriAttrezzi.trim());
+        
+        // 2. Mostra toast success
+        toast({
+          title: "✅ Attrezzi salvati!",
+          description: "I tuoi attrezzi personalizzati sono stati salvati con successo",
+          duration: 3000,
+        });
+        
+        // 3. Feedback visivo bottone (2 sec)
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 2000);
+        
+      } catch (error) {
+        // Toast errore
+        toast({
+          title: "❌ Errore",
+          description: "Impossibile salvare gli attrezzi. Riprova.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      } finally {
+        setIsSavingAltri(false);
+      }
+    };
+
     useImperativeHandle(ref, () => ({
       handleContinue: () => {
         if (!canProceed) {
@@ -192,10 +388,27 @@ const Step3Preferences = forwardRef<Step3PreferencesHandle, Step3PreferencesProp
 
         console.log('✅ Step 3: validazione OK, procedo');
 
-        const payload = {
+        const payload: any = {
           luoghiAllenamento: selectedLocations,
           tempoSessione: selectedTime
         };
+        
+        // Aggiungi attrezzatura solo se visibile
+        if (mostraAttrezzatura && possiedeAttrezzatura !== undefined) {
+          payload.possiedeAttrezzatura = possiedeAttrezzatura;
+          
+          if (possiedeAttrezzatura === true) {
+            payload.attrezzi = attrezzi;
+            payload.altriAttrezzi = attrezzi.includes('altro') ? altriAttrezzi.trim() : '';
+          } else {
+            payload.attrezzi = [];
+            payload.altriAttrezzi = '';
+          }
+        } else {
+          payload.possiedeAttrezzatura = undefined;
+          payload.attrezzi = undefined;
+          payload.altriAttrezzi = undefined;
+        }
 
         updateData(payload);
 
@@ -385,6 +598,203 @@ const Step3Preferences = forwardRef<Step3PreferencesHandle, Step3PreferencesProp
                 {getComboMessage()?.text}
               </p>
             </div>
+          </motion.div>
+        )}
+
+        {/* Domanda Attrezzatura (Condizionale) */}
+        {mostraAttrezzatura && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 mb-6 overflow-hidden"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Package className="w-5 h-5 text-[#FFD700]" />
+              <h3 className="text-lg font-bold text-white">
+                Possiedi attrezzatura?
+              </h3>
+            </div>
+
+            {/* Opzioni Sì/No */}
+            <div className="grid grid-cols-2 gap-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleAttrezzaturaSelect(true)}
+                className={`
+                  p-4 rounded-xl border-2 transition-all
+                  ${possiedeAttrezzatura === true
+                    ? 'bg-[#FFD700]/20 border-[#FFD700] shadow-lg'
+                    : 'bg-white/5 border-white/10 hover:border-white/20'}
+                `}
+              >
+                <div className="text-2xl mb-1">✅</div>
+                <div className={`font-bold ${possiedeAttrezzatura === true ? 'text-[#FFD700]' : 'text-white'}`}>
+                  Sì
+                </div>
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleAttrezzaturaSelect(false)}
+                className={`
+                  p-4 rounded-xl border-2 transition-all
+                  ${possiedeAttrezzatura === false
+                    ? 'bg-[#FFD700]/20 border-[#FFD700] shadow-lg'
+                    : 'bg-white/5 border-white/10 hover:border-white/20'}
+                `}
+              >
+                <div className="text-2xl mb-1">❌</div>
+                <div className={`font-bold ${possiedeAttrezzatura === false ? 'text-[#FFD700]' : 'text-white'}`}>
+                  No
+                </div>
+              </motion.button>
+            </div>
+
+            {/* Messaggio validazione */}
+            {mostraAttrezzatura && possiedeAttrezzatura === undefined && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg"
+              >
+                <p className="text-xs text-yellow-400">
+                  ⚠️ Seleziona se possiedi attrezzatura per continuare
+                </p>
+              </motion.div>
+            )}
+
+            {/* Lista Attrezzi (mostra solo se "Sì") */}
+            {possiedeAttrezzatura === true && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-4 pt-4 border-t border-white/10 overflow-hidden"
+              >
+                <h4 className="text-md font-semibold text-white mb-3">
+                  Quali attrezzi possiedi?
+                </h4>
+
+                {/* Grid Attrezzi */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                  {listaAttrezzi.map((attrezzo) => {
+                    const isSelected = attrezzi.includes(attrezzo.id);
+                    
+                    return (
+                      <motion.button
+                        key={attrezzo.id}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => toggleAttrezzo(attrezzo.id)}
+                        className={`
+                          p-3 rounded-xl border-2 transition-all text-left
+                          ${isSelected
+                            ? 'bg-[#FFD700]/20 border-[#FFD700] shadow-lg'
+                            : 'bg-white/5 border-white/10 hover:border-white/20'}
+                        `}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={`
+                            w-5 h-5 rounded border-2 flex items-center justify-center transition-all
+                            ${isSelected
+                              ? 'bg-[#FFD700] border-[#FFD700]'
+                              : 'border-white/30 bg-transparent'}
+                          `}>
+                            {isSelected && (
+                              <CheckCircle className="w-3 h-3 text-black" />
+                            )}
+                          </div>
+                          <span className="text-lg">{attrezzo.icon}</span>
+                          <span className={`text-sm font-medium ${isSelected ? 'text-[#FFD700]' : 'text-white'}`}>
+                            {attrezzo.label}
+                          </span>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {/* Campo "Altro" (condizionale) */}
+                {attrezzi.includes('altro') && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-3 space-y-3 overflow-hidden"
+                  >
+                    {/* Textarea */}
+                    <Textarea
+                      value={altriAttrezzi}
+                      onChange={(e) => handleAltriAttrezziChange(e.target.value)}
+                      placeholder="Es: TRX, Corda per saltare, Palla medica..."
+                      maxLength={200}
+                      rows={3}
+                      className="bg-white/5 border-2 border-white/10 text-white placeholder-gray-500 focus:border-[#FFD700] focus-visible:ring-[#FFD700] resize-none"
+                    />
+                    
+                    {/* Contatore caratteri */}
+                    <p className="text-xs text-gray-500 text-right">
+                      {altriAttrezzi.length}/200
+                    </p>
+
+                    {/* Bottone Conferma */}
+                    <Button
+                      type="button"
+                      onClick={handleSalvaAltriAttrezzi}
+                      disabled={!altriAttrezzi?.trim() || altriAttrezzi.trim().length < 3 || isSavingAltri}
+                      className="w-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed mt-3"
+                    >
+                      {isSavingAltri ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Salvataggio...
+                        </>
+                      ) : justSaved ? (
+                        <>
+                          <Check className="mr-2 h-4 w-4" />
+                          ✅ Salvato!
+                        </>
+                      ) : (
+                        <>
+                          <Check className="mr-2 h-4 w-4" />
+                          Conferma attrezzi
+                        </>
+                      )}
+                    </Button>
+
+                    {/* Messaggio validazione (sotto bottone) */}
+                    {altriAttrezzi && altriAttrezzi.trim().length < 3 && (
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-sm text-yellow-500 mt-2"
+                      >
+                        ⚠️ Specifica almeno 3 caratteri
+                      </motion.p>
+                    )}
+                  </motion.div>
+                )}
+
+                {/* Messaggi validazione attrezzi */}
+                {possiedeAttrezzatura === true && attrezzi.length === 0 && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg"
+                  >
+                    <p className="text-xs text-yellow-400">
+                      ⚠️ Seleziona almeno un attrezzo
+                    </p>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
           </motion.div>
         )}
 
