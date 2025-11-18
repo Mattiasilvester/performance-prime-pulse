@@ -5,6 +5,7 @@ import FeaturesSection from '../components/Features/FeaturesSection';
 import CTASection from '../components/CTA/CTASection';
 import Footer from '../components/Footer/Footer';
 import { OrganizationSchema, MobileAppSchema, FAQSchema } from '@/components/seo/SchemaComponents';
+import { BackToTopButton } from '@/components/landing/BackToTopButton';
 import '../styles/landing.css';
 
 const LandingPage = () => {
@@ -73,6 +74,9 @@ const LandingPage = () => {
         
         {/* Footer */}
         <Footer />
+        
+        {/* ✅ Back to Top Button */}
+        <BackToTopButton />
       </div>
     </>
   );

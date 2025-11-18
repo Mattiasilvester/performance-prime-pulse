@@ -5,6 +5,29 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [Unreleased] - 2025-11-18
+
+### Added ✨
+- **Sistema Diario Allenamenti Completo**: Tracciamento workout completati con note, filtri e statistiche
+  - Database migration: tabella `workout_diary` e colonne streak in `user_workout_stats`
+  - Pagina `/diary` con filtri (All, Saved, Completed) e raggruppamento per data
+  - Componenti UI: WorkoutCard, NotesModal, StatsWidget, DiaryFilters
+  - Integrazione con ActiveWorkout: bottone "Salva su Diario" salva workout completati
+  - Navigazione: sostituito "Appuntamenti" con "Diario" nel menu principale
+- Bottone "Elimina" con icona cestino rosso per workout completati (responsive: solo icona su mobile)
+
+### Changed 🔄
+- Bottone "Condividi" ora con stile outline e posizionato su seconda riga
+- Textarea note ora con sfondo grigio (`bg-muted`) invece di celeste, bordo oro
+- Aggiornamento ottimistico dello state locale per eliminazione e salvataggio note (no reload pagina)
+
+### Fixed 🐛
+- Risolto toast vecchio "Funzionalità diario in arrivo!" in QuickWorkout - ora salva correttamente nel database
+- Eliminato reload pagina dopo eliminazione workout e salvataggio note - UI smooth senza flicker
+- Textarea note ora con sfondo grigio coerente con tema invece di celeste
+
+---
+
 ## [Unreleased] - 2025-11-14
 
 ### Added ✨

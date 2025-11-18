@@ -2,6 +2,7 @@
 {
   "navigation": {
     "dashboard": "Home",
+    "diary": "Diary",
     "workouts": "Workouts",
     "schedule": "Schedule", 
     "timer": "Timer",

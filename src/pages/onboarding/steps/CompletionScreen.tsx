@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
 import { OnboardingPreferencesCard } from '@/components/onboarding/OnboardingPreferencesCard';
+import { useConfetti } from '@/hooks/useConfetti';
 
 // Mappatura obiettivi tradotti
 const OBIETTIVI_TRADOTTI: Record<string, string> = {
@@ -340,6 +341,10 @@ export function CompletionScreen() {
   const [currentResponses, setCurrentResponses] = useState<OnboardingResponsesSnapshot | null>(null);
   const [latestMetadata, setLatestMetadata] = useState<WorkoutPlanMetadata | null>(null);
   const { toast } = useToast();
+  
+  // ✅ CONFETTI: Celebrazione al mount del componente (solo se non in edit mode)
+  // Si attiva automaticamente quando il componente viene montato per la prima volta
+  useConfetti(!isEditMode);
   
   // ✅ FIX: Ref per prevenire loop infinito
   const hasInitialized = useRef(false);

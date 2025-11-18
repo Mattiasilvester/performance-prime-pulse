@@ -34,6 +34,7 @@ const Schedule = lazy(() => import('@/components/schedule/Schedule').then(m => (
 const AICoach = lazy(() => import('@/components/ai/AICoach').then(m => ({ default: m.AICoach })))
 const Subscriptions = lazy(() => import('@/pages/Subscriptions'))
 const Profile = lazy(() => import('@/components/profile/Profile').then(m => ({ default: m.Profile })))
+const DiaryPage = lazy(() => import('@/pages/diary/DiaryPage'))
 const PersonalInfo = lazy(() => import('@/pages/settings/PersonalInfo'))
 const Security = lazy(() => import('@/pages/settings/Security'))
 const Notifications = lazy(() => import('@/pages/settings/Notifications'))
@@ -209,6 +210,16 @@ function App() {
                         <Workouts />
                       </Suspense>
                     </div>
+                    <BottomNavigation />
+                    <ConditionalFeedbackWidget />
+                  </ProtectedRoute>
+                } />
+                <Route path="/diary" element={
+                  <ProtectedRoute session={session}>
+                    <Header />
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <DiaryPage />
+                    </Suspense>
                     <BottomNavigation />
                     <ConditionalFeedbackWidget />
                   </ProtectedRoute>

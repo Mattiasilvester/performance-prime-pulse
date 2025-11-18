@@ -9,6 +9,7 @@ import { ChallengeNotification } from '@/components/ui/ChallengeNotification';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { completeWorkout as saveWorkoutToDiary } from '@/services/diaryService';
 
 // Struttura dati del circuito workout
 interface Exercise {
@@ -534,34 +535,109 @@ const QuickWorkout = () => {
     navigate('/dashboard');
   };
 
-  // Salva su diario
-  const saveToDiary = () => {
-    // Placeholder per futura implementazione diario
-    localStorage.setItem('lastWorkoutCompleted', new Date().toISOString());
+  // Salva su diario - integrazione completa
+  const saveToDiary = async () => {
+    console.log('🚀 QuickWorkout saveToDiary chiamato!');
     
-    // Registra completamento nel sistema medaglie
-    recordWorkoutCompletion();
-    
-    // Traccia workout per sfida 7 giorni
-    const challengeResult = trackWorkoutForChallenge();
-    
-    // Mostra notifica se c'è un messaggio
-    if (challengeResult.message) {
-      const notificationType = challengeResult.isCompleted ? 'success' : 
-                              challengeResult.isNewChallenge ? 'info' : 'info';
-      setChallengeNotification({
-        message: challengeResult.message,
-        type: notificationType
-      });
-      
-      // Auto-close dopo 5 secondi
-      setTimeout(() => {
-        setChallengeNotification(null);
-      }, 5000);
+    if (!user?.id) {
+      console.error('❌ Utente non autenticato');
+      toast.error('Utente non autenticato');
+      return;
     }
-    
-    toast.success('Funzionalità diario in arrivo! Workout salvato.');
-    navigate('/dashboard');
+
+    try {
+      console.log('✅ Utente autenticato, procedo con salvataggio QuickWorkout...');
+      
+      // Calcola durata totale in secondi
+      const totalSeconds = WORKOUT_CIRCUIT.reduce((total, exercise) => {
+        return total + exercise.duration + exercise.rest;
+      }, 0);
+
+      // Converti in minuti e FORZA INTEGER
+      let durationMinutes = Math.floor(totalSeconds / 60);
+      
+      // Se 0 minuti ma ci sono esercizi, imposta almeno 1
+      if (durationMinutes === 0 && WORKOUT_CIRCUIT.length > 0) {
+        durationMinutes = 1;
+      }
+
+      // Assicurati che sia NUMBER INTEGER (non string)
+      const finalDurationMinutes = parseInt(durationMinutes.toString(), 10);
+
+      console.log('🔍 DEBUG QuickWorkout Duration:', {
+        totalSeconds,
+        durationMinutes,
+        finalDurationMinutes,
+        type: typeof finalDurationMinutes,
+        exercisesCount: WORKOUT_CIRCUIT.length
+      });
+
+      // Prepara dati workout per QuickWorkout
+      const workoutData = {
+        workout_id: null,
+        workout_source: 'quick' as const,
+        workout_name: 'Allenamento Rapido 10 minuti',
+        workout_type: 'cardio',
+        status: 'completed' as const,
+        duration_minutes: finalDurationMinutes,
+        exercises_count: WORKOUT_CIRCUIT.length,
+        exercises: WORKOUT_CIRCUIT.map((ex, index) => ({
+          name: ex.name,
+          duration: ex.duration,
+          rest: ex.rest,
+          completed: index < currentExerciseIndex, // Esercizi completati fino a currentExerciseIndex
+        })),
+        completed_at: new Date().toISOString(),
+        saved_at: new Date().toISOString(),
+      };
+
+      console.log('🔍 FULL QuickWorkout workoutData BEFORE save:', JSON.stringify(workoutData, null, 2));
+
+      // Salva nel diario
+      await saveWorkoutToDiary(workoutData);
+
+      console.log('✅ QuickWorkout salvato con successo');
+
+      // Registra completamento nel sistema medaglie
+      recordWorkoutCompletion();
+      
+      // Traccia workout per sfida 7 giorni
+      const challengeResult = trackWorkoutForChallenge();
+      
+      // Mostra notifica se c'è un messaggio
+      if (challengeResult.message) {
+        const notificationType = challengeResult.isCompleted ? 'success' : 
+                                challengeResult.isNewChallenge ? 'info' : 'info';
+        setChallengeNotification({
+          message: challengeResult.message,
+          type: notificationType
+        });
+        
+        // Auto-close dopo 5 secondi
+        setTimeout(() => {
+          setChallengeNotification(null);
+        }, 5000);
+      }
+
+      // Toast SUCCESS
+      toast.success('✅ Salvato nel Diario!', {
+        description: 'Workout completato e salvato con successo',
+      });
+
+      // Navigate dopo 800ms (per vedere toast)
+      setTimeout(() => {
+        navigate('/diary');
+      }, 800);
+
+    } catch (error) {
+      console.error('❌ Full error object:', error);
+      console.error('❌ Error saving QuickWorkout to diary:', error);
+      
+      // Toast ERRORE solo se fallisce veramente
+      toast.error('❌ Errore', {
+        description: 'Impossibile salvare nel diario',
+      });
+    }
   };
 
   // Schermata di conferma ripristino

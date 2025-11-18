@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, Calendar, Bot, User, FileText, X, Shield, FileText as FileTextIcon } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, BookOpen, Bot, User, FileText, X, Shield, FileText as FileTextIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,16 +50,16 @@ export const Header = () => {
   // Funzioni secondarie nel menu hamburger (mantenute per accesso completo)
   const secondaryNavigationItems = [
     { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
+    { id: 'diary', label: t('navigation.diary'), icon: BookOpen, path: '/diary' },
     { id: 'workouts', label: t('navigation.workouts'), icon: Dumbbell, path: '/workouts' },
-    { id: 'schedule', label: t('navigation.schedule'), icon: Calendar, path: '/schedule' },
     { id: 'ai-coach', label: t('navigation.aiCoach'), icon: Bot, path: '/ai-coach' },
     { id: 'profile', label: t('navigation.profile'), icon: User, path: '/profile' },
   ];
 
   const searchableItems = [
     { label: t('navigation.dashboard'), path: '/' },
+    { label: t('navigation.diary'), path: '/diary' },
     { label: t('navigation.workouts'), path: '/workouts' },
-    { label: t('navigation.schedule'), path: '/schedule' },
     { label: t('navigation.aiCoach'), path: '/ai-coach' },
     { label: t('navigation.profile'), path: '/profile' },
     { label: t('settings.personalInfo'), path: '/profile' },
