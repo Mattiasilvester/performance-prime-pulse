@@ -9,6 +9,97 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **18 Novembre 2025 - Sessione 20: Sistema Diario Allenamenti Completo & Fix UX**
+- **Ora Inizio**: ~10:00
+- **Ora Fine**: ~18:00
+- **Durata**: ~8 ore
+
+#### Implementazioni
+1. **Sistema Diario Allenamenti Completo** ✨
+   - Database migration: tabella `workout_diary` e estensione `user_workout_stats` con colonne streak
+   - Service layer completo (`diaryService.ts`) con CRUD operations e calcolo metriche
+   - UI Components: `WorkoutCard`, `NotesModal`, `StatsWidget`, `DiaryFilters`
+   - Pagina principale `DiaryPage` con filtri, raggruppamento per data, gestione note
+   - Integrazione con `ActiveWorkout`: bottone "Salva su Diario" salva workout completati
+   - Navigazione: sostituito "Appuntamenti" con "Diario" nel menu
+   - File: `supabase/migrations/20250116000000_create_workout_diary.sql`, `src/services/diaryService.ts`, `src/pages/diary/DiaryPage.tsx`, `src/components/diary/*`
+
+2. **Fix Bottone "Salva su Diario" Handler Sbagliato** 🐛
+   - Problema: `QuickWorkout.tsx` aveva ancora toast vecchio "Funzionalità diario in arrivo!"
+   - Causa: Funzione `saveToDiary` non aggiornata con logica completa di salvataggio
+   - Soluzione: Implementata logica completa identica a `ActiveWorkout.tsx` con salvataggio database
+   - File: `src/pages/QuickWorkout.tsx`
+
+3. **Bottone Elimina con Icona Cestino Rosso** ✨
+   - Bottone "Elimina" aggiunto dopo "Dettagli" per workout completati
+   - Stile rosso pieno (`bg-destructive`) con icona bianca
+   - Responsive: solo icona su mobile, icona + testo su desktop
+   - File: `src/components/diary/WorkoutCard.tsx`
+
+4. **Fix Bottone Condividi** 🔄
+   - Stile cambiato da "ghost" a "outline" (coerente con altri bottoni)
+   - Posizionato su seconda riga sotto "Ripeti"
+   - Testo sempre visibile (rimosso `hidden md:inline`)
+   - File: `src/components/diary/WorkoutCard.tsx`
+
+5. **Fix Textarea Note Sfondo** 🐛
+   - Sfondo cambiato da `bg-secondary` (celeste) a `bg-muted` (grigio)
+   - Bordo oro (`border-gold/20`) con focus (`focus:border-gold/50`)
+   - Coerente con tema Performance Prime (nero + oro)
+   - File: `src/components/diary/NotesModal.tsx`
+
+6. **Fix Reload Pagina - Aggiornamento Ottimistico** 🚀
+   - Eliminato `loadEntries()` dopo azioni (causava flicker e perdita scroll)
+   - Implementato aggiornamento ottimistico dello state locale
+   - `handleRemove`: rimozione immediata dallo state prima di chiamata API
+   - `handleSaveNotes`: aggiornamento entry nello state usando dato ritornato da API
+   - Fallback a `loadEntries()` solo in caso di errore per sincronizzazione
+   - File: `src/pages/diary/DiaryPage.tsx`
+
+#### Bug Risolti
+- **Toast Vecchio "Funzionalità diario in arrivo!" in QuickWorkout** → Implementata logica completa salvataggio
+  - Problema: Bottone mostrava toast vecchio invece di salvare nel database
+  - Causa: `QuickWorkout.tsx` aveva funzione `saveToDiary` non aggiornata
+  - Soluzione: Implementata logica completa identica a `ActiveWorkout.tsx`
+  - File: `src/pages/QuickWorkout.tsx`
+
+- **Reload Pagina dopo Eliminazione/Salvataggio Note** → Aggiornamento ottimistico implementato
+  - Problema: Pagina si ricaricava completamente causando flicker e perdita scroll
+  - Causa: `loadEntries()` chiamato dopo ogni azione con `setLoading(true)`
+  - Soluzione: Aggiornamento ottimistico dello state locale, `loadEntries()` solo in caso di errore
+  - File: `src/pages/diary/DiaryPage.tsx`
+
+- **Textarea Note Sfondo Celeste** → Cambiato a grigio coerente con UI
+  - Problema: Textarea aveva sfondo celeste (`bg-secondary`) invece di grigio
+  - Causa: Classe CSS non coerente con tema
+  - Soluzione: Cambiato a `bg-muted` con bordo oro
+  - File: `src/components/diary/NotesModal.tsx`
+
+#### File Modificati
+- ✨ `supabase/migrations/20250116000000_create_workout_diary.sql` - Migration database completa
+- ✨ `src/services/diaryService.ts` - Service layer completo con CRUD e metriche
+- ✨ `src/pages/diary/DiaryPage.tsx` - Pagina principale diario con filtri e raggruppamento
+- ✨ `src/components/diary/WorkoutCard.tsx` - Card workout con azioni
+- ✨ `src/components/diary/NotesModal.tsx` - Modal per aggiungere/modificare note
+- ✨ `src/components/diary/StatsWidget.tsx` - Widget statistiche utente
+- ✨ `src/components/diary/DiaryFilters.tsx` - Filtri per status (All, Saved, Completed)
+- ✏️ `src/components/workouts/ActiveWorkout.tsx` - Integrazione bottone "Salva su Diario"
+- ✏️ `src/pages/QuickWorkout.tsx` - Fix funzione `saveToDiary` con logica completa
+- ✏️ `src/components/layout/Header.tsx` - Sostituito "Appuntamenti" con "Diario"
+- ✏️ `src/i18n/it.json` - Aggiunta traduzione "diary"
+- ✏️ `src/i18n/en.json` - Aggiunta traduzione "diary"
+- ✏️ `src/App.tsx` - Aggiunta route `/diary`
+
+#### Risultati
+- ✅ Sistema Diario Allenamenti completo e funzionante
+- ✅ Salvataggio workout completati nel diario
+- ✅ Gestione note per ogni workout
+- ✅ Filtri e raggruppamento per data
+- ✅ Statistiche utente con streak
+- ✅ UI smooth senza reload pagina
+- ✅ Zero errori TypeScript
+- ✅ Build successful
+
 ### **14 Novembre 2025 - Sessione 19: Sistema Attrezzi Completo & Feature Flags Debug**
 - **Ora Inizio**: ~10:00
 - **Ora Fine**: ~14:00

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle, X, Play, Pause, RotateCcw, ArrowRight, Clock, Zap, Dumbbell, Heart, Flame, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExerciseCard } from './ExerciseCard';
@@ -8,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMedalSystem } from '@/hooks/useMedalSystem';
 import { trackWorkoutForChallenge } from '@/utils/challengeTracking';
 import { updateWorkoutStats } from '@/services/workoutStatsService';
+import { completeWorkout as saveWorkoutToDiary } from '@/services/diaryService';
 import { toast } from 'sonner';
 
 // Helper function per convertire stringhe tempo in numeri
@@ -121,6 +123,7 @@ interface ActiveWorkoutProps {
 export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onClose }: ActiveWorkoutProps) => {
   const { user } = useAuth();
   const { recordWorkoutCompletion } = useMedalSystem();
+  const navigate = useNavigate();
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const [workoutStarted, setWorkoutStarted] = useState(false);
@@ -658,9 +661,104 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
     onClose();
   };
 
-  // Salva su diario - pop-up placeholder
-  const saveToDiary = () => {
-    toast.success("Funzionalità diario in arrivo! Workout salvato.");
+  // Salva su diario - integrazione completa
+  const saveToDiary = async () => {
+    console.log('🚀 saveToDiary chiamato!');
+    
+    if (!user?.id) {
+      console.error('❌ Utente non autenticato');
+      toast.error('Utente non autenticato');
+      return;
+    }
+
+    try {
+      console.log('✅ Utente autenticato, procedo con salvataggio...');
+      // ✅ FIX 1: Calcola durata in secondi
+      const totalSeconds = currentWorkout.exercises?.reduce((total, exercise) => {
+        const duration = parseTimeToSeconds(exercise.duration);
+        return total + duration;
+      }, 0) || 0;
+
+      // ✅ FIX 2: Converti in minuti e FORZA INTEGER
+      // Usa Math.floor per arrotondare per difetto
+      let durationMinutes = Math.floor(totalSeconds / 60);
+      
+      // Se 0 minuti ma ci sono esercizi, imposta almeno 1
+      if (durationMinutes === 0 && (currentWorkout.exercises?.length || 0) > 0) {
+        durationMinutes = 1;
+      }
+
+      // ✅ FIX 3: Assicurati che sia NUMBER INTEGER (non string)
+      const finalDurationMinutes = parseInt(durationMinutes.toString(), 10);
+
+      console.log('🔍 DEBUG Duration:', {
+        totalSeconds,
+        durationMinutes,
+        finalDurationMinutes,
+        type: typeof finalDurationMinutes,
+        exercisesCount: currentWorkout.exercises?.length || 0
+      });
+
+      // Determina workout_source
+      let workoutSource: 'custom_workouts' | 'workout_plans' | 'quick' = 'quick';
+      if (customWorkout) {
+        workoutSource = 'custom_workouts';
+      } else if (generatedWorkout) {
+        workoutSource = 'workout_plans';
+      }
+
+      // ✅ FIX 4: Prepara dati con INTEGER GARANTITO
+      const workoutData = {
+        workout_id: null, // Può essere null per workout senza ID
+        workout_source: workoutSource,
+        workout_name: workoutTitle || 'Allenamento Custom',
+        workout_type: workoutType?.toLowerCase() || 'personalizzato',
+        status: 'completed' as const,
+        duration_minutes: finalDurationMinutes, // ✅ INTEGER garantito
+        exercises_count: currentWorkout.exercises?.length || 0, // ✅ Già integer
+        exercises: currentWorkout.exercises?.map((ex: any, index: number) => ({
+          name: ex.name,
+          duration: ex.duration,
+          rest: ex.rest,
+          completed: completedExercises.includes(index),
+        })) || [],
+        completed_at: new Date().toISOString(),
+        saved_at: new Date().toISOString(),
+      };
+
+      // ✅ AGGIUNGI QUESTO LOG DETTAGLIATO
+      console.log('🔍 FULL workoutData BEFORE save:', JSON.stringify(workoutData, null, 2));
+      console.log('🔍 Types check:', {
+        duration_minutes_type: typeof workoutData.duration_minutes,
+        duration_minutes_value: workoutData.duration_minutes,
+        exercises_count_type: typeof workoutData.exercises_count,
+        exercises_count_value: workoutData.exercises_count,
+      });
+
+      // ✅ FIX 5: Salva nel diario
+      await saveWorkoutToDiary(workoutData);
+
+      console.log('✅ Workout salvato con successo');
+
+      // ✅ FIX 6: Toast SUCCESS
+      toast.success('✅ Salvato nel Diario!', {
+        description: 'Workout completato e salvato con successo',
+      });
+
+      // ✅ FIX 7: Navigate dopo 800ms (per vedere toast)
+      setTimeout(() => {
+        navigate('/diary');
+      }, 800);
+
+    } catch (error) {
+      console.error('❌ Full error object:', error);
+      console.error('❌ Error saving to diary:', error);
+      
+      // Toast ERRORE solo se fallisce veramente
+      toast.error('❌ Errore', {
+        description: 'Impossibile salvare nel diario',
+      });
+    }
   };
 
   // Se tutti gli esercizi sono completati, mostra la schermata di completamento

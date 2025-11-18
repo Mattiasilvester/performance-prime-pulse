@@ -301,6 +301,14 @@ export function OnboardingPage() {
     }
   }, [currentStep]);
 
+  // ✅ AUTO-SCROLL: Scrolla in cima alla pagina quando cambia step
+  // Migliora UX assicurando che l'utente veda sempre l'inizio del nuovo step
+  useEffect(() => {
+    window.scrollTo({ 
+      top: 0, 
+      behavior: 'smooth' 
+    });
+  }, [currentStep]);
 
   const handleBack = () => {
     if (currentStep === 0) {

@@ -3,6 +3,7 @@ import { trackLandingVersion } from '@/services/analytics';
 import { HeroSection } from '@/components/landing-new/HeroSection';
 import { ProblemSection } from '@/components/landing-new/ProblemSection';
 import { SolutionSection } from '@/components/landing-new/SolutionSection';
+import { BackToTopButton } from '@/components/landing/BackToTopButton';
 
 const SocialProof = lazy(() =>
   import('@/components/landing-new/SocialProof').then((mod) => ({ default: mod.SocialProof }))
@@ -33,6 +34,9 @@ export function NewLandingPage() {
       <Suspense fallback={<div className="min-h-64 bg-[#212121]" />}>
         <Footer />
       </Suspense>
+      
+      {/* ✅ Back to Top Button */}
+      <BackToTopButton />
     </div>
   );
 }
