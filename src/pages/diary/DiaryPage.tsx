@@ -9,12 +9,14 @@ import { it } from "date-fns/locale";
 // Componenti diario
 import { WorkoutCard } from "@/components/diary/WorkoutCard";
 import { NotesModal } from "@/components/diary/NotesModal";
+import { WorkoutDetailsModal } from "@/components/diary/WorkoutDetailsModal";
 import { DiaryFilters } from "@/components/diary/DiaryFilters";
 import { StatsWidget } from "@/components/diary/StatsWidget";
 
 // Service
 import {
   getDiaryEntries,
+  getDiaryEntry,
   updateDiaryEntry,
   deleteDiaryEntry,
 } from "@/services/diaryService";
@@ -28,6 +30,7 @@ interface WorkoutDiary {
   status: 'saved' | 'completed';
   duration_minutes?: number | null;
   exercises_count?: number | null;
+  exercises?: any; // JSONB array di esercizi
   completed_at?: string | null;
   saved_at: string;
   notes?: string | null;
@@ -43,6 +46,8 @@ const DiaryPage = () => {
   const [loading, setLoading] = useState(true);
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<WorkoutDiary | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedEntryForDetails, setSelectedEntryForDetails] = useState<WorkoutDiary | null>(null);
 
   // Load entries
   useEffect(() => {
@@ -118,12 +123,43 @@ const DiaryPage = () => {
     });
   };
 
-  const handleRepeat = (id: string) => {
-    // TODO: Duplicate workout and start
-    toast({
-      title: "Ripeti allenamento",
-      description: "Funzionalità in arrivo!",
-    });
+  const handleRepeat = async (id: string) => {
+    try {
+      // Carica entry completa dal database (include exercises)
+      const entry = await getDiaryEntry(id);
+      if (!entry || !entry.exercises || entry.exercises.length === 0) {
+        toast({
+          title: "Errore",
+          description: "Impossibile caricare il workout",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Converti formato diary → formato ActiveWorkout
+      const customExercises = entry.exercises.map((ex: any) => ({
+        name: ex.name,
+        duration: ex.duration,
+        rest: ex.rest || 0,
+      }));
+
+      // Naviga a /workouts con state per aprire ActiveWorkout
+      navigate('/workouts', {
+        state: {
+          startCustomWorkout: true,
+          customExercises: customExercises,
+          workoutTitle: entry.workout_name,
+          workoutType: entry.workout_type || 'personalizzato',
+        }
+      });
+    } catch (error) {
+      console.error('Error repeating workout:', error);
+      toast({
+        title: "Errore",
+        description: "Impossibile ripetere l'allenamento",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleNotes = (id: string) => {
@@ -192,11 +228,28 @@ const DiaryPage = () => {
     }
   };
 
-  const handleDetails = (id: string) => {
-    toast({
-      title: "Dettagli allenamento",
-      description: "Funzionalità in arrivo!",
-    });
+  const handleDetails = async (id: string) => {
+    try {
+      // Carica entry completa con exercises
+      const entry = await getDiaryEntry(id);
+      if (!entry) {
+        toast({
+          title: "Errore",
+          description: "Impossibile caricare i dettagli",
+          variant: "destructive",
+        });
+        return;
+      }
+      setSelectedEntryForDetails(entry);
+      setDetailsModalOpen(true);
+    } catch (error) {
+      console.error('Error loading details:', error);
+      toast({
+        title: "Errore",
+        description: "Impossibile caricare i dettagli",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleShare = (id: string) => {
@@ -311,6 +364,16 @@ const DiaryPage = () => {
         initialNotes={selectedEntry?.notes || ""}
         onSave={handleSaveNotes}
         workoutName={selectedEntry?.workout_name}
+      />
+
+      {/* Workout Details Modal */}
+      <WorkoutDetailsModal
+        entry={selectedEntryForDetails}
+        open={detailsModalOpen}
+        onOpenChange={(open) => {
+          setDetailsModalOpen(open);
+          if (!open) setSelectedEntryForDetails(null);
+        }}
       />
     </div>
   );
