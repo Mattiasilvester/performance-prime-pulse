@@ -194,10 +194,16 @@
             document.body.style.overflowY = 'scroll';
             document.body.style.position = 'relative';
             
-            // Rimuovi fixed positioning
+            // Rimuovi fixed positioning SOLO per elementi non protetti
+            // PROTETTI: modal, header, bottom-navigation, notes-header-fixed, feedback-widget
             document.querySelectorAll('*').forEach(el => {
               const style = window.getComputedStyle(el);
-              if (style.position === 'fixed' && !el.classList.contains('modal')) {
+              const isProtected = el.classList.contains('modal') ||
+                                  el.tagName === 'HEADER' ||
+                                  el.classList.contains('bottom-navigation') ||
+                                  el.classList.contains('notes-header-fixed') ||
+                                  el.classList.contains('feedback-widget');
+              if (style.position === 'fixed' && !isProtected) {
                 el.style.position = 'relative';
               }
             });

@@ -3,11 +3,77 @@
 
 ## 🎯 **STATO ATTUALE: PROGETTO IN SVILUPPO ATTIVO**
 
-**Performance Prime Pulse** è un'applicazione React in sviluppo attivo con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata e feature modal 3D. Ultimi sviluppi: 3 Settembre 2025.
+**Performance Prime Pulse** è un'applicazione React in sviluppo attivo con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata e feature modal 3D. Ultimi sviluppi: 19 Novembre 2025.
 
 ---
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
+
+### **19 Novembre 2025 - Sessione 21: Sistema Note Diario Completo & Fix Switch iOS**
+- **Ora Inizio**: ~10:00
+- **Ora Fine**: ~14:11
+- **Durata**: ~4 ore
+- **Branch**: dev
+
+#### **🎯 Obiettivo:**
+Implementare sistema completo di Note del Diario con storage locale, filtri, ricerca e gestione note. Fix styling Switch component per renderlo iOS-like.
+
+#### **✅ Implementato:**
+
+1. **Sistema Note Diario Completo** ✨
+   - Storage locale con `diaryNotesStorage.ts` (localStorage-based)
+   - Pagina `DiaryNotesPage.tsx` con filtri (7 giorni, 30 giorni, evidenziate) e ricerca
+   - Componente `NoteCard.tsx` con swipe gestures per eliminare
+   - Componente `CreateNoteModal.tsx` con validazione e categorie
+   - Raggruppamento note per data con `date-fns`
+   - File: `src/pages/diary/DiaryNotesPage.tsx`, `src/components/diary/NoteCard.tsx`, `src/components/diary/CreateNoteModal.tsx`, `src/lib/diaryNotesStorage.ts`
+
+2. **WorkoutDetailsModal per Diario** ✨
+   - Modal per visualizzare dettagli completi workout salvati
+   - Calcolo durata totale corretta
+   - Visualizzazione esercizi con serie/ripetizioni
+   - File: `src/components/diary/WorkoutDetailsModal.tsx`
+
+3. **Fix Switch Component iOS-like** 🎨
+   - Dimensioni aumentate: `h-7 w-[52px]` (era `h-6 w-11`)
+   - Track grigio scuro quando unchecked: `bg-gray-700` (era `bg-white`)
+   - Thumb translate corretto: `translate-x-[24px]` (era `translate-x-5`)
+   - Padding aggiunto: `p-1` per spacing interno
+   - File: `src/components/ui/switch.tsx`
+
+4. **Navigazione Note** 🧭
+   - Aggiunta route `/diary/notes` in `App.tsx`
+   - Aggiunta voce menu "Note" nell'Header con icona `StickyNote`
+   - File: `src/App.tsx`, `src/components/layout/Header.tsx`
+
+5. **Fix Script index.html** 🔧
+   - Protezione elemento `notes-header-fixed` da conversione fixed → relative
+   - File: `index.html`
+
+#### **🐛 Bug Risolti:**
+
+- **Switch Component Styling Non iOS-like** → Refactoring completo dimensioni e colori
+  - Problema: Switch troppo corto e compatto, track bianco quando off
+  - Causa: Dimensioni e colori non ottimizzati per stile iOS
+  - Soluzione: Dimensioni aumentate, track grigio scuro, thumb più grande
+  - File: `src/components/ui/switch.tsx`
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato
+
+#### **📊 Metriche:**
+- Build: 9.13s
+- Bundle: ~681KB (index.js gzipped: 204.74KB)
+- Errori TS: 0
+
+#### **📋 TODO Prossima Sessione:**
+1. Test completo sistema Note su mobile
+2. Aggiungere sincronizzazione cloud per note (Supabase)
+3. Implementare export note in formato PDF/CSV
+4. Aggiungere tag personalizzati alle note
+5. Implementare reminder/notifiche per note importanti
+
+---
 
 ### **18 Novembre 2025 - Sessione 20: Sistema Diario Allenamenti Completo & Fix UX**
 - **Ora Inizio**: ~10:00
