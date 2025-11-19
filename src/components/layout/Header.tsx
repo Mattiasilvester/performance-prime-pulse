@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, BookOpen, Bot, User, FileText, X, Shield, FileText as FileTextIcon } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, ChevronDown, Home, Dumbbell, BookOpen, Bot, User, FileText, X, Shield, FileText as FileTextIcon, StickyNote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,6 +51,7 @@ export const Header = () => {
   const secondaryNavigationItems = [
     { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, path: '/' },
     { id: 'diary', label: t('navigation.diary'), icon: BookOpen, path: '/diary' },
+    { id: 'notes', label: 'Note', icon: StickyNote, path: '/diary/notes' },
     { id: 'workouts', label: t('navigation.workouts'), icon: Dumbbell, path: '/workouts' },
     { id: 'ai-coach', label: t('navigation.aiCoach'), icon: Bot, path: '/ai-coach' },
     { id: 'profile', label: t('navigation.profile'), icon: User, path: '/profile' },
