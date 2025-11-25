@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { NewObjectiveCard } from '@/components/profile/NewObjectiveCard';
+import { countUserPlans, fetchUserPlans } from '@/services/planService';
+import { toast } from 'sonner';
 
 type QuickAction = {
   label: string;
@@ -186,13 +188,9 @@ const QuickActions = () => {
     });
   };
 
-  const handlePlanCardClick = () => {
-    console.log('Click su Piano Personalizzato. Piani:', savedPlans.length);
-    if (savedPlans.length === 1) {
-      handleStartPlan(savedPlans[0]);
-    } else if (savedPlans.length >= 2) {
-      setShowPlanModal(true);
-    }
+  const handlePlanCardClick = async () => {
+    // Naviga sempre alla pagina piani attivi
+    navigate('/piani-attivi');
   };
 
   const planCountLabel =

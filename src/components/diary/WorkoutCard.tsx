@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Dumbbell, Play, FileText, Trash2, Repeat, Share2, BarChart3 } from "lucide-react";
 import { formatDuration, formatDateShort } from "@/services/diaryService";
+import { WorkoutIcon } from "@/components/workouts/WorkoutIcon";
 
 interface WorkoutDiary {
   id: string;
@@ -35,20 +36,6 @@ export const WorkoutCard = ({
   onDetails,
   onShare,
 }: WorkoutCardProps) => {
-  const getWorkoutIcon = (type?: string | null) => {
-    switch (type?.toLowerCase()) {
-      case 'forza':
-        return '🏋️';
-      case 'cardio':
-        return '🏃';
-      case 'hiit':
-        return '🔥';
-      case 'mobilita':
-        return '🧘';
-      default:
-        return '💪';
-    }
-  };
 
   const isCompleted = entry.status === 'completed';
   const isSaved = entry.status === 'saved';
@@ -59,7 +46,11 @@ export const WorkoutCard = ({
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3 flex-1">
-            <span className="text-3xl">{getWorkoutIcon(entry.workout_type)}</span>
+            <WorkoutIcon 
+              type={entry.workout_type} 
+              workoutName={entry.workout_name}
+              size="md"
+            />
             <div className="flex-1">
               <h3 className="font-bold text-lg text-foreground">
                 {entry.workout_name}
