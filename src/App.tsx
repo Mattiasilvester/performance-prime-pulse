@@ -43,6 +43,11 @@ const Language = lazy(() => import('@/pages/settings/Language'))
 const Privacy = lazy(() => import('@/pages/settings/Privacy'))
 const Help = lazy(() => import('@/pages/settings/Help'))
 
+// Lazy loading per Piano Personalizzato
+const PlansPage = lazy(() => import('@/pages/piani/PlansPage'))
+const PlanCreationPage = lazy(() => import('@/pages/piani/PlanCreationPage'))
+const ActivePlansPage = lazy(() => import('@/pages/piani/ActivePlansPage').then(m => ({ default: m.ActivePlansPage })))
+
 // Lazy loading per SuperAdmin components
 const SuperAdminLogin = lazy(() => import('@/pages/admin/SuperAdminLogin'))
 const SuperAdminDashboard = lazy(() => import('@/pages/admin/SuperAdminDashboard'))
@@ -287,6 +292,42 @@ function App() {
                     <ConditionalFeedbackWidget />
                   </ProtectedRoute>
                 } />
+                <Route path="/piani" element={
+                  <ProtectedRoute session={session}>
+                    <Header />
+                    <div className="min-h-screen pt-24 pb-20">
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <PlansPage />
+                      </Suspense>
+                    </div>
+                    <BottomNavigation />
+                    <ConditionalFeedbackWidget />
+                  </ProtectedRoute>
+                } />
+                <Route path="/piani/nuovo" element={
+                  <ProtectedRoute session={session}>
+                    <Header />
+                    <div className="min-h-screen pt-24 pb-20">
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <PlanCreationPage />
+                      </Suspense>
+                    </div>
+                    <BottomNavigation />
+                    <ConditionalFeedbackWidget />
+                  </ProtectedRoute>
+                } />
+                <Route path="/piani-attivi" element={
+                  <ProtectedRoute session={session}>
+                    <Header />
+                    <div className="min-h-screen pt-24 pb-20">
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <ActivePlansPage />
+                      </Suspense>
+                    </div>
+                    <BottomNavigation />
+                    <ConditionalFeedbackWidget />
+                  </ProtectedRoute>
+                } />
                 <Route path="/settings/personal-info" element={
                   <ProtectedRoute session={session}>
                     <Header />
@@ -412,7 +453,7 @@ function App() {
           </Router>
           <Toaster />
           <Suspense fallback={null}>
-            <SonnerToaster />
+            <SonnerToaster position="top-center" />
           </Suspense>
         </PrimeBotProvider>
       </NotificationProvider>
