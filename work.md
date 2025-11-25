@@ -3,11 +3,128 @@
 
 ## 🎯 **STATO ATTUALE: PROGETTO IN SVILUPPO ATTIVO**
 
-**Performance Prime Pulse** è un'applicazione React in sviluppo attivo con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata e feature modal 3D. Ultimi sviluppi: 19 Novembre 2025.
+**Performance Prime Pulse** è un'applicazione React in sviluppo attivo con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata, sistema filtri interattivi, overlay GIF esercizi, automazione feedback 15 giorni, PrimeBot OpenAI completamente integrato con risposte intelligenti e formattazione markdown, footer con effetto vetro identico all'header, e sistema completo Piano Personalizzato con PrimeBot. Ultimi sviluppi: 16 Gennaio 2025.
 
 ---
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
+
+### **16 Gennaio 2025 - Sessione 22: Sistema Piano Personalizzato Completo con PrimeBot**
+- **Ora Inizio**: ~14:00
+- **Ora Fine**: ~18:00
+- **Durata**: ~4 ore
+- **Branch**: dev
+
+#### **🎯 Obiettivo:**
+Implementare sistema completo di Piano Personalizzato con PrimeBot, inclusi piani giornalieri e settimanali, creazione guidata step-by-step, spiegazione PrimeBot, preview piano, chat modifiche, salvataggio su Supabase, attivazione/completamento piani, e navigazione workout.
+
+#### **✅ Implementato:**
+
+1. **Database Migrations** 🗄️
+   - Migration `plan_type`: aggiunta colonna `plan_type` (daily/weekly) a `workout_plans`
+   - Migration `description`: aggiunta colonna `description` TEXT
+   - Migration `status`: aggiunta colonna `status` (pending/active/completed) con CHECK constraint e indici
+   - File: `supabase/migrations/20251120132925_add_plan_type_to_workout_plans.sql`, `supabase/migrations/20250116120000_add_description_to_workout_plans.sql`, `supabase/migrations/20250116130000_add_status_to_workout_plans.sql`
+
+2. **Types TypeScript** 📝
+   - Interfaccia `WorkoutPlan` completa con tutti i campi
+   - Types per `PlanType`, `PlanSource`, `ExperienceLevel`, `WorkoutGoal`, `DailyPlanGoal`, `WeeklyFrequency`, `Equipment`
+   - State `PlanCreationState` per store Zustand
+   - File: `src/types/plan.ts`
+
+3. **Service Layer** 🔧
+   - `planService.ts`: CRUD completo con mapping database italiano ↔ TypeScript inglese
+   - `dailyPlanGenerator.ts`: generazione workout giornalieri
+   - `weeklyPlanGenerator.ts`: generazione piani settimanali con distribuzione intelligente
+   - Metodi `activatePlan()` e `completePlan()` per gestione status
+   - File: `src/services/planService.ts`, `src/services/dailyPlanGenerator.ts`, `src/services/weeklyPlanGenerator.ts`
+
+4. **Store Zustand** 💾
+   - `planCreationStore.ts`: gestione stato creazione piano con persistenza localStorage
+   - Navigation step-by-step, setters per dati daily/weekly, reset
+   - File: `src/stores/planCreationStore.ts`
+
+5. **Pagine Principali** 📄
+   - `PlansPage.tsx`: lista tutti i piani con grid responsive
+   - `ActivePlansPage.tsx`: pagina dedicata per piani attivi (accessibile da Dashboard)
+   - `PlanCreationPage.tsx`: container principale con router step-by-step
+   - File: `src/pages/piani/PlansPage.tsx`, `src/pages/piani/ActivePlansPage.tsx`, `src/pages/piani/PlanCreationPage.tsx`
+
+6. **Componenti Creazione Piano** 🎨
+   - `WelcomeModal.tsx`: modal benvenuto con PrimeBot avatar
+   - `PlanTypeSelector.tsx`: scelta tra piano giornaliero/settimanale
+   - Steps giornalieri: `DailyPlanStep1.tsx` (goal), `DailyPlanStep2.tsx` (durata), `DailyPlanStep3.tsx` (attrezzatura)
+   - Steps settimanali: `WeeklyPlanStep1.tsx` (obiettivo), `WeeklyPlanStep2.tsx` (livello+frequenza), `WeeklyPlanStep3.tsx` (durata), `WeeklyPlanStep4.tsx` (attrezzatura), `WeeklyPlanStep5.tsx` (limitazioni)
+   - `GeneratingStep.tsx` e `GeneratingWeeklyStep.tsx`: loading durante generazione
+   - File: `src/components/plans/WelcomeModal.tsx`, `src/components/plans/steps/*.tsx`
+
+7. **Componenti Piano Generato** ✨
+   - `PrimeBotExplanation.tsx`: spiegazione dettagliata piano con struttura e benefici
+   - `PlanPreview.tsx`: preview completo con tabs settimanali (7 giorni), esercizi completi, info piano
+   - `PlanModificationChat.tsx`: chat interattiva con PrimeBot per modifiche piano (MVP parsing)
+   - File: `src/components/plans/PrimeBotExplanation.tsx`, `src/components/plans/PlanPreview.tsx`, `src/components/plans/PlanModificationChat.tsx`
+
+8. **Componenti Lista Piani** 📋
+   - `PlanCard.tsx`: card piano con status badge (pending/active/completed), bottoni Inizia/Elimina/Completa, navigazione workout
+   - `CreatePlanCard.tsx`: card distintiva AI-powered per creare nuovo piano
+   - File: `src/components/plans/PlanCard.tsx`, `src/components/plans/CreatePlanCard.tsx`
+
+9. **Navigazione Workout** 🏃
+   - Calcolo giorno corrente settimana (0=Lunedì, 6=Domenica)
+   - Distribuzione intelligente workout su giorni settimana
+   - Navigazione a `/workouts` con esercizi convertiti nel formato corretto
+   - Gestione giorno riposo con toast informativo
+   - File: `src/components/plans/PlanCard.tsx`
+
+10. **Utility Functions** 🛠️
+    - `dateHelpers.ts`: formattazione date con `date-fns`
+    - File: `src/utils/dateHelpers.ts`
+
+11. **Routes App** 🧭
+    - Aggiunte route `/piani`, `/piani/nuovo`, `/piani-attivi` in `App.tsx`
+    - File: `src/App.tsx`
+
+12. **Fix QuickActions** 🔧
+    - Navigazione "Piano Personalizzato" a `/piani-attivi`
+    - File: `src/components/dashboard/QuickActions.tsx`
+
+#### **🐛 Bug Risolti:**
+
+1. **Errore salvataggio piano - colonna 'durata' NOT NULL**
+   - Problema: Colonna `durata` NOT NULL ma non impostata per piani giornalieri
+   - Soluzione: Default `1` settimana per piani giornalieri in `mapWorkoutPlanToDb()`
+   - File: `src/services/planService.ts`
+
+2. **Errore constraint UNIQUE(user_id, luogo)**
+   - Problema: Più piani con stesso `luogo` causavano errore 409 Conflict
+   - Soluzione: Generazione automatica `luogo` unico con nome piano sanitizzato + timestamp
+   - File: `src/services/planService.ts`
+
+3. **Toast in basso invece che in alto**
+   - Problema: Toast apparivano in basso, interferivano con footer
+   - Soluzione: Aggiunta `position="top-center"` a `<SonnerToaster />`
+   - File: `src/App.tsx`
+
+4. **Bottone elimina trasparente**
+   - Problema: Bottone elimina aveva `variant="ghost"` (trasparente)
+   - Soluzione: Sostituito con `bg-red-600 hover:bg-red-700 text-white`
+   - File: `src/components/plans/PlanCard.tsx`
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato (tutti componenti nuovi)
+
+#### **📊 Metriche:**
+- Build time: 9-12s
+- Bundle size: ~682KB (index.js gzipped: ~205KB)
+- Errori TypeScript: 0
+
+#### **📋 TODO Prossima Sessione:**
+1. Test completo flusso creazione piano giornaliero e settimanale
+2. Migliorare parsing chat PrimeBot per modifiche più complesse
+3. Aggiungere validazione esercizi durante generazione piano
+4. Implementare sistema notifiche per promemoria allenamenti piano attivo
+
+---
 
 ### **19 Novembre 2025 - Sessione 21: Sistema Note Diario Completo & Fix Switch iOS**
 - **Ora Inizio**: ~10:00
