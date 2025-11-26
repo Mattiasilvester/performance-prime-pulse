@@ -285,6 +285,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           if (result.hasLimitations) {
             setPendingPlan({
               plan: planResponse.plan,
+              hasLimitations: result.hasLimitations, // Salva info limitazioni per il disclaimer
               actions: [
                 {
                   type: 'save_workout',
@@ -431,6 +432,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
             // Ha limitazioni → mostra disclaimer prima del piano
             setPendingPlan({
               plan: planResponse.plan,
+              hasLimitations: planResponse.hasExistingLimitations ?? false, // Salva info limitazioni
               actions: [
                 {
                   type: 'save_workout',
