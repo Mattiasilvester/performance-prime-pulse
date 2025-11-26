@@ -5,6 +5,11 @@ import { getAIResponse } from '@/lib/openai-service';
 import { getPrimeBotFallbackResponse } from '@/lib/primebot-fallback';
 import { fetchUserProfile } from '@/services/userService';
 import { usePrimeBot } from '@/contexts/PrimeBotContext';
+import {
+  getOrCreateSessionId,
+  saveInteraction,
+  type PrimeBotInteraction,
+} from '@/services/primebotConversationService';
 
 type Msg = { 
   id: string; 
@@ -58,6 +63,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [userName, setUserName] = useState<string>('Performance Prime User');
   const [userEmail, setUserEmail] = useState<string>('');
   const [hasStartedChat, setHasStartedChat] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Voiceflow rimosso - ora usa solo OpenAI
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
@@ -107,6 +113,16 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         
         console.log('useEffect PRINCIPALE: setUserId, setUserName, setUserEmail');
 
+        // Recupera o crea session ID per la conversazione
+        try {
+          const currentSessionId = await getOrCreateSessionId(id);
+          setSessionId(currentSessionId);
+          console.log('✅ Session ID recuperato/creato:', currentSessionId.substring(0, 8) + '...');
+        } catch (sessionError) {
+          console.warn('⚠️ Errore recupero session ID (continuo comunque):', sessionError);
+          // Continua senza session ID se il recupero fallisce
+        }
+
         // Controlla se è un nuovo utente
         const userOnboarded = localStorage.getItem(`user_onboarded_${id}`);
         const isFirstVisit = !sessionStorage.getItem(`first_visit_${id}`);
@@ -143,6 +159,19 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
       setIsNewUser(false);
     }
 
+    // Assicurati di avere un sessionId (recupera/crea se necessario)
+    let currentSessionId = sessionId;
+    if (!currentSessionId) {
+      try {
+        currentSessionId = await getOrCreateSessionId(userId);
+        setSessionId(currentSessionId);
+        console.log('✅ Session ID creato durante send:', currentSessionId.substring(0, 8) + '...');
+      } catch (sessionError) {
+        console.warn('⚠️ Errore creazione session ID (continuo comunque):', sessionError);
+        // Continua senza session ID se il recupero fallisce
+      }
+    }
+
     try {
       // PRIMA: Controlla se esiste una risposta preimpostata
       const presetResponse = getPrimeBotFallbackResponse(trimmed);
@@ -167,13 +196,36 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         }
         
         setMsgs(m => [...m, message]);
+        
+        // Salva anche le risposte preimpostate su database (se abbiamo sessionId)
+        if (currentSessionId && userId && !userId.startsWith('guest-')) {
+          try {
+            const interaction: PrimeBotInteraction = {
+              user_id: userId,
+              session_id: currentSessionId,
+              message_content: trimmed,
+              bot_response: presetResponse.text,
+              interaction_type: 'text',
+              user_context: {
+                page: window.location.pathname,
+                is_preset_response: true,
+              },
+            };
+            await saveInteraction(interaction);
+            console.log('✅ Risposta preimpostata salvata su database');
+          } catch (saveError) {
+            console.warn('⚠️ Errore salvataggio risposta preimpostata (continuo comunque):', saveError);
+            // Non bloccare il flusso se il salvataggio fallisce
+          }
+        }
+        
         setLoading(false);
         return;
       }
       
       // SECONDO: Se non c'è risposta preimpostata, usa l'AI
       console.log('🤖 Nessuna risposta preimpostata, uso AI');
-      const aiResponse = await getAIResponse(trimmed, userId);
+      const aiResponse = await getAIResponse(trimmed, userId, currentSessionId || undefined);
       
       if (aiResponse.success) {
         setMsgs(m => [

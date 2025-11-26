@@ -1,4 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
+import {
+  getSessionHistory,
+  formatHistoryForOpenAI,
+  saveInteraction,
+  type PrimeBotInteraction,
+} from '@/services/primebotConversationService';
 
 // ⚠️ DEPRECATO: Non usare più VITE_OPENAI_API_KEY direttamente
 // Usare /api/ai-chat endpoint invece
@@ -32,8 +38,16 @@ export const checkMonthlyLimit = async (userId: string) => {
 };
 
 // Chiama OpenAI
-export const getAIResponse = async (message: string, userId: string) => {
-  console.log('🤖 getAIResponse chiamata con:', { message: message.substring(0, 50) + '...', userId: userId.substring(0, 8) + '...' });
+export const getAIResponse = async (
+  message: string,
+  userId: string,
+  sessionId?: string
+) => {
+  console.log('🤖 getAIResponse chiamata con:', { 
+    message: message.substring(0, 50) + '...', 
+    userId: userId.substring(0, 8) + '...',
+    sessionId: sessionId?.substring(0, 8) + '...'
+  });
   
   const limit = await checkMonthlyLimit(userId);
   
@@ -46,17 +60,22 @@ export const getAIResponse = async (message: string, userId: string) => {
   }
 
   try {
-    // Chiama l'API serverless invece di usare chiave diretta
-    const response = await fetch('/api/ai-chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: 'system',
-            content: `Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Prime Pulse", solo "Performance Prime").
+    // Recupera la cronologia conversazione se abbiamo un sessionId
+    let conversationHistory: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [];
+    
+    if (sessionId) {
+      try {
+        const history = await getSessionHistory(userId, sessionId, 10);
+        conversationHistory = formatHistoryForOpenAI(history);
+        console.log(`📚 Cronologia recuperata: ${history.length} messaggi`);
+      } catch (historyError) {
+        console.warn('⚠️ Errore recupero cronologia (continuo senza):', historyError);
+        // Continua senza cronologia se il recupero fallisce
+      }
+    }
+
+    // Prepara i messaggi per OpenAI: system prompt + cronologia + nuovo messaggio
+    const systemPrompt = `Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Prime Pulse", solo "Performance Prime").
 
   REGOLE FONDAMENTALI:
   1. Rispondi SEMPRE in italiano
@@ -114,13 +133,31 @@ export const getAIResponse = async (message: string, userId: string) => {
 
   **💡 Pro Tip:** Alterna esercizi pesanti (french press) con esercizi di isolamento (push-down) per risultati ottimali!
 
-  Ricorda: la costanza in Performance Prime è la chiave del successo! 🚀`
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
+  Ricorda: la costanza in Performance Prime è la chiave del successo! 🚀`;
+
+    // Costruisci array messaggi: system + cronologia + nuovo messaggio
+    const messages = [
+      {
+        role: 'system' as const,
+        content: systemPrompt
+      },
+      ...conversationHistory, // Aggiungi cronologia conversazione
+      {
+        role: 'user' as const,
+        content: message
+      }
+    ];
+
+    console.log(`📤 Invio a OpenAI: ${messages.length} messaggi totali (1 system + ${conversationHistory.length} cronologia + 1 nuovo)`);
+
+    // Chiama l'API serverless invece di usare chiave diretta
+    const response = await fetch('/api/ai-chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages,
         model: 'gpt-3.5-turbo'
       })
     });
@@ -159,9 +196,33 @@ export const getAIResponse = async (message: string, userId: string) => {
 
     console.log(`[AI] User: ${userId.substring(0,8)}... | Uso: ${limit.used + 1}/${MONTHLY_LIMIT} | Costo: $${cost.toFixed(5)}`);
     
+    const botResponse = data.choices[0].message.content;
+
+    // Salva l'interazione su primebot_interactions (se abbiamo sessionId)
+    if (sessionId) {
+      try {
+        const interaction: PrimeBotInteraction = {
+          user_id: userId,
+          session_id: sessionId,
+          message_content: message,
+          bot_response: botResponse,
+          interaction_type: 'text',
+          user_context: {
+            page: window.location.pathname,
+          },
+        };
+
+        await saveInteraction(interaction);
+        console.log('✅ Interazione salvata su primebot_interactions');
+      } catch (saveError) {
+        console.warn('⚠️ Errore salvataggio interazione (continuo comunque):', saveError);
+        // Non bloccare il flusso se il salvataggio fallisce
+      }
+    }
+    
     return {
       success: true,
-      message: data.choices[0].message.content,
+      message: botResponse,
       remaining: limit.remaining - 1
     };
     
