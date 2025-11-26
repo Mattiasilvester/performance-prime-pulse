@@ -5,6 +5,11 @@ import {
   saveInteraction,
   type PrimeBotInteraction,
 } from '@/services/primebotConversationService';
+import {
+  getUserContext,
+  formatUserContextForPrompt,
+  updatePrimeBotPreferences,
+} from '@/services/primebotUserContextService';
 
 // ⚠️ DEPRECATO: Non usare più VITE_OPENAI_API_KEY direttamente
 // Usare /api/ai-chat endpoint invece
@@ -60,6 +65,24 @@ export const getAIResponse = async (
   }
 
   try {
+    // Recupera il contesto utente per personalizzare le risposte
+    let userContextString = '';
+    try {
+      const userContext = await getUserContext(userId);
+      userContextString = formatUserContextForPrompt(userContext);
+      console.log('👤 Contesto utente recuperato:', {
+        nome: userContext.nome,
+        obiettivi: userContext.obiettivi,
+        livello: userContext.livello_fitness_it,
+      });
+      
+      // Aggiorna primebot_preferences con i dati recuperati
+      await updatePrimeBotPreferences(userId, userContext);
+    } catch (contextError) {
+      console.warn('⚠️ Errore recupero contesto utente (continuo senza personalizzazione):', contextError);
+      // Continua senza contesto se il recupero fallisce
+    }
+
     // Recupera la cronologia conversazione se abbiamo un sessionId
     let conversationHistory: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [];
     
@@ -75,7 +98,8 @@ export const getAIResponse = async (
     }
 
     // Prepara i messaggi per OpenAI: system prompt + cronologia + nuovo messaggio
-    const systemPrompt = `Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Prime Pulse", solo "Performance Prime").
+    // Costruisci system prompt base
+    let systemPrompt = `Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Prime Pulse", solo "Performance Prime").
 
   REGOLE FONDAMENTALI:
   1. Rispondi SEMPRE in italiano
@@ -134,6 +158,11 @@ export const getAIResponse = async (
   **💡 Pro Tip:** Alterna esercizi pesanti (french press) con esercizi di isolamento (push-down) per risultati ottimali!
 
   Ricorda: la costanza in Performance Prime è la chiave del successo! 🚀`;
+
+    // Aggiungi contesto utente al system prompt se disponibile
+    if (userContextString) {
+      systemPrompt += `\n\nCONTESTO UTENTE:\n${userContextString}\n\nIMPORTANTE: Personalizza le tue risposte in base ai dati dell'utente sopra. Usa il suo nome quando appropriato e adatta consigli/allenamenti al suo livello, obiettivi e attrezzatura disponibile.`;
+    }
 
     // Costruisci array messaggi: system + cronologia + nuovo messaggio
     const messages = [
