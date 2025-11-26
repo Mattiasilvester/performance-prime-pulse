@@ -2,111 +2,182 @@
 
 ## ✅ Configurazione Completata
 
-Ho configurato tutto per il testing locale! Ecco cosa è stato fatto:
-
-### 📁 File Creati/Modificati:
-- ✅ `server/api-proxy.js` - Server proxy locale per API OpenAI
-- ✅ `vite.config.ts` - Aggiunto proxy per `/api/ai-chat`
-- ✅ `package.json` - Aggiunti script `dev:api` e `dev:all`
-- ✅ `.env` - Aggiunto placeholder per `OPENAI_API_KEY`
+Ho configurato tutto per il testing locale con **Vercel Dev**! Questo simula esattamente l'ambiente di produzione.
 
 ---
 
-## 🔧 CONFIGURAZIONE FINALE RICHIESTA
+## 🔧 INSTALLAZIONE VERCEL CLI
 
-### 1. Aggiungi OPENAI_API_KEY al file `.env`
-
-Apri il file `.env` e sostituisci `your_openai_api_key_here` con la tua chiave API OpenAI:
+### 1. Installa Vercel CLI (se non già installato):
 
 ```bash
-OPENAI_API_KEY=sk-tua-chiave-api-openai-qui
+npm i -g vercel
 ```
 
-**⚠️ IMPORTANTE:** Non committare mai il file `.env` con la chiave reale!
+### 2. Verifica installazione:
+
+```bash
+vercel --version
+```
 
 ---
 
-## 🚀 COMANDI PER AVVIARE L'APP LOCALE
+## 📝 CONFIGURAZIONE VARIABILI D'AMBIENTE
 
-### Opzione 1: Avvio Manuale (2 terminali)
+### Aggiungi OPENAI_API_KEY al file `.env`
 
-**Terminal 1 - Server API Proxy:**
-```bash
-npm run dev:api
-```
-Questo avvia il server proxy su `http://localhost:3001` che gestisce le chiamate a OpenAI.
-
-**Terminal 2 - App Vite:**
-```bash
-npm run dev
-```
-Questo avvia Vite su `http://localhost:8080`.
-
-### Opzione 2: Avvio Automatico (1 comando)
-
-```bash
-npm run dev:all
-```
-Questo avvia sia il server API proxy che Vite contemporaneamente.
-
----
-
-## 🌐 URL PER TESTARE
-
-- **App principale:** http://localhost:8080
-- **API Proxy:** http://localhost:3001/api/ai-chat
-
----
-
-## ✅ VERIFICA CONFIGURAZIONE
-
-### Variabili d'ambiente necessarie nel `.env`:
+Apri il file `.env` e assicurati di avere:
 
 ```bash
 # Supabase (già configurate)
 VITE_SUPABASE_URL=https://kfxoyucatvvcgmqalxsg.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
-# OpenAI (DA AGGIUNGERE)
+# OpenAI (DA CONFIGURARE)
 OPENAI_API_KEY=sk-tua-chiave-api-openai-qui
 ```
+
+**⚠️ IMPORTANTE:** 
+- Non committare mai il file `.env` con la chiave reale!
+- La chiave `OPENAI_API_KEY` viene letta automaticamente da Vercel Dev
+
+---
+
+## 🚀 COMANDO PER AVVIARE L'APP LOCALE
+
+### Usa Vercel Dev (consigliato):
+
+```bash
+npm run dev:vercel
+```
+
+Oppure direttamente:
+
+```bash
+vercel dev
+```
+
+**Cosa fa:**
+- ✅ Avvia Vite per il frontend React
+- ✅ Simula le API routes di Vercel (`/api/*`)
+- ✅ Carica automaticamente le variabili d'ambiente da `.env`
+- ✅ Simula esattamente l'ambiente di produzione
+
+---
+
+## 🌐 URL PER TESTARE
+
+Quando esegui `vercel dev`, vedrai un output simile a:
+
+```
+Vercel CLI 32.x.x
+> Ready! Available at http://localhost:3000
+```
+
+**App principale:** http://localhost:3000 (o la porta indicata da Vercel)
+
+**Nota:** Vercel Dev potrebbe usare una porta diversa da 8080. Controlla l'output del comando.
+
+---
+
+## 🔄 ALTERNATIVE (se vercel dev non funziona)
+
+### Opzione B: Server Proxy Manuale
+
+Se preferisci non usare Vercel Dev, puoi usare il server proxy manuale:
+
+**Terminal 1 - Server API Proxy:**
+```bash
+npm run dev:api
+```
+
+**Terminal 2 - App Vite:**
+```bash
+npm run dev
+```
+
+Poi apri: http://localhost:8080
+
+---
+
+## ✅ VERIFICA CONFIGURAZIONE
+
+### Checklist:
+
+- [ ] Vercel CLI installato (`vercel --version`)
+- [ ] File `.env` presente nella root del progetto
+- [ ] `OPENAI_API_KEY` configurata nel `.env`
+- [ ] `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` configurate
 
 ---
 
 ## 🐛 RISOLUZIONE PROBLEMI
 
-### Problema: "OPENAI_API_KEY not configured"
-**Soluzione:** Aggiungi `OPENAI_API_KEY` al file `.env` e riavvia il server.
+### Problema: "vercel: command not found"
+**Soluzione:** Installa Vercel CLI: `npm i -g vercel`
 
-### Problema: "Cannot connect to API proxy"
-**Soluzione:** Assicurati che `npm run dev:api` sia in esecuzione prima di avviare Vite.
+### Problema: "OPENAI_API_KEY not configured"
+**Soluzione:** 
+1. Aggiungi `OPENAI_API_KEY` al file `.env`
+2. Riavvia `vercel dev`
+3. Verifica che il file `.env` sia nella root del progetto
+
+### Problema: "Port already in use"
+**Soluzione:** 
+- Vercel Dev userà automaticamente una porta disponibile
+- Oppure termina il processo che usa la porta: `lsof -ti:3000 | xargs kill`
+
+### Problema: "API route returns 404"
+**Soluzione:** 
+- Assicurati di usare `vercel dev` e non `npm run dev`
+- Verifica che i file in `/api` siano corretti
+- Controlla i log di Vercel Dev per errori
 
 ### Problema: "CORS error"
-**Soluzione:** Il proxy è configurato per `http://localhost:8080`. Se usi una porta diversa, modifica `ALLOW_ORIGIN` in `server/api-proxy.js`.
-
-### Problema: Porta 8080 già in uso
-**Soluzione:** Modifica la porta in `vite.config.ts` (riga 49) o termina il processo che usa la porta 8080.
+**Soluzione:** 
+- Con `vercel dev`, CORS è gestito automaticamente
+- Se usi il proxy manuale, verifica `ALLOW_ORIGIN` in `server/api-proxy.js`
 
 ---
 
 ## 📝 NOTE IMPORTANTI
 
-1. **Server API Proxy:** Deve essere sempre in esecuzione quando testi PrimeBot localmente
-2. **Hot Reload:** Vite supporta hot reload automatico per le modifiche al codice
-3. **Log:** I log del server API proxy appaiono nel terminal dove hai eseguito `npm run dev:api`
-4. **Produzione:** In produzione su Vercel, l'endpoint `/api/ai-chat` usa le serverless functions di Vercel
+1. **Vercel Dev vs npm run dev:**
+   - `npm run dev` → Solo frontend, API routes NON funzionano
+   - `vercel dev` → Frontend + API routes funzionanti ✅
+
+2. **Hot Reload:**
+   - Vercel Dev supporta hot reload per modifiche al codice
+   - Le modifiche alle API routes richiedono riavvio
+
+3. **Variabili d'ambiente:**
+   - Vercel Dev legge automaticamente da `.env`
+   - Le variabili `VITE_*` sono disponibili nel frontend
+   - Le variabili senza `VITE_` (come `OPENAI_API_KEY`) sono disponibili solo server-side
+
+4. **Produzione:**
+   - In produzione su Vercel, tutto funziona automaticamente
+   - Le API routes sono deployate come serverless functions
 
 ---
 
 ## 🎯 TEST RAPIDO
 
-1. Aggiungi `OPENAI_API_KEY` al `.env`
-2. Esegui `npm run dev:all`
-3. Apri http://localhost:8080
-4. Vai su PrimeBot e chiedi "mi crei un piano di allenamento"
-5. Verifica che funzioni senza errori!
+1. Installa Vercel CLI: `npm i -g vercel`
+2. Aggiungi `OPENAI_API_KEY` al `.env`
+3. Esegui: `npm run dev:vercel`
+4. Apri l'URL mostrato da Vercel (es. http://localhost:3000)
+5. Vai su PrimeBot e chiedi "mi crei un piano di allenamento"
+6. Verifica che funzioni senza errori!
 
 ---
 
-**Pronto per testare! 🚀**
+## 📚 DOCUMENTAZIONE VERCEL DEV
 
+Per maggiori informazioni:
+- https://vercel.com/docs/cli/dev
+- https://vercel.com/docs/functions/runtimes/node-js
+
+---
+
+**Pronto per testare con Vercel Dev! 🚀**
