@@ -4,6 +4,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 // Chiave OpenAI letta da environment server-side (sicura!)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+// Verifica che la chiave API sia configurata
+if (!OPENAI_API_KEY) {
+  console.error('❌ ERRORE CRITICO: OPENAI_API_KEY non configurata nelle variabili d\'ambiente!');
+  console.error('💡 Configura OPENAI_API_KEY su Vercel Dashboard > Settings > Environment Variables');
+}
+
 // CORS headers
 function setCorsHeaders(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -29,6 +35,15 @@ export default async function handler(
   }
 
   try {
+    // Verifica che la chiave API sia configurata
+    if (!OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY non configurata');
+      return res.status(500).json({ 
+        error: 'OpenAI API key not configured',
+        message: 'Please configure OPENAI_API_KEY in Vercel environment variables'
+      });
+    }
+
     const { messages, model = 'gpt-3.5-turbo' } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
