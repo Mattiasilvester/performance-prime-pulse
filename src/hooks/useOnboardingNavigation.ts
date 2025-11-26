@@ -5,13 +5,14 @@ import { useOnboardingStore } from '@/stores/onboardingStore';
 import type { OnboardingData } from '@/stores/onboardingStore';
 import { onboardingService } from '@/services/onboardingService';
 
-type OnboardingStep = 1 | 2 | 3 | 4;
+type OnboardingStep = 1 | 2 | 3 | 4 | 5;
 
 const STEP_NAMES: Record<OnboardingStep, string> = {
   1: 'obiettivo',
   2: 'esperienza',
   3: 'preferenze',
   4: 'personalizzazione',
+  5: 'limitazioni_fisiche',
 };
 
 type StepPayloads = {
@@ -19,6 +20,7 @@ type StepPayloads = {
   2: Pick<OnboardingData, 'livelloEsperienza' | 'giorniSettimana'>;
   3: Pick<OnboardingData, 'luoghiAllenamento' | 'tempoSessione' | 'possiedeAttrezzatura' | 'attrezzi' | 'altriAttrezzi'>;
   4: Pick<OnboardingData, 'nome' | 'eta' | 'peso' | 'altezza' | 'consigliNutrizionali'>;
+  5: Pick<OnboardingData, 'haLimitazioni' | 'limitazioniFisiche' | 'zoneEvitare' | 'condizioniMediche'>;
 };
 
 type StepConfigMap = {
@@ -99,6 +101,18 @@ export function useOnboardingNavigation(isEditMode: boolean = false) {
       }),
       save: async (payload) => {
         await saveStep4ToDatabase(payload);
+      },
+    },
+    5: {
+      shouldAutoAdvance: false,
+      collectPayload: () => ({
+        haLimitazioni: data.haLimitazioni,
+        limitazioniFisiche: data.limitazioniFisiche,
+        zoneEvitare: data.zoneEvitare,
+        condizioniMediche: data.condizioniMediche,
+      }),
+      save: async (payload) => {
+        await saveStep5ToDatabase(payload);
       },
     },
   };
@@ -230,10 +244,10 @@ export function useOnboardingNavigation(isEditMode: boolean = false) {
     }
   }, [saveAnalyticsEvent]);
 
-  // ✅ FIX: Gestisce TUTTI gli step incluso Step 4→5 (completion)
+  // ✅ FIX: Gestisce TUTTI gli step incluso Step 4→5, 5→6 (completion)
   const handleNext = useCallback(() => {
-    // Gestisce Step 0→1, 1→2, 2→3, 3→4, 4→5
-    if (currentStep >= 0 && currentStep < 5) {
+    // Gestisce Step 0→1, 1→2, 2→3, 3→4, 4→5, 5→6
+    if (currentStep >= 0 && currentStep < 6) {
       const nextStepNum = currentStep + 1;
       
       console.log(`📤 Advancing from step ${currentStep} to step ${nextStepNum}`);
@@ -248,7 +262,7 @@ export function useOnboardingNavigation(isEditMode: boolean = false) {
         nextStep();
       }
     } else {
-      console.log(`⚠️ Cannot advance: currentStep is ${currentStep} (must be 0-4)`);
+      console.log(`⚠️ Cannot advance: currentStep is ${currentStep} (must be 0-5)`);
     }
   }, [currentStep, isEditMode, nextStep, setSearchParams]);
 
@@ -470,12 +484,44 @@ async function saveStep4ToDatabase(payload: StepPayloads[4]) {
       consigli_nutrizionali: payload.consigliNutrizionali,
     });
 
-    // ✅ IMPORTANTE: Marca onboarding come completato
-    await onboardingService.markOnboardingComplete(user.id);
+    // ✅ NOTA: NON marcare come completo qui - Step 5 lo farà
 
-    console.log('Step 4: salvato in tabella unificata e marcato come completo');
+    console.log('Step 4: salvato in tabella unificata');
   } catch (error) {
     console.error('Step 4: errore salvataggio tabella unificata:', error);
+    // Non bloccare il flusso se fallisce
+  }
+}
+
+async function saveStep5ToDatabase(payload: StepPayloads[5]) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    console.log('Step 5: utente non autenticato, skip salvataggio');
+    return;
+  }
+
+  console.log('User ID:', user.id);
+  console.log('Ha limitazioni:', payload.haLimitazioni);
+  console.log('Limitazioni fisiche:', payload.limitazioniFisiche);
+  console.log('Zone da evitare:', payload.zoneEvitare);
+  console.log('Condizioni mediche:', payload.condizioniMediche);
+
+  // ✅ SALVATAGGIO TABELLA UNIFICATA + MARK AS COMPLETE
+  try {
+    await onboardingService.saveOnboardingData(user.id, {
+      ha_limitazioni: payload.haLimitazioni ?? null,
+      limitazioni_fisiche: payload.limitazioniFisiche || null,
+      zone_evitare: payload.zoneEvitare || [],
+      condizioni_mediche: payload.condizioniMediche || null,
+      limitazioni_compilato_at: new Date().toISOString(),
+    });
+
+    // ✅ IMPORTANTE: Marca onboarding come completato (Step 5 è l'ultimo)
+    await onboardingService.markOnboardingComplete(user.id);
+
+    console.log('Step 5: salvato in tabella unificata e marcato come completo');
+  } catch (error) {
+    console.error('Step 5: errore salvataggio tabella unificata:', error);
     // Non bloccare il flusso se fallisce
   }
 }
