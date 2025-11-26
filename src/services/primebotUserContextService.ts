@@ -401,8 +401,14 @@ export interface SmartLimitationsResult {
  * Decide se PrimeBot deve chiedere o può usare i dati salvati
  */
 export async function getSmartLimitationsCheck(userId: string): Promise<SmartLimitationsResult> {
+  console.log('🔍 getSmartLimitationsCheck INIZIO per userId:', userId.substring(0, 8) + '...');
   try {
+    console.log('📡 Chiamando loadOnboardingData...');
     const onboardingData = await onboardingService.loadOnboardingData(userId);
+    console.log('✅ loadOnboardingData completato:', {
+      exists: !!onboardingData,
+      ha_limitazioni: onboardingData?.ha_limitazioni,
+    });
     
     // IMPORTANTE: Usa ?? null per gestire anche undefined
     const hasLimitazioni = onboardingData?.ha_limitazioni ?? null;
