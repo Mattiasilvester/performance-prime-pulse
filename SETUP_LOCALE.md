@@ -30,9 +30,29 @@ OPENAI_API_KEY=sk-tua-chiave-api-openai-qui
 
 ## 🚀 COMANDO PER AVVIARE L'APP LOCALE
 
-### ⚡ SOLUZIONE CONSIGLIATA: Server Proxy Manuale
+### ⚡ OPZIONE 1: Un Solo Terminale (CONSIGLIATO)
 
-**Terminal 1 - Server API Proxy (AVVIA PRIMA):**
+**Un solo comando avvia tutto:**
+```bash
+npm run dev:all
+```
+
+Questo avvia automaticamente:
+- ✅ Server API Proxy su `localhost:3001`
+- ✅ App Vite su `localhost:8080`
+
+**Vantaggi:**
+- Un solo terminale da gestire
+- Tutto si avvia insieme
+- Più semplice e veloce
+
+---
+
+### 🔄 OPZIONE 2: Due Terminali Separati
+
+Se preferisci vedere i log separati:
+
+**Terminal 1 - Server API Proxy:**
 ```bash
 npm run dev:api
 ```
