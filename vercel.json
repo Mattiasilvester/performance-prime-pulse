@@ -2,6 +2,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
   "functions": {
     "api/supabase-proxy.ts": {
       "maxDuration": 30
@@ -14,6 +16,10 @@
     {
       "source": "/api/supabase-proxy/(.*)",
       "destination": "/api/supabase-proxy"
+    },
+    {
+      "source": "/api/ai-chat",
+      "destination": "/api/ai-chat"
     },
     {
       "source": "/(.*)",
