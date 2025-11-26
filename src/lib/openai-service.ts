@@ -371,13 +371,16 @@ export const getStructuredWorkoutPlan = async (
     
     console.log('🔍 getStructuredWorkoutPlan - limitationsCheck:', {
       needsToAsk: limitationsCheck.needsToAsk,
+      needsToAskType: typeof limitationsCheck.needsToAsk,
       hasExistingLimitations: limitationsCheck.hasExistingLimitations,
       suggestedQuestion: limitationsCheck.suggestedQuestion?.substring(0, 50) + '...',
+      suggestedQuestionExists: !!limitationsCheck.suggestedQuestion,
     });
     
     // SE needsToAsk === true, ritorna domanda invece di generare piano
-    if (limitationsCheck.needsToAsk && limitationsCheck.suggestedQuestion) {
-      console.log('✅ Ritorno domanda invece di generare piano');
+    // IMPORTANTE: Controllo esplicito per true (non solo truthy)
+    if (limitationsCheck.needsToAsk === true && limitationsCheck.suggestedQuestion) {
+      console.log('✅ Ritorno domanda invece di generare piano - needsToAsk è TRUE');
       return {
         success: false,
         type: 'question',
@@ -387,7 +390,7 @@ export const getStructuredWorkoutPlan = async (
       };
     }
     
-    console.log('⚠️ needsToAsk è false, procedo con generazione piano');
+    console.log('⚠️ needsToAsk è false/null/undefined, procedo con generazione piano');
     
     // Recupera contesto utente
     const userContext = await getUserContext(userId);
