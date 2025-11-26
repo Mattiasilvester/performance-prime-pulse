@@ -467,11 +467,18 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
       }
     }
     // CASO C: ha_limitazioni === null O undefined (mai compilato)
-    else {
-      // Mai chiesto, chiedi sempre
+    // IMPORTANTE: Anche se ha_limitazioni === false ma limitazioni_compilato_at è null, chiedi comunque
+    else if (hasLimitazioni === null || hasLimitazioni === undefined || limitazioniCompilatoAt === null) {
+      // Mai chiesto o mai compilato, chiedi sempre
       suggestedQuestion = `Prima di creare il tuo piano personalizzato, hai dolori, infortuni o limitazioni fisiche da considerare? Questo mi aiuta a creare un programma sicuro per te! 💪`;
       needsToAsk = true;
-      console.log('✅ CASO C: ha_limitazioni è null/undefined, imposto needsToAsk = true');
+      console.log('✅ CASO C: ha_limitazioni è null/undefined O limitazioni_compilato_at è null, imposto needsToAsk = true');
+    }
+    // CASO D: Fallback (non dovrebbe mai arrivare qui)
+    else {
+      console.warn('⚠️ CASO D (FALLBACK): Situazione non prevista, chiedo comunque per sicurezza');
+      suggestedQuestion = `Prima di creare il tuo piano personalizzato, hai dolori, infortuni o limitazioni fisiche da considerare? Questo mi aiuta a creare un programma sicuro per te! 💪`;
+      needsToAsk = true;
     }
     
     console.log('🔍 getSmartLimitationsCheck - risultato finale:', {
