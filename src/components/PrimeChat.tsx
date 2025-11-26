@@ -16,6 +16,9 @@ import {
 } from '@/services/primebotActionsService';
 import { ActionButton } from '@/components/primebot/ActionButton';
 import { toast } from 'sonner';
+import { getStructuredWorkoutPlan } from '@/lib/openai-service';
+import { type StructuredWorkoutPlan } from '@/services/workoutPlanGenerator';
+import { HealthDisclaimer } from '@/components/primebot/HealthDisclaimer';
 
 export interface ParsedAction {
   type: ActionType;
@@ -34,10 +37,33 @@ type Msg = {
   };
   isDisclaimer?: boolean;
   actions?: ParsedAction[]; // Azioni estratte dalla risposta AI
+  workoutPlan?: StructuredWorkoutPlan; // Piano allenamento strutturato
 };
 
 interface PrimeChatProps {
   isModal?: boolean;
+}
+
+/**
+ * Rileva se la richiesta è per un piano di allenamento
+ */
+function isWorkoutPlanRequest(text: string): boolean {
+  const keywords = [
+    'piano',
+    'programma',
+    'scheda',
+    'allenamento per',
+    'creami',
+    'fammi',
+    'genera',
+    'crea un piano',
+    'fammi un piano',
+    'mi serve un piano',
+    'voglio un piano',
+  ];
+  
+  const textLower = text.toLowerCase();
+  return keywords.some(keyword => textLower.includes(keyword));
 }
 
 /**
@@ -113,6 +139,9 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [userEmail, setUserEmail] = useState<string>('');
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<any>(null);
+  const [showPlanDisclaimer, setShowPlanDisclaimer] = useState(false);
+  const [awaitingLimitationsResponse, setAwaitingLimitationsResponse] = useState(false);
 
   // Voiceflow rimosso - ora usa solo OpenAI
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
@@ -222,7 +251,85 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     }
 
     try {
-      // PRIMA: Controlla se esiste una risposta preimpostata
+      // PRIMA: Se siamo in attesa di risposta limitazioni, gestiscila
+      if (awaitingLimitationsResponse) {
+        console.log('💬 Risposta limitazioni ricevuta:', trimmed);
+        setAwaitingLimitationsResponse(false);
+        
+        const { parseAndSaveLimitationsFromChat } = await import('@/services/primebotUserContextService');
+        const result = await parseAndSaveLimitationsFromChat(userId, trimmed);
+        
+        // Risposta empatica basata sul risultato
+        let empathyMessage = '';
+        if (!result.hasLimitations) {
+          empathyMessage = 'Perfetto! Creo subito il tuo piano personalizzato 💪';
+        } else {
+          empathyMessage = `Grazie per avermelo detto! Terrò conto di questo e creerò un piano sicuro per te. Ti consiglio anche di consultare un professionista per una valutazione specifica.`;
+        }
+        
+        // Mostra messaggio empatico
+        setMsgs(m => [
+          ...m,
+          {
+            id: crypto.randomUUID(),
+            role: 'bot' as const,
+            text: empathyMessage,
+          },
+        ]);
+        
+        // Rigenera il piano con i dati aggiornati
+        const planResponse = await getStructuredWorkoutPlan(trimmed, userId, currentSessionId || undefined);
+        
+        if (planResponse.success && planResponse.plan) {
+          setPendingPlan({
+            plan: planResponse.plan,
+            actions: [
+              {
+                type: 'save_workout',
+                label: 'Salva questo piano',
+                payload: {
+                  name: planResponse.plan.name,
+                  workout_type: planResponse.plan.workout_type,
+                  exercises: planResponse.plan.exercises.map((ex: any) => ({
+                    name: ex.name,
+                    sets: ex.sets,
+                    reps: ex.reps,
+                    rest_seconds: ex.rest_seconds,
+                    notes: ex.notes,
+                  })),
+                  duration: planResponse.plan.duration_minutes,
+                },
+              },
+            ],
+          });
+          setShowPlanDisclaimer(true);
+        } else if (planResponse.type === 'question') {
+          // Se ritorna ancora una domanda, mostra la domanda
+          setMsgs(m => [
+            ...m,
+            {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.question || 'Errore nella generazione del piano.',
+            },
+          ]);
+          setAwaitingLimitationsResponse(true);
+        } else {
+          setMsgs(m => [
+            ...m,
+            {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.message || 'Errore nella generazione del piano. Riprova!',
+            },
+          ]);
+        }
+        
+        setLoading(false);
+        return;
+      }
+      
+      // SECONDO: Controlla se esiste una risposta preimpostata
       const presetResponse = getPrimeBotFallbackResponse(trimmed);
       
       if (presetResponse) {
@@ -272,21 +379,73 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         return;
       }
       
-      // SECONDO: Se non c'è risposta preimpostata, usa l'AI
-      console.log('🤖 Nessuna risposta preimpostata, uso AI');
-      const aiResponse = await getAIResponse(trimmed, userId, currentSessionId || undefined);
-      
-      // Parsa azioni dalla risposta AI
-      const { cleanText, actions } = parseActionsFromText(aiResponse.message);
-      
-      const botMessage: Msg = {
-        id: crypto.randomUUID(),
-        role: 'bot' as const,
-        text: cleanText,
-        actions: actions.length > 0 ? actions : undefined,
-      };
-      
-      setMsgs(m => [...m, botMessage]);
+      // TERZO: Controlla se è una richiesta di piano allenamento
+      if (isWorkoutPlanRequest(trimmed)) {
+        console.log('🏋️ Richiesta piano allenamento rilevata, uso getStructuredWorkoutPlan');
+        const planResponse = await getStructuredWorkoutPlan(trimmed, userId, currentSessionId || undefined);
+        
+        // Se ritorna una domanda invece di un piano
+        if (planResponse.type === 'question' && planResponse.question) {
+          setMsgs(m => [
+            ...m,
+            {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.question,
+            },
+          ]);
+          setAwaitingLimitationsResponse(true);
+        } else if (planResponse.success && planResponse.plan) {
+          // NON mostrare subito il piano - salva in pendingPlan e mostra disclaimer
+          setPendingPlan({
+            plan: planResponse.plan,
+            actions: [
+              {
+                type: 'save_workout',
+                label: 'Salva questo piano',
+                payload: {
+                  name: planResponse.plan.name,
+                  workout_type: planResponse.plan.workout_type,
+                  exercises: planResponse.plan.exercises.map((ex: any) => ({
+                    name: ex.name,
+                    sets: ex.sets,
+                    reps: ex.reps,
+                    rest_seconds: ex.rest_seconds,
+                    notes: ex.notes,
+                  })),
+                  duration: planResponse.plan.duration_minutes,
+                },
+              },
+            ],
+          });
+          setShowPlanDisclaimer(true);
+        } else {
+          setMsgs(m => [
+            ...m,
+            {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.message || 'Errore nella generazione del piano. Riprova!',
+            },
+          ]);
+        }
+      } else {
+        // SECONDO: Se non c'è risposta preimpostata, usa l'AI normale
+        console.log('🤖 Nessuna risposta preimpostata, uso AI');
+        const aiResponse = await getAIResponse(trimmed, userId, currentSessionId || undefined);
+        
+        // Parsa azioni dalla risposta AI
+        const { cleanText, actions } = parseActionsFromText(aiResponse.message);
+        
+        const botMessage: Msg = {
+          id: crypto.randomUUID(),
+          role: 'bot' as const,
+          text: cleanText,
+          actions: actions.length > 0 ? actions : undefined,
+        };
+        
+        setMsgs(m => [...m, botMessage]);
+      }
     } catch (e) {
       console.error('Errore chiamata OpenAI:', e);
       setMsgs(m => [
@@ -357,7 +516,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                 {
                   id: 'disclaimer',
                   role: 'bot' as const,
-                  text: 'Disclaimer: Questo è un assistente AI per scopi informativi. Consulta sempre un professionista per consigli medici specifici.',
+                  text: 'PrimeBot è un assistente AI per supporto informativo e NON sostituisce professionisti qualificati. Per programmi personalizzati o se hai dolori/patologie, consulta un personal trainer, fisioterapista o medico. Trova un professionista su Performance Prime!',
                   isDisclaimer: true
                 },
                 {
@@ -437,6 +596,33 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         {/* Area Messaggi - con spazio sopra */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto">
           <div className="px-4 py-16 space-y-4">
+            {/* Health Disclaimer prima del piano */}
+            {showPlanDisclaimer && pendingPlan && (
+              <div className="max-w-[85%] mr-auto mb-4">
+                <HealthDisclaimer
+                  userId={userId}
+                  disclaimerType="workout_plan"
+                  onAccept={() => {
+                    // Quando accetta, mostra il piano
+                    setShowPlanDisclaimer(false);
+                    const botMessage: Msg = {
+                      id: crypto.randomUUID(),
+                      role: 'bot' as const,
+                      text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
+                      workoutPlan: pendingPlan.plan,
+                      actions: pendingPlan.actions,
+                    };
+                    setMsgs(m => [...m, botMessage]);
+                    setPendingPlan(null);
+                  }}
+                  context={{
+                    plan_name: pendingPlan.plan.name,
+                    workout_type: pendingPlan.plan.workout_type,
+                  }}
+                  userHasLimitations={false}
+                />
+              </div>
+            )}
             {msgs.map(m => (
               <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
                 <div className={`px-4 py-3 rounded-2xl ${
@@ -464,6 +650,70 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                       {m.navigation.label}
                       <span>→</span>
                     </button>
+                  )}
+                  
+                  {/* Card Piano Allenamento */}
+                  {m.role === 'bot' && m.workoutPlan && (
+                    <div className="mt-4 bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-[#EEBA2B] rounded-xl p-4">
+                      <h3 className="text-xl font-bold text-[#EEBA2B] mb-2">
+                        {m.workoutPlan.name}
+                      </h3>
+                      {m.workoutPlan.description && (
+                        <p className="text-gray-300 text-sm mb-3">{m.workoutPlan.description}</p>
+                      )}
+                      
+                      {/* Info Piano */}
+                      <div className="flex gap-4 mb-4 text-sm text-gray-400">
+                        <span>⏱️ {m.workoutPlan.duration_minutes} min</span>
+                        <span>💪 {m.workoutPlan.exercises.length} esercizi</span>
+                        <span>📊 {m.workoutPlan.difficulty}</span>
+                      </div>
+                      
+                      {/* Lista Esercizi */}
+                      <div className="space-y-2 mb-4">
+                        {m.workoutPlan.exercises.map((ex, idx) => (
+                          <div key={idx} className="bg-gray-700/50 rounded-lg p-3 flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[#EEBA2B] font-semibold">
+                                  {ex.exercise_type === 'compound' ? '🏋️' : 
+                                   ex.exercise_type === 'compound_secondary' ? '💪' :
+                                   ex.exercise_type === 'isolation' ? '🎯' :
+                                   ex.exercise_type === 'isolation_light' ? '✨' : '⏱️'}
+                                </span>
+                                <span className="text-white font-medium">{ex.name}</span>
+                              </div>
+                              <div className="text-gray-300 text-sm">
+                                <span className="font-semibold text-[#EEBA2B]">{ex.sets}x{ex.reps}</span>
+                                {' • '}
+                                <span>Recupero: {ex.rest_seconds}s</span>
+                              </div>
+                              {ex.notes && (
+                                <p className="text-gray-400 text-xs mt-1 italic">{ex.notes}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Warmup e Cooldown */}
+                      {(m.workoutPlan.warmup || m.workoutPlan.cooldown) && (
+                        <div className="space-y-2 mb-4 text-sm">
+                          {m.workoutPlan.warmup && (
+                            <div className="bg-blue-900/30 rounded-lg p-2">
+                              <span className="text-blue-300 font-semibold">🔥 Warmup:</span>
+                              <p className="text-gray-300 mt-1">{m.workoutPlan.warmup}</p>
+                            </div>
+                          )}
+                          {m.workoutPlan.cooldown && (
+                            <div className="bg-green-900/30 rounded-lg p-2">
+                              <span className="text-green-300 font-semibold">🧘 Cooldown:</span>
+                              <p className="text-gray-300 mt-1">{m.workoutPlan.cooldown}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   )}
                   
                   {/* Bottoni azioni PrimeBot */}

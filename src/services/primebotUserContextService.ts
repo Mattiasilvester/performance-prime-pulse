@@ -321,3 +321,253 @@ export function formatUserContextForPrompt(context: UserContext): string {
   return parts.join('\n');
 }
 
+/**
+ * Verifica se l'utente ha compilato i dati salute/limitazioni
+ */
+export async function checkMissingHealthData(userId: string): Promise<{
+  hasLimitazioni: boolean | null;
+  needsToAsk: boolean;
+}> {
+  try {
+    const onboardingData = await onboardingService.loadOnboardingData(userId);
+    
+    return {
+      hasLimitazioni: onboardingData?.ha_limitazioni ?? null,
+      needsToAsk: onboardingData?.ha_limitazioni === null || onboardingData?.ha_limitazioni === undefined,
+    };
+  } catch (error) {
+    console.error('❌ Errore verifica dati salute:', error);
+    return {
+      hasLimitazioni: null,
+      needsToAsk: true,
+    };
+  }
+}
+
+/**
+ * Aggiorna limitazioni fisiche dell'utente
+ */
+export async function updateHealthLimitations(
+  userId: string,
+  hasLimitazioni: boolean,
+  limitazioniFisiche?: string,
+  zoneEvitare?: string[]
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('user_onboarding_responses')
+      .upsert(
+        {
+          user_id: userId,
+          ha_limitazioni: hasLimitazioni,
+          limitazioni_fisiche: limitazioniFisiche || null,
+          zone_evitare: zoneEvitare || [],
+          limitazioni_compilato_at: new Date().toISOString(),
+          last_modified_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'user_id',
+        }
+      );
+
+    if (error) {
+      console.error('❌ Errore aggiornamento limitazioni:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('❌ Errore completo aggiornamento limitazioni:', error);
+    return false;
+  }
+}
+
+/**
+ * Risultato del controllo intelligente limitazioni
+ */
+export interface SmartLimitationsResult {
+  hasExistingLimitations: boolean;      // true se ha indicato limitazioni
+  limitations: string | null;            // testo delle limitazioni
+  zones: string[] | null;                // zone da evitare
+  medicalConditions: string | null;      // condizioni mediche
+  lastUpdated: Date | null;              // quando ha compilato
+  daysSinceUpdate: number | null;        // giorni passati dall'ultimo update
+  needsToAsk: boolean;                   // true se PrimeBot deve chiedere
+  suggestedQuestion: string | null;      // domanda da fare (null = non chiedere)
+}
+
+/**
+ * Controllo intelligente delle limitazioni fisiche dell'utente
+ * Decide se PrimeBot deve chiedere o può usare i dati salvati
+ */
+export async function getSmartLimitationsCheck(userId: string): Promise<SmartLimitationsResult> {
+  try {
+    const onboardingData = await onboardingService.loadOnboardingData(userId);
+    
+    const hasLimitazioni = onboardingData?.ha_limitazioni ?? null;
+    const limitazioniFisiche = onboardingData?.limitazioni_fisiche || null;
+    const zoneEvitare = onboardingData?.zone_evitare || null;
+    const condizioniMediche = onboardingData?.condizioni_mediche || null;
+    const limitazioniCompilatoAt = onboardingData?.limitazioni_compilato_at 
+      ? new Date(onboardingData.limitazioni_compilato_at)
+      : null;
+    
+    // Calcola giorni dall'ultimo update
+    let daysSinceUpdate: number | null = null;
+    if (limitazioniCompilatoAt) {
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - limitazioniCompilatoAt.getTime());
+      daysSinceUpdate = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    }
+    
+    // DECISIONE (in ordine di priorità)
+    let needsToAsk = false;
+    let suggestedQuestion: string | null = null;
+    
+    // CASO A: ha_limitazioni === true E limitazioni_fisiche non vuoto
+    if (hasLimitazioni === true && limitazioniFisiche && limitazioniFisiche.trim().length > 0) {
+      if (daysSinceUpdate !== null && daysSinceUpdate > 30) {
+        // Passati più di 30 giorni, chiedi aggiornamento
+        suggestedQuestion = `L'ultima volta mi avevi parlato di ${limitazioniFisiche}. Come sta andando? Il problema persiste o è migliorato?`;
+        needsToAsk = true;
+      } else {
+        // Meno di 30 giorni, usa i dati salvati
+        suggestedQuestion = null;
+        needsToAsk = false;
+      }
+    }
+    // CASO B: ha_limitazioni === false
+    else if (hasLimitazioni === false) {
+      if (daysSinceUpdate !== null && daysSinceUpdate > 60) {
+        // Passati più di 60 giorni, chiedi se qualcosa è cambiato
+        suggestedQuestion = `È passato un po' di tempo! Hai sviluppato dolori o limitazioni fisiche da considerare per il tuo piano?`;
+        needsToAsk = true;
+      } else {
+        // Meno di 60 giorni, procedi senza chiedere
+        suggestedQuestion = null;
+        needsToAsk = false;
+      }
+    }
+    // CASO C: ha_limitazioni === null (mai compilato)
+    else {
+      // Mai chiesto, chiedi sempre
+      suggestedQuestion = `Prima di creare il tuo piano personalizzato, hai dolori, infortuni o limitazioni fisiche da considerare? Questo mi aiuta a creare un programma sicuro per te! 💪`;
+      needsToAsk = true;
+    }
+    
+    return {
+      hasExistingLimitations: hasLimitazioni === true,
+      limitations: limitazioniFisiche,
+      zones: zoneEvitare,
+      medicalConditions: condizioniMediche,
+      lastUpdated: limitazioniCompilatoAt,
+      daysSinceUpdate,
+      needsToAsk,
+      suggestedQuestion,
+    };
+  } catch (error) {
+    console.error('❌ Errore controllo intelligente limitazioni:', error);
+    // In caso di errore, chiedi sempre per sicurezza
+    return {
+      hasExistingLimitations: false,
+      limitations: null,
+      zones: null,
+      medicalConditions: null,
+      lastUpdated: null,
+      daysSinceUpdate: null,
+      needsToAsk: true,
+      suggestedQuestion: `Prima di creare il tuo piano personalizzato, hai dolori, infortuni o limitazioni fisiche da considerare? Questo mi aiuta a creare un programma sicuro per te! 💪`,
+    };
+  }
+}
+
+/**
+ * Parsa la risposta dell'utente sulle limitazioni e la salva nel database
+ */
+export async function parseAndSaveLimitationsFromChat(
+  userId: string,
+  userMessage: string
+): Promise<{ hasLimitations: boolean; parsed: string | null }> {
+  try {
+    const messageLower = userMessage.toLowerCase().trim();
+    
+    // Keywords per "NESSUNA limitazione"
+    const noLimitationKeywords = [
+      'no',
+      'nessuna',
+      'niente',
+      'sto bene',
+      'tutto ok',
+      'tutto a posto',
+      'nessun problema',
+      'zero',
+      'non ho',
+      'non ho nessun',
+      'non ho niente',
+      'tutto perfetto',
+      'niente di niente',
+      'tutto normale',
+    ];
+    
+    // Controlla se il messaggio contiene principalmente keywords negative
+    const hasNoKeywords = noLimitationKeywords.some(keyword => 
+      messageLower.includes(keyword)
+    );
+    
+    // Se contiene keywords negative E il messaggio è corto (< 20 caratteri), probabilmente dice "no"
+    const isShortNegative = hasNoKeywords && messageLower.length < 20;
+    
+    // Se contiene keywords negative E non contiene parole che indicano problemi
+    const problemKeywords = ['dolore', 'male', 'problema', 'infortunio', 'limitazione', 'schiena', 'ginocchio', 'spalla'];
+    const hasProblemKeywords = problemKeywords.some(keyword => messageLower.includes(keyword));
+    
+    let hasLimitations: boolean;
+    let parsed: string | null;
+    
+    if (isShortNegative || (hasNoKeywords && !hasProblemKeywords)) {
+      // Probabilmente dice "no limitazioni"
+      hasLimitations = false;
+      parsed = null;
+    } else {
+      // Ha limitazioni, salva il testo
+      hasLimitations = true;
+      parsed = userMessage.trim();
+    }
+    
+    // Salva nel database
+    const { error } = await supabase
+      .from('user_onboarding_responses')
+      .upsert(
+        {
+          user_id: userId,
+          ha_limitazioni: hasLimitations,
+          limitazioni_fisiche: parsed,
+          limitazioni_compilato_at: new Date().toISOString(),
+          last_modified_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'user_id',
+        }
+      );
+    
+    if (error) {
+      console.error('❌ Errore salvataggio limitazioni da chat:', error);
+      // Ritorna comunque il risultato anche se il salvataggio fallisce
+    }
+    
+    console.log('✅ Limitazioni parsate e salvate:', { hasLimitations, parsed });
+    
+    return {
+      hasLimitations,
+      parsed,
+    };
+  } catch (error) {
+    console.error('❌ Errore parsing limitazioni da chat:', error);
+    // In caso di errore, assume che abbia limitazioni per sicurezza
+    return {
+      hasLimitations: true,
+      parsed: userMessage.trim(),
+    };
+  }
+}
+

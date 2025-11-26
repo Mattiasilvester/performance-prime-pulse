@@ -18,6 +18,13 @@ export interface OnboardingResponse {
   peso?: number | null;
   altezza?: number | null;
   consigli_nutrizionali?: boolean | null;
+  // Nuovi campi limitazioni fisiche e salute
+  ha_limitazioni?: boolean | null;
+  limitazioni_fisiche?: string | null;
+  zone_evitare?: string[] | null;
+  condizioni_mediche?: string | null;
+  allergie_alimentari?: string[] | null;
+  limitazioni_compilato_at?: string | null;
   onboarding_completed_at?: string | null;
   last_modified_at?: string | null;
   created_at?: string | null;
@@ -38,6 +45,13 @@ export interface OnboardingInsert {
   peso?: number | null;
   altezza?: number | null;
   consigli_nutrizionali?: boolean | null;
+  // Nuovi campi limitazioni fisiche e salute
+  ha_limitazioni?: boolean | null;
+  limitazioni_fisiche?: string | null;
+  zone_evitare?: string[] | null;
+  condizioni_mediche?: string | null;
+  allergie_alimentari?: string[] | null;
+  limitazioni_compilato_at?: string | null;
   onboarding_completed_at?: string | null;
 }
 

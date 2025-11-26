@@ -15,6 +15,7 @@ import { useOnboardingNavigation } from '@/hooks/useOnboardingNavigation';
 import type { Step2ExperienceHandle } from './steps/Step2Experience';
 import type { Step3PreferencesHandle } from './steps/Step3Preferences';
 import type { Step4PersonalizationHandle } from './steps/Step4Personalization';
+import type { Step5HealthLimitationsHandle } from './steps/Step5HealthLimitations';
 
 const Step0Registration = lazy(() =>
   import('./steps/Step0Registration').then((mod) => ({ default: mod.Step0Registration }))
@@ -25,6 +26,7 @@ const Step1Goals = lazy(() =>
 const Step2Experience = lazy(() => import('./steps/Step2Experience'));
 const Step3Preferences = lazy(() => import('./steps/Step3Preferences'));
 const Step4Personalization = lazy(() => import('./steps/Step4Personalization'));
+const Step5HealthLimitations = lazy(() => import('./steps/Step5HealthLimitations'));
 const CompletionScreen = lazy(() =>
   import('./steps/CompletionScreen').then((mod) => ({ default: mod.CompletionScreen }))
 );
@@ -54,6 +56,7 @@ export function OnboardingPage() {
   const step2Ref = useRef<Step2ExperienceHandle>(null);
   const step3Ref = useRef<Step3PreferencesHandle>(null);
   const step4Ref = useRef<Step4PersonalizationHandle>(null);
+  const step5Ref = useRef<Step5HealthLimitationsHandle>(null);
   
   // ✅ FIX CRITICO: Ref per prevenire loop infinito in sync URL
   const urlSyncInProgress = useRef(false);
@@ -90,6 +93,10 @@ export function OnboardingPage() {
             peso: existingData.peso,
             altezza: existingData.altezza,
             consigliNutrizionali: existingData.consigli_nutrizionali,
+            haLimitazioni: existingData.ha_limitazioni,
+            limitazioniFisiche: existingData.limitazioni_fisiche,
+            zoneEvitare: existingData.zone_evitare || [],
+            condizioniMediche: existingData.condizioni_mediche,
           });
 
           console.log('✅ Dati esistenti caricati:', existingData);
@@ -128,8 +135,8 @@ export function OnboardingPage() {
     if (mode === 'edit' && stepParam) {
       const stepNum = parseInt(stepParam, 10);
       
-      // ✅ FIX FINALE: Se siamo su Completion (step 5), NON fare sync
-      if (stepNum === 5) {
+      // ✅ FIX FINALE: Se siamo su Completion (step 6), NON fare sync
+      if (stepNum === 6) {
         console.log('✅ Edit mode: su Completion, skip sync');
         return;
       }
@@ -141,7 +148,7 @@ export function OnboardingPage() {
       }
       
       // Se step è diverso, sincronizza UNA VOLTA
-      if (!isNaN(stepNum) && stepNum >= 1 && stepNum <= 4) {
+      if (!isNaN(stepNum) && stepNum >= 1 && stepNum <= 5) {
         console.log('📥 Edit mode: syncing step from URL:', stepNum);
         setStep(stepNum);
         return;
@@ -160,7 +167,7 @@ export function OnboardingPage() {
     // ✅ FIX CRITICO: Solo se c'è uno stepParam nell'URL E non corrisponde allo store, sincronizza
     if (stepParam !== null && mode !== 'edit') {
       const stepNum = parseInt(stepParam, 10);
-      if (!isNaN(stepNum) && stepNum >= 0 && stepNum <= 5) {
+      if (!isNaN(stepNum) && stepNum >= 0 && stepNum <= 6) {
         if (stepNum !== currentStepValue) {
           console.log('📥 Normal mode: syncing step from URL:', stepNum, 'to store (current:', currentStepValue, ')');
           setStep(stepNum);
@@ -281,9 +288,9 @@ export function OnboardingPage() {
     return () => {
       safeLocalStorage.removeItem('isOnboarding');
       
-      // Solo se NON ha completato (currentStep < 5)
+      // Solo se NON ha completato (currentStep < 6)
       const currentStepOnUnmount = useOnboardingStore.getState().currentStep;
-      if (currentStepOnUnmount < 5) {
+      if (currentStepOnUnmount < 6) {
         console.log('Utente uscito dall\'onboarding senza completare - reset state');
         resetOnboarding();
       }
@@ -292,9 +299,9 @@ export function OnboardingPage() {
 
   useEffect(() => {
     trackOnboarding.stepViewed(currentStep);
-    // Animate progress bar (only for steps 1-4, not step 0 or completion)
-    if (currentStep >= 1 && currentStep <= 4) {
-      const progressPercentage = (currentStep / 4) * 100; // 4 steps (1-4) = 25%, 50%, 75%, 100%
+    // Animate progress bar (only for steps 1-5, not step 0 or completion)
+    if (currentStep >= 1 && currentStep <= 5) {
+      const progressPercentage = (currentStep / 5) * 100; // 5 steps (1-5) = 20%, 40%, 60%, 80%, 100%
       setAnimatedProgress(progressPercentage);
     } else {
       setAnimatedProgress(0);
@@ -321,7 +328,7 @@ export function OnboardingPage() {
     }
   };
 
-  const progressPercentage = currentStep === 0 ? 0 : currentStep <= 4 ? (currentStep / 4) * 100 : 100;
+  const progressPercentage = currentStep === 0 ? 0 : currentStep <= 5 ? (currentStep / 5) * 100 : 100;
 
   const getStepTitle = () => {
     switch(currentStep) {
@@ -330,14 +337,15 @@ export function OnboardingPage() {
       case 2: return 'La tua esperienza';
       case 3: return 'Le tue preferenze';
       case 4: return 'Personalizzazione';
+      case 5: return 'Limitazioni fisiche';
       default: return '';
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex flex-col">
-      {/* ✅ MODIFICA 2: Banner solo durante edit attivo (Step 1-4), non su Completion */}
-      {isEditMode && currentStep >= 1 && currentStep <= 4 && (
+      {/* ✅ MODIFICA 2: Banner solo durante edit attivo (Step 1-5), non su Completion */}
+      {isEditMode && currentStep >= 1 && currentStep <= 5 && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -358,7 +366,7 @@ export function OnboardingPage() {
       )}
 
       {/* Progress Bar - Hidden on step 0 and completion screen */}
-      {currentStep >= 1 && currentStep < 5 && (
+      {currentStep >= 1 && currentStep < 6 && (
         <div className="p-4 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
           <div className="max-w-3xl mx-auto">
             <Progress 
@@ -367,7 +375,7 @@ export function OnboardingPage() {
             />
             <div className="flex justify-between mt-2">
               <span className="text-sm text-gray-400">
-                Passo {currentStep} di 4
+                Passo {currentStep} di 5
               </span>
               <span className="text-sm font-medium text-[#FFD700]">
                 {getStepTitle()}
@@ -427,6 +435,16 @@ export function OnboardingPage() {
             )}
 
             {currentStep === 5 && (
+              <Suspense key="step5" fallback={<StepFallback />}>
+                <Step5HealthLimitations 
+                  ref={step5Ref}
+                  onComplete={handleNext}
+                  isEditMode={isEditMode}
+                />
+              </Suspense>
+            )}
+
+            {currentStep === 6 && (
               <Suspense key="completion" fallback={<StepFallback />}>
                 <CompletionScreen />
               </Suspense>
@@ -434,7 +452,7 @@ export function OnboardingPage() {
           </AnimatePresence>
 
           {/* Navigation - Nascosta su step 0 e completion screen */}
-          {currentStep >= 1 && currentStep <= 4 && (
+          {currentStep >= 1 && currentStep <= 5 && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -473,14 +491,14 @@ export function OnboardingPage() {
                 </Button>
               )}
               
-              {/* Bottone Completa solo su step 4 */}
+              {/* Bottone Continua per step 4 */}
               {currentStep === 4 && (
                 <Button
                   onClick={() => {
                     console.log('╔════════════════════════════════════════╗');
                     console.log('║   BUTTON SALVA MODIFICHE CLICKED       ║');
                     console.log('╚════════════════════════════════════════╝');
-                    console.log('🖱️ User clicked "Salva Modifiche"');
+                    console.log('🖱️ User clicked "Salva e Continua"');
                     console.log('📊 State before handleContinue:', {
                       isEditMode,
                       currentStep,
@@ -498,9 +516,39 @@ export function OnboardingPage() {
                   size="lg"
                   className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold h-12"
                 >
-                  {isEditMode ? 'Salva Modifiche' : 'Completa Onboarding'}
+                  {isEditMode ? 'Salva e Continua' : 'Continua'}
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
+              )}
+              
+              {/* Bottone Completa solo su step 5 */}
+              {currentStep === 5 && (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={async () => {
+                      // Salta questo step
+                      const { updateHealthLimitations } = await import('@/services/primebotUserContextService');
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (user) {
+                        await updateHealthLimitations(user.id, false, undefined, undefined);
+                      }
+                      handleNext();
+                    }}
+                    className="text-gray-400 hover:text-white text-sm underline"
+                  >
+                    Salta questo step →
+                  </button>
+                  <Button
+                    onClick={() => {
+                      step5Ref.current?.handleContinue();
+                    }}
+                    size="lg"
+                    className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/90 text-black font-bold h-12"
+                  >
+                    {isEditMode ? 'Salva Modifiche' : 'Completa Onboarding ✓'}
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </div>
               )}
             </motion.div>
           )}

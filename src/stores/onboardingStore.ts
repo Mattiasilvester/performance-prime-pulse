@@ -19,6 +19,12 @@ export interface OnboardingData {
   peso?: number;
   altezza?: number;
   consigliNutrizionali?: boolean;
+  // Step 5: Limitazioni fisiche e salute
+  haLimitazioni?: boolean | null;
+  limitazioniFisiche?: string;
+  zoneEvitare?: string[];
+  condizioniMediche?: string;
+  allergieAlimentari?: string[];
 }
 
 interface OnboardingStore {
@@ -51,7 +57,7 @@ export const useOnboardingStore = create<OnboardingStore>()(
       
       nextStep: () => 
         set((state) => ({ 
-          currentStep: Math.min(state.currentStep + 1, 5) 
+          currentStep: Math.min(state.currentStep + 1, 6) 
         })),
       
       previousStep: () => 
