@@ -442,6 +442,20 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
             hasQuestion: !!planResponse.question,
             hasExistingLimitations: planResponse.hasExistingLimitations,
           });
+          
+          // DEBUG CRITICO: Stampa tutta la risposta con console.error (non viene rimossa)
+          console.error('🔴 DEBUG CRITICO - planResponse COMPLETO:', {
+            type: planResponse.type,
+            typeValue: planResponse.type,
+            typeIsUndefined: planResponse.type === undefined,
+            typeIsQuestion: planResponse.type === 'question',
+            question: planResponse.question,
+            questionExists: !!planResponse.question,
+            success: planResponse.success,
+            hasPlan: !!planResponse.plan,
+            hasExistingLimitations: planResponse.hasExistingLimitations,
+            fullResponse: JSON.stringify(planResponse, null, 2),
+          });
         } catch (error) {
           console.error('❌ ERRORE in getStructuredWorkoutPlan:', error);
           setMsgs(m => [
@@ -466,7 +480,17 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           hasPlan: !!planResponse.plan,
         });
         
+        // DEBUG CRITICO: Verifica PRIMA del controllo if
+        console.error('🔴 DEBUG CRITICO - PRIMA del controllo type === question:', {
+          type: planResponse.type,
+          typeStrictEqual: planResponse.type === 'question',
+          question: planResponse.question,
+          questionExists: !!planResponse.question,
+          conditionResult: planResponse.type === 'question' && planResponse.question,
+        });
+        
         if (planResponse.type === 'question' && planResponse.question) {
+          console.error('🔴 DEBUG CRITICO - ENTRO NEL BLOCCO QUESTION - Mostro SOLO la domanda');
           console.log('❓ Ritornata domanda limitazioni, mostro SOLO la domanda');
           setMsgs(m => [
             ...m,
@@ -478,9 +502,11 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           ]);
           setAwaitingLimitationsResponse(true);
           setLoading(false);
+          console.error('🔴 DEBUG CRITICO - FACCIO RETURN - NON devo generare piano');
           return; // IMPORTANTE: Esci qui, NON generare piano
         }
         
+        console.error('🔴 DEBUG CRITICO - NON sono entrato nel blocco question, verifico se è un piano');
         console.log('⚠️ NON è una domanda, verifico se è un piano:', {
           type: planResponse.type,
           success: planResponse.success,
@@ -488,10 +514,24 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         });
         
         // Se abbiamo un piano generato (solo se needsToAsk === false)
+        console.error('🔴 DEBUG CRITICO - PRIMA del controllo success && plan:', {
+          success: planResponse.success,
+          hasPlan: !!planResponse.plan,
+          type: planResponse.type,
+          conditionResult: planResponse.success && planResponse.plan,
+        });
+        
         if (planResponse.success && planResponse.plan) {
+          console.error('🔴 DEBUG CRITICO - ENTRO NEL BLOCCO success && plan');
           // Mostra disclaimer SOLO se l'utente ha limitazioni esistenti E ha già risposto prima
+          console.error('🔴 DEBUG CRITICO - Verifico hasExistingLimitations:', {
+            hasExistingLimitations: planResponse.hasExistingLimitations,
+            conditionResult: planResponse.hasExistingLimitations,
+          });
+          
           if (planResponse.hasExistingLimitations) {
             // Ha limitazioni già salvate → mostra disclaimer prima del piano
+            console.error('🔴 DEBUG CRITICO - ENTRO NEL BLOCCO hasExistingLimitations - Mostro disclaimer');
             console.log('⚠️ Utente ha limitazioni esistenti, mostro disclaimer');
             setPendingPlan({
               plan: planResponse.plan,
@@ -516,8 +556,10 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
               ],
             });
             setShowPlanDisclaimer(true);
+            console.error('🔴 DEBUG CRITICO - Ho impostato showPlanDisclaimer = true');
           } else {
             // NON ha limitazioni → mostra piano direttamente senza disclaimer
+            console.error('🔴 DEBUG CRITICO - NON ha limitazioni - Mostro piano direttamente');
             console.log('✅ Utente NON ha limitazioni, mostro piano direttamente');
             const botMessage: Msg = {
               id: crypto.randomUUID(),
