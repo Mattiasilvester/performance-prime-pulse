@@ -5,6 +5,9 @@
   "functions": {
     "api/supabase-proxy.ts": {
       "maxDuration": 30
+    },
+    "api/ai-chat.ts": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
