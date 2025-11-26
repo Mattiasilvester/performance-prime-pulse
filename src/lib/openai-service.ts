@@ -347,6 +347,7 @@ export const getStructuredWorkoutPlan = async (
   type?: 'plan' | 'question';
   question?: string;
   awaitingLimitationsResponse?: boolean;
+  hasExistingLimitations?: boolean; // Info per decidere se mostrare disclaimer
 }> => {
   console.log('🏋️ getStructuredWorkoutPlan chiamata con:', {
     request: request.substring(0, 50) + '...',
@@ -635,6 +636,7 @@ Rispondi SOLO con il JSON del piano, senza testo aggiuntivo. Il JSON deve essere
       plan,
       remaining: limit.remaining - 1,
       type: 'plan' as const,
+      hasExistingLimitations: limitationsCheck.hasExistingLimitations, // Info per decidere se mostrare disclaimer
     };
   } catch (error) {
     console.error('❌ Errore generazione piano:', error);
