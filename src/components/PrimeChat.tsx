@@ -225,11 +225,18 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
 
   async function send(text: string) {
     const trimmed = text.trim();
-    if (!trimmed || loading) return;
+    console.log('🚀 SEND FUNZIONE CHIAMATA:', { text: trimmed, loading, awaitingLimitationsResponse });
+    
+    if (!trimmed || loading) {
+      console.log('⚠️ SEND BLOCCATO:', { trimmed: !!trimmed, loading });
+      return;
+    }
 
     setMsgs(m => [...m, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
     setInput('');
     setLoading(true);
+    
+    console.log('📝 Messaggio utente aggiunto, loading = true');
 
     // Marca utente come onboardato dopo la prima interazione
     if (isNewUser) {
@@ -411,7 +418,14 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
       }
       
       // TERZO: Controlla se è una richiesta di piano allenamento
-      if (isWorkoutPlanRequest(trimmed)) {
+      const isPlanRequest = isWorkoutPlanRequest(trimmed);
+      console.log('🔍 VERIFICA RICHIESTA PIANO:', { 
+        trimmed, 
+        isPlanRequest,
+        awaitingLimitationsResponse 
+      });
+      
+      if (isPlanRequest) {
         console.log('🏋️ Richiesta piano allenamento rilevata, uso getStructuredWorkoutPlan');
         console.log('🔍 DEBUG - Prima di chiamare getStructuredWorkoutPlan:', {
           userId: userId.substring(0, 8) + '...',
