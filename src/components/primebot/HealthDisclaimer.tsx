@@ -49,7 +49,7 @@ export function HealthDisclaimer({
   const handleFindProfessional = () => {
     // Naviga alla pagina professionisti (o schedule se non esiste ancora)
     // TODO: Creare pagina dedicata /professionals se necessario
-    navigate('/schedule');
+    navigate('/professionisti');
   };
 
   const handleContinue = async () => {
