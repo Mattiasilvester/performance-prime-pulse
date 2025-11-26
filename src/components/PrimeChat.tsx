@@ -415,8 +415,9 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         console.log('🏋️ Richiesta piano allenamento rilevata, uso getStructuredWorkoutPlan');
         const planResponse = await getStructuredWorkoutPlan(trimmed, userId, currentSessionId || undefined);
         
-        // Se ritorna una domanda invece di un piano
+        // IMPORTANTE: Se ritorna una domanda, mostra SOLO la domanda (NON generare piano)
         if (planResponse.type === 'question' && planResponse.question) {
+          console.log('❓ Ritornata domanda limitazioni, mostro SOLO la domanda');
           setMsgs(m => [
             ...m,
             {
@@ -426,13 +427,19 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
             },
           ]);
           setAwaitingLimitationsResponse(true);
-        } else if (planResponse.success && planResponse.plan) {
-          // Mostra disclaimer SOLO se l'utente ha limitazioni esistenti
+          setLoading(false);
+          return; // IMPORTANTE: Esci qui, NON generare piano
+        }
+        
+        // Se abbiamo un piano generato (solo se needsToAsk === false)
+        if (planResponse.success && planResponse.plan) {
+          // Mostra disclaimer SOLO se l'utente ha limitazioni esistenti E ha già risposto prima
           if (planResponse.hasExistingLimitations) {
-            // Ha limitazioni → mostra disclaimer prima del piano
+            // Ha limitazioni già salvate → mostra disclaimer prima del piano
+            console.log('⚠️ Utente ha limitazioni esistenti, mostro disclaimer');
             setPendingPlan({
               plan: planResponse.plan,
-              hasLimitations: planResponse.hasExistingLimitations ?? false, // Salva info limitazioni
+              hasLimitations: planResponse.hasExistingLimitations ?? false,
               actions: [
                 {
                   type: 'save_workout',
@@ -455,6 +462,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
             setShowPlanDisclaimer(true);
           } else {
             // NON ha limitazioni → mostra piano direttamente senza disclaimer
+            console.log('✅ Utente NON ha limitazioni, mostro piano direttamente');
             const botMessage: Msg = {
               id: crypto.randomUUID(),
               role: 'bot' as const,
@@ -482,6 +490,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
             setMsgs(m => [...m, botMessage]);
           }
         } else {
+          // Errore o caso non gestito
           setMsgs(m => [
             ...m,
             {
