@@ -47,7 +47,7 @@ export default defineConfig(({ command, mode }) => {
   server: {
     host: "::",
     port: 8080,
-    strictPort: true,
+    strictPort: false, // Permetti a Vercel Dev di usare una porta diversa
     // Configurazione per token grandi (70KB+)
     maxHttpHeaderSize: 200000, // 200KB per header
     // Proxy ottimizzato per token grandi
