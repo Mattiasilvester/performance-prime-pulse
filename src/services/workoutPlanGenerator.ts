@@ -185,18 +185,50 @@ export function validatePlanVariation(plan: StructuredWorkoutPlan): {
 
 /**
  * Converte risposta AI in piano strutturato
+ * Ritorna null se il parsing fallisce, con log dettagliati dell'errore
  */
 export function convertAIResponseToPlan(aiResponse: string): StructuredWorkoutPlan | null {
   try {
-    // Cerca JSON nella risposta AI
+    // Cerca JSON nella risposta AI (cerca il primo JSON object completo)
     const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       console.error('❌ Nessun JSON trovato nella risposta AI');
+      console.error('❌ Risposta completa:', aiResponse.substring(0, 500));
       return null;
     }
     
-    const jsonStr = jsonMatch[0];
-    const plan = JSON.parse(jsonStr) as StructuredWorkoutPlan;
+    let jsonStr = jsonMatch[0];
+    
+    // Sanitizza JSON: rimuovi eventuali caratteri problematici prima del parsing
+    // Rimuovi eventuali markdown code blocks
+    jsonStr = jsonStr.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+    // Rimuovi eventuali trailing commas prima di } o ]
+    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+    
+    let plan: StructuredWorkoutPlan;
+    
+    try {
+      plan = JSON.parse(jsonStr) as StructuredWorkoutPlan;
+    } catch (parseError) {
+      // Errore di parsing JSON - log dettagliato
+      console.error('❌ Errore parsing JSON:', parseError);
+      console.error('❌ JSON malformato (primi 500 caratteri):', jsonStr.substring(0, 500));
+      console.error('❌ JSON malformato (ultimi 500 caratteri):', jsonStr.substring(Math.max(0, jsonStr.length - 500)));
+      
+      // Prova a correggere errori comuni
+      try {
+        // Rimuovi eventuali virgole finali multiple
+        jsonStr = jsonStr.replace(/,+/g, ',');
+        // Rimuovi virgole prima di } o ]
+        jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+        // Prova di nuovo
+        plan = JSON.parse(jsonStr) as StructuredWorkoutPlan;
+        console.warn('⚠️ JSON corretto automaticamente');
+      } catch (retryError) {
+        console.error('❌ Impossibile correggere JSON:', retryError);
+        return null;
+      }
+    }
     
     // Valida struttura base
     if (!plan.name || !plan.exercises || !Array.isArray(plan.exercises)) {
@@ -229,7 +261,8 @@ export function convertAIResponseToPlan(aiResponse: string): StructuredWorkoutPl
     
     return plan;
   } catch (error) {
-    console.error('❌ Errore conversione piano:', error);
+    console.error('❌ Errore conversione piano (catch generale):', error);
+    console.error('❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     return null;
   }
 }

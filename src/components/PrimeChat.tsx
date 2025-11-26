@@ -513,6 +513,24 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           hasPlan: !!planResponse.plan,
         });
         
+        // Se il tipo è 'error', mostra messaggio di errore
+        if (planResponse.type === 'error') {
+          console.error('🔴 DEBUG CRITICO - ERRORE nella generazione piano:', {
+            message: planResponse.message,
+            errorType: planResponse.errorType,
+          });
+          setMsgs(m => [
+            ...m,
+            {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.message || 'Errore nella generazione del piano. Riprova!',
+            },
+          ]);
+          setLoading(false);
+          return;
+        }
+        
         // Se abbiamo un piano generato (solo se needsToAsk === false)
         console.error('🔴 DEBUG CRITICO - PRIMA del controllo success && plan:', {
           success: planResponse.success,

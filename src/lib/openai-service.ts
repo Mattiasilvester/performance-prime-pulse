@@ -344,10 +344,11 @@ export const getStructuredWorkoutPlan = async (
   plan?: StructuredWorkoutPlan;
   message?: string;
   remaining?: number;
-  type?: 'plan' | 'question';
+  type?: 'plan' | 'question' | 'error';
   question?: string;
   awaitingLimitationsResponse?: boolean;
   hasExistingLimitations?: boolean; // Info per decidere se mostrare disclaimer
+  errorType?: 'json_parse' | 'api_error' | 'validation_error'; // Tipo di errore
 }> => {
   console.log('🏋️ getStructuredWorkoutPlan chiamata con:', {
     request: request.substring(0, 50) + '...',
@@ -588,14 +589,36 @@ Rispondi SOLO con il JSON del piano, senza testo aggiuntivo. Il JSON deve essere
     const aiResponse = data.choices[0].message.content;
     console.log('📥 Risposta AI ricevuta:', aiResponse.substring(0, 200) + '...');
 
-    // Converti risposta AI in piano strutturato
-    const plan = convertAIResponseToPlan(aiResponse);
+    // Converti risposta AI in piano strutturato con gestione errori robusta
+    let plan: StructuredWorkoutPlan | null = null;
+    let parseError: Error | null = null;
+    
+    try {
+      plan = convertAIResponseToPlan(aiResponse);
+    } catch (error) {
+      parseError = error instanceof Error ? error : new Error(String(error));
+      console.error('❌ Errore critico in convertAIResponseToPlan:', parseError);
+    }
 
     if (!plan) {
+      // Ritorna tipo 'error' con dettagli specifici
+      const errorMessage = parseError?.message || 'Errore nella generazione del piano';
+      const isJsonError = errorMessage.includes('JSON') || errorMessage.includes('parse') || errorMessage.includes('SyntaxError');
+      
+      console.error('❌ Piano non generato:', {
+        errorMessage,
+        isJsonError,
+        aiResponsePreview: aiResponse.substring(0, 300),
+      });
+      
       return {
         success: false,
-        message: 'Errore nella generazione del piano. Riprova!',
+        type: 'error',
+        message: isJsonError 
+          ? 'Errore nella generazione del piano: formato non valido. Riprova!'
+          : 'Errore nella generazione del piano. Riprova!',
         remaining: limit.remaining,
+        errorType: isJsonError ? 'json_parse' : 'api_error',
       };
     }
 

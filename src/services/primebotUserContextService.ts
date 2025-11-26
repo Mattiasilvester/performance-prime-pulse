@@ -410,8 +410,24 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
       ha_limitazioni: onboardingData?.ha_limitazioni,
     });
     
-    // IMPORTANTE: Usa ?? null per gestire anche undefined
-    const hasLimitazioni = onboardingData?.ha_limitazioni ?? null;
+    // IMPORTANTE: Normalizza hasLimitazioni per gestire tutti i casi edge
+    // Il database potrebbe ritornare: null, undefined, "", false, true, "false", "true"
+    let hasLimitazioni: boolean | null = null;
+    const rawHasLimitazioni = onboardingData?.ha_limitazioni;
+    
+    if (rawHasLimitazioni === true || rawHasLimitazioni === 'true') {
+      hasLimitazioni = true;
+    } else if (rawHasLimitazioni === false || rawHasLimitazioni === 'false') {
+      hasLimitazioni = false;
+    } else if (rawHasLimitazioni === null || rawHasLimitazioni === undefined || rawHasLimitazioni === '') {
+      // Stringa vuota, null, undefined → considera come mai compilato
+      hasLimitazioni = null;
+    } else {
+      // Valore non previsto → considera come mai compilato per sicurezza
+      console.warn('⚠️ Valore non previsto per ha_limitazioni:', rawHasLimitazioni, '→ considero come null');
+      hasLimitazioni = null;
+    }
+    
     const limitazioniFisiche = onboardingData?.limitazioni_fisiche || null;
     const zoneEvitare = onboardingData?.zone_evitare || null;
     const condizioniMediche = onboardingData?.condizioni_mediche || null;
@@ -421,10 +437,12 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     
     console.log('🔍 getSmartLimitationsCheck - dati recuperati:', {
       userId: userId.substring(0, 8) + '...',
+      rawHasLimitazioni,
       hasLimitazioni,
       hasLimitazioniType: typeof hasLimitazioni,
       isNull: hasLimitazioni === null,
-      isUndefined: hasLimitazioni === undefined,
+      isTrue: hasLimitazioni === true,
+      isFalse: hasLimitazioni === false,
       limitazioniFisiche: limitazioniFisiche?.substring(0, 30) || null,
       limitazioniCompilatoAt: limitazioniCompilatoAt?.toISOString() || null,
       onboardingDataExists: !!onboardingData,
