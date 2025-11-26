@@ -3,6 +3,46 @@
 
 import http from 'http';
 import { URL } from 'url';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Carica variabili d'ambiente da .env manualmente (Node.js ES modules non ha dotenv built-in)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = join(__dirname, '..');
+
+function loadEnv() {
+  try {
+    const envFile = readFileSync(join(projectRoot, '.env'), 'utf-8');
+    const envVars = {};
+    
+    envFile.split('\n').forEach(line => {
+      const trimmed = line.trim();
+      // Ignora commenti e righe vuote
+      if (trimmed && !trimmed.startsWith('#')) {
+        const [key, ...valueParts] = trimmed.split('=');
+        if (key && valueParts.length > 0) {
+          const value = valueParts.join('=').trim();
+          // Rimuovi eventuali virgolette
+          envVars[key.trim()] = value.replace(/^["']|["']$/g, '');
+        }
+      }
+    });
+    
+    // Aggiungi alle variabili d'ambiente se non già presenti
+    Object.keys(envVars).forEach(key => {
+      if (!process.env[key]) {
+        process.env[key] = envVars[key];
+      }
+    });
+  } catch (error) {
+    console.warn('⚠️  Impossibile leggere file .env:', error.message);
+  }
+}
+
+// Carica .env all'avvio
+loadEnv();
 
 // Porta del server proxy (diversa da Vite)
 const PORT = process.env.API_PROXY_PORT || 3001;
