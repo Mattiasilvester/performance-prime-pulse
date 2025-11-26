@@ -10,6 +10,18 @@ import {
   saveInteraction,
   type PrimeBotInteraction,
 } from '@/services/primebotConversationService';
+import {
+  executeAction,
+  type ActionType,
+} from '@/services/primebotActionsService';
+import { ActionButton } from '@/components/primebot/ActionButton';
+import { toast } from 'sonner';
+
+export interface ParsedAction {
+  type: ActionType;
+  label: string;
+  payload: any;
+}
 
 type Msg = { 
   id: string; 
@@ -21,10 +33,47 @@ type Msg = {
     action: string; 
   };
   isDisclaimer?: boolean;
+  actions?: ParsedAction[]; // Azioni estratte dalla risposta AI
 };
 
 interface PrimeChatProps {
   isModal?: boolean;
+}
+
+/**
+ * Parsa pattern [ACTION:tipo:label:payload] dalla risposta AI
+ * Ritorna testo pulito e array di azioni
+ */
+function parseActionsFromText(text: string): { cleanText: string; actions: ParsedAction[] } {
+  const actionPattern = /\[ACTION:([^:]+):([^:]+):([^\]]+)\]/g;
+  const actions: ParsedAction[] = [];
+  let cleanText = text;
+  let match;
+
+  while ((match = actionPattern.exec(text)) !== null) {
+    const [, type, label, payloadStr] = match;
+    
+    try {
+      const payload = JSON.parse(payloadStr);
+      actions.push({
+        type: type as ActionType,
+        label: label.trim(),
+        payload,
+      });
+      
+      // Rimuovi il pattern dal testo visibile
+      cleanText = cleanText.replace(match[0], '');
+    } catch (error) {
+      console.warn('⚠️ Errore parsing payload azione:', error);
+      // Rimuovi comunque il pattern anche se il parsing fallisce
+      cleanText = cleanText.replace(match[0], '');
+    }
+  }
+
+  // Pulisci spazi multipli e newline extra
+  cleanText = cleanText.replace(/\n{3,}/g, '\n\n').trim();
+
+  return { cleanText, actions };
 }
 
 // Funzione per formattare markdown senza librerie
@@ -227,25 +276,17 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
       console.log('🤖 Nessuna risposta preimpostata, uso AI');
       const aiResponse = await getAIResponse(trimmed, userId, currentSessionId || undefined);
       
-      if (aiResponse.success) {
-        setMsgs(m => [
-          ...m,
-          { 
-            id: crypto.randomUUID(), 
-            role: 'bot' as const, 
-            text: aiResponse.message
-          }
-        ]);
-      } else {
-        setMsgs(m => [
-          ...m,
-          { 
-            id: crypto.randomUUID(), 
-            role: 'bot' as const, 
-            text: aiResponse.message
-          }
-        ]);
-      }
+      // Parsa azioni dalla risposta AI
+      const { cleanText, actions } = parseActionsFromText(aiResponse.message);
+      
+      const botMessage: Msg = {
+        id: crypto.randomUUID(),
+        role: 'bot' as const,
+        text: cleanText,
+        actions: actions.length > 0 ? actions : undefined,
+      };
+      
+      setMsgs(m => [...m, botMessage]);
     } catch (e) {
       console.error('Errore chiamata OpenAI:', e);
       setMsgs(m => [
@@ -423,6 +464,34 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                       {m.navigation.label}
                       <span>→</span>
                     </button>
+                  )}
+                  
+                  {/* Bottoni azioni PrimeBot */}
+                  {m.role === 'bot' && m.actions && m.actions.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {m.actions.map((action, idx) => (
+                        <ActionButton
+                          key={idx}
+                          actionType={action.type}
+                          label={action.label}
+                          payload={action.payload}
+                          onAction={async () => {
+                            const result = await executeAction(
+                              userId,
+                              action.type,
+                              action.payload,
+                              navigate
+                            );
+                            
+                            if (result.success) {
+                              toast.success(result.message || 'Azione completata con successo!');
+                            } else {
+                              throw new Error(result.error || 'Errore durante l\'esecuzione');
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
                   )}
                   
                   <div className={`text-xs mt-2 ${m.role === 'user' ? 'text-black/70' : 'text-white'}`}>

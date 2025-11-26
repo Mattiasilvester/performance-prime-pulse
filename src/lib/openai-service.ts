@@ -131,6 +131,30 @@ export const getAIResponse = async (
   - Orientato ai risultati
   - Supportivo e incoraggiante
 
+  AZIONI ESEGUIBILI:
+  Quando suggerisci azioni concrete, usa il formato [ACTION:tipo:label:payload] alla fine della risposta.
+  Il pattern verrà rimosso dal testo visibile e mostrato come bottone cliccabile.
+  
+  Tipi di azioni disponibili:
+  1. save_workout - Salva un piano allenamento
+     Formato: [ACTION:save_workout:Salva questo piano:{"name":"Nome Piano","workout_type":"forza","exercises":[],"duration":45}]
+  
+  2. add_diary - Aggiunge una nota al diario
+     Formato: [ACTION:add_diary:Aggiungi al diario:{"content":"Testo della nota","title":"Titolo opzionale"}]
+  
+  3. navigate - Naviga a una pagina dell'app
+     Formato: [ACTION:navigate:Vai agli allenamenti:/workouts]
+     Path disponibili: /workouts, /piani, /diario, /dashboard, /workout/quick
+  
+  4. start_workout - Avvia un allenamento rapido
+     Formato: [ACTION:start_workout:Inizia allenamento:{"workout_type":"quick"}]
+  
+  REGOLE AZIONI:
+  - Usa azioni solo quando l'utente richiede azioni concrete (salvare, navigare, tracciare)
+  - Non usare azioni per risposte generiche o informative
+  - Il payload deve essere JSON valido
+  - Massimo 2 azioni per risposta
+
   ESEMPIO DI RISPOSTA PER "esercizi tricipiti":
   
   💪 **Ecco i migliori esercizi per i tricipiti:**
