@@ -413,7 +413,34 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
       // TERZO: Controlla se è una richiesta di piano allenamento
       if (isWorkoutPlanRequest(trimmed)) {
         console.log('🏋️ Richiesta piano allenamento rilevata, uso getStructuredWorkoutPlan');
-        const planResponse = await getStructuredWorkoutPlan(trimmed, userId, currentSessionId || undefined);
+        console.log('🔍 DEBUG - Prima di chiamare getStructuredWorkoutPlan:', {
+          userId: userId.substring(0, 8) + '...',
+          sessionId: currentSessionId?.substring(0, 8) + '...' || 'null',
+        });
+        
+        let planResponse;
+        try {
+          planResponse = await getStructuredWorkoutPlan(trimmed, userId, currentSessionId || undefined);
+          console.log('✅ getStructuredWorkoutPlan completato:', {
+            success: planResponse.success,
+            type: planResponse.type,
+            hasPlan: !!planResponse.plan,
+            hasQuestion: !!planResponse.question,
+            hasExistingLimitations: planResponse.hasExistingLimitations,
+          });
+        } catch (error) {
+          console.error('❌ ERRORE in getStructuredWorkoutPlan:', error);
+          setMsgs(m => [
+            ...m,
+            {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: 'Ops, ho avuto un problema tecnico. Riprova tra qualche secondo.',
+            },
+          ]);
+          setLoading(false);
+          return;
+        }
         
         // IMPORTANTE: Se ritorna una domanda, mostra SOLO la domanda (NON generare piano)
         if (planResponse.type === 'question' && planResponse.question) {
