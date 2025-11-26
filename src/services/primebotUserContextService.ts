@@ -412,6 +412,13 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
       ? new Date(onboardingData.limitazioni_compilato_at)
       : null;
     
+    console.log('🔍 getSmartLimitationsCheck - dati recuperati:', {
+      userId: userId.substring(0, 8) + '...',
+      hasLimitazioni,
+      limitazioniFisiche: limitazioniFisiche?.substring(0, 30) || null,
+      limitazioniCompilatoAt: limitazioniCompilatoAt?.toISOString() || null,
+    });
+    
     // Calcola giorni dall'ultimo update
     let daysSinceUpdate: number | null = null;
     if (limitazioniCompilatoAt) {
@@ -453,7 +460,14 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
       // Mai chiesto, chiedi sempre
       suggestedQuestion = `Prima di creare il tuo piano personalizzato, hai dolori, infortuni o limitazioni fisiche da considerare? Questo mi aiuta a creare un programma sicuro per te! 💪`;
       needsToAsk = true;
+      console.log('✅ CASO C: ha_limitazioni === null, imposto needsToAsk = true');
     }
+    
+    console.log('🔍 getSmartLimitationsCheck - risultato finale:', {
+      needsToAsk,
+      hasExistingLimitations: hasLimitazioni === true,
+      suggestedQuestion: suggestedQuestion?.substring(0, 50) + '...',
+    });
     
     return {
       hasExistingLimitations: hasLimitazioni === true,
