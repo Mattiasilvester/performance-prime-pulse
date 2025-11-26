@@ -369,8 +369,15 @@ export const getStructuredWorkoutPlan = async (
     const { getSmartLimitationsCheck } = await import('@/services/primebotUserContextService');
     const limitationsCheck = await getSmartLimitationsCheck(userId);
     
+    console.log('🔍 getStructuredWorkoutPlan - limitationsCheck:', {
+      needsToAsk: limitationsCheck.needsToAsk,
+      hasExistingLimitations: limitationsCheck.hasExistingLimitations,
+      suggestedQuestion: limitationsCheck.suggestedQuestion?.substring(0, 50) + '...',
+    });
+    
     // SE needsToAsk === true, ritorna domanda invece di generare piano
     if (limitationsCheck.needsToAsk && limitationsCheck.suggestedQuestion) {
+      console.log('✅ Ritorno domanda invece di generare piano');
       return {
         success: false,
         type: 'question',
@@ -379,6 +386,8 @@ export const getStructuredWorkoutPlan = async (
         remaining: limit.remaining,
       };
     }
+    
+    console.log('⚠️ needsToAsk è false, procedo con generazione piano');
     
     // Recupera contesto utente
     const userContext = await getUserContext(userId);
