@@ -281,28 +281,58 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         const planResponse = await getStructuredWorkoutPlan(trimmed, userId, currentSessionId || undefined);
         
         if (planResponse.success && planResponse.plan) {
-          setPendingPlan({
-            plan: planResponse.plan,
-            actions: [
-              {
-                type: 'save_workout',
-                label: 'Salva questo piano',
-                payload: {
-                  name: planResponse.plan.name,
-                  workout_type: planResponse.plan.workout_type,
-                  exercises: planResponse.plan.exercises.map((ex: any) => ({
-                    name: ex.name,
-                    sets: ex.sets,
-                    reps: ex.reps,
-                    rest_seconds: ex.rest_seconds,
-                    notes: ex.notes,
-                  })),
-                  duration: planResponse.plan.duration_minutes,
+          // Mostra disclaimer SOLO se l'utente ha limitazioni
+          if (result.hasLimitations) {
+            setPendingPlan({
+              plan: planResponse.plan,
+              actions: [
+                {
+                  type: 'save_workout',
+                  label: 'Salva questo piano',
+                  payload: {
+                    name: planResponse.plan.name,
+                    workout_type: planResponse.plan.workout_type,
+                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                      name: ex.name,
+                      sets: ex.sets,
+                      reps: ex.reps,
+                      rest_seconds: ex.rest_seconds,
+                      notes: ex.notes,
+                    })),
+                    duration: planResponse.plan.duration_minutes,
+                  },
                 },
-              },
-            ],
-          });
-          setShowPlanDisclaimer(true);
+              ],
+            });
+            setShowPlanDisclaimer(true);
+          } else {
+            // Se NON ha limitazioni, mostra il piano direttamente senza disclaimer
+            const botMessage: Msg = {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
+              workoutPlan: planResponse.plan,
+              actions: [
+                {
+                  type: 'save_workout',
+                  label: 'Salva questo piano',
+                  payload: {
+                    name: planResponse.plan.name,
+                    workout_type: planResponse.plan.workout_type,
+                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                      name: ex.name,
+                      sets: ex.sets,
+                      reps: ex.reps,
+                      rest_seconds: ex.rest_seconds,
+                      notes: ex.notes,
+                    })),
+                    duration: planResponse.plan.duration_minutes,
+                  },
+                },
+              ],
+            };
+            setMsgs(m => [...m, botMessage]);
+          }
         } else if (planResponse.type === 'question') {
           // Se ritorna ancora una domanda, mostra la domanda
           setMsgs(m => [
@@ -396,29 +426,59 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           ]);
           setAwaitingLimitationsResponse(true);
         } else if (planResponse.success && planResponse.plan) {
-          // NON mostrare subito il piano - salva in pendingPlan e mostra disclaimer
-          setPendingPlan({
-            plan: planResponse.plan,
-            actions: [
-              {
-                type: 'save_workout',
-                label: 'Salva questo piano',
-                payload: {
-                  name: planResponse.plan.name,
-                  workout_type: planResponse.plan.workout_type,
-                  exercises: planResponse.plan.exercises.map((ex: any) => ({
-                    name: ex.name,
-                    sets: ex.sets,
-                    reps: ex.reps,
-                    rest_seconds: ex.rest_seconds,
-                    notes: ex.notes,
-                  })),
-                  duration: planResponse.plan.duration_minutes,
+          // Mostra disclaimer SOLO se l'utente ha limitazioni esistenti
+          if (planResponse.hasExistingLimitations) {
+            // Ha limitazioni → mostra disclaimer prima del piano
+            setPendingPlan({
+              plan: planResponse.plan,
+              actions: [
+                {
+                  type: 'save_workout',
+                  label: 'Salva questo piano',
+                  payload: {
+                    name: planResponse.plan.name,
+                    workout_type: planResponse.plan.workout_type,
+                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                      name: ex.name,
+                      sets: ex.sets,
+                      reps: ex.reps,
+                      rest_seconds: ex.rest_seconds,
+                      notes: ex.notes,
+                    })),
+                    duration: planResponse.plan.duration_minutes,
+                  },
                 },
-              },
-            ],
-          });
-          setShowPlanDisclaimer(true);
+              ],
+            });
+            setShowPlanDisclaimer(true);
+          } else {
+            // NON ha limitazioni → mostra piano direttamente senza disclaimer
+            const botMessage: Msg = {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
+              workoutPlan: planResponse.plan,
+              actions: [
+                {
+                  type: 'save_workout',
+                  label: 'Salva questo piano',
+                  payload: {
+                    name: planResponse.plan.name,
+                    workout_type: planResponse.plan.workout_type,
+                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                      name: ex.name,
+                      sets: ex.sets,
+                      reps: ex.reps,
+                      rest_seconds: ex.rest_seconds,
+                      notes: ex.notes,
+                    })),
+                    duration: planResponse.plan.duration_minutes,
+                  },
+                },
+              ],
+            };
+            setMsgs(m => [...m, botMessage]);
+          }
         } else {
           setMsgs(m => [
             ...m,
@@ -619,7 +679,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                     plan_name: pendingPlan.plan.name,
                     workout_type: pendingPlan.plan.workout_type,
                   }}
-                  userHasLimitations={false}
+                  userHasLimitations={pendingPlan?.hasLimitations ?? false}
                 />
               </div>
             )}
