@@ -320,17 +320,17 @@ export function CompletionScreen() {
   // ✅ FIX URGENTE: Ref per prevenire loop infinito
   const step5SetRef = useRef(false);
   
-  // ✅ FIX FINALE: In edit mode, forza currentStep a 5 SOLO al mount (una volta)
+  // ✅ FIX FINALE: In edit mode, forza currentStep a 6 SOLO al mount (una volta)
   useEffect(() => {
-    // Esegui SOLO quando isEditMode diventa true e non abbiamo ancora impostato step 5
+    // Esegui SOLO quando isEditMode diventa true e non abbiamo ancora impostato step 6
     if (isEditMode && !step5SetRef.current) {
       const currentStepValue = useOnboardingStore.getState().currentStep;
-      if (currentStepValue !== 5) {
-        console.log('🔧 CompletionScreen: forcing currentStep to 5 (one time only)');
+      if (currentStepValue !== 6) {
+        console.log('🔧 CompletionScreen: forcing currentStep to 6 (one time only)');
         step5SetRef.current = true;
-        setStep(5);
+        setStep(6);
       } else {
-        step5SetRef.current = true; // Già a 5, marca come fatto
+        step5SetRef.current = true; // Già a 6, marca come fatto
       }
     }
   }, [isEditMode]); // ✅ SOLO isEditMode nelle dependencies, NO currentStep, NO setStep!
