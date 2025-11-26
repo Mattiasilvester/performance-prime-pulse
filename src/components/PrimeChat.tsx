@@ -457,6 +457,15 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         }
         
         // IMPORTANTE: Se ritorna una domanda, mostra SOLO la domanda (NON generare piano)
+        console.log('🔍 VERIFICA TYPE RESPONSE:', {
+          type: planResponse.type,
+          typeExists: planResponse.type !== undefined,
+          question: planResponse.question?.substring(0, 50) + '...',
+          questionExists: !!planResponse.question,
+          success: planResponse.success,
+          hasPlan: !!planResponse.plan,
+        });
+        
         if (planResponse.type === 'question' && planResponse.question) {
           console.log('❓ Ritornata domanda limitazioni, mostro SOLO la domanda');
           setMsgs(m => [
@@ -471,6 +480,12 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           setLoading(false);
           return; // IMPORTANTE: Esci qui, NON generare piano
         }
+        
+        console.log('⚠️ NON è una domanda, verifico se è un piano:', {
+          type: planResponse.type,
+          success: planResponse.success,
+          hasPlan: !!planResponse.plan,
+        });
         
         // Se abbiamo un piano generato (solo se needsToAsk === false)
         if (planResponse.success && planResponse.plan) {
