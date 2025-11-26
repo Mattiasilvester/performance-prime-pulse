@@ -2,23 +2,7 @@
 
 ## ✅ Configurazione Completata
 
-Ho configurato tutto per il testing locale con **Vercel Dev**! Questo simula esattamente l'ambiente di produzione.
-
----
-
-## 🔧 INSTALLAZIONE VERCEL CLI
-
-### 1. Installa Vercel CLI (se non già installato):
-
-```bash
-npm i -g vercel
-```
-
-### 2. Verifica installazione:
-
-```bash
-vercel --version
-```
+Ho configurato tutto per il testing locale **senza bisogno di deploy su Vercel**! 
 
 ---
 
@@ -26,69 +10,37 @@ vercel --version
 
 ### Aggiungi OPENAI_API_KEY al file `.env`
 
-Apri il file `.env` e assicurati di avere:
+Apri il file `.env` nella root del progetto e assicurati di avere:
 
 ```bash
 # Supabase (già configurate)
 VITE_SUPABASE_URL=https://kfxoyucatvvcgmqalxsg.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
-# OpenAI (DA CONFIGURARE)
+# OpenAI (DA CONFIGURARE - OBBLIGATORIO!)
 OPENAI_API_KEY=sk-tua-chiave-api-openai-qui
 ```
 
 **⚠️ IMPORTANTE:** 
+- Sostituisci `sk-tua-chiave-api-openai-qui` con la tua chiave API OpenAI reale
 - Non committare mai il file `.env` con la chiave reale!
-- La chiave `OPENAI_API_KEY` viene letta automaticamente da Vercel Dev
+- La chiave `OPENAI_API_KEY` viene letta dal server proxy locale (`server/api-proxy.js`)
 
 ---
 
 ## 🚀 COMANDO PER AVVIARE L'APP LOCALE
 
-### Usa Vercel Dev (consigliato):
+### ⚡ SOLUZIONE CONSIGLIATA: Server Proxy Manuale
 
-```bash
-npm run dev:vercel
-```
-
-Oppure direttamente:
-
-```bash
-vercel dev
-```
-
-**Cosa fa:**
-- ✅ Avvia Vite per il frontend React
-- ✅ Simula le API routes di Vercel (`/api/*`)
-- ✅ Carica automaticamente le variabili d'ambiente da `.env`
-- ✅ Simula esattamente l'ambiente di produzione
-
----
-
-## 🌐 URL PER TESTARE
-
-Quando esegui `vercel dev`, vedrai un output simile a:
-
-```
-Vercel CLI 32.x.x
-> Ready! Available at http://localhost:3000
-```
-
-**App principale:** http://localhost:3000 (o la porta indicata da Vercel)
-
-**Nota:** Vercel Dev potrebbe usare una porta diversa da 8080. Controlla l'output del comando.
-
----
-
-## 🔄 ALTERNATIVE (se vercel dev non funziona)
-
-### Opzione B: Server Proxy Manuale
-
-Se preferisci non usare Vercel Dev, puoi usare il server proxy manuale:
-
-**Terminal 1 - Server API Proxy:**
+**Terminal 1 - Server API Proxy (AVVIA PRIMA):**
 ```bash
 npm run dev:api
+```
+
+Dovresti vedere:
+```
+🚀 [API Proxy] Server locale per OpenAI API in ascolto su http://localhost:3001
+📡 Proxy endpoint: http://localhost:3001/api/ai-chat
 ```
 
 **Terminal 2 - App Vite:**
@@ -96,7 +48,67 @@ npm run dev:api
 npm run dev
 ```
 
-Poi apri: http://localhost:8080
+Dovresti vedere:
+```
+VITE v5.x.x  ready in xxx ms
+➜  Local:   http://localhost:8080/
+```
+
+---
+
+## 🌐 URL PER TESTARE
+
+**App principale:** http://localhost:8080
+
+**Come funziona:**
+1. Il frontend chiama `/api/ai-chat` (gestito da Vite proxy)
+2. Vite proxy inoltra la richiesta a `localhost:3001/api/ai-chat`
+3. Il server proxy (`server/api-proxy.js`) legge `OPENAI_API_KEY` dal `.env`
+4. Il server proxy chiama l'API OpenAI direttamente
+5. La risposta viene ritornata al frontend
+
+**✅ Vantaggi:**
+- Funziona completamente in locale
+- Non serve deploy su Vercel
+- Hot reload funzionante
+- Stessa esperienza di produzione
+- Modifiche istantanee senza attese
+
+---
+
+## 🔄 SOLUZIONE CONSIGLIATA: Server Proxy Manuale
+
+**⚠️ IMPORTANTE:** Per lavorare in locale senza deploy, usa questa configurazione:
+
+### Terminal 1 - Server API Proxy (DEVE essere avviato per primo):
+```bash
+npm run dev:api
+```
+
+Questo avvia il server proxy su `http://localhost:3001` che gestisce le chiamate a OpenAI usando `OPENAI_API_KEY` dal file `.env`.
+
+### Terminal 2 - App Vite:
+```bash
+npm run dev
+```
+
+Questo avvia Vite su `http://localhost:8080` con proxy configurato per `/api/ai-chat` → `localhost:3001`.
+
+### URL per testare:
+**App principale:** http://localhost:8080
+
+**Come funziona:**
+1. Il frontend chiama `/api/ai-chat` (gestito da Vite proxy)
+2. Vite proxy inoltra la richiesta a `localhost:3001/api/ai-chat`
+3. Il server proxy (`server/api-proxy.js`) legge `OPENAI_API_KEY` dal `.env`
+4. Il server proxy chiama l'API OpenAI direttamente
+5. La risposta viene ritornata al frontend
+
+**✅ Vantaggi:**
+- Funziona completamente in locale
+- Non serve deploy su Vercel
+- Hot reload funzionante
+- Stessa esperienza di produzione
 
 ---
 
@@ -142,33 +154,49 @@ Poi apri: http://localhost:8080
 
 ## 📝 NOTE IMPORTANTI
 
-1. **Vercel Dev vs npm run dev:**
-   - `npm run dev` → Solo frontend, API routes NON funzionano
-   - `vercel dev` → Frontend + API routes funzionanti ✅
+1. **Ordine di avvio:**
+   - **PRIMA** avvia `npm run dev:api` (Terminal 1)
+   - **POI** avvia `npm run dev` (Terminal 2)
+   - Se avvii nell'ordine sbagliato, vedrai errori 404
 
 2. **Hot Reload:**
-   - Vercel Dev supporta hot reload per modifiche al codice
-   - Le modifiche alle API routes richiedono riavvio
+   - Vite supporta hot reload automatico per modifiche al codice frontend
+   - Le modifiche a `server/api-proxy.js` richiedono riavvio del Terminal 1
+   - Le modifiche al codice React si aggiornano automaticamente
 
 3. **Variabili d'ambiente:**
-   - Vercel Dev legge automaticamente da `.env`
    - Le variabili `VITE_*` sono disponibili nel frontend
-   - Le variabili senza `VITE_` (come `OPENAI_API_KEY`) sono disponibili solo server-side
+   - `OPENAI_API_KEY` è disponibile solo nel server proxy (server-side)
+   - Il file `.env` viene letto automaticamente da Node.js
 
 4. **Produzione:**
-   - In produzione su Vercel, tutto funziona automaticamente
-   - Le API routes sono deployate come serverless functions
+   - In produzione su Vercel, le API routes (`/api/*`) funzionano come serverless functions
+   - Il server proxy locale (`server/api-proxy.js`) NON viene deployato
+   - Le variabili d'ambiente sono configurate su Vercel Dashboard
 
 ---
 
 ## 🎯 TEST RAPIDO
 
-1. Installa Vercel CLI: `npm i -g vercel`
-2. Aggiungi `OPENAI_API_KEY` al `.env`
-3. Esegui: `npm run dev:vercel`
-4. Apri l'URL mostrato da Vercel (es. http://localhost:3000)
+1. Aggiungi `OPENAI_API_KEY` al file `.env` (sostituisci il placeholder)
+2. **Terminal 1:** Esegui `npm run dev:api` e verifica che sia su `localhost:3001`
+3. **Terminal 2:** Esegui `npm run dev` e verifica che sia su `localhost:8080`
+4. Apri http://localhost:8080 nel browser
 5. Vai su PrimeBot e chiedi "mi crei un piano di allenamento"
-6. Verifica che funzioni senza errori!
+6. Verifica che funzioni senza errori 404!
+
+---
+
+## 🔄 ALTERNATIVA: Vercel Dev (opzionale)
+
+Se preferisci usare `vercel dev` invece del proxy manuale:
+
+```bash
+npm i -g vercel
+npm run dev:vercel
+```
+
+**Nota:** Vercel Dev simula l'ambiente di produzione ma può avere problemi con Vite. Il proxy manuale è più affidabile per sviluppo locale.
 
 ---
 
