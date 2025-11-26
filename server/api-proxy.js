@@ -1,8 +1,8 @@
 // Server proxy locale per API OpenAI in sviluppo
 // Questo server gestisce /api/ai-chat localmente invece di usare Vercel serverless functions
 
-const http = require('http');
-const { URL } = require('url');
+import http from 'http';
+import { URL } from 'url';
 
 // Porta del server proxy (diversa da Vite)
 const PORT = process.env.API_PROXY_PORT || 3001;
