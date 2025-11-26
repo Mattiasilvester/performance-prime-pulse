@@ -404,6 +404,7 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
   try {
     const onboardingData = await onboardingService.loadOnboardingData(userId);
     
+    // IMPORTANTE: Usa ?? null per gestire anche undefined
     const hasLimitazioni = onboardingData?.ha_limitazioni ?? null;
     const limitazioniFisiche = onboardingData?.limitazioni_fisiche || null;
     const zoneEvitare = onboardingData?.zone_evitare || null;
@@ -415,8 +416,12 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     console.log('🔍 getSmartLimitationsCheck - dati recuperati:', {
       userId: userId.substring(0, 8) + '...',
       hasLimitazioni,
+      hasLimitazioniType: typeof hasLimitazioni,
+      isNull: hasLimitazioni === null,
+      isUndefined: hasLimitazioni === undefined,
       limitazioniFisiche: limitazioniFisiche?.substring(0, 30) || null,
       limitazioniCompilatoAt: limitazioniCompilatoAt?.toISOString() || null,
+      onboardingDataExists: !!onboardingData,
     });
     
     // Calcola giorni dall'ultimo update
@@ -455,12 +460,12 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
         needsToAsk = false;
       }
     }
-    // CASO C: ha_limitazioni === null (mai compilato)
+    // CASO C: ha_limitazioni === null O undefined (mai compilato)
     else {
       // Mai chiesto, chiedi sempre
       suggestedQuestion = `Prima di creare il tuo piano personalizzato, hai dolori, infortuni o limitazioni fisiche da considerare? Questo mi aiuta a creare un programma sicuro per te! 💪`;
       needsToAsk = true;
-      console.log('✅ CASO C: ha_limitazioni === null, imposto needsToAsk = true');
+      console.log('✅ CASO C: ha_limitazioni è null/undefined, imposto needsToAsk = true');
     }
     
     console.log('🔍 getSmartLimitationsCheck - risultato finale:', {
