@@ -18,6 +18,8 @@
     "build:landing": "VITE_APP_MODE=landing tsc && vite build --config vite.config.landing.ts",
     "preview:landing": "VITE_APP_MODE=landing vite preview",
     "dev:proxy": "node server/dev-proxy.js",
+    "dev:api": "node server/api-proxy.js",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:api\"",
     "work:start": "node docs/scripts/start-work.js",
     "work:end": "node docs/scripts/end-work.js",
     "prompt:backup": "cp docs/PROMPT_MASTER_CURRENT.md prompts_archive/backup-$(date +%Y%m%d-%H%M%S).md",
