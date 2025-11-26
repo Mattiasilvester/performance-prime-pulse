@@ -91,14 +91,9 @@ export default defineConfig(({ command, mode }) => {
             proxyReq.removeHeader('x-real-ip');
           });
         }
-      },
-      // Proxy per API OpenAI in sviluppo locale
-      '/api/ai-chat': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
-        timeout: 60000, // 60 secondi per risposte lunghe
       }
+      // NOTA: Con 'vercel dev', le API routes (/api/*) funzionano automaticamente
+      // Non serve proxy per /api/ai-chat quando si usa vercel dev
     }
   },
   build: {
