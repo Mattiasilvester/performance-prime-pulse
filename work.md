@@ -3,7 +3,80 @@
 
 ## 🎯 **STATO ATTUALE: PROGETTO IN SVILUPPO ATTIVO**
 
-**Performance Prime Pulse** è un'applicazione React in sviluppo attivo con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata, sistema filtri interattivi, overlay GIF esercizi, automazione feedback 15 giorni, PrimeBot OpenAI completamente integrato con risposte intelligenti e formattazione markdown, footer con effetto vetro identico all'header, e sistema completo Piano Personalizzato con PrimeBot. Ultimi sviluppi: 16 Gennaio 2025.
+**Performance Prime Pulse** è un'applicazione React in sviluppo attivo con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata, sistema filtri interattivi, overlay GIF esercizi, automazione feedback 15 giorni, PrimeBot OpenAI completamente integrato con risposte intelligenti e formattazione markdown, footer con effetto vetro identico all'header, sistema completo Piano Personalizzato con PrimeBot, e sistema limitazioni fisiche con esclusione esercizi e consigli terapeutici. Ultimi sviluppi: 1 Ottobre 2025.
+
+---
+
+## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
+
+### **1 Ottobre 2025 - Sessione Limitazioni Fisiche e Consigli Terapeutici**
+- **Ora Inizio**: ~22:00
+- **Ora Fine**: ~23:30
+- **Durata**: ~1.5 ore
+- **Branch**: dev
+
+#### **🎯 Obiettivo:**
+Implementare sistema completo di gestione limitazioni fisiche per PrimeBot: esclusione esercizi vietati, consigli terapeutici per zona del corpo, e fix per garantire che OpenAI rispetti le limitazioni.
+
+#### **✅ Implementato:**
+
+1. **Sistema Esclusione Esercizi** 🚫
+   - File `src/data/bodyPartExclusions.ts` creato con mappatura zona → esercizi da escludere
+   - 8 zone supportate: spalla, schiena, ginocchio, polso, caviglia, collo, gomito, anca
+   - Funzione `getExcludedExercises()` per trovare esercizi vietati
+   - Funzione `getSafeAlternativeExercises()` per esercizi sicuri alternativi
+   - Funzione `detectBodyPart()` per estrarre zona del corpo dalla limitazione
+
+2. **Consigli Terapeutici** 💊
+   - Database `THERAPEUTIC_ADVICE` con 6 consigli per ogni zona
+   - Funzione `getTherapeuticAdvice()` per ottenere consigli specifici
+   - Consigli mostrati in UI con card gialla/ambra PRIMA degli esercizi
+
+3. **System Prompt Migliorato** 📝
+   - Lista esercizi vietati passata esplicitamente a OpenAI
+   - Istruzioni chiare per escludere esercizi che coinvolgono zona dolorante
+   - Esempio JSON dinamico che include `therapeuticAdvice` e `safetyNotes`
+
+4. **Fix Critico Consigli OpenAI** 🔧
+   - Dopo parsing risposta OpenAI, forzatura consigli terapeutici pre-calcolati
+   - Sovrascrittura `safetyNotes` con zona corretta usando `detectBodyPart()`
+   - Garantisce che anche se OpenAI ignora istruzioni, i consigli siano sempre corretti
+
+5. **Filtro Post-Generazione** 🔍
+   - Rimozione esercizi vietati anche dopo generazione OpenAI
+   - Logging dettagliato degli esercizi rimossi
+   - Aggiunta automatica esercizi sicuri se piano ha meno di 5 esercizi
+
+6. **Logging Completo** 📊
+   - Logging in ogni step del flusso per debug
+   - Tracciamento limitazione da messaggio utente fino a prompt OpenAI
+   - Log per matching esercizi esclusi e consigli terapeutici
+
+#### **🐛 Bug Risolti:**
+
+- **Limitazione sostituita con "schiena"**: Risolto aggiungendo logging completo e verificando che limitazione venga passata correttamente
+- **OpenAI ignora consigli terapeutici**: Risolto forzando consigli pre-calcolati dopo parsing risposta OpenAI
+- **Esercizi non filtrati correttamente**: Risolto con filtro post-generazione che rimuove esercizi vietati
+
+#### **🔒 Componenti Locked:**
+
+- Nessuno modificato
+
+#### **📊 Metriche:**
+
+- Build: 10.57s
+- Bundle: 698.75 kB (209.99 kB gzipped)
+- Errori TS: 5 (pre-esistenti, non introdotti)
+
+#### **📋 TODO Prossima Sessione:**
+
+1. **🔴 ALTA PRIORITÀ**: Implementare WHITELIST invece di BLACKLIST per esercizi sicuri
+   - Creare `SAFE_EXERCISES_BY_INJURY` in `bodyPartExclusions.ts`
+   - Sostituire esercizi generati da OpenAI con quelli dalla whitelist quando c'è limitazione
+   - Garantire sicurezza al 100% per utenti con dolori
+
+2. Test completo sistema limitazioni con diverse zone del corpo
+3. Verificare che filtro esercizi funzioni correttamente per tutte le varianti
 
 ---
 

@@ -29,6 +29,8 @@ export interface StructuredWorkoutPlan {
   exercises: StructuredExercise[];
   warmup?: string;
   cooldown?: string;
+  therapeuticAdvice?: string[]; // Consigli terapeutici per limitazioni fisiche
+  safetyNotes?: string; // Note di sicurezza per limitazioni
 }
 
 /**

@@ -142,6 +142,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [pendingPlan, setPendingPlan] = useState<any>(null);
   const [showPlanDisclaimer, setShowPlanDisclaimer] = useState(false);
   const [awaitingLimitationsResponse, setAwaitingLimitationsResponse] = useState(false);
+  const [originalWorkoutRequest, setOriginalWorkoutRequest] = useState<string | null>(null);
 
   // Voiceflow rimosso - ora usa solo OpenAI
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
@@ -163,6 +164,24 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
       }, 200);
     }
   }, [hasStartedChat, msgs.length]);
+
+  // DEBUG: Esponi funzione reset limitazioni nella console per test
+  useEffect(() => {
+    if (typeof window !== 'undefined' && userId && !userId.startsWith('guest-')) {
+      (window as any).resetHealthLimitations = async () => {
+        const { resetHealthLimitations } = await import('@/services/primebotUserContextService');
+        const result = await resetHealthLimitations(userId);
+        if (result) {
+          console.log('✅ Limitazioni fisiche resettate! Ricarica la pagina e riprova.');
+          alert('✅ Limitazioni fisiche resettate! Ricarica la pagina e riprova.');
+        } else {
+          console.error('❌ Errore nel reset delle limitazioni');
+          alert('❌ Errore nel reset delle limitazioni');
+        }
+      };
+      console.log('🔧 DEBUG: Usa resetHealthLimitations() nella console per resettare i dati di limitazioni');
+    }
+  }, [userId]);
 
   useEffect(() => {
     console.log('useEffect PRINCIPALE: INIZIO');
@@ -285,7 +304,16 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         ]);
         
         // Rigenera il piano con i dati aggiornati
-        const planResponse = await getStructuredWorkoutPlan(trimmed, userId, currentSessionId || undefined);
+        // IMPORTANTE: Usa la richiesta originale del piano, non "no" o "sì"
+        const workoutRequest = originalWorkoutRequest || trimmed;
+        console.log('🔄 Rigenero piano con richiesta:', {
+          originalRequest: originalWorkoutRequest,
+          currentTrimmed: trimmed,
+          usingRequest: workoutRequest,
+        });
+        const planResponse = await getStructuredWorkoutPlan(workoutRequest, userId, currentSessionId || undefined);
+        // Reset della richiesta originale dopo l'uso
+        setOriginalWorkoutRequest(null);
         
         if (planResponse.success && planResponse.plan) {
           // Mostra disclaimer SOLO se l'utente ha limitazioni
@@ -443,8 +471,8 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
             hasExistingLimitations: planResponse.hasExistingLimitations,
           });
           
-          // DEBUG CRITICO: Stampa tutta la risposta con console.error (non viene rimossa)
-          console.error('🔴 DEBUG CRITICO - planResponse COMPLETO:', {
+          // DEBUG: Stampa tutta la risposta
+          console.log('🔍 DEBUG - planResponse COMPLETO:', {
             type: planResponse.type,
             typeValue: planResponse.type,
             typeIsUndefined: planResponse.type === undefined,
@@ -458,11 +486,11 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           });
         } catch (error) {
           console.error('❌ ERRORE in getStructuredWorkoutPlan:', error);
-          setMsgs(m => [
-            ...m,
-            {
-              id: crypto.randomUUID(),
-              role: 'bot' as const,
+        setMsgs(m => [
+          ...m,
+          { 
+            id: crypto.randomUUID(), 
+            role: 'bot' as const, 
               text: 'Ops, ho avuto un problema tecnico. Riprova tra qualche secondo.',
             },
           ]);
@@ -480,8 +508,8 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           hasPlan: !!planResponse.plan,
         });
         
-        // DEBUG CRITICO: Verifica PRIMA del controllo if
-        console.error('🔴 DEBUG CRITICO - PRIMA del controllo type === question:', {
+        // DEBUG: Verifica PRIMA del controllo if
+        console.log('🔍 DEBUG - PRIMA del controllo type === question:', {
           type: planResponse.type,
           typeStrictEqual: planResponse.type === 'question',
           question: planResponse.question,
@@ -490,8 +518,10 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         });
         
         if (planResponse.type === 'question' && planResponse.question) {
-          console.error('🔴 DEBUG CRITICO - ENTRO NEL BLOCCO QUESTION - Mostro SOLO la domanda');
+          console.log('✅ DEBUG - ENTRO NEL BLOCCO QUESTION - Mostro SOLO la domanda');
           console.log('❓ Ritornata domanda limitazioni, mostro SOLO la domanda');
+          // Salva la richiesta originale per rigenerare il piano dopo la risposta
+          setOriginalWorkoutRequest(trimmed);
           setMsgs(m => [
             ...m,
             {
@@ -502,11 +532,11 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           ]);
           setAwaitingLimitationsResponse(true);
           setLoading(false);
-          console.error('🔴 DEBUG CRITICO - FACCIO RETURN - NON devo generare piano');
+          console.log('✅ DEBUG - FACCIO RETURN - NON devo generare piano');
           return; // IMPORTANTE: Esci qui, NON generare piano
         }
         
-        console.error('🔴 DEBUG CRITICO - NON sono entrato nel blocco question, verifico se è un piano');
+        console.log('🔍 DEBUG - NON sono entrato nel blocco question, verifico se è un piano');
         console.log('⚠️ NON è una domanda, verifico se è un piano:', {
           type: planResponse.type,
           success: planResponse.success,
@@ -515,15 +545,15 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         
         // Se il tipo è 'error', mostra messaggio di errore
         if (planResponse.type === 'error') {
-          console.error('🔴 DEBUG CRITICO - ERRORE nella generazione piano:', {
+          console.error('❌ ERRORE nella generazione piano:', {
             message: planResponse.message,
             errorType: planResponse.errorType,
           });
-          setMsgs(m => [
-            ...m,
-            {
-              id: crypto.randomUUID(),
-              role: 'bot' as const,
+        setMsgs(m => [
+          ...m,
+          { 
+            id: crypto.randomUUID(), 
+            role: 'bot' as const, 
               text: planResponse.message || 'Errore nella generazione del piano. Riprova!',
             },
           ]);
@@ -532,7 +562,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         }
         
         // Se abbiamo un piano generato (solo se needsToAsk === false)
-        console.error('🔴 DEBUG CRITICO - PRIMA del controllo success && plan:', {
+        console.log('🔍 DEBUG - PRIMA del controllo success && plan:', {
           success: planResponse.success,
           hasPlan: !!planResponse.plan,
           type: planResponse.type,
@@ -540,17 +570,32 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         });
         
         if (planResponse.success && planResponse.plan) {
-          console.error('🔴 DEBUG CRITICO - ENTRO NEL BLOCCO success && plan');
-          // Mostra disclaimer SOLO se l'utente ha limitazioni esistenti E ha già risposto prima
-          console.error('🔴 DEBUG CRITICO - Verifico hasExistingLimitations:', {
+          console.log('✅ DEBUG - ENTRO NEL BLOCCO success && plan');
+          // Mostra disclaimer SOLO se l'utente ha limitazioni esistenti E ha già risposto prima (non è la prima volta)
+          console.log('🔍 DEBUG - Verifico condizioni per disclaimer:', {
             hasExistingLimitations: planResponse.hasExistingLimitations,
-            conditionResult: planResponse.hasExistingLimitations,
+            hasAnsweredBefore: (planResponse as any).hasAnsweredBefore,
+            conditionResult: planResponse.hasExistingLimitations && (planResponse as any).hasAnsweredBefore,
           });
           
-          if (planResponse.hasExistingLimitations) {
-            // Ha limitazioni già salvate → mostra disclaimer prima del piano
-            console.error('🔴 DEBUG CRITICO - ENTRO NEL BLOCCO hasExistingLimitations - Mostro disclaimer');
-            console.log('⚠️ Utente ha limitazioni esistenti, mostro disclaimer');
+          // IMPORTANTE: Mostra disclaimer SOLO se:
+          // 1. Ha limitazioni esistenti (hasExistingLimitations === true)
+          // 2. Ha già risposto prima (hasAnsweredBefore === true)
+          // Questo evita di mostrare il disclaimer se l'utente non ha mai risposto alla domanda iniziale
+          if (planResponse.hasExistingLimitations && (planResponse as any).hasAnsweredBefore) {
+            // Ha limitazioni già salvate E ha già risposto prima → mostra messaggio bot + disclaimer
+            console.log('✅ DEBUG - ENTRO NEL BLOCCO hasExistingLimitations + hasAnsweredBefore - Mostro messaggio bot + disclaimer');
+            console.log('⚠️ Utente ha limitazioni esistenti E ha già risposto prima, mostro messaggio bot + disclaimer');
+            
+            // PRIMA: Aggiungi messaggio del bot che spiega il piano
+            const botMessage: Msg = {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: `Ecco il tuo piano di allenamento personalizzato! Ho tenuto conto delle tue limitazioni per creare un programma sicuro per te. 💪`,
+            };
+            setMsgs(m => [...m, botMessage]);
+            
+            // POI: Imposta il piano in pending per mostrare il disclaimer DOPO il messaggio
             setPendingPlan({
               plan: planResponse.plan,
               hasLimitations: planResponse.hasExistingLimitations ?? false,
@@ -574,11 +619,11 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
               ],
             });
             setShowPlanDisclaimer(true);
-            console.error('🔴 DEBUG CRITICO - Ho impostato showPlanDisclaimer = true');
+            console.log('✅ DEBUG - Ho aggiunto messaggio bot e impostato showPlanDisclaimer = true');
           } else {
-            // NON ha limitazioni → mostra piano direttamente senza disclaimer
-            console.error('🔴 DEBUG CRITICO - NON ha limitazioni - Mostro piano direttamente');
-            console.log('✅ Utente NON ha limitazioni, mostro piano direttamente');
+            // NON ha limitazioni O non ha mai risposto prima → mostra piano direttamente senza disclaimer
+            console.log('✅ DEBUG - NON ha limitazioni O non ha mai risposto - Mostro piano direttamente');
+            console.log('✅ Utente NON ha limitazioni O non ha mai risposto, mostro piano direttamente');
             const botMessage: Msg = {
               id: crypto.randomUUID(),
               role: 'bot' as const,
@@ -607,6 +652,13 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           }
         } else {
           // Errore o caso non gestito
+          console.warn('⚠️ Caso non gestito in planResponse:', {
+            type: planResponse.type,
+            success: planResponse.success,
+            hasPlan: !!planResponse.plan,
+            hasQuestion: !!planResponse.question,
+            message: planResponse.message,
+          });
           setMsgs(m => [
             ...m,
             {
@@ -615,6 +667,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
               text: planResponse.message || 'Errore nella generazione del piano. Riprova!',
             },
           ]);
+          setLoading(false);
         }
       } else {
         // SECONDO: Se non c'è risposta preimpostata, usa l'AI normale
@@ -783,33 +836,6 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         {/* Area Messaggi - con spazio sopra */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto">
           <div className="px-4 py-16 space-y-4">
-            {/* Health Disclaimer prima del piano */}
-            {showPlanDisclaimer && pendingPlan && (
-              <div className="max-w-[85%] mr-auto mb-4">
-                <HealthDisclaimer
-                  userId={userId}
-                  disclaimerType="workout_plan"
-                  onAccept={() => {
-                    // Quando accetta, mostra il piano
-                    setShowPlanDisclaimer(false);
-                    const botMessage: Msg = {
-                      id: crypto.randomUUID(),
-                      role: 'bot' as const,
-                      text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
-                      workoutPlan: pendingPlan.plan,
-                      actions: pendingPlan.actions,
-                    };
-                    setMsgs(m => [...m, botMessage]);
-                    setPendingPlan(null);
-                  }}
-                  context={{
-                    plan_name: pendingPlan.plan.name,
-                    workout_type: pendingPlan.plan.workout_type,
-                  }}
-                  userHasLimitations={pendingPlan?.hasLimitations ?? false}
-                />
-              </div>
-            )}
             {msgs.map(m => (
               <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
                 <div className={`px-4 py-3 rounded-2xl ${
@@ -847,6 +873,32 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                       </h3>
                       {m.workoutPlan.description && (
                         <p className="text-gray-300 text-sm mb-3">{m.workoutPlan.description}</p>
+                      )}
+                      
+                      {/* Consigli Terapeutici - Mostra PRIMA degli esercizi se presenti */}
+                      {m.workoutPlan.therapeuticAdvice && m.workoutPlan.therapeuticAdvice.length > 0 && (
+                        <div className="bg-amber-900/30 border border-amber-500/50 rounded-lg p-4 mb-4">
+                          <h4 className="text-amber-400 font-semibold mb-2 flex items-center gap-2">
+                            💡 Consigli per il tuo dolore
+                          </h4>
+                          <ul className="space-y-2 text-sm text-gray-300">
+                            {m.workoutPlan.therapeuticAdvice.map((advice: string, index: number) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-amber-400 mt-0.5">•</span>
+                                <span>{advice}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {/* Note di Sicurezza */}
+                      {m.workoutPlan.safetyNotes && (
+                        <div className="bg-blue-900/30 border border-blue-500/50 rounded-lg p-3 mb-4">
+                          <p className="text-blue-300 text-sm">
+                            <span className="font-semibold">ℹ️ Nota di sicurezza:</span> {m.workoutPlan.safetyNotes}
+                          </p>
+                        </div>
                       )}
                       
                       {/* Info Piano */}
@@ -937,6 +989,35 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                 </div>
               </div>
             ))}
+            
+            {/* Health Disclaimer DOPO i messaggi (quando necessario) */}
+            {showPlanDisclaimer && pendingPlan && (
+              <div className="max-w-[85%] mr-auto mb-4">
+                <HealthDisclaimer
+                  userId={userId}
+                  disclaimerType="workout_plan"
+                  onAccept={() => {
+                    // Quando accetta, mostra il piano
+                    setShowPlanDisclaimer(false);
+                    const botMessage: Msg = {
+                      id: crypto.randomUUID(),
+                      role: 'bot' as const,
+                      text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
+                      workoutPlan: pendingPlan.plan,
+                      actions: pendingPlan.actions,
+                    };
+                    setMsgs(m => [...m, botMessage]);
+                    setPendingPlan(null);
+                  }}
+                  context={{
+                    plan_name: pendingPlan.plan.name,
+                    workout_type: pendingPlan.plan.workout_type,
+                  }}
+                  userHasLimitations={pendingPlan?.hasLimitations ?? false}
+                />
+              </div>
+            )}
+            
             {loading && (
               <div className="mr-auto px-4 py-3 rounded-2xl bg-gray-800 text-white border border-gray-600">
                 <div className="flex items-center space-x-2">
