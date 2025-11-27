@@ -1267,6 +1267,16 @@ python3 -m http.server 8083
 - ✅ `src/hooks/useFeatureFlag.ts` - Hook feature flags con logica A/B testing
 - ✅ Sistema background globali (body/html/#root) - Configurazione ottimale
 
+### **🔒 COMPONENTI PRIMEBOT/AI (LOCKED):**
+- ✅ `src/components/PrimeChat.tsx` - Chat interface principale PrimeBot
+- ✅ `src/lib/openai-service.ts` - Servizio OpenAI per generazione piani
+- ✅ `src/services/painTrackingService.ts` - Servizio tracking dolori utente
+- ✅ `src/services/primebotUserContextService.ts` - Servizio contesto utente PrimeBot
+- ✅ `src/services/primebotActionsService.ts` - Servizio azioni PrimeBot
+- ✅ `src/hooks/usePainTracking.ts` - Hook gestione tracking dolori
+- ✅ `src/data/bodyPartExclusions.ts` - Database esclusioni e whitelist esercizi
+- ✅ `src/data/safeExerciseWhitelist.ts` - Whitelist esercizi sicuri per limitazioni
+
 ## 🛡️ REGOLE SVILUPPO CONSERVATIVO (PRIORITÀ MASSIMA)
 
 ### PRINCIPIO FONDAMENTALE
@@ -1337,12 +1347,47 @@ python3 -m http.server 8083
      * Nessun gesture handler con logica
    - Test visivo obbligatorio: nuovo === vecchio pixel-perfect
 
-10. **DOCUMENTAZIONE MODIFICHE**
+10. **ELIMINAZIONE FILE/CONTENUTI (CRITICO)**
+    - Se il prompt richiede l'eliminazione di QUALSIASI COSA all'interno del progetto:
+      * PRIMA di procedere → CHIEDI CONFERMA ESPLICITA
+      * Se l'utente conferma → procedi con l'eliminazione richiesta
+      * Se l'utente NON acconsente → NON FARE NULLA, fermati
+    - Questo vale per:
+      * File interi
+      * Funzioni/codice
+      * Dipendenze
+      * Configurazioni
+      * Qualsiasi contenuto del progetto
+
+11. **DOCUMENTAZIONE MODIFICHE**
     - Ogni modifica deve documentare:
       * Cosa è stato modificato
       * Perché è stato modificato
       * Test eseguiti
       * Possibili side effects
+
+12. **INTEGRAZIONI ADDITIVE (CRITICO)**
+    - Quando il prompt richiede di "aggiungere", "integrare" o "implementare" nuovo codice:
+      * AGGIUNGERE import SENZA rimuovere import esistenti
+      * AGGIUNGERE hooks SENZA sostituire hooks esistenti
+      * AGGIUNGERE funzioni SENZA eliminare funzioni esistenti
+      * AGGIUNGERE blocchi di codice SENZA riscrivere la logica esistente
+      * Se serve modificare codice esistente per l'integrazione → CHIEDERE CONFERMA
+      * MAI fare "refactoring migliorativo" durante un'integrazione
+
+13. **BACKUP PRIMA DI MODIFICHE CRITICHE**
+    - Prima di modificare file nella lista LOCKED:
+      * Suggerire all'utente: `cp file.tsx file.tsx.backup`
+      * Procedere solo dopo conferma utente
+      * In caso di errori suggerire: `cp file.tsx.backup file.tsx`
+
+14. **MODIFICHE DATABASE SUPABASE**
+    - MAI eliminare colonne esistenti senza conferma esplicita
+    - MAI modificare tipi di colonne esistenti (ALTER TYPE)
+    - Preferire sempre ADD COLUMN a modifiche
+    - MAI eliminare tabelle
+    - Migrazioni devono essere retrocompatibili
+    - Testare migrazioni su ambiente dev prima di prod
 
 ### ESEMPI DI QUANDO FERMARSI
 

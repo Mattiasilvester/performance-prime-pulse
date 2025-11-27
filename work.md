@@ -9,6 +9,85 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **28 Novembre 2025 - Sessione Fix Critici Sistema Limitazioni e PrimeBot**
+- **Ora Inizio**: ~00:00
+- **Ora Fine**: ~01:00
+- **Durata**: ~1 ora
+- **Branch**: dev
+
+#### **🎯 Obiettivo:**
+Risolvere bug critici nel sistema di gestione limitazioni fisiche e nel flusso PrimeBot: duplicazione messaggi, disallineamento dati limitazioni, e intercettazione fallback di messaggi validi.
+
+#### **✅ Implementato:**
+
+1. **Fix Duplicazione Messaggio "procedi"** 🔧
+   - Aggiunto controllo `shouldAddUserMessage` all'inizio della funzione `send()`
+   - Modificato blocco `waitingForPlanConfirmation` per settare il flag prima del controllo generale
+   - File: `src/components/PrimeChat.tsx` (riga 464)
+
+2. **Fix Disallineamento "Schiena" - FIX 1** 🧹
+   - Forzatura `limitations/zones/medicalConditions` a `null` quando `hasExistingLimitations = false`
+   - Prevenzione passaggio dati residui all'AI
+   - File: `src/services/primebotUserContextService.ts` (righe 572-596)
+
+3. **Fix Disallineamento "Schiena" - FIX 2** 🧹
+   - Pulizia completa database quando utente dice "Nessuna limitazione"
+   - Reset di tutti i campi relativi: `limitazioni_fisiche`, `zone_evitare`, `zone_dolori_dettagli`, `condizioni_mediche`
+   - File: `src/services/primebotUserContextService.ts` (righe 678-708)
+
+4. **Fix Disallineamento "Schiena" - FIX 3** 🧹
+   - Controllo `ha_limitazioni` prima del fallback in `getUserPains`
+   - Prevenzione lettura dati residui da `limitazioni_fisiche` quando `ha_limitazioni = false`
+   - File: `src/services/painTrackingService.ts` (righe 25-94)
+
+5. **Fix Fallback Intercetta "Dolore Risolto"** 🔧
+   - Flag `skipFallbackCheck` per saltare fallback quando si passa dall'LLM dopo `waitingForPainPlanConfirmation`
+   - Riconoscimento keywords "dolore risolto" prima del check `painKeywords`
+   - File: `src/components/PrimeChat.tsx` (riga 187, 431, 901-909)
+   - File: `src/lib/primebot-fallback.ts` (righe 98-120)
+
+6. **Analisi Disallineamento "Schiena"** 📊
+   - Documento completo `ANALISI_DISALLINEAMENTO_SCHIENA.md` creato
+   - Analisi flusso dati dal riepilogo all'AI
+   - Identificazione 3 fix necessari e implementati
+
+#### **🐛 Bug Risolti:**
+
+1. **BUG 1: Duplicazione Messaggio "procedi"**
+   - **Causa**: `shouldAddUserMessage` non veniva settato a `false` nel blocco `waitingForPlanConfirmation` prima del controllo generale
+   - **Soluzione**: Aggiunto `shouldAddUserMessage = false` prima di `setSkipUserMessageAdd(true)` nel blocco `isConfirm`
+   - **Risultato**: Messaggio "procedi" appare una sola volta nella chat
+
+2. **BUG 2: Disallineamento "Schiena" - Dati Residui**
+   - **Causa**: Quando `ha_limitazioni = false`, i campi `limitations` e `zones` potevano contenere ancora dati residui dal database
+   - **Soluzione**: 3 fix implementati:
+     - FIX 1: Forzatura a `null` quando `hasExistingLimitations = false`
+     - FIX 2: Pulizia completa database quando utente dice "Nessuna limitazione"
+     - FIX 3: Controllo `ha_limitazioni` prima del fallback in `getUserPains`
+   - **Risultato**: Nessun dato residuo passato all'AI quando utente dice "Nessuna limitazione"
+
+3. **BUG 3: Fallback Intercetta "Dolore Risolto"**
+   - **Causa**: Fallback intercettava messaggi come "il dolore mi è passato" perché contenevano la parola "dolore"
+   - **Soluzione**: Doppia protezione:
+     - Flag `skipFallbackCheck` per saltare fallback dopo `waitingForPainPlanConfirmation`
+     - Riconoscimento keywords "dolore risolto" prima del check `painKeywords`
+   - **Risultato**: Messaggi "dolore risolto" passano correttamente all'LLM
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato
+
+#### **📊 Metriche:**
+- Build: 9.89s
+- Bundle: ~700 KB (principal bundle)
+- Errori TS: 0
+
+#### **📋 TODO Prossima Sessione:**
+1. Test completo sistema limitazioni con utenti reali
+2. Verificare che tutti i fix funzionino correttamente in produzione
+3. Ottimizzare performance se necessario
+
+---
+
 ### **1 Ottobre 2025 - Sessione Limitazioni Fisiche e Consigli Terapeutici**
 - **Ora Inizio**: ~22:00
 - **Ora Fine**: ~23:30

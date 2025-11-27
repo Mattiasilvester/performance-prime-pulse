@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getAIResponse } from '@/lib/openai-service';
@@ -14,18 +14,11 @@ import {
   executeAction,
   type ActionType,
 } from '@/services/primebotActionsService';
-import { 
-  generateOnboardingSummaryMessage,
-  updateOnboardingPreference,
-  parseModifyRequest
-} from '@/services/primebotUserContextService';
-import usePainTracking from '@/hooks/usePainTracking';
 import { ActionButton } from '@/components/primebot/ActionButton';
 import { toast } from 'sonner';
 import { getStructuredWorkoutPlan } from '@/lib/openai-service';
 import { type StructuredWorkoutPlan } from '@/services/workoutPlanGenerator';
 import { HealthDisclaimer } from '@/components/primebot/HealthDisclaimer';
-import { ExerciseGifLink } from '@/components/workouts/ExerciseGifLink';
 
 export interface ParsedAction {
   type: ActionType;
@@ -154,47 +147,6 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   // Voiceflow rimosso - ora usa solo OpenAI
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
 
-  // Pain tracking hooks
-  const { 
-    pains, 
-    loading: painsLoading, 
-    painCheckMessage,
-    handlePainGone, 
-    handlePainStillPresent, 
-    handleAllPainsGone,
-    handleNewPain,
-    refreshPains 
-  } = usePainTracking(userId && !userId.startsWith('guest-') ? userId : null);
-
-  const [waitingForPainResponse, setWaitingForPainResponse] = useState(false);
-  const [currentPainZone, setCurrentPainZone] = useState<string | null>(null);
-
-  // Stati per riepilogo onboarding
-  const [waitingForPlanConfirmation, setWaitingForPlanConfirmation] = useState(false);
-  const [pendingPlanRequest, setPendingPlanRequest] = useState<string | null>(null);
-
-  // Stati per modifica preferenze in chat
-  const [waitingForModifyChoice, setWaitingForModifyChoice] = useState(false);
-  const [waitingForModifyValue, setWaitingForModifyValue] = useState<string | null>(null); // quale campo sta modificando
-
-  // Flag per evitare duplicazione messaggio utente
-  const [skipUserMessageAdd, setSkipUserMessageAdd] = useState(false);
-
-  // Flag per aspettare conferma piano dopo dolore
-  const [waitingForPainPlanConfirmation, setWaitingForPainPlanConfirmation] = useState(false);
-
-  // ⭐ FIX BUG 2: Flag per saltare il fallback quando si passa dall'LLM dopo waitingForPainPlanConfirmation
-  const [skipFallbackCheck, setSkipFallbackCheck] = useState(false);
-
-  // Helper function to add bot message
-  const addBotMessage = useCallback((text: string) => {
-    setMsgs(prev => [...prev, { 
-      id: crypto.randomUUID(),
-      role: 'bot' as const, 
-      text: text
-    }]);
-  }, []);
-
   useEffect(() => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -290,457 +242,8 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     })();
   }, []);
 
-  // Ricarica dolori quando userId cambia da guest a reale
-  useEffect(() => {
-    if (userId && !userId.startsWith('guest-')) {
-      console.log('🔄 userId cambiato da guest a reale, ricarico dolori:', userId.substring(0, 8) + '...');
-      refreshPains();
-    }
-  }, [userId, refreshPains]);
-
   async function send(text: string) {
     const trimmed = text.trim();
-    
-    // === CONTROLLO DUPLICAZIONE MESSAGGIO - ALL'INIZIO ===
-    // Flag per evitare duplicazione - controllato PRIMA di qualsiasi logica
-    let shouldAddUserMessage = true;
-    
-    // Se skipUserMessageAdd è true, non aggiungere il messaggio
-    if (skipUserMessageAdd) {
-      shouldAddUserMessage = false;
-      setSkipUserMessageAdd(false); // Reset per la prossima volta
-    }
-    
-    // === SISTEMA TRACKING DOLORI - INIZIO ===
-    if (waitingForPainResponse && trimmed) {
-      // AGGIUNGI SUBITO il messaggio dell'utente alla chat
-      if (shouldAddUserMessage) {
-        setMsgs(prev => [...prev, { 
-          id: crypto.randomUUID(),
-          role: 'user',
-          text: trimmed
-        }]);
-        shouldAddUserMessage = false; // Evita duplicazione
-      }
-      setInput(''); // Pulisci input dopo aver aggiunto il messaggio
-      
-      const userMessageLower = trimmed.toLowerCase();
-      
-      // Utente dice che il dolore è passato
-      const isPainGone = userMessageLower.includes('passato') || 
-                         userMessageLower.includes('meglio') || 
-                         userMessageLower.includes('guarito') || 
-                         userMessageLower.includes('ok') ||
-                         userMessageLower.includes('sì') || 
-                         userMessageLower.includes('si');
-      
-      if (isPainGone) {
-        // Tutti i dolori passati
-        if (userMessageLower.includes('tutti') || userMessageLower.includes('tutto')) {
-          const response = await handleAllPainsGone();
-          setWaitingForPainResponse(false);
-          setCurrentPainZone(null);
-          addBotMessage(response);
-          setInput('');
-          return;
-        }
-        
-        // Singolo dolore passato
-        if (currentPainZone) {
-          const response = await handlePainGone(currentPainZone);
-          setWaitingForPainResponse(false);
-          setCurrentPainZone(null);
-          addBotMessage(response);
-          setInput('');
-          return;
-        }
-      }
-      
-      // Utente dice che il dolore c'è ancora
-      const isPainStill = userMessageLower.includes('ancora') || 
-                          userMessageLower.includes('male') || 
-                          userMessageLower.includes('no') || 
-                          userMessageLower.includes('persiste') ||
-                          userMessageLower.includes('fa male');
-      
-      if (isPainStill && currentPainZone) {
-        const response = handlePainStillPresent(currentPainZone);
-        setWaitingForPainResponse(false);
-        setCurrentPainZone(null);
-        addBotMessage(response);
-        // NON return - lascia continuare per generare piano con whitelist
-      }
-    }
-    
-    // === SISTEMA CONFERMA PIANO DOPO DOLORE ===
-    if (waitingForPainPlanConfirmation && trimmed) {
-      console.log('🩺 Gestisco risposta conferma piano dopo dolore');
-      
-      // Aggiungi messaggio utente
-      if (shouldAddUserMessage) {
-        setMsgs(prev => [...prev, { 
-          id: crypto.randomUUID(),
-          role: 'user',
-          text: trimmed
-        }]);
-        shouldAddUserMessage = false; // Evita duplicazione
-      }
-      setInput('');
-      
-      const userResponseLower = trimmed.toLowerCase();
-      
-      // Utente conferma → procedi con generazione piano
-      const isConfirm = userResponseLower.includes('sì') || 
-                        userResponseLower.includes('si') ||
-                        userResponseLower.includes('ok') || 
-                        userResponseLower.includes('procedi') ||
-                        userResponseLower.includes('vai') ||
-                        userResponseLower.includes('genera') ||
-                        userResponseLower.includes('crea');
-      
-      // Utente rifiuta - controllo più specifico per evitare falsi positivi
-      const isDecline = (userResponseLower === 'no') ||
-                        userResponseLower.includes('non voglio') ||
-                        userResponseLower.includes('non ora') ||
-                        userResponseLower.includes('lascia stare') ||
-                        userResponseLower.includes('lascia perdere') ||
-                        userResponseLower.includes('preferisco di no');
-      
-      if (isConfirm) {
-        console.log('✅ Utente conferma, procedo con generazione piano considerando limitazioni');
-        setWaitingForPainPlanConfirmation(false);
-        setLoading(true);
-        
-        // Genera piano con richiesta generica che considera le limitazioni
-        const planRequest = "Creami un piano di allenamento personalizzato";
-        setPendingPlanRequest(planRequest);
-        shouldAddUserMessage = false; // Messaggio già aggiunto sopra
-        // Lascia continuare il flusso per generare il piano
-        return; // Evita che il messaggio venga aggiunto di nuovo nel blocco generale
-      } else if (isDecline) {
-        console.log('❌ Utente rifiuta, chiudo il flusso');
-        setWaitingForPainPlanConfirmation(false);
-        addBotMessage("👍 Nessun problema! Quando vorrai un piano di allenamento, sarò qui. Nel frattempo, prenditi cura del tuo corpo! 💪");
-        setLoading(false);
-        return;
-      } else {
-        // Utente ha scritto qualcosa che non è né conferma né rifiuto
-        // Potrebbe essere "il dolore mi è passato" - passa all'LLM
-        console.log('🔄 Risposta non riconosciuta come conferma/rifiuto, passo all\'LLM');
-        setWaitingForPainPlanConfirmation(false);
-        setSkipFallbackCheck(true); // ⭐ FIX BUG 2: Salta il fallback, vai direttamente all'LLM
-        shouldAddUserMessage = false; // Messaggio già aggiunto sopra
-        console.log('🚀 Invio richiesta a OpenAI con messaggio:', trimmed);
-        // NON fare return - lascia continuare il flusso verso OpenAI
-        // Il messaggio verrà gestito dall'LLM che capirà il contesto
-      }
-    }
-    
-    // === SISTEMA RIEPILOGO ONBOARDING - GESTIONE RISPOSTA ===
-    if (waitingForPlanConfirmation && trimmed) {
-      console.log('📋 Gestisco risposta conferma riepilogo onboarding');
-      
-      // Aggiungi messaggio utente alla chat SOLO se non è già stato aggiunto
-      if (!skipUserMessageAdd) {
-        setMsgs(prev => [...prev, { 
-          id: crypto.randomUUID(),
-          role: 'user',
-          text: trimmed
-        }]);
-      }
-      setInput('');
-      
-      const userResponseLower = trimmed.toLowerCase();
-      
-      // Utente conferma → procedi con generazione piano
-      const isConfirm = userResponseLower.includes('sì') || 
-                        userResponseLower.includes('si') ||
-                        userResponseLower.includes('ok') || 
-                        userResponseLower.includes('procedi') ||
-                        userResponseLower.includes('vai') ||
-                        userResponseLower.includes('perfetto') ||
-                        userResponseLower.includes('genera') ||
-                        userResponseLower.includes('crea') ||
-                        userResponseLower.includes('confermo');
-      
-      if (isConfirm) {
-        console.log('✅ Utente conferma, procedo con generazione piano');
-        setWaitingForPlanConfirmation(false);
-        shouldAddUserMessage = false; // ⭐ FIX: Impedisce duplicazione nel blocco generale
-        setSkipUserMessageAdd(true); // Evita duplicazione messaggio nel blocco generale (riga 713-715)
-        // NON fare return - lascia continuare per generare il piano usando pendingPlanRequest
-        // Il piano verrà generato nel blocco isPlanRequest più sotto (riga 927+)
-        // skipUserMessageAdd=true previene la duplicazione del messaggio nel blocco generale
-      } else {
-        // Utente vuole modificare
-        const isModify = userResponseLower.includes('modifica') || 
-                         userResponseLower.includes('cambia') ||
-                         userResponseLower.includes('cambiare') ||
-                         userResponseLower.includes('modificare') ||
-                         userResponseLower.includes('aggiorna') ||
-                         userResponseLower.includes('diverso');
-        
-        if (isModify) {
-          console.log('🔄 Utente vuole modificare preferenze in chat');
-          setWaitingForPlanConfirmation(false);
-          setWaitingForModifyChoice(true);
-          // NON resettare pendingPlanRequest - ci servirà dopo
-          addBotMessage(`Cosa vorresti modificare? Puoi dirmi ad esempio:
-
-
-- **Obiettivo** → "Voglio dimagrire" oppure "Obiettivo massa"
-
-- **Giorni** → "4 giorni a settimana" oppure "Voglio allenarmi 5 volte"
-
-- **Durata** → "30 minuti" oppure "Ho solo 45 minuti"
-
-- **Luogo** → "Mi alleno a casa" oppure "Vado in palestra"
-
-- **Livello** → "Sono principiante" oppure "Livello intermedio"
-
-
-Dimmi cosa vuoi cambiare! 💪`);
-          return;
-        }
-        
-        // Risposta non chiara → chiedi chiarimento
-        console.log('❓ Risposta non chiara, chiedo chiarimento');
-        addBotMessage('Non ho capito bene. Vuoi che **proceda** con la creazione del piano con queste preferenze, oppure preferisci **modificare** qualcosa prima?');
-        return;
-      }
-    }
-    // === SISTEMA RIEPILOGO ONBOARDING - FINE GESTIONE RISPOSTA ===
-    
-    // === SISTEMA MODIFICA PREFERENZE IN CHAT ===
-    if (waitingForModifyChoice && trimmed) {
-      console.log('📝 Gestisco richiesta modifica preferenze');
-      
-      // Aggiungi messaggio utente alla chat
-      if (shouldAddUserMessage) {
-        setMsgs(prev => [...prev, { 
-          id: crypto.randomUUID(),
-          role: 'user',
-          text: trimmed
-        }]);
-        shouldAddUserMessage = false; // Evita duplicazione
-      }
-      setInput('');
-      
-      const userMsgLower = trimmed.toLowerCase();
-      
-      // Check se l'utente vuole procedere senza modificare
-      const wantsToProceed = userMsgLower.includes('procedi') || 
-                             userMsgLower.includes('vai') ||
-                             userMsgLower.includes('ok') ||
-                             userMsgLower.includes('genera') ||
-                             userMsgLower.includes('basta') ||
-                             userMsgLower.includes('così') ||
-                             userMsgLower.includes('va bene');
-      
-      if (wantsToProceed) {
-        console.log('✅ Utente vuole procedere, genero piano');
-        setWaitingForModifyChoice(false);
-        setWaitingForPlanConfirmation(false);
-        // NON fare return - lascia continuare per generare il piano
-        // Il pendingPlanRequest è già settato
-      } else {
-        // Prova a interpretare cosa vuole modificare (può essere multiplo)
-        const parsedArray = parseModifyRequest(trimmed);
-        
-        if (parsedArray && parsedArray.length > 0) {
-          console.log('✅ Riconosciute modifiche:', parsedArray);
-          setLoading(true);
-          
-          // Label leggibili per i campi
-          const fieldLabels: Record<string, string> = {
-            'obiettivo': 'Obiettivo',
-            'livello_esperienza': 'Livello',
-            'giorni_settimana': 'Giorni a settimana',
-            'luoghi_allenamento': 'Luogo allenamento',
-            'tempo_sessione': 'Durata sessione',
-            'attrezzi': 'Attrezzatura'
-          };
-          
-          const valueLabels: Record<string, string> = {
-            'massa': 'Aumento massa muscolare',
-            'dimagrire': 'Perdita peso',
-            'tonificare': 'Tonificazione',
-            'resistenza': 'Resistenza',
-            'forza': 'Forza',
-            'benessere': 'Benessere generale',
-            'principiante': 'Principiante',
-            'intermedio': 'Intermedio',
-            'avanzato': 'Avanzato',
-            'casa': 'Casa',
-            'palestra': 'Palestra',
-            'outdoor': 'All\'aperto'
-          };
-          
-          // Aggiorna tutti i campi trovati
-          const updatePromises = parsedArray.map(parsed => 
-            updateOnboardingPreference(userId, parsed.field, parsed.value)
-          );
-          
-          const results = await Promise.all(updatePromises);
-          
-          // Verifica se tutti gli aggiornamenti sono riusciti
-          const allSuccess = results.every(r => r.success);
-          const failedUpdates = results.filter(r => !r.success);
-          
-          if (allSuccess) {
-            // Costruisci messaggio con tutte le modifiche
-            const updatesList = parsedArray.map(parsed => {
-              const fieldLabel = fieldLabels[parsed.field] || parsed.field;
-              const valueLabel = valueLabels[String(parsed.value)] || String(parsed.value);
-              return `**${fieldLabel}** → **${valueLabel}**`;
-            }).join('\n');
-            
-            // Genera nuovo riepilogo aggiornato
-            const newSummary = await generateOnboardingSummaryMessage(userId);
-            
-            setWaitingForModifyChoice(false);
-            setWaitingForPlanConfirmation(true);
-            setLoading(false);
-            
-            const updatesText = parsedArray.length === 1 
-              ? `✅ Perfetto! Ho aggiornato ${updatesList}.`
-              : `✅ Perfetto! Ho aggiornato:\n${updatesList}`;
-            
-            addBotMessage(`${updatesText}
-
-
-${newSummary ? newSummary.replace('Secondo le tue risposte durante l\'onboarding:', 'Ecco il riepilogo aggiornato:') : 'Vuoi procedere con il piano o modificare altro?'}`);
-            return;
-          } else {
-            // Errore aggiornamento
-            setLoading(false);
-            const errorMessages = failedUpdates.map(r => r.message).join(', ');
-            addBotMessage(`❌ Errore nell'aggiornamento: ${errorMessages}. Riprova o dimmi cosa vuoi modificare.`);
-            return;
-          }
-        } else {
-          // Non ha capito cosa modificare
-          console.log('❓ Non riesco a interpretare la modifica');
-          addBotMessage(`Non ho capito bene cosa vuoi modificare. Prova a essere più specifico, ad esempio:
-          
-
-- "Voglio allenarmi 4 giorni a settimana"
-
-- "Il mio obiettivo è dimagrire"
-
-- "Mi alleno a casa"
-
-- "Ho 30 minuti a disposizione"
-
-
-Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`);
-          return;
-        }
-      } // chiusura else di wantsToProceed
-    }
-    // === FINE SISTEMA MODIFICA PREFERENZE IN CHAT ===
-    
-    // Check dolori PRIMA di generare piano
-    const isPlanRequestForPainCheck = /piano|allenamento|workout|scheda|programma|esercizi|allena|creami/i.test(trimmed);
-    console.log('🔍 DEBUG CHECK DOLORI:', {
-      isPlanRequestForPainCheck,
-      painsLength: pains.length,
-      painCheckMessage: painCheckMessage ? painCheckMessage.substring(0, 50) + '...' : null,
-      waitingForPainResponse,
-      userId: userId.substring(0, 8) + '...',
-      conditionResult: isPlanRequestForPainCheck && pains.length > 0 && painCheckMessage && !waitingForPainResponse
-    });
-    
-    if (isPlanRequestForPainCheck && pains.length > 0 && painCheckMessage && !waitingForPainResponse) {
-      console.log('✅ ENTRO NEL BLOCCO CHECK DOLORI - Mostro painCheckMessage');
-      // Aggiungi messaggio utente alla chat
-      if (shouldAddUserMessage) {
-        setMsgs(prev => [...prev, { 
-          id: crypto.randomUUID(),
-          role: 'user', 
-          text: trimmed 
-        }]);
-        shouldAddUserMessage = false; // Evita duplicazione
-      }
-      setInput('');
-      
-      setWaitingForPainResponse(true);
-      if (pains.length === 1) {
-        setCurrentPainZone(pains[0].zona);
-      }
-      
-      // Aggiungi messaggio bot con bottone per contattare professionista
-      const painMessageWithAction = `${painCheckMessage}
-
-
-💡 **Se preferisci, puoi contattare uno dei nostri professionisti per un consulto personalizzato.**`;
-      
-      setMsgs(prev => [...prev, {
-        id: crypto.randomUUID(),
-        role: 'bot' as const,
-        text: painMessageWithAction,
-        actions: [
-          {
-            type: 'navigate' as const,
-            label: '👨‍⚕️ Contatta un professionista',
-            payload: { path: '/professionals' }
-          }
-        ]
-      }]);
-      
-      return;
-    }
-    // === SISTEMA TRACKING DOLORI - FINE ===
-    
-    // === SISTEMA RIEPILOGO ONBOARDING - MOSTRA RIEPILOGO ===
-    // Se è una richiesta piano E non stiamo aspettando conferma E non ci sono dolori da gestire
-    if (isPlanRequestForPainCheck && !waitingForPlanConfirmation && !waitingForPainResponse) {
-      // Se l'utente ha appena confermato (pendingPlanRequest è settato), salta il riepilogo
-      if (pendingPlanRequest) {
-        console.log('✅ Utente ha confermato, uso pendingPlanRequest per generare piano');
-        // Il flusso continuerà sotto per generare il piano
-      } else {
-        // Prima richiesta di piano → mostra riepilogo
-        console.log('📋 Prima richiesta piano, mostro riepilogo onboarding');
-        
-        // Aggiungi messaggio utente alla chat
-        if (shouldAddUserMessage) {
-          setMsgs(prev => [...prev, { 
-            id: crypto.randomUUID(),
-            role: 'user',
-            text: trimmed
-          }]);
-          shouldAddUserMessage = false; // Evita duplicazione
-        }
-        setInput('');
-        setLoading(true);
-        
-        try {
-          const summaryMessage = await generateOnboardingSummaryMessage(userId);
-          
-          if (summaryMessage) {
-            // Ha dati onboarding → mostra riepilogo e aspetta conferma
-            console.log('✅ Riepilogo onboarding generato, mostro e aspetto conferma');
-            setPendingPlanRequest(trimmed); // Salva richiesta originale
-            setWaitingForPlanConfirmation(true);
-            addBotMessage(summaryMessage);
-            setLoading(false);
-            return;
-          } else {
-            // NON ha dati onboarding → procedi senza riepilogo
-            console.log('⚠️ Nessun dato onboarding, procedo senza riepilogo');
-            // Non fare return, lascia continuare il flusso normale
-          }
-        } catch (error) {
-          console.error('❌ Errore generazione riepilogo:', error);
-          // In caso di errore, procedi senza riepilogo
-        }
-        
-        setLoading(false);
-      }
-    }
-    // === SISTEMA RIEPILOGO ONBOARDING - FINE MOSTRA RIEPILOGO ===
-    
     console.log('🚀 SEND FUNZIONE CHIAMATA:', { text: trimmed, loading, awaitingLimitationsResponse });
     
     if (!trimmed || loading) {
@@ -748,13 +251,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       return;
     }
 
-    // Aggiungi messaggio utente solo se non è già stato aggiunto nei blocchi precedenti
-    if (shouldAddUserMessage) {
-      setMsgs(m => [...m, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
-      console.log('📝 Messaggio utente aggiunto nel blocco generale');
-    } else {
-      console.log('⏭️ Messaggio utente già aggiunto, salto duplicazione');
-    }
+    setMsgs(m => [...m, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
     setInput('');
     setLoading(true);
     
@@ -898,15 +395,8 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         return;
       }
       
-      // ⭐ FIX BUG 2: Se skipFallbackCheck è true, salta il fallback e vai all'LLM
-      let presetResponse = null;
-      if (!skipFallbackCheck) {
-        // SECONDO: Controlla se esiste una risposta preimpostata
-        presetResponse = getPrimeBotFallbackResponse(trimmed);
-      } else {
-        console.log('🔄 FIX BUG 2: skipFallbackCheck = true, salto fallback e vado all\'LLM');
-        setSkipFallbackCheck(false); // Reset per prossimo messaggio
-      }
+      // SECONDO: Controlla se esiste una risposta preimpostata
+      const presetResponse = getPrimeBotFallbackResponse(trimmed);
       
       if (presetResponse) {
         console.log('🎯 Risposta preimpostata trovata:', presetResponse);
@@ -928,11 +418,6 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         }
         
         setMsgs(m => [...m, message]);
-        
-        // Se la risposta chiede conferma per creare piano, setta lo stato
-        if (presetResponse.askForPlanConfirmation) {
-          setWaitingForPainPlanConfirmation(true);
-        }
         
         // Salva anche le risposte preimpostate su database (se abbiamo sessionId)
         if (currentSessionId && userId && !userId.startsWith('guest-')) {
@@ -961,14 +446,10 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       }
       
       // TERZO: Controlla se è una richiesta di piano allenamento
-      // Se l'utente ha confermato il riepilogo, considera come richiesta piano
-      const isPlanRequestFromConfirmation = pendingPlanRequest !== null;
-      const isPlanRequest = isWorkoutPlanRequest(trimmed) || isPlanRequestFromConfirmation;
+      const isPlanRequest = isWorkoutPlanRequest(trimmed);
       console.log('🔍 VERIFICA RICHIESTA PIANO:', { 
         trimmed, 
         isPlanRequest,
-        isPlanRequestFromConfirmation,
-        pendingPlanRequest: pendingPlanRequest ? pendingPlanRequest.substring(0, 30) + '...' : null,
         awaitingLimitationsResponse 
       });
       
@@ -981,9 +462,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         
         let planResponse;
         try {
-          // Usa pendingPlanRequest se l'utente ha confermato il riepilogo, altrimenti usa trimmed
-          const planRequestText = pendingPlanRequest || trimmed;
-          planResponse = await getStructuredWorkoutPlan(planRequestText, userId, currentSessionId || undefined);
+          planResponse = await getStructuredWorkoutPlan(trimmed, userId, currentSessionId || undefined);
           console.log('✅ getStructuredWorkoutPlan completato:', {
             success: planResponse.success,
             type: planResponse.type,
@@ -1140,7 +619,6 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
               ],
             });
             setShowPlanDisclaimer(true);
-            setPendingPlanRequest(null); // Reset dopo generazione piano
             console.log('✅ DEBUG - Ho aggiunto messaggio bot e impostato showPlanDisclaimer = true');
           } else {
             // NON ha limitazioni O non ha mai risposto prima → mostra piano direttamente senza disclaimer
@@ -1171,7 +649,6 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
               ],
             };
             setMsgs(m => [...m, botMessage]);
-            setPendingPlanRequest(null); // Reset dopo generazione piano
           }
         } else {
           // Errore o caso non gestito
@@ -1437,6 +914,12 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                           <div key={idx} className="bg-gray-700/50 rounded-lg p-3 flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[#EEBA2B] font-semibold">
+                                  {ex.exercise_type === 'compound' ? '🏋️' : 
+                                   ex.exercise_type === 'compound_secondary' ? '💪' :
+                                   ex.exercise_type === 'isolation' ? '🎯' :
+                                   ex.exercise_type === 'isolation_light' ? '✨' : '⏱️'}
+                                </span>
                                 <span className="text-white font-medium">{ex.name}</span>
                               </div>
                               <div className="text-gray-300 text-sm">
@@ -1447,10 +930,6 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                               {ex.notes && (
                                 <p className="text-gray-400 text-xs mt-1 italic">{ex.notes}</p>
                               )}
-                            </div>
-                            {/* Bottone GIF a destra */}
-                            <div className="ml-3 flex-shrink-0">
-                              <ExerciseGifLink exerciseName={ex.name} />
                             </div>
                           </div>
                         ))}

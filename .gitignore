@@ -33,3 +33,4 @@ public/manifest.json
 public/site.webmanifest
 .vercel
 .env*.local
+.env
