@@ -383,6 +383,39 @@ export async function updateHealthLimitations(
 }
 
 /**
+ * Resetta i dati di limitazioni fisiche per un utente
+ * Utile per test e debug
+ */
+export async function resetHealthLimitations(userId: string): Promise<boolean> {
+  try {
+    console.log('🔄 Reset limitazioni fisiche per userId:', userId.substring(0, 8) + '...');
+    
+    const { error } = await supabase
+      .from('user_onboarding_responses')
+      .update({
+        ha_limitazioni: null,
+        limitazioni_fisiche: null,
+        zone_evitare: [],
+        condizioni_mediche: null,
+        limitazioni_compilato_at: null,
+        last_modified_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('❌ Errore reset limitazioni:', error);
+      return false;
+    }
+
+    console.log('✅ Limitazioni fisiche resettate con successo');
+    return true;
+  } catch (error) {
+    console.error('❌ Errore completo reset limitazioni:', error);
+    return false;
+  }
+}
+
+/**
  * Risultato del controllo intelligente limitazioni
  */
 export interface SmartLimitationsResult {
@@ -394,6 +427,7 @@ export interface SmartLimitationsResult {
   daysSinceUpdate: number | null;        // giorni passati dall'ultimo update
   needsToAsk: boolean;                   // true se PrimeBot deve chiedere
   suggestedQuestion: string | null;      // domanda da fare (null = non chiedere)
+  hasAnsweredBefore: boolean;            // true se ha già risposto alla domanda (ha_limitazioni !== null E limitazioni_compilato_at !== null)
 }
 
 /**
@@ -438,14 +472,22 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     console.log('🔍 getSmartLimitationsCheck - dati recuperati:', {
       userId: userId.substring(0, 8) + '...',
       rawHasLimitazioni,
+      rawHasLimitazioniType: typeof rawHasLimitazioni,
+      rawHasLimitazioniValue: JSON.stringify(rawHasLimitazioni),
       hasLimitazioni,
       hasLimitazioniType: typeof hasLimitazioni,
       isNull: hasLimitazioni === null,
       isTrue: hasLimitazioni === true,
       isFalse: hasLimitazioni === false,
       limitazioniFisiche: limitazioniFisiche?.substring(0, 30) || null,
+      limitazioniFisicheLength: limitazioniFisiche?.length || 0,
       limitazioniCompilatoAt: limitazioniCompilatoAt?.toISOString() || null,
       onboardingDataExists: !!onboardingData,
+      onboardingDataFull: onboardingData ? {
+        ha_limitazioni: onboardingData.ha_limitazioni,
+        limitazioni_fisiche: onboardingData.limitazioni_fisiche,
+        limitazioni_compilato_at: onboardingData.limitazioni_compilato_at,
+      } : null,
     });
     
     // Calcola giorni dall'ultimo update
@@ -461,25 +503,40 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     let suggestedQuestion: string | null = null;
     
     // CASO A: ha_limitazioni === true E limitazioni_fisiche non vuoto
+    console.log('🔍 VERIFICA CASO A:', {
+      hasLimitazioni,
+      hasLimitazioniIsTrue: hasLimitazioni === true,
+      limitazioniFisiche,
+      limitazioniFisicheExists: !!limitazioniFisiche,
+      limitazioniFisicheTrimLength: limitazioniFisiche?.trim().length || 0,
+      conditionA: hasLimitazioni === true && limitazioniFisiche && limitazioniFisiche.trim().length > 0,
+    });
+    
     if (hasLimitazioni === true && limitazioniFisiche && limitazioniFisiche.trim().length > 0) {
+      console.log('✅ CASO A: ha_limitazioni === true E limitazioni_fisiche non vuoto');
       if (daysSinceUpdate !== null && daysSinceUpdate > 30) {
         // Passati più di 30 giorni, chiedi aggiornamento
+        console.log('⚠️ CASO A1: Passati più di 30 giorni, chiedi aggiornamento');
         suggestedQuestion = `L'ultima volta mi avevi parlato di ${limitazioniFisiche}. Come sta andando? Il problema persiste o è migliorato?`;
         needsToAsk = true;
       } else {
         // Meno di 30 giorni, usa i dati salvati
+        console.log('✅ CASO A2: Meno di 30 giorni, usa i dati salvati (needsToAsk = false)');
         suggestedQuestion = null;
         needsToAsk = false;
       }
     }
     // CASO B: ha_limitazioni === false
     else if (hasLimitazioni === false) {
+      console.log('✅ CASO B: ha_limitazioni === false');
       if (daysSinceUpdate !== null && daysSinceUpdate > 60) {
         // Passati più di 60 giorni, chiedi se qualcosa è cambiato
+        console.log('⚠️ CASO B1: Passati più di 60 giorni, chiedi se qualcosa è cambiato');
         suggestedQuestion = `È passato un po' di tempo! Hai sviluppato dolori o limitazioni fisiche da considerare per il tuo piano?`;
         needsToAsk = true;
       } else {
         // Meno di 60 giorni, procedi senza chiedere
+        console.log('✅ CASO B2: Meno di 60 giorni, procedi senza chiedere (needsToAsk = false)');
         suggestedQuestion = null;
         needsToAsk = false;
       }
@@ -488,9 +545,16 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     // IMPORTANTE: Anche se ha_limitazioni === false ma limitazioni_compilato_at è null, chiedi comunque
     else if (hasLimitazioni === null || hasLimitazioni === undefined || limitazioniCompilatoAt === null) {
       // Mai chiesto o mai compilato, chiedi sempre
+      console.log('✅ CASO C: ha_limitazioni è null/undefined O limitazioni_compilato_at è null, imposto needsToAsk = true');
+      console.log('🔍 CASO C - dettagli:', {
+        hasLimitazioni,
+        hasLimitazioniIsNull: hasLimitazioni === null,
+        hasLimitazioniIsUndefined: hasLimitazioni === undefined,
+        limitazioniCompilatoAt,
+        limitazioniCompilatoAtIsNull: limitazioniCompilatoAt === null,
+      });
       suggestedQuestion = `Prima di creare il tuo piano personalizzato, hai dolori, infortuni o limitazioni fisiche da considerare? Questo mi aiuta a creare un programma sicuro per te! 💪`;
       needsToAsk = true;
-      console.log('✅ CASO C: ha_limitazioni è null/undefined O limitazioni_compilato_at è null, imposto needsToAsk = true');
     }
     // CASO D: Fallback (non dovrebbe mai arrivare qui)
     else {
@@ -499,10 +563,22 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
       needsToAsk = true;
     }
     
+    // IMPORTANTE: hasAnsweredBefore deve essere true SOLO se:
+    // 1. limitazioni_compilato_at è presente (ha compilato qualcosa)
+    // 2. ha_limitazioni NON è null (ha effettivamente risposto alla domanda: true o false)
+    // Se ha_limitazioni è null, significa che non ha mai risposto, anche se limitazioni_compilato_at potrebbe essere presente per errore
+    const hasAnsweredBefore = limitazioniCompilatoAt !== null && hasLimitazioni !== null;
+    
     console.log('🔍 getSmartLimitationsCheck - risultato finale:', {
       needsToAsk,
       hasExistingLimitations: hasLimitazioni === true,
+      hasLimitazioni,
+      hasLimitazioniType: typeof hasLimitazioni,
+      limitazioniCompilatoAt: limitazioniCompilatoAt?.toISOString() || null,
+      hasAnsweredBefore,
+      hasAnsweredBeforeCalculation: `${limitazioniCompilatoAt !== null} && ${hasLimitazioni !== null} = ${limitazioniCompilatoAt !== null && hasLimitazioni !== null}`,
       suggestedQuestion: suggestedQuestion?.substring(0, 50) + '...',
+      daysSinceUpdate,
     });
     
     return {
@@ -514,6 +590,8 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
       daysSinceUpdate,
       needsToAsk,
       suggestedQuestion,
+      // Aggiungo questo campo esplicito per chiarezza
+      hasAnsweredBefore,
     };
   } catch (error) {
     console.error('❌ Errore controllo intelligente limitazioni:', error);
@@ -527,6 +605,7 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
       daysSinceUpdate: null,
       needsToAsk: true,
       suggestedQuestion: `Prima di creare il tuo piano personalizzato, hai dolori, infortuni o limitazioni fisiche da considerare? Questo mi aiuta a creare un programma sicuro per te! 💪`,
+      hasAnsweredBefore: false,
     };
   }
 }
@@ -538,6 +617,7 @@ export async function parseAndSaveLimitationsFromChat(
   userId: string,
   userMessage: string
 ): Promise<{ hasLimitations: boolean; parsed: string | null }> {
+  console.log('🏥 STEP 1 - Messaggio utente:', userMessage);
   try {
     const messageLower = userMessage.toLowerCase().trim();
     
@@ -582,7 +662,10 @@ export async function parseAndSaveLimitationsFromChat(
       // Ha limitazioni, salva il testo
       hasLimitations = true;
       parsed = userMessage.trim();
+      console.log('🏥 STEP 2 - Limitazione estratta:', parsed);
     }
+    
+    console.log('🏥 STEP 3 - Limitazione passata al generatore:', parsed);
     
     // Salva nel database
     const { error } = await supabase

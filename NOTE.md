@@ -2,6 +2,55 @@
 
 ## Decisioni Architetturali
 
+### **1 Ottobre 2025 - Sistema Limitazioni Fisiche**
+
+#### **1. BLACKLIST vs WHITELIST per Esercizi**
+**Decisione**: Implementato sistema BLACKLIST (escludi esercizi vietati) con filtro post-generazione.
+
+**Motivazioni**:
+- OpenAI può generare varianti di esercizi non nella lista
+- Matching per nome esercizio non sempre affidabile
+- Necessario filtro post-generazione per sicurezza
+
+**Limitazioni Identificate**:
+- OpenAI genera nomi in italiano che non matchano blacklist
+- OpenAI può inventare varianti non nella lista
+- Filtro post-generazione non cattura tutte le varianti
+
+**Soluzione Futura**:
+- Passare a WHITELIST (usa SOLO esercizi sicuri garantiti)
+- Sostituire esercizi generati da OpenAI con quelli dalla whitelist
+- Garantire sicurezza al 100% per utenti con dolori
+
+#### **2. Forzatura Consigli Terapeutici**
+**Decisione**: Dopo parsing risposta OpenAI, forzare consigli terapeutici pre-calcolati.
+
+**Motivazioni**:
+- OpenAI può ignorare istruzioni e generare consigli errati
+- Consigli devono essere sempre corretti per la zona specifica
+- Necessario garantire coerenza tra limitazione e consigli
+
+**Implementazione**:
+- Funzione `getTherapeuticAdvice()` con database pre-calcolato
+- Funzione `detectBodyPart()` per estrarre zona dalla limitazione
+- Sovrascrittura `plan.therapeuticAdvice` e `plan.safetyNotes` dopo parsing
+
+#### **3. Logging Completo per Debug**
+**Decisione**: Aggiungere logging dettagliato in ogni step del flusso.
+
+**Motivazioni**:
+- Tracciare dove si perde la limitazione
+- Verificare che matching funzioni correttamente
+- Debug facilitato per problemi futuri
+
+**Implementazione**:
+- Log in `parseAndSaveLimitationsFromChat()` per messaggio utente
+- Log in `getStructuredWorkoutPlan()` per limitazione ricevuta
+- Log in `getExcludedExercises()` e `getTherapeuticAdvice()` per matching
+- Log finale prima di inviare prompt a OpenAI
+
+---
+
 ### **Sessione 16 - Edge Functions SuperAdmin (12/11/2025)**
 
 #### **1. Edge Functions vs Service Role Key lato frontend**

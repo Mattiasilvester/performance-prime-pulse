@@ -31,3 +31,5 @@ public/progressier.js
 public/sw.js
 public/manifest.json
 public/site.webmanifest
+.vercel
+.env*.local

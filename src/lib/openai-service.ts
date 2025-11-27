@@ -17,10 +17,13 @@ import {
   validatePlanVariation,
   type StructuredWorkoutPlan,
 } from '@/services/workoutPlanGenerator';
+import { getTherapeuticAdvice, detectBodyPart } from '@/data/bodyPartExclusions';
 
 // ⚠️ DEPRECATO: Non usare più VITE_OPENAI_API_KEY direttamente
 // Usare /api/ai-chat endpoint invece
-const MONTHLY_LIMIT = 10;
+// ⚠️ TEMPORANEO PER TEST: Limite aumentato a 9999
+// TODO: Ripristinare a 10 dopo i test
+const MONTHLY_LIMIT = 9999;
 
 // Calcola costo
 const calculateCost = (promptTokens: number, completionTokens: number) => {
@@ -66,6 +69,7 @@ export const getAIResponse = async (
   if (!limit.canUse) {
     return {
       success: false,
+      type: 'error' as const,
       message: `Hai raggiunto il limite di ${MONTHLY_LIMIT} domande AI questo mese. Riprova il mese prossimo o usa i suggerimenti rapidi!`,
       remaining: 0
     };
@@ -348,6 +352,7 @@ export const getStructuredWorkoutPlan = async (
   question?: string;
   awaitingLimitationsResponse?: boolean;
   hasExistingLimitations?: boolean; // Info per decidere se mostrare disclaimer
+  hasAnsweredBefore?: boolean; // True se ha già risposto prima
   errorType?: 'json_parse' | 'api_error' | 'validation_error'; // Tipo di errore
 }> => {
   console.log('🏋️ getStructuredWorkoutPlan chiamata con:', {
@@ -360,6 +365,7 @@ export const getStructuredWorkoutPlan = async (
   if (!limit.canUse) {
     return {
       success: false,
+      type: 'error' as const,
       message: `Hai raggiunto il limite di ${MONTHLY_LIMIT} domande AI questo mese. Riprova il mese prossimo!`,
       remaining: 0,
     };
@@ -409,9 +415,25 @@ export const getStructuredWorkoutPlan = async (
       }
     }
 
-    // Costruisci sezione limitazioni per System Prompt
+    // Costruisci sezione limitazioni per System Prompt con esclusioni specifiche
     let limitationsSection = '';
+    let excludedExercises: string[] = [];
+    let therapeuticAdvice: string[] = [];
+    
     if (limitationsCheck.hasExistingLimitations && limitationsCheck.limitations) {
+      console.log('🏥 STEP 4 - Limitazione ricevuta in getStructuredWorkoutPlan:', limitationsCheck.limitations);
+      
+      // Importa funzioni per esclusioni e consigli terapeutici
+      const { getExcludedExercises, getTherapeuticAdvice } = await import('@/data/bodyPartExclusions');
+      
+      console.log('🔍 getExcludedExercises - Input:', limitationsCheck.limitations);
+      excludedExercises = getExcludedExercises(limitationsCheck.limitations);
+      console.log('✅ Esercizi esclusi trovati:', excludedExercises.length, 'esercizi');
+      
+      console.log('💊 getTherapeuticAdvice - Input:', limitationsCheck.limitations);
+      therapeuticAdvice = getTherapeuticAdvice(limitationsCheck.limitations);
+      console.log('✅ Consigli terapeutici trovati:', therapeuticAdvice.length, 'consigli');
+      
       const zonesStr = limitationsCheck.zones && limitationsCheck.zones.length > 0
         ? limitationsCheck.zones.join(', ')
         : 'nessuna zona specifica indicata';
@@ -421,17 +443,28 @@ export const getStructuredWorkoutPlan = async (
         : '';
       
       limitationsSection = `
-⚠️ LIMITAZIONI FISICHE DELL'UTENTE:
-L'utente ha indicato: "${limitationsCheck.limitations}"
-Zone del corpo da EVITARE o trattare con cautela: ${zonesStr}${medicalStr}
+⚠️ ATTENZIONE CRITICA - LIMITAZIONE FISICA:
+L'utente ha dichiarato: "${limitationsCheck.limitations}"
+Zone del corpo da EVITARE: ${zonesStr}${medicalStr}
+
+ESERCIZI ASSOLUTAMENTE VIETATI (non includerli MAI nel piano):
+${excludedExercises.length > 0 
+  ? excludedExercises.map(ex => `- ${ex}`).join('\n')
+  : '- Nessun esercizio specifico da escludere (usa cautela generale)'}
 
 REGOLE OBBLIGATORIE:
-1. NON includere esercizi che coinvolgono pesantemente le zone indicate
-2. Proponi ALTERNATIVE sicure per ogni zona problematica
-3. Nella risposta, MENZIONA che hai tenuto conto delle sue limitazioni
-4. Suggerisci di consultare un professionista se il problema persiste
+1. Escludere COMPLETAMENTE tutti gli esercizi sopra elencati
+2. Proporre SOLO esercizi sicuri che NON coinvolgono la zona dolorante
+3. Preferire esercizi a corpo libero o con macchine guidate che isolano i muscoli
+4. Ridurre l'intensità generale del piano rispetto al normale
+5. Ogni esercizio deve essere verificato mentalmente: "Questo esercizio coinvolge la zona dolorante?" Se sì, NON includerlo
 
-Esempio: Se ha problemi alla schiena, evita stacchi, squat pesante. Proponi ponte glutei, leg press, esercizi da seduto.
+Esempi di esercizi SICURI per limitazioni comuni:
+- Spalla: leg press, curl gambe, crunch, esercizi per gambe seduto
+- Schiena: ponte glutei, leg press, esercizi per gambe da seduto, mobilità dolce
+- Ginocchio: esercizi per parte superiore seduto, curl bicipiti, tricipiti, addominali
+
+⚠️ REGOLA FONDAMENTALE: Se l'utente ha una limitazione, OGNI esercizio deve essere verificato mentalmente: "Questo esercizio coinvolge la zona dolorante?" Se sì, NON includerlo.
 `;
     } else {
       limitationsSection = `
@@ -481,65 +514,80 @@ REGOLE VARIAZIONE SET/REP (OBBLIGATORIE):
    • Esempi: Plank, Wall Sit, Hollow Hold
 
 ESEMPIO PIANO CORRETTO (con variazione):
-{
-  "name": "Piano Forza - Petto e Tricipiti",
-  "description": "Piano personalizzato per aumentare forza nella parte superiore",
-  "workout_type": "forza",
-  "duration_minutes": 45,
-  "difficulty": "intermediate",
-  "exercises": [
-    {
-      "name": "Panca Piana con Bilanciere",
-      "sets": 4,
-      "reps": "6-8",
-      "rest_seconds": 90,
-      "notes": "Mantieni la schiena aderente alla panca",
-      "exercise_type": "compound"
-    },
-    {
-      "name": "Rematore con Manubrio",
-      "sets": 4,
-      "reps": "8-10",
-      "rest_seconds": 75,
-      "notes": "Movimento controllato",
-      "exercise_type": "compound_secondary"
-    },
-    {
-      "name": "Croci con Manubri",
-      "sets": 3,
-      "reps": "10-12",
-      "rest_seconds": 60,
-      "notes": "Movimento controllato, non bloccare i gomiti",
-      "exercise_type": "isolation"
-    },
-    {
-      "name": "Tricipiti Pushdown",
-      "sets": 3,
-      "reps": "10-12",
-      "rest_seconds": 60,
-      "notes": "Gomiti bloccati ai fianchi",
-      "exercise_type": "isolation"
-    },
-    {
-      "name": "Crunch",
-      "sets": 3,
-      "reps": "15-20",
-      "rest_seconds": 45,
-      "notes": "Movimento controllato",
-      "exercise_type": "isolation_light"
-    },
-    {
-      "name": "Plank",
-      "sets": 3,
-      "reps": "45 secondi",
-      "rest_seconds": 45,
-      "notes": "Mantieni posizione corretta",
-      "exercise_type": "time_based"
-    }
-  ],
-  "warmup": "5 min cardio leggero + 10 piegamenti leggeri + mobilità spalle",
-  "cooldown": "Stretching pettorali 30sec per lato + stretching tricipiti"
-}
+${(() => {
+  const examplePlan: any = {
+    name: "Piano Forza - Petto e Tricipiti",
+    description: "Piano personalizzato per aumentare forza nella parte superiore",
+    workout_type: "forza",
+    duration_minutes: 45,
+    difficulty: "intermediate",
+    exercises: [
+      {
+        name: "Panca Piana con Bilanciere",
+        sets: 4,
+        reps: "6-8",
+        rest_seconds: 90,
+        notes: "Mantieni la schiena aderente alla panca",
+        exercise_type: "compound"
+      },
+      {
+        name: "Rematore con Manubrio",
+        sets: 4,
+        reps: "8-10",
+        rest_seconds: 75,
+        notes: "Movimento controllato",
+        exercise_type: "compound_secondary"
+      },
+      {
+        name: "Croci con Manubri",
+        sets: 3,
+        reps: "10-12",
+        rest_seconds: 60,
+        notes: "Movimento controllato, non bloccare i gomiti",
+        exercise_type: "isolation"
+      },
+      {
+        name: "Tricipiti Pushdown",
+        sets: 3,
+        reps: "10-12",
+        rest_seconds: 60,
+        notes: "Gomiti bloccati ai fianchi",
+        exercise_type: "isolation"
+      },
+      {
+        name: "Crunch",
+        sets: 3,
+        reps: "15-20",
+        rest_seconds: 45,
+        notes: "Movimento controllato",
+        exercise_type: "isolation_light"
+      },
+      {
+        name: "Plank",
+        sets: 3,
+        reps: "45 secondi",
+        rest_seconds: 45,
+        notes: "Mantieni posizione corretta",
+        exercise_type: "time_based"
+      }
+    ],
+    warmup: "5 min cardio leggero + 10 piegamenti leggeri + mobilità spalle",
+    cooldown: "Stretching pettorali 30sec per lato + stretching tricipiti"
+  };
+  
+  if (limitationsCheck.hasExistingLimitations && therapeuticAdvice.length > 0) {
+    examplePlan.therapeuticAdvice = therapeuticAdvice;
+    examplePlan.safetyNotes = `Piano adattato per ${limitationsCheck.limitations}. Gli esercizi sono stati selezionati per evitare stress sulla zona interessata.`;
+  }
+  
+  return JSON.stringify(examplePlan, null, 2);
+})()}
+
+${limitationsCheck.hasExistingLimitations && therapeuticAdvice.length > 0 ? `
+IMPORTANTE: Se l'utente ha limitazioni fisiche, il JSON DEVE includere:
+- "therapeuticAdvice": array di stringhe con consigli terapeutici (esempio: ${JSON.stringify(therapeuticAdvice.slice(0, 2))})
+- "safetyNotes": stringa che spiega l'adattamento del piano. DEVI usare ESATTAMENTE questa frase: "Piano adattato per ${limitationsCheck.limitations || 'limitazioni fisiche'}. Gli esercizi sono stati selezionati per evitare stress sulla zona interessata."
+` : ''}
 
 ⚠️ IMPORTANTE:
 - Il piano DEVE avere MINIMO 5 esercizi, MASSIMO 10 esercizi
@@ -549,8 +597,27 @@ ESEMPIO PIANO CORRETTO (con variazione):
 - Rispetta attrezzatura disponibile: ${userContext.attrezzatura_disponibile.join(', ')}
 - Durata totale: ${planContext.duration_minutes} minuti
 
-Rispondi SOLO con il JSON del piano, senza testo aggiuntivo. Il JSON deve essere valido e parsabile.`;
+⚠️ FORMATO RISPOSTA OBBLIGATORIO:
+Devi rispondere ESCLUSIVAMENTE con un JSON valido, senza testo prima o dopo.
+NON aggiungere spiegazioni, NON aggiungere testo introduttivo, NON aggiungere commenti.
+La risposta deve iniziare con { e finire con }.
 
+${limitationsCheck.hasExistingLimitations && therapeuticAdvice.length > 0 ? `
+IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli terapeutici e "safetyNotes" con una nota di sicurezza.
+` : ''}
+
+⚠️ IMPORTANTE: Se non rispondi con JSON valido, la risposta verrà scartata.`;
+
+    // Log finale per debug
+    console.log('🏥 STEP 5 - Prompt finale per OpenAI:', {
+      hasLimitations: limitationsCheck.hasExistingLimitations,
+      limitations: limitationsCheck.limitations,
+      excludedExercisesCount: excludedExercises.length,
+      therapeuticAdviceCount: therapeuticAdvice.length,
+      therapeuticAdviceFirst: therapeuticAdvice[0]?.substring(0, 50) || 'N/A',
+      safetyNotesExample: limitationsCheck.limitations ? `Piano adattato per ${limitationsCheck.limitations}. Gli esercizi sono stati selezionati per evitare stress sulla zona interessata.` : 'N/A',
+    });
+    
     const messages = [
       {
         role: 'system' as const,
@@ -586,7 +653,7 @@ Rispondi SOLO con il JSON del piano, senza testo aggiuntivo. Il JSON deve essere
       throw new Error('Risposta OpenAI non valida');
     }
 
-    const aiResponse = data.choices[0].message.content;
+    let aiResponse = data.choices[0].message.content;
     console.log('📥 Risposta AI ricevuta:', aiResponse.substring(0, 200) + '...');
 
     // Converti risposta AI in piano strutturato con gestione errori robusta
@@ -600,15 +667,63 @@ Rispondi SOLO con il JSON del piano, senza testo aggiuntivo. Il JSON deve essere
       console.error('❌ Errore critico in convertAIResponseToPlan:', parseError);
     }
 
+    // Se il parsing fallisce e non c'è JSON, prova un retry con prompt più forte
+    if (!plan && (!aiResponse.includes('{') || !aiResponse.includes('}'))) {
+      console.warn('⚠️ Risposta non contiene JSON, provo retry con prompt più forte...');
+      
+      try {
+        const retryMessages = [
+          {
+            role: 'system' as const,
+            content: `Sei PrimeBot. L'utente ha richiesto un piano di allenamento. 
+
+${limitationsSection}
+
+${workoutPlanSystemPrompt}
+
+⚠️ CRITICO: Devi rispondere ESCLUSIVAMENTE con JSON valido. NIENTE ALTRO. Inizia con { e termina con }.`,
+          },
+          {
+            role: 'user' as const,
+            content: request,
+          },
+        ];
+
+        const retryResponse = await fetch('/api/ai-chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: retryMessages,
+            model: 'gpt-3.5-turbo',
+          }),
+        });
+
+        const retryData = await retryResponse.json();
+        if (retryResponse.ok && retryData.choices && retryData.choices[0]) {
+          aiResponse = retryData.choices[0].message.content;
+          console.log('📥 Risposta retry ricevuta:', aiResponse.substring(0, 200) + '...');
+          plan = convertAIResponseToPlan(aiResponse);
+          if (plan) {
+            console.log('✅ Piano generato dopo retry!');
+          }
+        }
+      } catch (retryError) {
+        console.error('❌ Errore durante retry:', retryError);
+      }
+    }
+
     if (!plan) {
       // Ritorna tipo 'error' con dettagli specifici
       const errorMessage = parseError?.message || 'Errore nella generazione del piano';
-      const isJsonError = errorMessage.includes('JSON') || errorMessage.includes('parse') || errorMessage.includes('SyntaxError');
+      const isJsonError = errorMessage.includes('JSON') || errorMessage.includes('parse') || errorMessage.includes('SyntaxError') || !aiResponse.includes('{');
       
       console.error('❌ Piano non generato:', {
         errorMessage,
         isJsonError,
         aiResponsePreview: aiResponse.substring(0, 300),
+        hasJson: aiResponse.includes('{') && aiResponse.includes('}'),
       });
       
       return {
@@ -622,6 +737,92 @@ Rispondi SOLO con il JSON del piano, senza testo aggiuntivo. Il JSON deve essere
       };
     }
 
+    // FIX CRITICO: Forza consigli terapeutici e safety notes corretti (OpenAI potrebbe ignorarli)
+    if (limitationsCheck.hasExistingLimitations && limitationsCheck.limitations && plan) {
+      console.log('💊 Forzando consigli terapeutici pre-calcolati per:', limitationsCheck.limitations);
+      
+      // Sovrascrivi i consigli di OpenAI con quelli corretti
+      const correctAdvice = getTherapeuticAdvice(limitationsCheck.limitations);
+      console.log('💊 Consigli corretti:', correctAdvice);
+      plan.therapeuticAdvice = correctAdvice;
+      
+      // Aggiorna anche la safety note con la zona corretta
+      const bodyPart = detectBodyPart(limitationsCheck.limitations);
+      console.log('💊 Zona del corpo rilevata:', bodyPart);
+      plan.safetyNotes = `Piano adattato per il dolore alla ${bodyPart}. Gli esercizi sono stati selezionati per evitare stress sulla zona interessata.`;
+      console.log('💊 Safety note corretta:', plan.safetyNotes);
+    }
+
+    // FILTRO CRITICO: Rimuovi esercizi vietati se ci sono limitazioni
+    if (limitationsCheck.hasExistingLimitations && limitationsCheck.limitations && excludedExercises.length > 0) {
+      const originalExerciseCount = plan.exercises.length;
+      
+      // Filtra esercizi che contengono parole chiave vietate
+      plan.exercises = plan.exercises.filter(ex => {
+        const exerciseNameLower = ex.name.toLowerCase();
+        const isExcluded = excludedExercises.some(excluded => 
+          exerciseNameLower.includes(excluded.toLowerCase())
+        );
+        
+        if (isExcluded) {
+          console.warn(`⚠️ Esercizio escluso per limitazione: "${ex.name}" (contiene "${excludedExercises.find(e => exerciseNameLower.includes(e.toLowerCase()))}")`);
+        }
+        
+        return !isExcluded;
+      });
+      
+      const filteredExerciseCount = plan.exercises.length;
+      const removedCount = originalExerciseCount - filteredExerciseCount;
+      
+      if (removedCount > 0) {
+        console.warn(`⚠️ Rimossi ${removedCount} esercizi vietati dal piano per limitazione: ${limitationsCheck.limitations}`);
+        
+        // Se abbiamo rimosso troppi esercizi, aggiungi esercizi sicuri alternativi
+        if (plan.exercises.length < 5) {
+          console.warn('⚠️ Piano ha meno di 5 esercizi dopo filtro, aggiungo esercizi sicuri alternativi');
+          // Importa funzione per esercizi sicuri
+          const { getSafeAlternativeExercises } = await import('@/data/bodyPartExclusions');
+          const safeExercises = getSafeAlternativeExercises(limitationsCheck.limitations, plan.workout_type);
+          plan.exercises.push(...safeExercises.slice(0, 5 - plan.exercises.length));
+        }
+      }
+    }
+    
+    // FILTRO CRITICO: Rimuovi esercizi vietati se ci sono limitazioni
+    if (limitationsCheck.hasExistingLimitations && limitationsCheck.limitations && excludedExercises.length > 0) {
+      const originalExerciseCount = plan.exercises.length;
+      
+      // Filtra esercizi che contengono parole chiave vietate
+      plan.exercises = plan.exercises.filter(ex => {
+        const exerciseNameLower = ex.name.toLowerCase();
+        const isExcluded = excludedExercises.some(excluded => 
+          exerciseNameLower.includes(excluded.toLowerCase())
+        );
+        
+        if (isExcluded) {
+          console.warn(`⚠️ Esercizio escluso per limitazione: "${ex.name}" (contiene "${excludedExercises.find(e => exerciseNameLower.includes(e.toLowerCase()))}")`);
+        }
+        
+        return !isExcluded;
+      });
+      
+      const filteredExerciseCount = plan.exercises.length;
+      const removedCount = originalExerciseCount - filteredExerciseCount;
+      
+      if (removedCount > 0) {
+        console.warn(`⚠️ Rimossi ${removedCount} esercizi vietati dal piano per limitazione: ${limitationsCheck.limitations}`);
+        
+        // Se abbiamo rimosso troppi esercizi, aggiungi esercizi sicuri alternativi
+        if (plan.exercises.length < 5) {
+          console.warn('⚠️ Piano ha meno di 5 esercizi dopo filtro, aggiungo esercizi sicuri alternativi');
+          // Importa funzione per esercizi sicuri
+          const { getSafeAlternativeExercises } = await import('@/data/bodyPartExclusions');
+          const safeExercises = getSafeAlternativeExercises(limitationsCheck.limitations, plan.workout_type);
+          plan.exercises.push(...safeExercises.slice(0, 5 - plan.exercises.length));
+        }
+      }
+    }
+    
     // Valida variazione
     const validation = validatePlanVariation(plan);
     if (!validation.isValid) {
@@ -672,6 +873,7 @@ Rispondi SOLO con il JSON del piano, senza testo aggiuntivo. Il JSON deve essere
       remaining: limit.remaining - 1,
       type: 'plan' as const,
       hasExistingLimitations: limitationsCheck.hasExistingLimitations, // Info per decidere se mostrare disclaimer
+      hasAnsweredBefore: limitationsCheck.hasAnsweredBefore ?? false, // True se ha già risposto prima (ha_limitazioni !== null E limitazioni_compilato_at !== null)
     };
   } catch (error) {
     console.error('❌ Errore generazione piano:', error);
