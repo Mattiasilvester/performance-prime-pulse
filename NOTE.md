@@ -2,6 +2,49 @@
 
 ## Decisioni Architetturali
 
+### **28 Novembre 2025 - Fix Sistema Limitazioni e PrimeBot**
+
+#### **1. Flag per Controllo Flusso Conversazionale**
+**Decisione**: Aggiunto flag `skipFallbackCheck` per controllare il flusso tra blocchi conversazionali e fallback.
+
+**Motivazioni**:
+- Quando l'utente esce da un blocco conversazionale (es. `waitingForPainPlanConfirmation`), il messaggio deve andare direttamente all'LLM
+- Il fallback non deve intercettare messaggi validi che provengono da blocchi conversazionali
+- Necessario distinguere tra messaggi nuovi e messaggi che continuano un flusso
+
+**Implementazione**:
+- Flag `skipFallbackCheck` settato quando si esce da `waitingForPainPlanConfirmation` caso `else`
+- Controllo flag nel blocco fallback prima di chiamare `getPrimeBotFallbackResponse()`
+- Reset automatico dopo uso per evitare effetti collaterali
+
+#### **2. Pulizia Dati Residui nel Database**
+**Decisione**: Quando `ha_limitazioni = false`, forzare tutti i campi relativi a `null`/array vuoto.
+
+**Motivazioni**:
+- Dati residui nel database possono causare disallineamento tra UI e AI
+- L'AI può vedere dati vecchi anche se l'utente ha detto "Nessuna limitazione"
+- Necessario garantire coerenza tra stato dichiarato e dati effettivi
+
+**Implementazione**:
+- FIX 1: Forzatura `limitations/zones/medicalConditions` a `null` in `getSmartLimitationsCheck()` quando `hasExistingLimitations = false`
+- FIX 2: Pulizia completa database in `parseAndSaveLimitationsFromChat()` quando `hasLimitations = false`
+- FIX 3: Controllo `ha_limitazioni` prima del fallback in `getUserPains()` per evitare lettura dati residui
+
+#### **3. Riconoscimento "Dolore Risolto" nel Fallback**
+**Decisione**: Aggiungere riconoscimento esplicito di keywords "dolore risolto" PRIMA del check `painKeywords`.
+
+**Motivazioni**:
+- Il fallback intercettava messaggi come "il dolore mi è passato" perché contenevano "dolore"
+- Questi messaggi devono passare all'LLM per gestione intelligente
+- Necessario distinguere tra dolore presente e dolore risolto
+
+**Implementazione**:
+- Lista `painResolvedKeywords` con 10+ varianti di "dolore risolto"
+- Check PRIMA di `painKeywords` per ritornare `null` e passare all'LLM
+- Logging per tracciare quando viene riconosciuto dolore risolto
+
+---
+
 ### **1 Ottobre 2025 - Sistema Limitazioni Fisiche**
 
 #### **1. BLACKLIST vs WHITELIST per Esercizi**
