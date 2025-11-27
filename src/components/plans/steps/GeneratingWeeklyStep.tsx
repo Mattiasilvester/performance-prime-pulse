@@ -55,6 +55,7 @@ export function GeneratingWeeklyStep() {
           equipment: planData.equipment,
           limitations: planData.limitations,
           workouts: planData.workouts || [],
+          status: 'pending',
           created_at: planData.created_at || new Date().toISOString(),
           updated_at: planData.updated_at,
           is_active: true,

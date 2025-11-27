@@ -3,7 +3,8 @@
  * Con logging dettagliato, fallback OCR e gestione URL firmati Supabase
  */
 
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
+// @ts-ignore - pdfjs-dist types issue
+import * as pdfjsLib from 'pdfjs-dist';
 import { createWorker } from 'tesseract.js';
 import { supabase } from '@/integrations/supabase/client';
 import { env } from '@/config/env';

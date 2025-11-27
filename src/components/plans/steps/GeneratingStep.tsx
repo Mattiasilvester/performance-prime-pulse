@@ -30,19 +30,20 @@ export function GeneratingStep() {
         // Crea piano nel formato WorkoutPlan completo
         const plan: WorkoutPlan = {
           id: '', // Sarà generato dal database al salvataggio
+          user_id: '',
           name: workout.name,
           plan_type: 'daily',
           source: 'primebot',
           goal: dailyGoal,
           workouts: [workout], // Array con singolo workout
+          status: 'pending',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           is_active: true,
           // Campi opzionali per daily plan
           duration_weeks: undefined,
           frequency_per_week: undefined,
-          experience_level: undefined,
-          weekly_plan_data: undefined,
+          level: undefined,
         };
 
         setGeneratedPlan(plan);

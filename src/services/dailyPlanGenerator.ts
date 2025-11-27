@@ -27,12 +27,12 @@ export function generateDailyWorkout(
   const equipmentFilter = equipmentMap[equipment];
 
   // Mappa goal a category e filtri
-  let workout: WorkoutPlan;
+  let workoutData: { name: string; exercises: any[] };
 
   switch (goal) {
     case 'Full Body':
       // Usa generateFilteredStrengthWorkout con 'Tutti' per tutti i gruppi muscolari
-      workout = generateFilteredStrengthWorkout(
+      workoutData = generateFilteredStrengthWorkout(
         'Tutti', // muscleGroup - 'Tutti' significa tutti i gruppi muscolari
         equipmentFilter,
         totalMinutes,
@@ -43,7 +43,7 @@ export function generateDailyWorkout(
     case 'Upper Body':
       // Per upper body, usa 'Petto' come gruppo principale (include anche spalle e braccia)
       // generateFilteredStrengthWorkout selezionerà esercizi principalmente per petto
-      workout = generateFilteredStrengthWorkout(
+      workoutData = generateFilteredStrengthWorkout(
         'Petto', // muscleGroup
         equipmentFilter,
         totalMinutes,
@@ -53,7 +53,7 @@ export function generateDailyWorkout(
 
     case 'Lower Body':
       // Usa generateFilteredStrengthWorkout con filtri lower body
-      workout = generateFilteredStrengthWorkout(
+      workoutData = generateFilteredStrengthWorkout(
         'Gambe', // muscleGroup
         equipmentFilter,
         totalMinutes,
@@ -63,7 +63,7 @@ export function generateDailyWorkout(
 
     case 'Core':
       // Per Core, usa generateFilteredStrengthWorkout con gruppo 'Core'
-      workout = generateFilteredStrengthWorkout(
+      workoutData = generateFilteredStrengthWorkout(
         'Core', // muscleGroup
         equipmentFilter,
         totalMinutes,
@@ -73,7 +73,7 @@ export function generateDailyWorkout(
 
     case 'Cardio':
       // Usa generateWorkout con category 'cardio'
-      workout = generateWorkout(
+      workoutData = generateWorkout(
         'cardio',
         totalMinutes,
         {},
@@ -83,7 +83,7 @@ export function generateDailyWorkout(
 
     default:
       // Fallback a Full Body
-      workout = generateFilteredStrengthWorkout(
+      workoutData = generateFilteredStrengthWorkout(
         'Tutti',
         equipmentFilter,
         totalMinutes,
@@ -100,7 +100,22 @@ export function generateDailyWorkout(
     'Cardio': 'Cardio',
   };
 
-  workout.name = `${goalNames[goal]} - ${duration} min`;
+  const workoutName = `${goalNames[goal]} - ${duration} min`;
+
+  // Costruisci WorkoutPlan completo con tutte le proprietà obbligatorie
+  const workout: WorkoutPlan = {
+    id: '', // Sarà generato dal database al salvataggio
+    user_id: '', // Sarà impostato al salvataggio
+    name: workoutName,
+    plan_type: 'daily',
+    source: 'primebot',
+    goal: goal,
+    equipment: equipment,
+    workouts: [workoutData], // Array con singolo workout contenente name e exercises
+    status: 'pending',
+    created_at: new Date().toISOString(),
+    is_active: true,
+  };
 
   return workout;
 }

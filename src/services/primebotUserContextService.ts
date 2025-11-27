@@ -449,9 +449,9 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     let hasLimitazioni: boolean | null = null;
     const rawHasLimitazioni = onboardingData?.ha_limitazioni;
     
-    if (rawHasLimitazioni === true || rawHasLimitazioni === 'true') {
+    if (rawHasLimitazioni === true || String(rawHasLimitazioni) === 'true') {
       hasLimitazioni = true;
-    } else if (rawHasLimitazioni === false || rawHasLimitazioni === 'false') {
+    } else if (rawHasLimitazioni === false || String(rawHasLimitazioni) === 'false') {
       hasLimitazioni = false;
     } else if (rawHasLimitazioni === null || rawHasLimitazioni === undefined || rawHasLimitazioni === '') {
       // Stringa vuota, null, undefined → considera come mai compilato
@@ -569,6 +569,12 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     // Se ha_limitazioni è null, significa che non ha mai risposto, anche se limitazioni_compilato_at potrebbe essere presente per errore
     const hasAnsweredBefore = limitazioniCompilatoAt !== null && hasLimitazioni !== null;
     
+    // ⭐ FIX 1: Se ha_limitazioni = false, forza limitations/zones/medicalConditions a null
+    // Questo evita che dati residui nel database vengano passati all'AI
+    if (hasLimitazioni === false) {
+      console.log('🧹 FIX 1: ha_limitazioni = false, forzando limitations/zones/medicalConditions a null (ignoro dati residui)');
+    }
+    
     console.log('🔍 getSmartLimitationsCheck - risultato finale:', {
       needsToAsk,
       hasExistingLimitations: hasLimitazioni === true,
@@ -583,9 +589,11 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     
     return {
       hasExistingLimitations: hasLimitazioni === true,
-      limitations: limitazioniFisiche,
-      zones: zoneEvitare,
-      medicalConditions: condizioniMediche,
+      // ⭐ FIX 1: Se ha_limitazioni = false, forza limitations/zones/medicalConditions a null
+      // Questo evita che dati residui nel database vengano passati all'AI
+      limitations: hasLimitazioni === true ? limitazioniFisiche : null,
+      zones: hasLimitazioni === true ? zoneEvitare : null,
+      medicalConditions: hasLimitazioni === true ? condizioniMediche : null,
       lastUpdated: limitazioniCompilatoAt,
       daysSinceUpdate,
       needsToAsk,
@@ -667,21 +675,37 @@ export async function parseAndSaveLimitationsFromChat(
     
     console.log('🏥 STEP 3 - Limitazione passata al generatore:', parsed);
     
+    // ⭐ FIX 2: Se hasLimitations = false, pulisci TUTTI i campi relativi
+    if (!hasLimitations) {
+      console.log('🧹 FIX 2: Utente ha detto "Nessuna limitazione", pulisco tutti i campi relativi nel database');
+    }
+    
+    // Prepara i dati per l'upsert
+    // ⭐ FIX 2: Se hasLimitations = false, forza TUTTI i campi a null/array vuoto
+    // Se hasLimitations = true, setta solo limitazioni_fisiche (altri campi non toccati)
+    const updateData: any = {
+      user_id: userId,
+      ha_limitazioni: hasLimitations,
+      limitazioni_fisiche: hasLimitations ? parsed : null,
+      limitazioni_compilato_at: new Date().toISOString(),
+      last_modified_at: new Date().toISOString(),
+    };
+    
+    // Se hasLimitations = false, pulisci TUTTI i campi relativi
+    if (!hasLimitations) {
+      updateData.zone_evitare = [];
+      updateData.zone_dolori_dettagli = [];
+      updateData.condizioni_mediche = null;
+    }
+    // Se hasLimitations = true, non tocchiamo zone_evitare, zone_dolori_dettagli, condizioni_mediche
+    // (mantengono i valori esistenti se già presenti)
+    
     // Salva nel database
     const { error } = await supabase
       .from('user_onboarding_responses')
-      .upsert(
-        {
-          user_id: userId,
-          ha_limitazioni: hasLimitations,
-          limitazioni_fisiche: parsed,
-          limitazioni_compilato_at: new Date().toISOString(),
-          last_modified_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'user_id',
-        }
-      );
+      .upsert(updateData, {
+        onConflict: 'user_id',
+      });
     
     if (error) {
       console.error('❌ Errore salvataggio limitazioni da chat:', error);
@@ -702,5 +726,317 @@ export async function parseAndSaveLimitationsFromChat(
       parsed: userMessage.trim(),
     };
   }
+}
+
+/**
+ * Genera un messaggio di riepilogo con tutti i dati onboarding dell'utente
+ * Da mostrare prima di generare un piano per conferma
+ */
+export async function generateOnboardingSummaryMessage(userId: string): Promise<string | null> {
+  try {
+    console.log('📋 Generando riepilogo onboarding per utente:', userId);
+    
+    const { data, error } = await supabase
+      .from('user_onboarding_responses')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+    
+    if (error || !data) {
+      console.log('❌ Nessun dato onboarding trovato');
+      return null;
+    }
+    
+    // Label mapping per valori più leggibili
+    const obiettivoLabels: Record<string, string> = {
+      'massa': 'Aumento massa muscolare',
+      'dimagrire': 'Perdita peso / Dimagrimento',
+      'resistenza': 'Migliorare resistenza',
+      'tonificare': 'Tonificazione',
+      'forza': 'Aumentare forza',
+      'benessere': 'Benessere generale',
+      'flessibilita': 'Migliorare flessibilità'
+    };
+    
+    const livelloLabels: Record<string, string> = {
+      'principiante': 'Principiante',
+      'intermedio': 'Intermedio',
+      'avanzato': 'Avanzato'
+    };
+    
+    // Formatta luoghi allenamento
+    const formatLuoghi = (luoghi: string | string[] | null): string => {
+      if (!luoghi) return 'Non specificato';
+      const luoghiArray = Array.isArray(luoghi) ? luoghi : luoghi.split(',');
+      const luoghiLabels: Record<string, string> = {
+        'casa': 'Casa',
+        'palestra': 'Palestra',
+        'outdoor': 'All\'aperto',
+        'parco': 'Parco'
+      };
+      return luoghiArray.map(l => luoghiLabels[l.trim()] || l.trim()).join(', ');
+    };
+    
+    // Formatta attrezzi
+    const formatAttrezzi = (attrezzi: string | string[] | null): string => {
+      if (!attrezzi) return 'Nessuno / Corpo libero';
+      const attrezziArray = Array.isArray(attrezzi) ? attrezzi : attrezzi.split(',');
+      if (attrezziArray.length === 0 || (attrezziArray.length === 1 && !attrezziArray[0])) {
+        return 'Nessuno / Corpo libero';
+      }
+      return attrezziArray.map(a => a.trim()).join(', ');
+    };
+    
+    // Costruisci il messaggio
+    const obiettivo = obiettivoLabels[data.obiettivo] || data.obiettivo || 'Non specificato';
+    const livello = livelloLabels[data.livello_esperienza] || data.livello_esperienza || 'Non specificato';
+    const giorni = data.giorni_settimana || 'Non specificato';
+    const luoghi = formatLuoghi(data.luoghi_allenamento);
+    const tempo = data.tempo_sessione ? `${data.tempo_sessione} minuti` : 'Non specificato';
+    const attrezzi = formatAttrezzi(data.attrezzi);
+    
+    // Gestione limitazioni
+    let limitazioniText = 'Nessuna indicata';
+    if (data.ha_limitazioni === true && data.limitazioni_fisiche) {
+      limitazioniText = data.limitazioni_fisiche;
+    } else if (data.ha_limitazioni === false) {
+      limitazioniText = 'Nessuna';
+    }
+    
+    const summary = `📋 **Secondo le tue risposte durante l'onboarding:**
+
+
+- **Obiettivo**: ${obiettivo}
+- **Livello**: ${livello}
+- **Frequenza**: ${giorni} giorni a settimana
+- **Luogo**: ${luoghi}
+- **Durata sessione**: ${tempo}
+- **Attrezzatura**: ${attrezzi}
+- **Limitazioni fisiche**: ${limitazioniText}
+
+
+**Procedo con la creazione del piano o vuoi modificare qualcosa?**`;
+
+    console.log('✅ Riepilogo onboarding generato');
+    return summary;
+    
+  } catch (err) {
+    console.error('❌ Errore generazione riepilogo:', err);
+    return null;
+  }
+}
+
+/**
+ * Aggiorna una singola preferenza onboarding dell'utente
+ * @param userId - ID dell'utente
+ * @param field - Campo da aggiornare (obiettivo, livello_esperienza, giorni_settimana, luoghi_allenamento, tempo_sessione, attrezzi)
+ * @param value - Nuovo valore
+ * @returns true se aggiornato con successo, false altrimenti
+ */
+export async function updateOnboardingPreference(
+  userId: string,
+  field: string,
+  value: string | number | string[]
+): Promise<{ success: boolean; message: string }> {
+  try {
+    console.log('🔄 Aggiornamento preferenza onboarding:', { userId: userId.substring(0, 8), field, value });
+    
+    // Mappa dei campi validi
+    const validFields = [
+      'obiettivo',
+      'livello_esperienza', 
+      'giorni_settimana',
+      'luoghi_allenamento',
+      'tempo_sessione',
+      'attrezzi'
+    ];
+    
+    if (!validFields.includes(field)) {
+      console.error('❌ Campo non valido:', field);
+      return { success: false, message: `Campo "${field}" non valido` };
+    }
+    
+    // Prepara il valore per il database
+    let dbValue: any = value;
+    
+    // Gestione specifica per tipo di campo
+    if (field === 'luoghi_allenamento' || field === 'attrezzi') {
+      // Campi TEXT[] - deve essere un array
+      if (typeof value === 'string') {
+        dbValue = [value]; // Converti stringa singola in array
+      } else if (Array.isArray(value)) {
+        dbValue = value; // Mantieni come array
+      }
+    } else if (field === 'giorni_settimana') {
+      // Deve essere numero 1-7
+      dbValue = typeof value === 'string' ? parseInt(value, 10) : value;
+      if (isNaN(dbValue) || dbValue < 1 || dbValue > 7) {
+        return { success: false, message: 'Giorni deve essere tra 1 e 7' };
+      }
+    } else if (field === 'tempo_sessione') {
+      // Deve essere uno dei valori validi: 15, 30, 45, 60
+      const validTimes = [15, 30, 45, 60];
+      let minutes = typeof value === 'string' ? parseInt(value, 10) : value as number;
+      
+      if (isNaN(minutes)) {
+        return { success: false, message: 'Durata non valida' };
+      }
+      
+      // Arrotonda al valore valido più vicino
+      const closest = validTimes.reduce((prev, curr) => 
+        Math.abs(curr - minutes) < Math.abs(prev - minutes) ? curr : prev
+      );
+      dbValue = closest;
+      
+      if (minutes !== closest) {
+        console.log(`⚠️ Tempo ${minutes} arrotondato a ${closest} (valori validi: 15, 30, 45, 60)`);
+      }
+    } else if (Array.isArray(value)) {
+      // Altri campi con array - converti in stringa
+      dbValue = value.join(',');
+    }
+    
+    const { error } = await supabase
+      .from('user_onboarding_responses')
+      .update({ [field]: dbValue })
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('❌ Errore aggiornamento database:', error);
+      return { success: false, message: 'Errore nel salvataggio. Riprova!' };
+    }
+    
+    console.log('✅ Preferenza aggiornata con successo');
+    return { success: true, message: 'Preferenza aggiornata!' };
+    
+  } catch (err) {
+    console.error('❌ Errore updateOnboardingPreference:', err);
+    return { success: false, message: 'Errore imprevisto. Riprova!' };
+  }
+}
+
+/**
+ * Parsing per riconoscere MULTIPLI campi da modificare in una singola frase
+ * Ritorna un array di {field, value} invece di un singolo oggetto
+ */
+export function parseModifyRequest(message: string): Array<{field: string, value: string | number}> {
+  const lower = message.toLowerCase();
+  const results: Array<{field: string, value: string | number}> = [];
+  
+  // === OBIETTIVO ===
+  const obiettivoKeywords: Record<string, string> = {
+    'massa': 'massa',
+    'mettere massa': 'massa',
+    'muscoli': 'massa',
+    'dimagrire': 'dimagrire',
+    'perdere peso': 'dimagrire',
+    'dimagrimento': 'dimagrire',
+    'tonificare': 'tonificare',
+    'tonificazione': 'tonificare',
+    'definizione': 'tonificare',
+    'resistenza': 'resistenza',
+    'cardio': 'resistenza',
+    'fiato': 'resistenza',
+    'forza': 'forza',
+    'forte': 'forza',
+    'benessere': 'benessere',
+    'salute': 'benessere',
+    'stare bene': 'benessere'
+  };
+  
+  for (const [keyword, value] of Object.entries(obiettivoKeywords)) {
+    if (lower.includes(keyword)) {
+      // Evita duplicati
+      if (!results.find(r => r.field === 'obiettivo')) {
+        results.push({ field: 'obiettivo', value });
+      }
+      break;
+    }
+  }
+  
+  // === GIORNI ===
+  const giorniPatterns = [
+    /(\d+)\s*(giorni|volte|sessioni)/i,
+    /(\d+)\s*(?:giorni\s*)?(?:a\s*|alla\s*)?settimana/i,
+    /giorni\s*[=:]\s*(\d+)/i
+  ];
+  
+  for (const pattern of giorniPatterns) {
+    const match = lower.match(pattern);
+    if (match) {
+      const days = parseInt(match[1]);
+      if (days >= 1 && days <= 7) {
+        if (!results.find(r => r.field === 'giorni_settimana')) {
+          results.push({ field: 'giorni_settimana', value: days });
+        }
+        break;
+      }
+    }
+  }
+  
+  // === TEMPO/DURATA ===
+  const tempoPatterns = [
+    /(\d+)\s*(minuti|min)/i,
+    /durata\s*[=:]\s*(\d+)/i
+  ];
+  
+  for (const pattern of tempoPatterns) {
+    const match = lower.match(pattern);
+    if (match) {
+      const minutes = parseInt(match[1]);
+      if (minutes >= 15 && minutes <= 120) {
+        if (!results.find(r => r.field === 'tempo_sessione')) {
+          results.push({ field: 'tempo_sessione', value: minutes });
+        }
+        break;
+      }
+    }
+  }
+  
+  // === LUOGO ===
+  const luogoKeywords: Record<string, string> = {
+    'casa': 'casa',
+    'a casa': 'casa',
+    'palestra': 'palestra',
+    'in palestra': 'palestra',
+    'outdoor': 'outdoor',
+    'aperto': 'outdoor',
+    'aria aperta': 'outdoor',
+    'parco': 'outdoor',
+    'fuori': 'outdoor'
+  };
+  
+  for (const [keyword, value] of Object.entries(luogoKeywords)) {
+    if (lower.includes(keyword)) {
+      if (!results.find(r => r.field === 'luoghi_allenamento')) {
+        results.push({ field: 'luoghi_allenamento', value });
+      }
+      break;
+    }
+  }
+  
+  // === LIVELLO ===
+  const livelloKeywords: Record<string, string> = {
+    'principiante': 'principiante',
+    'base': 'principiante',
+    'inizio': 'principiante',
+    'intermedio': 'intermedio',
+    'medio': 'intermedio',
+    'avanzato': 'avanzato',
+    'esperto': 'avanzato',
+    'alto': 'avanzato',
+    'pro': 'avanzato'
+  };
+  
+  for (const [keyword, value] of Object.entries(livelloKeywords)) {
+    if (lower.includes(keyword)) {
+      if (!results.find(r => r.field === 'livello_esperienza')) {
+        results.push({ field: 'livello_esperienza', value });
+      }
+      break;
+    }
+  }
+  
+  return results;
 }
 

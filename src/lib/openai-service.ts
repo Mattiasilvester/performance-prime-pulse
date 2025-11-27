@@ -17,7 +17,12 @@ import {
   validatePlanVariation,
   type StructuredWorkoutPlan,
 } from '@/services/workoutPlanGenerator';
-import { getTherapeuticAdvice, detectBodyPart } from '@/data/bodyPartExclusions';
+import { 
+  getTherapeuticAdvice, 
+  detectBodyPart,
+  getSafeExercises,
+  detectBodyPartFromMessage
+} from '@/data/bodyPartExclusions';
 
 // ⚠️ DEPRECATO: Non usare più VITE_OPENAI_API_KEY direttamente
 // Usare /api/ai-chat endpoint invece
@@ -110,10 +115,12 @@ export const getAIResponse = async (
 
     // Prepara i messaggi per OpenAI: system prompt + cronologia + nuovo messaggio
     // Costruisci system prompt base
-    let systemPrompt = `Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Prime Pulse", solo "Performance Prime").
+    let systemPrompt = `IMPORTANTE: Rispondi SEMPRE e SOLO in italiano. Mai usare inglese. Tutti i nomi degli esercizi devono essere in italiano. Non tradurre mai in inglese.
+
+Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Prime Pulse", solo "Performance Prime").
 
   REGOLE FONDAMENTALI:
-  1. Rispondi SEMPRE in italiano
+  1. Rispondi SEMPRE in italiano - NON usare mai l'inglese per esercizi, termini tecnici o risposte
   2. Usa formattazione markdown per strutturare le risposte
   3. Includi emoji appropriate 💪🏋️‍♂️🔥
   4. Fornisci risposte DETTAGLIATE e SPECIFICHE, mai generiche
@@ -473,7 +480,9 @@ L'utente non ha indicato limitazioni fisiche. Puoi proporre qualsiasi esercizio 
     }
 
     // System Prompt SPECIFICO per piani strutturati con VARIAZIONE OBBLIGATORIA
-    const workoutPlanSystemPrompt = `Sei PrimeBot, esperto di Performance Prime. L'utente ha richiesto un piano di allenamento.
+    const workoutPlanSystemPrompt = `IMPORTANTE: Rispondi SEMPRE e SOLO in italiano. Mai usare inglese. Tutti i nomi degli esercizi devono essere in italiano. Il JSON deve contenere solo testo italiano.
+
+Sei PrimeBot, esperto di Performance Prime. L'utente ha richiesto un piano di allenamento.
 
 ${limitationsSection}
 
@@ -746,80 +755,84 @@ ${workoutPlanSystemPrompt}
       console.log('💊 Consigli corretti:', correctAdvice);
       plan.therapeuticAdvice = correctAdvice;
       
-      // Aggiorna anche la safety note con la zona corretta
-      const bodyPart = detectBodyPart(limitationsCheck.limitations);
+      // Aggiorna anche la safety note con la zona corretta usando detectBodyPartFromMessage
+      const bodyPart = detectBodyPartFromMessage(limitationsCheck.limitations);
       console.log('💊 Zona del corpo rilevata:', bodyPart);
-      plan.safetyNotes = `Piano adattato per il dolore alla ${bodyPart}. Gli esercizi sono stati selezionati per evitare stress sulla zona interessata.`;
-      console.log('💊 Safety note corretta:', plan.safetyNotes);
-    }
-
-    // FILTRO CRITICO: Rimuovi esercizi vietati se ci sono limitazioni
-    if (limitationsCheck.hasExistingLimitations && limitationsCheck.limitations && excludedExercises.length > 0) {
-      const originalExerciseCount = plan.exercises.length;
       
-      // Filtra esercizi che contengono parole chiave vietate
-      plan.exercises = plan.exercises.filter(ex => {
-        const exerciseNameLower = ex.name.toLowerCase();
-        const isExcluded = excludedExercises.some(excluded => 
-          exerciseNameLower.includes(excluded.toLowerCase())
-        );
-        
-        if (isExcluded) {
-          console.warn(`⚠️ Esercizio escluso per limitazione: "${ex.name}" (contiene "${excludedExercises.find(e => exerciseNameLower.includes(e.toLowerCase()))}")`);
-        }
-        
-        return !isExcluded;
-      });
-      
-      const filteredExerciseCount = plan.exercises.length;
-      const removedCount = originalExerciseCount - filteredExerciseCount;
-      
-      if (removedCount > 0) {
-        console.warn(`⚠️ Rimossi ${removedCount} esercizi vietati dal piano per limitazione: ${limitationsCheck.limitations}`);
-        
-        // Se abbiamo rimosso troppi esercizi, aggiungi esercizi sicuri alternativi
-        if (plan.exercises.length < 5) {
-          console.warn('⚠️ Piano ha meno di 5 esercizi dopo filtro, aggiungo esercizi sicuri alternativi');
-          // Importa funzione per esercizi sicuri
-          const { getSafeAlternativeExercises } = await import('@/data/bodyPartExclusions');
-          const safeExercises = getSafeAlternativeExercises(limitationsCheck.limitations, plan.workout_type);
-          plan.exercises.push(...safeExercises.slice(0, 5 - plan.exercises.length));
-        }
+      if (bodyPart) {
+        const preposition = ['anca', 'addome'].includes(bodyPart) ? "all'" : 
+                            ['spalla', 'schiena', 'caviglia', 'coscia'].includes(bodyPart) ? 'alla ' : 'al ';
+        plan.safetyNotes = `⚠️ Piano adattato per il dolore ${preposition}${bodyPart}. Tutti gli esercizi sono stati selezionati per evitare qualsiasi stress sulla zona interessata. Ascolta sempre il tuo corpo e fermati se senti dolore.`;
+        console.log('💊 Safety note corretta:', plan.safetyNotes);
+      } else {
+        plan.safetyNotes = `Piano adattato per ${limitationsCheck.limitations}. Gli esercizi sono stati selezionati per evitare stress sulla zona interessata.`;
       }
     }
-    
-    // FILTRO CRITICO: Rimuovi esercizi vietati se ci sono limitazioni
-    if (limitationsCheck.hasExistingLimitations && limitationsCheck.limitations && excludedExercises.length > 0) {
-      const originalExerciseCount = plan.exercises.length;
+
+    // ============================================
+    // 🛡️ FORZA ESERCIZI SICURI SE C'È UNA LIMITAZIONE
+    // ============================================
+    if (limitationsCheck.hasExistingLimitations && limitationsCheck.limitations) {
+      console.log('🛡️ WHITELIST: Applicando esercizi sicuri per:', limitationsCheck.limitations);
       
-      // Filtra esercizi che contengono parole chiave vietate
-      plan.exercises = plan.exercises.filter(ex => {
-        const exerciseNameLower = ex.name.toLowerCase();
-        const isExcluded = excludedExercises.some(excluded => 
-          exerciseNameLower.includes(excluded.toLowerCase())
-        );
-        
-        if (isExcluded) {
-          console.warn(`⚠️ Esercizio escluso per limitazione: "${ex.name}" (contiene "${excludedExercises.find(e => exerciseNameLower.includes(e.toLowerCase()))}")`);
-        }
-        
-        return !isExcluded;
-      });
+      const safeExercises = getSafeExercises(limitationsCheck.limitations);
       
-      const filteredExerciseCount = plan.exercises.length;
-      const removedCount = originalExerciseCount - filteredExerciseCount;
-      
-      if (removedCount > 0) {
-        console.warn(`⚠️ Rimossi ${removedCount} esercizi vietati dal piano per limitazione: ${limitationsCheck.limitations}`);
+      if (safeExercises && safeExercises.length > 0) {
+        // Mescola gli esercizi per varietà
+        const shuffled = [...safeExercises].sort(() => Math.random() - 0.5);
         
-        // Se abbiamo rimosso troppi esercizi, aggiungi esercizi sicuri alternativi
-        if (plan.exercises.length < 5) {
-          console.warn('⚠️ Piano ha meno di 5 esercizi dopo filtro, aggiungo esercizi sicuri alternativi');
-          // Importa funzione per esercizi sicuri
-          const { getSafeAlternativeExercises } = await import('@/data/bodyPartExclusions');
-          const safeExercises = getSafeAlternativeExercises(limitationsCheck.limitations, plan.workout_type);
-          plan.exercises.push(...safeExercises.slice(0, 5 - plan.exercises.length));
-        }
+        // Prendi 7-8 esercizi
+        const selectedCount = Math.min(8, Math.max(6, shuffled.length));
+        const selectedExercises = shuffled.slice(0, selectedCount);
+        
+        console.log(`💪 WHITELIST: Sostituisco ${plan.exercises?.length || 0} esercizi OpenAI con ${selectedExercises.length} esercizi sicuri`);
+        
+        // Log esercizi selezionati
+        selectedExercises.forEach((ex, i) => {
+          console.log(`   ${i + 1}. ${ex.name}`);
+        });
+        
+        // Converti gli esercizi dalla whitelist al formato del piano
+        plan.exercises = selectedExercises.map(ex => {
+          // Converti rest da string a number (gestisce "90s", "15 min", "-")
+          let restSeconds = 60; // default
+          if (ex.rest && ex.rest !== '-') {
+            if (ex.rest.includes('min')) {
+              const minutes = parseInt(ex.rest.replace('min', '').trim());
+              restSeconds = minutes * 60;
+            } else if (ex.rest.includes('s')) {
+              restSeconds = parseInt(ex.rest.replace('s', '').trim()) || 60;
+            } else {
+              restSeconds = parseInt(ex.rest) || 60;
+            }
+          }
+          
+          // Determina exercise_type basato sul nome (semplificato)
+          let exerciseType: 'compound' | 'compound_secondary' | 'isolation' | 'isolation_light' | 'time_based' = 'isolation';
+          const nameLower = ex.name.toLowerCase();
+          if (nameLower.includes('press') || nameLower.includes('pulldown') || nameLower.includes('row')) {
+            exerciseType = 'compound';
+          } else if (nameLower.includes('curl') || nameLower.includes('raise') || nameLower.includes('extension')) {
+            exerciseType = 'isolation';
+          } else if (nameLower.includes('crunch') || nameLower.includes('bridge')) {
+            exerciseType = 'isolation_light';
+          } else if (nameLower.includes('cyclette') || nameLower.includes('camminata') || nameLower.includes('nuoto')) {
+            exerciseType = 'time_based';
+          }
+          
+          return {
+            name: ex.name,
+            sets: parseInt(ex.sets) || 3,
+            reps: ex.reps,
+            rest_seconds: restSeconds,
+            notes: ex.notes,
+            exercise_type: exerciseType,
+          };
+        });
+        
+        console.log(`✅ WHITELIST: Piano aggiornato con ${plan.exercises.length} esercizi sicuri`);
+      } else {
+        console.log('⚠️ WHITELIST: Nessuna whitelist trovata, mantengo esercizi OpenAI');
       }
     }
     

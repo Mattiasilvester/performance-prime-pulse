@@ -19,22 +19,10 @@ import {
   getDiaryEntry,
   updateDiaryEntry,
   deleteDiaryEntry,
+  type WorkoutDiary,
 } from "@/services/diaryService";
 
 type FilterType = 'all' | 'saved' | 'completed';
-
-interface WorkoutDiary {
-  id: string;
-  workout_name: string;
-  workout_type?: string | null;
-  status: 'saved' | 'completed';
-  duration_minutes?: number | null;
-  exercises_count?: number | null;
-  exercises?: any; // JSONB array di esercizi
-  completed_at?: string | null;
-  saved_at: string;
-  notes?: string | null;
-}
 
 const DiaryPage = () => {
   const navigate = useNavigate();

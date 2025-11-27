@@ -95,14 +95,60 @@ export const presetResponses: Record<string, any> = {
 export function findPresetResponse(message: string): any {
   const lowerMessage = message.toLowerCase().trim();
   
-  // Controllo parole chiave mediche/pericolose
-  const medicalKeywords = ['male', 'dolore', 'infortunio', 'ferito', 'problema cardiaco', 'vertigini', 'svenimento'];
-  const hasMedicalConcern = medicalKeywords.some(keyword => lowerMessage.includes(keyword));
+  // ⭐ FIX BUG 2: Riconosci quando il dolore è RISOLTO
+  const painResolvedKeywords = [
+    'dolore è passato',
+    'dolore mi è passato', 
+    'non ho più dolore',
+    'il dolore è passato',
+    'non fa più male',
+    'sto meglio',
+    'sono guarito',
+    'è guarito',
+    'non mi fa più male',
+    'passato il dolore'
+  ];
+
+  const isPainResolved = painResolvedKeywords.some(keyword => 
+    lowerMessage.includes(keyword)
+  );
+
+  // Se il dolore è risolto, NON intercettare - passa all'LLM
+  if (isPainResolved) {
+    console.log('✅ FIX BUG 2: Dolore risolto rilevato, passo all\'LLM');
+    return null;
+  }
+
+  // Parole chiave per dolore/limitazioni fisiche
+  const painKeywords = ['fa male', 'male', 'dolore', 'dolori', 'infortunio', 'infortunato', 'ferito', 'problema cardiaco', 'vertigini', 'svenimento'];
+  // Parole chiave per richiesta piano/allenamento
+  const planKeywords = ['piano', 'allenamento', 'workout', 'esercizi', 'programma', 'scheda', 'creami', 'fammi', 'genera', 'crea un piano', 'fammi un piano', 'mi serve un piano', 'voglio un piano'];
   
-  if (hasMedicalConcern && !presetResponses[lowerMessage]) {
+  const hasPainMention = painKeywords.some(keyword => lowerMessage.includes(keyword));
+  const hasPlanRequest = planKeywords.some(keyword => lowerMessage.includes(keyword));
+  
+  // FIX CRITICO: Se c'è dolore + richiesta piano, passa a OpenAI (userà whitelist automaticamente)
+  if (hasPainMention && hasPlanRequest) {
+    console.log('🏋️ Dolore + richiesta piano: procedo con OpenAI + whitelist');
+    return null; // Passa all'AI che userà la whitelist
+  }
+  
+  // Se c'è solo dolore SENZA richiesta piano, mostra warning con bottone professionista
+  if (hasPainMention && !hasPlanRequest && !presetResponses[lowerMessage]) {
     return {
-      text: "⚠️ Per questioni mediche o dolori, ti consiglio vivamente di consultare un professionista sanitario. La tua salute viene prima di tutto!",
-      warning: true
+      text: `⚠️ Per questioni mediche o dolori, ti consiglio vivamente di consultare un professionista sanitario. La tua salute viene prima di tutto!
+
+
+💡 **Se preferisci, puoi contattare uno dei nostri professionisti per un consulto personalizzato.**
+
+
+Vuoi comunque che ti crei un piano di allenamento tenendo conto delle tue limitazioni?`,
+      warning: true,
+      action: { 
+        label: "👨‍⚕️ Contatta un professionista", 
+        link: "/professionals" 
+      },
+      askForPlanConfirmation: true
     };
   }
   
