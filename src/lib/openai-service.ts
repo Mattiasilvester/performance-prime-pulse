@@ -23,6 +23,7 @@ import {
   getSafeExercises,
   detectBodyPartFromMessage
 } from '@/data/bodyPartExclusions';
+import { getUserPains } from '@/services/painTrackingService';
 
 // ⚠️ DEPRECATO: Non usare più VITE_OPENAI_API_KEY direttamente
 // Usare /api/ai-chat endpoint invece
@@ -755,18 +756,48 @@ ${workoutPlanSystemPrompt}
       console.log('💊 Consigli corretti:', correctAdvice);
       plan.therapeuticAdvice = correctAdvice;
       
-      // Aggiorna anche la safety note con la zona corretta usando detectBodyPartFromMessage
-      const bodyPart = detectBodyPartFromMessage(limitationsCheck.limitations);
-      console.log('💊 Zona del corpo rilevata:', bodyPart);
+      // ⭐ FIX PROBLEMA 2: Recupera zone dolore dal database per safety note
+      let safetyZones = limitationsCheck.limitations; // fallback
       
-      if (bodyPart) {
-        const preposition = ['anca', 'addome'].includes(bodyPart) ? "all'" : 
-                            ['spalla', 'schiena', 'caviglia', 'coscia'].includes(bodyPart) ? 'alla ' : 'al ';
-        plan.safetyNotes = `⚠️ Piano adattato per il dolore ${preposition}${bodyPart}. Tutti gli esercizi sono stati selezionati per evitare qualsiasi stress sulla zona interessata. Ascolta sempre il tuo corpo e fermati se senti dolore.`;
-        console.log('💊 Safety note corretta:', plan.safetyNotes);
-      } else {
-        plan.safetyNotes = `Piano adattato per ${limitationsCheck.limitations}. Gli esercizi sono stati selezionati per evitare stress sulla zona interessata.`;
+      try {
+        console.log('🛡️ PROBLEMA 2 FIX: Recupero zone dolore dal database per userId:', userId.substring(0, 8) + '...');
+        const painResult = await getUserPains(userId);
+        if (painResult && painResult.pains && painResult.pains.length > 0) {
+          safetyZones = painResult.pains.map(p => p.zona).join(', ');
+          console.log('🛡️ PROBLEMA 2 FIX: Usando zone dal database:', safetyZones);
+        } else {
+          console.log('🛡️ PROBLEMA 2 FIX: Nessun dolore trovato nel database, uso fallback');
+        }
+      } catch (e) {
+        console.warn('🛡️ PROBLEMA 2 FIX: Errore recupero dolori dal database, uso fallback:', e);
+        // Se getUserPains fallisce, prova a usare detectBodyPartFromMessage come fallback
+        const bodyPart = detectBodyPartFromMessage(limitationsCheck.limitations);
+        if (bodyPart) {
+          safetyZones = bodyPart;
+          console.log('🛡️ PROBLEMA 2 FIX: Fallback a detectBodyPartFromMessage:', bodyPart);
+        }
       }
+      
+      // Genera safety note usando zone dal database
+      // Se safetyZones contiene più zone, formatta correttamente
+      const zonesArray = safetyZones.split(',').map(z => z.trim());
+      
+      if (zonesArray.length === 1) {
+        // Singola zona
+        const zona = zonesArray[0];
+        const preposition = ['anca', 'addome'].includes(zona.toLowerCase()) ? "all'" : 
+                            ['spalla', 'schiena', 'caviglia', 'coscia'].includes(zona.toLowerCase()) ? 'alla ' : 'al ';
+        plan.safetyNotes = `⚠️ **Nota di sicurezza**: Piano adattato per il dolore ${preposition}${zona}. Tutti gli esercizi sono stati selezionati per evitare qualsiasi stress sulla zona interessata. Ascolta sempre il tuo corpo e fermati se senti dolore.`;
+      } else if (zonesArray.length > 1) {
+        // Multiple zone
+        const zonesText = zonesArray.slice(0, -1).join(', ') + ' e ' + zonesArray[zonesArray.length - 1];
+        plan.safetyNotes = `⚠️ **Nota di sicurezza**: Piano adattato per i dolori a ${zonesText}. Tutti gli esercizi sono stati selezionati per evitare qualsiasi stress su queste zone. Ascolta sempre il tuo corpo e fermati se senti dolore.`;
+      } else {
+        // Fallback se non ci sono zone valide
+        plan.safetyNotes = `⚠️ **Nota di sicurezza**: Piano adattato per le tue limitazioni fisiche. Gli esercizi sono stati selezionati per evitare stress sulle zone interessate.`;
+      }
+      
+      console.log('🛡️ PROBLEMA 2 FIX: Safety note generata:', plan.safetyNotes);
     }
 
     // ============================================

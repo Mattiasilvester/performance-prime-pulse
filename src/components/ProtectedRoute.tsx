@@ -19,6 +19,13 @@ export default function ProtectedRoute({ session, children }: ProtectedRouteProp
     }
   }
 
+  // ⚠️ BYPASS TEMPORANEO PER DEBUG - RIMUOVERE IN PRODUZIONE
+  // Permette accesso alla dashboard senza autenticazione in modalità sviluppo
+  if (import.meta.env.DEV && (location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard'))) {
+    console.log('⚠️ BYPASS ATTIVO - Accesso dashboard senza autenticazione (solo DEV)');
+    return <>{children}</>;
+  }
+
   if (!session) {
     return <Navigate to="/auth/login" replace />;
   }

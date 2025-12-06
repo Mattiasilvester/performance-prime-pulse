@@ -26,6 +26,9 @@ import { getStructuredWorkoutPlan } from '@/lib/openai-service';
 import { type StructuredWorkoutPlan } from '@/services/workoutPlanGenerator';
 import { HealthDisclaimer } from '@/components/primebot/HealthDisclaimer';
 import { ExerciseGifLink } from '@/components/workouts/ExerciseGifLink';
+// ⭐ FIX BUG 3: Import per analisi dolore nel messaggio corrente
+import { detectBodyPartFromMessage } from '@/data/bodyPartExclusions';
+import { addPain } from '@/services/painTrackingService';
 
 export interface ParsedAction {
   type: ActionType;
@@ -186,6 +189,10 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   // ⭐ FIX BUG 2: Flag per saltare il fallback quando si passa dall'LLM dopo waitingForPainPlanConfirmation
   const [skipFallbackCheck, setSkipFallbackCheck] = useState(false);
 
+  // ⭐ FIX BUG 3: Stato per gestire dolore rilevato nel messaggio corrente
+  const [waitingForPainDetails, setWaitingForPainDetails] = useState(false);
+  const [tempPainBodyPart, setTempPainBodyPart] = useState<string | null>(null);
+
   // Helper function to add bot message
   const addBotMessage = useCallback((text: string) => {
     setMsgs(prev => [...prev, { 
@@ -298,6 +305,65 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     }
   }, [userId, refreshPains]);
 
+  /**
+   * Distingue se una zona del corpo nel messaggio è riferita a DOLORE o ZONA TARGET allenamento
+   * @param message - Il messaggio dell'utente
+   * @param bodyPart - La zona del corpo rilevata
+   * @returns true se è contesto DOLORE, false se è ZONA TARGET
+   */
+  function isBodyPartForPain(message: string, bodyPart: string): boolean {
+    const messageLower = message.toLowerCase();
+    
+    // Keywords che indicano DOLORE
+    const painKeywords = [
+      'dolore', 'dolori', 'male', 'mal di', 'fa male', 'mi fa male',
+      'soffro', 'fastidio', 'brucia', 'tira', 'blocco', 'bloccato',
+      'ferito', 'infortunio', 'infortunato', 'problema', 'problemi',
+      'limitazione', 'limitazioni', 'lesione', 'lesioni',
+      'distorsione', 'stiramento', 'strappo'
+    ];
+    
+    // Keywords che indicano ZONA TARGET (allenamento)
+    const targetKeywords = [
+      'piano per', 'allenamento per', 'workout per', 'scheda per',
+      'programma per', 'esercizi per', 'per il', 'per la', 'per i', 'per le',
+      'allenare', 'voglio allenare', 'vorrei allenare',
+      'creami', 'fammi', 'genera', 'prepara',
+      'voglio', 'vorrei', 'mi piacerebbe'
+    ];
+    
+    // Controlla se c'è keyword DOLORE nel messaggio
+    const hasPainKeyword = painKeywords.some(kw => messageLower.includes(kw));
+    
+    // Controlla se c'è keyword TARGET nel messaggio
+    const hasTargetKeyword = targetKeywords.some(kw => messageLower.includes(kw));
+    
+    console.log(`🔍 isBodyPartForPain("${message}", "${bodyPart}"): painKw=${hasPainKeyword}, targetKw=${hasTargetKeyword}`);
+    
+    // LOGICA DECISIONALE:
+    // 1. Se ha keyword dolore E NON ha keyword target → è DOLORE
+    if (hasPainKeyword && !hasTargetKeyword) {
+      console.log('→ Risultato: DOLORE (painKw=true, targetKw=false)');
+      return true;
+    }
+    
+    // 2. Se ha keyword target E NON ha keyword dolore → è TARGET
+    if (hasTargetKeyword && !hasPainKeyword) {
+      console.log('→ Risultato: TARGET (targetKw=true, painKw=false)');
+      return false;
+    }
+    
+    // 3. Se ha ENTRAMBE → è DOLORE (caso "ho mal di ginocchio e voglio un piano")
+    if (hasPainKeyword && hasTargetKeyword) {
+      console.log('→ Risultato: DOLORE (entrambe le keywords presenti)');
+      return true;
+    }
+    
+    // 4. Se NON ha nessuna keyword → default TARGET (es. "petto" da solo)
+    console.log('→ Risultato: TARGET (nessuna keyword specifica)');
+    return false;
+  }
+
   async function send(text: string) {
     const trimmed = text.trim();
     
@@ -312,7 +378,12 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     }
     
     // === SISTEMA TRACKING DOLORI - INIZIO ===
+    // ⭐ FIX BUG 6: Log di debug per tracciare stato
+    console.log('🔍 BUG 6 DEBUG: waitingForPainResponse =', waitingForPainResponse, 'message =', trimmed);
+    
     if (waitingForPainResponse && trimmed) {
+      console.log('✅ BUG 6: waitingForPainResponse è attivo, gestisco risposta dolore');
+      
       // AGGIUNGI SUBITO il messaggio dell'utente alla chat
       if (shouldAddUserMessage) {
         setMsgs(prev => [...prev, { 
@@ -334,12 +405,18 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                          userMessageLower.includes('sì') || 
                          userMessageLower.includes('si');
       
+      console.log('🔍 BUG 6: isPainGone =', isPainGone, 'currentPainZone =', currentPainZone);
+      
       if (isPainGone) {
         // Tutti i dolori passati
         if (userMessageLower.includes('tutti') || userMessageLower.includes('tutto')) {
+          console.log('🗑️ BUG 7 DEBUG: Rimuovo TUTTI i dolori');
           const response = await handleAllPainsGone();
+          console.log('🗑️ BUG 7 DEBUG: Risultato handleAllPainsGone:', response);
           setWaitingForPainResponse(false);
           setCurrentPainZone(null);
+          // ⭐ FIX BUG 7: Ricarica dolori dopo rimozione
+          await refreshPains();
           addBotMessage(response);
           setInput('');
           return;
@@ -347,9 +424,26 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         
         // Singolo dolore passato
         if (currentPainZone) {
+          console.log('🗑️ BUG 7 DEBUG: Chiamando handlePainGone per zona:', currentPainZone);
           const response = await handlePainGone(currentPainZone);
+          console.log('🗑️ BUG 7 DEBUG: Risultato handlePainGone:', response);
           setWaitingForPainResponse(false);
           setCurrentPainZone(null);
+          // ⭐ FIX BUG 7: Ricarica dolori dopo rimozione
+          await refreshPains();
+          addBotMessage(response);
+          setInput('');
+          return;
+        } else if (pains.length > 0) {
+          // ⭐ FIX BUG 7: Se currentPainZone è null ma ci sono dolori, usa il primo
+          console.log('🗑️ BUG 7 DEBUG: currentPainZone è null, uso primo dolore:', pains[0].zona);
+          const zonaToRemove = pains[0].zona;
+          const response = await handlePainGone(zonaToRemove);
+          console.log('🗑️ BUG 7 DEBUG: Risultato handlePainGone:', response);
+          setWaitingForPainResponse(false);
+          setCurrentPainZone(null);
+          // ⭐ FIX BUG 7: Ricarica dolori dopo rimozione
+          await refreshPains();
           addBotMessage(response);
           setInput('');
           return;
@@ -369,6 +463,192 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         setCurrentPainZone(null);
         addBotMessage(response);
         // NON return - lascia continuare per generare piano con whitelist
+      }
+    }
+    
+    // ⭐ FIX BUG 3: Gestisci risposta dettagli dolore dal messaggio corrente
+    if (waitingForPainDetails && trimmed && tempPainBodyPart) {
+      console.log('🩺 FIX BUG 3: Gestisco risposta dettagli dolore dal messaggio:', trimmed);
+      
+      // Aggiungi messaggio utente
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { 
+          id: crypto.randomUUID(),
+          role: 'user',
+          text: trimmed
+        }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      
+      // Estrai lato dal messaggio (destro/sinistro/entrambi)
+      const side = trimmed.toLowerCase();
+      const isBoth = side.includes('entrambi') || side.includes('tutti e due') || side.includes('entrambe');
+      const isLeft = side.includes('sinistro') || side.includes('sinistra');
+      const isRight = side.includes('destro') || side.includes('destra');
+      
+      // Normalizza zona con lato se necessario
+      let finalZone = tempPainBodyPart;
+      const needsSide = ['ginocchio', 'spalla', 'anca', 'gomito', 'polso', 'caviglia'].includes(tempPainBodyPart.toLowerCase());
+      
+      if (needsSide) {
+        if (isBoth) {
+          finalZone = `${tempPainBodyPart} entrambi`;
+        } else if (isLeft) {
+          finalZone = `${tempPainBodyPart} sinistro`;
+        } else if (isRight) {
+          finalZone = `${tempPainBodyPart} destro`;
+        }
+      }
+      
+      // Salva dolore nel database
+      try {
+        const result = await addPain(userId, finalZone, `Dolore rilevato durante richiesta piano: "${trimmed}"`, 'chat');
+        
+        if (result.success) {
+          console.log('✅ FIX BUG 3: Dolore salvato:', finalZone);
+          // Aggiorna pains locale
+          await refreshPains();
+          
+          // Reset stati temporanei
+          setWaitingForPainDetails(false);
+          setTempPainBodyPart(null);
+          
+          // Conferma all'utente
+          addBotMessage(`Grazie! Ho registrato il tuo dolore a ${finalZone}. Ora procedo con la creazione del piano personalizzato che terrà conto di questa limitazione. 💪`);
+          
+          // ⭐ FIX BUG 3 PARTE 2: Genera piano IMMEDIATAMENTE dopo salvataggio dolore
+          setLoading(true);
+          
+          try {
+            console.log('🏋️ FIX BUG 3 PARTE 2: Genero piano considerando limitazione:', finalZone);
+            
+            // Assicurati di avere sessionId
+            let currentSessionId = sessionId;
+            if (!currentSessionId) {
+              currentSessionId = await getOrCreateSessionId(userId);
+              setSessionId(currentSessionId);
+            }
+            
+            // Richiesta piano che considera le limitazioni
+            const planRequest = `Creami un piano di allenamento personalizzato considerando le mie limitazioni fisiche`;
+            
+            const planResponse = await getStructuredWorkoutPlan(
+              planRequest,
+              userId,
+              currentSessionId || undefined
+            );
+            
+            console.log('✅ FIX BUG 3 PARTE 2: getStructuredWorkoutPlan completato:', {
+              success: planResponse.success,
+              type: planResponse.type,
+              hasPlan: !!planResponse.plan,
+              hasQuestion: !!planResponse.question,
+              hasExistingLimitations: planResponse.hasExistingLimitations,
+            });
+            
+            setLoading(false);
+            
+            // Gestisci risposta piano
+            if (planResponse.type === 'question' && planResponse.question) {
+              // Domanda limitazioni (caso raro, ma gestito)
+              setMsgs(prev => [...prev, {
+                id: crypto.randomUUID(),
+                role: 'bot' as const,
+                text: planResponse.question,
+              }]);
+              setAwaitingLimitationsResponse(true);
+              setOriginalWorkoutRequest(planRequest);
+              return;
+            }
+            
+            if (planResponse.success && planResponse.plan) {
+              // Mostra piano con disclaimer per limitazioni
+              if (planResponse.hasExistingLimitations && (planResponse as any).hasAnsweredBefore) {
+                // Mostra disclaimer
+                setPendingPlan({
+                  plan: planResponse.plan,
+                  hasLimitations: planResponse.hasExistingLimitations ?? false,
+                  actions: [
+                    {
+                      type: 'save_workout',
+                      label: 'Salva questo piano',
+                      payload: {
+                        name: planResponse.plan.name,
+                        workout_type: planResponse.plan.workout_type,
+                        exercises: planResponse.plan.exercises.map((ex: any) => ({
+                          name: ex.name,
+                          sets: ex.sets,
+                          reps: ex.reps,
+                          rest_seconds: ex.rest_seconds,
+                          notes: ex.notes,
+                        })),
+                        duration: planResponse.plan.duration_minutes,
+                      },
+                    },
+                  ],
+                });
+                setShowPlanDisclaimer(true);
+              } else {
+                // Mostra piano direttamente
+                const botMessage: Msg = {
+                  id: crypto.randomUUID(),
+                  role: 'bot' as const,
+                  text: `Ecco il tuo piano di allenamento personalizzato! Ho tenuto conto del tuo dolore al ${finalZone} per creare un programma sicuro per te. 💪`,
+                  workoutPlan: planResponse.plan,
+                  actions: [
+                    {
+                      type: 'save_workout',
+                      label: 'Salva questo piano',
+                      payload: {
+                        name: planResponse.plan.name,
+                        workout_type: planResponse.plan.workout_type,
+                        exercises: planResponse.plan.exercises.map((ex: any) => ({
+                          name: ex.name,
+                          sets: ex.sets,
+                          reps: ex.reps,
+                          rest_seconds: ex.rest_seconds,
+                          notes: ex.notes,
+                        })),
+                        duration: planResponse.plan.duration_minutes,
+                      },
+                    },
+                  ],
+                };
+                setMsgs(prev => [...prev, botMessage]);
+              }
+              return; // ⭐ IMPORTANTE: esci qui per evitare chiamata LLM generica
+            }
+            
+            // Errore o caso non gestito
+            setMsgs(prev => [...prev, {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.message || 'Errore nella generazione del piano. Riprova!',
+            }]);
+            return;
+            
+          } catch (error) {
+            console.error('❌ FIX BUG 3 PARTE 2: Errore generazione piano dopo dolore:', error);
+            setLoading(false);
+            setMsgs(prev => [...prev, {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: 'Ops, ho avuto un problema tecnico nella generazione del piano. Riprova tra qualche secondo.',
+            }]);
+            return;
+          }
+        } else {
+          console.error('❌ FIX BUG 3: Errore salvataggio dolore:', result.error);
+          addBotMessage('Mi dispiace, c\'è stato un problema nel salvare il dolore. Procedo comunque con la creazione del piano.');
+          setWaitingForPainDetails(false);
+          setTempPainBodyPart(null);
+        }
+      } catch (error) {
+        console.error('❌ FIX BUG 3: Errore salvataggio dolore:', error);
+        addBotMessage('Mi dispiace, c\'è stato un problema. Procedo comunque con la creazione del piano.');
+        setWaitingForPainDetails(false);
+        setTempPainBodyPart(null);
       }
     }
     
@@ -407,16 +687,128 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                         userResponseLower.includes('preferisco di no');
       
       if (isConfirm) {
-        console.log('✅ Utente conferma, procedo con generazione piano considerando limitazioni');
+        console.log('✅ FIX BUG 4: Utente conferma, genero piano direttamente considerando limitazioni');
         setWaitingForPainPlanConfirmation(false);
         setLoading(true);
-        
-        // Genera piano con richiesta generica che considera le limitazioni
-        const planRequest = "Creami un piano di allenamento personalizzato";
-        setPendingPlanRequest(planRequest);
         shouldAddUserMessage = false; // Messaggio già aggiunto sopra
-        // Lascia continuare il flusso per generare il piano
-        return; // Evita che il messaggio venga aggiunto di nuovo nel blocco generale
+        
+        // ⭐ FIX BUG 4: Genera piano DIRETTAMENTE invece di fare return
+        try {
+          // Assicurati di avere sessionId
+          let currentSessionId = sessionId;
+          if (!currentSessionId) {
+            currentSessionId = await getOrCreateSessionId(userId);
+            setSessionId(currentSessionId);
+          }
+          
+          // Genera piano con richiesta che considera le limitazioni
+          const planRequest = "Creami un piano di allenamento personalizzato considerando le mie limitazioni fisiche";
+          console.log('🏋️ FIX BUG 4: Chiamo getStructuredWorkoutPlan con:', planRequest);
+          
+          const planResponse = await getStructuredWorkoutPlan(
+            planRequest, 
+            userId, 
+            currentSessionId || undefined
+          );
+          
+          console.log('✅ FIX BUG 4: getStructuredWorkoutPlan completato:', {
+            success: planResponse.success,
+            type: planResponse.type,
+            hasPlan: !!planResponse.plan,
+            hasQuestion: !!planResponse.question,
+          });
+          
+          setLoading(false);
+          
+          // Gestisci risposta piano
+          if (planResponse.type === 'question' && planResponse.question) {
+            // Domanda limitazioni
+            setMsgs(prev => [...prev, {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.question,
+            }]);
+            setAwaitingLimitationsResponse(true);
+            setOriginalWorkoutRequest(planRequest);
+            return;
+          }
+          
+          if (planResponse.success && planResponse.plan) {
+            // Mostra piano (con disclaimer se necessario)
+            if (planResponse.hasExistingLimitations && (planResponse as any).hasAnsweredBefore) {
+              // Mostra disclaimer
+              setPendingPlan({
+                plan: planResponse.plan,
+                hasLimitations: planResponse.hasExistingLimitations ?? false,
+                actions: [
+                  {
+                    type: 'save_workout',
+                    label: 'Salva questo piano',
+                    payload: {
+                      name: planResponse.plan.name,
+                      workout_type: planResponse.plan.workout_type,
+                      exercises: planResponse.plan.exercises.map((ex: any) => ({
+                        name: ex.name,
+                        sets: ex.sets,
+                        reps: ex.reps,
+                        rest_seconds: ex.rest_seconds,
+                        notes: ex.notes,
+                      })),
+                      duration: planResponse.plan.duration_minutes,
+                    },
+                  },
+                ],
+              });
+              setShowPlanDisclaimer(true);
+            } else {
+              // Mostra piano direttamente
+              const botMessage: Msg = {
+                id: crypto.randomUUID(),
+                role: 'bot' as const,
+                text: `Ecco il tuo piano di allenamento personalizzato! Ho tenuto conto delle tue limitazioni per creare un programma sicuro per te. 💪`,
+                workoutPlan: planResponse.plan,
+                actions: [
+                  {
+                    type: 'save_workout',
+                    label: 'Salva questo piano',
+                    payload: {
+                      name: planResponse.plan.name,
+                      workout_type: planResponse.plan.workout_type,
+                      exercises: planResponse.plan.exercises.map((ex: any) => ({
+                        name: ex.name,
+                        sets: ex.sets,
+                        reps: ex.reps,
+                        rest_seconds: ex.rest_seconds,
+                        notes: ex.notes,
+                      })),
+                      duration: planResponse.plan.duration_minutes,
+                    },
+                  },
+                ],
+              };
+              setMsgs(prev => [...prev, botMessage]);
+            }
+            return;
+          }
+          
+          // Errore
+          setMsgs(prev => [...prev, {
+            id: crypto.randomUUID(),
+            role: 'bot' as const,
+            text: planResponse.message || 'Errore nella generazione del piano. Riprova!',
+          }]);
+          return;
+          
+        } catch (error) {
+          console.error('❌ FIX BUG 4: Errore generazione piano dopo conferma dolore:', error);
+          setLoading(false);
+          setMsgs(prev => [...prev, {
+            id: crypto.randomUUID(),
+            role: 'bot' as const,
+            text: 'Ops, ho avuto un problema tecnico. Riprova tra qualche secondo.',
+          }]);
+          return;
+        }
       } else if (isDecline) {
         console.log('❌ Utente rifiuta, chiudo il flusso');
         setWaitingForPainPlanConfirmation(false);
@@ -642,16 +1034,63 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
     
     // Check dolori PRIMA di generare piano
     const isPlanRequestForPainCheck = /piano|allenamento|workout|scheda|programma|esercizi|allena|creami/i.test(trimmed);
+    
+    // ⭐ FIX BUG 3: Analizza il messaggio corrente per estrarre dolori PRIMA di controllare il database
+    const painFromCurrentMessage = detectBodyPartFromMessage(trimmed);
+    
+    // ⭐ FIX PROBLEMA 3: Distingui DOLORE vs ZONA TARGET
+    const isPainContext = painFromCurrentMessage !== null && isBodyPartForPain(trimmed, painFromCurrentMessage);
+    
+    console.log(`🎯 FIX PROBLEMA 3: zona=${painFromCurrentMessage}, isPainContext=${isPainContext}`);
+    
     console.log('🔍 DEBUG CHECK DOLORI:', {
       isPlanRequestForPainCheck,
       painsLength: pains.length,
+      painFromCurrentMessage, // ⭐ FIX BUG 3: Dolore rilevato nel messaggio corrente
+      isPainContext, // ⭐ FIX PROBLEMA 3: Flag se è contesto DOLORE (non solo presenza zona)
       painCheckMessage: painCheckMessage ? painCheckMessage.substring(0, 50) + '...' : null,
       waitingForPainResponse,
+      waitingForPainDetails, // ⭐ FIX BUG 3: Flag se stiamo aspettando dettagli dolore
       userId: userId.substring(0, 8) + '...',
       conditionResult: isPlanRequestForPainCheck && pains.length > 0 && painCheckMessage && !waitingForPainResponse
     });
     
-    if (isPlanRequestForPainCheck && pains.length > 0 && painCheckMessage && !waitingForPainResponse) {
+    // ⭐ FIX BUG 3: Se c'è DOLORE nel messaggio corrente + richiesta piano, chiedi dettagli PRIMA
+    if (isPlanRequestForPainCheck && isPainContext && !waitingForPainResponse && !waitingForPainDetails && !waitingForPainPlanConfirmation) {
+      console.log('🩺 FIX BUG 3: Rilevato DOLORE nel messaggio corrente:', painFromCurrentMessage);
+      
+      // Aggiungi messaggio utente
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { 
+          id: crypto.randomUUID(),
+          role: 'user', 
+          text: trimmed 
+        }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      
+      // Determina se la parte del corpo può avere lato (destro/sinistro)
+      const needsSide = ['ginocchio', 'spalla', 'anca', 'gomito', 'polso', 'caviglia'].includes(painFromCurrentMessage.toLowerCase());
+      
+      // Chiedi dettagli dolore
+      let askDetailsMessage = '';
+      if (needsSide) {
+        askDetailsMessage = `Ho capito che hai dolore al ${painFromCurrentMessage}. Per adattare al meglio il piano, quale ${painFromCurrentMessage} ti fa male? Destro, sinistro o entrambi?`;
+      } else {
+        askDetailsMessage = `Ho capito che hai dolore alla ${painFromCurrentMessage}. Per adattare al meglio il piano, confermi che il dolore è ancora presente?`;
+      }
+      
+      // Salva temporaneamente e aspetta risposta
+      setTempPainBodyPart(painFromCurrentMessage);
+      setWaitingForPainDetails(true);
+      
+      addBotMessage(askDetailsMessage);
+      return;
+    }
+    
+    // Controlla dolori esistenti nel database (logica originale)
+    if (isPlanRequestForPainCheck && pains.length > 0 && painCheckMessage && !waitingForPainResponse && !waitingForPainDetails) {
       console.log('✅ ENTRO NEL BLOCCO CHECK DOLORI - Mostro painCheckMessage');
       // Aggiungi messaggio utente alla chat
       if (shouldAddUserMessage) {
@@ -665,8 +1104,10 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       setInput('');
       
       setWaitingForPainResponse(true);
-      if (pains.length === 1) {
+      // ⭐ FIX BUG 7: Setta sempre currentPainZone se c'è almeno un dolore
+      if (pains.length > 0) {
         setCurrentPainZone(pains[0].zona);
+        console.log('🗑️ BUG 7 DEBUG: Setto currentPainZone =', pains[0].zona, '(dolori totali:', pains.length, ')');
       }
       
       // Aggiungi messaggio bot con bottone per contattare professionista
@@ -694,7 +1135,8 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
     
     // === SISTEMA RIEPILOGO ONBOARDING - MOSTRA RIEPILOGO ===
     // Se è una richiesta piano E non stiamo aspettando conferma E non ci sono dolori da gestire
-    if (isPlanRequestForPainCheck && !waitingForPlanConfirmation && !waitingForPainResponse) {
+    // ⭐ FIX BUG 3: Aggiunto controllo waitingForPainDetails per evitare conflitti
+    if (isPlanRequestForPainCheck && !waitingForPlanConfirmation && !waitingForPainResponse && !waitingForPainDetails && !waitingForPainPlanConfirmation) {
       // Se l'utente ha appena confermato (pendingPlanRequest è settato), salta il riepilogo
       if (pendingPlanRequest) {
         console.log('✅ Utente ha confermato, uso pendingPlanRequest per generare piano');
@@ -896,6 +1338,81 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         
         setLoading(false);
         return;
+      }
+      
+      // ⭐ FIX BUG 6: Controllo di sicurezza PRIMA del fallback
+      // Intercetta "passato" anche se waitingForPainResponse non è attivo ma c'è dolore recente
+      if (pains.length > 0 && !waitingForPainResponse && !waitingForPainDetails && !waitingForPainPlanConfirmation) {
+        const userMessageLower = trimmed.toLowerCase();
+        const isPainResponse = userMessageLower.includes('passato') || 
+                               userMessageLower.includes('meglio') || 
+                               userMessageLower.includes('guarito') ||
+                               (userMessageLower === 'sì' || userMessageLower === 'si' || userMessageLower === 'ok');
+        
+        if (isPainResponse) {
+          console.log('🛡️ FIX BUG 6: Intercettato "passato" anche se stato non attivo. pains.length =', pains.length);
+          
+          // Setta stato e gestisci risposta dolore
+          setWaitingForPainResponse(true);
+          // ⭐ FIX BUG 7: Setta sempre currentPainZone se c'è almeno un dolore
+          if (pains.length > 0) {
+            setCurrentPainZone(pains[0].zona);
+            console.log('🗑️ BUG 7 DEBUG (FIX BUG 6): Setto currentPainZone =', pains[0].zona, '(dolori totali:', pains.length, ')');
+          }
+          
+          // Aggiungi messaggio utente
+          if (shouldAddUserMessage) {
+            setMsgs(prev => [...prev, { 
+              id: crypto.randomUUID(),
+              role: 'user',
+              text: trimmed
+            }]);
+            shouldAddUserMessage = false;
+          }
+          setInput('');
+          
+          const isPainGone = userMessageLower.includes('passato') || 
+                             userMessageLower.includes('meglio') || 
+                             userMessageLower.includes('guarito') || 
+                             userMessageLower.includes('ok') ||
+                             userMessageLower.includes('sì') || 
+                             userMessageLower.includes('si');
+          
+          if (isPainGone) {
+            // Tutti i dolori passati
+            if (userMessageLower.includes('tutti') || userMessageLower.includes('tutto')) {
+              console.log('🗑️ BUG 7 DEBUG (FIX BUG 6): Rimuovo TUTTI i dolori');
+              const response = await handleAllPainsGone();
+              console.log('🗑️ BUG 7 DEBUG (FIX BUG 6): Risultato handleAllPainsGone:', response);
+              setWaitingForPainResponse(false);
+              setCurrentPainZone(null);
+              // ⭐ FIX BUG 7: Ricarica dolori dopo rimozione
+              await refreshPains();
+              addBotMessage(response);
+              setLoading(false);
+              return;
+            }
+            
+            // Singolo dolore passato
+            if (pains.length > 0) {
+              const zonaToRemove = pains[0].zona;
+              console.log('🗑️ BUG 7 DEBUG (FIX BUG 6): Chiamando handlePainGone per zona:', zonaToRemove);
+              const response = await handlePainGone(zonaToRemove);
+              console.log('🗑️ BUG 7 DEBUG (FIX BUG 6): Risultato handlePainGone:', response);
+              setWaitingForPainResponse(false);
+              setCurrentPainZone(null);
+              // ⭐ FIX BUG 7: Ricarica dolori dopo rimozione
+              await refreshPains();
+              addBotMessage(response);
+              setLoading(false);
+              return;
+            }
+          }
+          
+          // Se non ha matchato "passato", continua il flusso normale
+          setWaitingForPainResponse(false);
+          setCurrentPainZone(null);
+        }
       }
       
       // ⭐ FIX BUG 2: Se skipFallbackCheck è true, salta il fallback e vai all'LLM
