@@ -296,7 +296,68 @@
 
 ---
 
-*Ultimo aggiornamento: 12 Novembre 2025 - Sessione 17*
+### **6 Dicembre 2025 - Fix Critici PrimeBot: Gestione Dolori e Piani**
+
+#### **1. Distinzione Contesto Dolore vs Target Body Part**
+**Decisione**: Implementata funzione helper `isBodyPartForPain()` per distinguere quando una parte del corpo è menzionata come dolore vs target per workout.
+
+**Motivazioni**:
+- "petto" può significare "ho dolore al petto" o "creami un piano per il petto"
+- Il sistema deve interpretare correttamente l'intento utente
+- Necessario analizzare keywords nel messaggio per determinare contesto
+
+**Implementazione**:
+- Lista `painKeywords`: parole che indicano dolore (dolore, male, fastidio, etc.)
+- Lista `targetKeywords`: parole che indicano target workout (piano per, allenamento per, voglio, etc.)
+- Logica: se `painKeywords` presenti E non `targetKeywords` → DOLORE
+- Logica: se `targetKeywords` presenti E non `painKeywords` → TARGET
+- Logica: se entrambe presenti → DOLORE (priorità sicurezza)
+
+#### **2. Intercettazione "passato" Fuori Stato Attivo**
+**Decisione**: Aggiunto blocco sicurezza PRIMA del fallback per intercettare messaggi "passato" anche quando `waitingForPainResponse` non è attivo.
+
+**Motivazioni**:
+- Utente può dire "passato" in qualsiasi momento della conversazione
+- Se lo stato non è attivo, il messaggio va all'LLM e viene interpretato come "passato emotivo"
+- Necessario intercettare PRIMA del fallback per gestire correttamente
+
+**Implementazione**:
+- Blocco controllo `pains.length > 0` PRIMA del fallback
+- Check keywords "passato", "meglio", "guarito", "sì", "si", "ok"
+- Se keywords presenti, setta `waitingForPainResponse(true)` e processa rimozione dolore
+- Evita interpretazione errata da parte dell'LLM
+
+#### **3. Sincronizzazione Database dopo Rimozione Dolore**
+**Decisione**: Aggiunto `await refreshPains()` dopo `handlePainGone()` e `handleAllPainsGone()` e reset `limitazioni_compilato_at: null` quando tutti i dolori rimossi.
+
+**Motivazioni**:
+- Stato locale UI deve essere sincronizzato con database
+- `limitazioni_compilato_at` deve essere null quando non ci sono più dolori
+- `getSmartLimitationsCheck()` usa `limitazioni_compilato_at` per determinare se chiedere limitazioni
+
+**Implementazione**:
+- `await refreshPains()` chiamato dopo ogni rimozione dolore
+- `limitazioni_compilato_at: null` settato in `removePain()` e `removeAllPains()` quando array vuoto
+- Fix `currentPainZone` per usare `pains[0].zona` se non settato
+
+#### **4. Safety Note con Zone Database**
+**Decisione**: Modificata generazione safety note per recuperare zone dal database invece di usare messaggio originale.
+
+**Motivazioni**:
+- Messaggio originale può contenere testo generico ("gia ti ho detto il mio dolore")
+- Safety note deve mostrare zone specifiche dal database (es. "ginocchio sinistro")
+- Fallback multi-livello per garantire sempre una zona mostrata
+
+**Implementazione**:
+- Import `getUserPains()` in `openai-service.ts`
+- Tentativo recupero zone dal database con `getUserPains(userId)`
+- Fallback 1: `detectBodyPartFromMessage(limitationsCheck.limitations)`
+- Fallback 2: `limitationsCheck.limitations` originale
+- Formattazione con preposizioni corrette per singola/multipla zona
+
+---
+
+*Ultimo aggiornamento: 6 Dicembre 2025 - Sessione Fix Critici PrimeBot*
 
 
 

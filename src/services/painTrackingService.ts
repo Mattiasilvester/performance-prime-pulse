@@ -146,6 +146,14 @@ export async function addPain(
       fonte
     };
     const updatedPains = [...pains, newPain];
+    
+    // ⭐ FIX PROBLEMA 1: Prepara limitazioni_fisiche come stringa
+    const limitazioniFisiche = updatedPains.map(p => p.zona).join(', ');
+    
+    console.log('💾 PROBLEMA 1 FIX: Salvando dolore con limitazioni_compilato_at:', new Date().toISOString());
+    console.log('💾 PROBLEMA 1 FIX: limitazioni_fisiche:', limitazioniFisiche);
+    console.log('💾 PROBLEMA 1 FIX: updatedPains:', updatedPains.map(p => p.zona));
+    
     // Salva nel database
     const { error } = await supabase
       .from('user_onboarding_responses')
@@ -154,13 +162,19 @@ export async function addPain(
         zone_dolori_dettagli: updatedPains,
         zone_evitare: updatedPains.map(p => p.zona),
         ha_limitazioni: true,
+        // ⭐ FIX PROBLEMA 1: Setta limitazioni_compilato_at e limitazioni_fisiche
+        limitazioni_compilato_at: new Date().toISOString(),
+        limitazioni_fisiche: limitazioniFisiche,
         last_modified_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
+      
     if (error) {
       console.error('❌ Errore salvataggio dolore:', error);
       return { success: false, error: error.message, updatedPains: pains };
     }
-    console.log(`✅ Dolore aggiunto: ${normalizedZona} per utente ${userId}`);
+    
+    console.log(`✅ PROBLEMA 1 FIX: Dolore aggiunto: ${normalizedZona} per utente ${userId}`);
+    console.log(`✅ PROBLEMA 1 FIX: limitazioni_compilato_at settato, limitazioni_fisiche aggiornato`);
     return { success: true, updatedPains };
   } catch (err) {
     console.error('❌ Errore addPain:', err);
@@ -173,27 +187,42 @@ export async function addPain(
 // ─────────────────────────────────────────────────────
 export async function removePain(userId: string, zona: string): Promise<PainUpdateResult> {
   try {
+    console.log('🗑️ BUG 7 DEBUG: removePain chiamato con zona:', zona, 'userId:', userId.substring(0, 8) + '...');
     const normalizedZona = detectBodyPartFromMessage(zona) || zona.toLowerCase();
+    console.log('🗑️ BUG 7 DEBUG: Zona normalizzata:', normalizedZona);
     
     // Recupera dolori esistenti
     const { pains } = await getUserPains(userId);
+    console.log('🗑️ BUG 7 DEBUG: Dolori esistenti prima rimozione:', pains.length, pains.map(p => p.zona));
     
     // Filtra via il dolore
     const updatedPains = pains.filter(p => p.zona.toLowerCase() !== normalizedZona);
+    console.log('🗑️ BUG 7 DEBUG: Dolori dopo filtro:', updatedPains.length, updatedPains.map(p => p.zona));
+    
     // Salva nel database
+    const updateData = {
+      zone_dolori_dettagli: updatedPains,
+      zone_evitare: updatedPains.map(p => p.zona),
+      ha_limitazioni: updatedPains.length > 0,
+      last_modified_at: new Date().toISOString()
+    };
+    console.log('🗑️ BUG 7 DEBUG: Dati da aggiornare nel database:', {
+      zone_dolori_dettagli_count: updateData.zone_dolori_dettagli.length,
+      zone_evitare_count: updateData.zone_evitare.length,
+      ha_limitazioni: updateData.ha_limitazioni
+    });
+    
     const { error } = await supabase
       .from('user_onboarding_responses')
-      .update({
-        zone_dolori_dettagli: updatedPains,
-        zone_evitare: updatedPains.map(p => p.zona),
-        ha_limitazioni: updatedPains.length > 0,
-        last_modified_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('user_id', userId);
+      
     if (error) {
       console.error('❌ Errore rimozione dolore:', error);
       return { success: false, error: error.message, updatedPains: pains };
     }
+    
+    console.log('✅ BUG 7 DEBUG: Database aggiornato con successo');
     
     // Pulisci anche limitazioni_fisiche se contiene questa zona
     try {
@@ -229,6 +258,21 @@ export async function removePain(userId: string, zona: string): Promise<PainUpda
       // Non bloccare il flusso se la pulizia fallisce
     }
     
+    // ⭐ FIX BUG 7: Se non ci sono più dolori, resetta anche limitazioni_compilato_at
+    if (updatedPains.length === 0) {
+      console.log('🗑️ BUG 7 DEBUG: Nessun dolore rimasto, resetto limitazioni_compilato_at');
+      const { error: resetError } = await supabase
+        .from('user_onboarding_responses')
+        .update({ limitazioni_compilato_at: null })
+        .eq('user_id', userId);
+      
+      if (resetError) {
+        console.warn('⚠️ BUG 7 DEBUG: Errore reset limitazioni_compilato_at:', resetError);
+      } else {
+        console.log('✅ BUG 7 DEBUG: limitazioni_compilato_at resettato');
+      }
+    }
+    
     console.log(`✅ Dolore rimosso: ${normalizedZona} per utente ${userId} ${getRandomHappyEmoji()}`);
     return { success: true, updatedPains };
   } catch (err) {
@@ -242,21 +286,30 @@ export async function removePain(userId: string, zona: string): Promise<PainUpda
 // ─────────────────────────────────────────────────────
 export async function removeAllPains(userId: string): Promise<PainUpdateResult> {
   try {
+    console.log('🗑️ BUG 7 DEBUG: removeAllPains chiamato per userId:', userId.substring(0, 8) + '...');
+    
+    const updateData = {
+      zone_dolori_dettagli: [],
+      zone_evitare: [],
+      ha_limitazioni: false,
+      limitazioni_fisiche: null, // Pulisci anche limitazioni_fisiche quando rimuovi tutti i dolori
+      limitazioni_compilato_at: null, // ⭐ FIX BUG 7: Reset anche limitazioni_compilato_at quando tutti i dolori rimossi
+      last_modified_at: new Date().toISOString()
+    };
+    
+    console.log('🗑️ BUG 7 DEBUG: Dati da aggiornare nel database (removeAllPains):', updateData);
+    
     const { error } = await supabase
       .from('user_onboarding_responses')
-      .update({
-        zone_dolori_dettagli: [],
-        zone_evitare: [],
-        ha_limitazioni: false,
-        limitazioni_fisiche: null, // Pulisci anche limitazioni_fisiche quando rimuovi tutti i dolori
-        last_modified_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('user_id', userId);
+      
     if (error) {
       console.error('❌ Errore rimozione tutti i dolori:', error);
       return { success: false, error: error.message, updatedPains: [] };
     }
-    console.log(`✅ Tutti i dolori rimossi per utente ${userId} ${getRandomHappyEmoji()}`);
+    
+    console.log(`✅ BUG 7 DEBUG: Tutti i dolori rimossi per utente ${userId} ${getRandomHappyEmoji()}`);
     return { success: true, updatedPains: [] };
   } catch (err) {
     console.error('❌ Errore removeAllPains:', err);

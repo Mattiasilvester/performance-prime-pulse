@@ -63,19 +63,29 @@ export default function usePainTracking(userId: string | null) {
    */
   const handlePainGone = useCallback(async (zona: string): Promise<string> => {
     if (!userId) {
+      console.error('🗑️ BUG 7 DEBUG: userId non disponibile');
       return 'Errore: utente non autenticato';
     }
 
     try {
+      console.log('🗑️ BUG 7 DEBUG: Chiamando removePain per zona:', zona, 'userId:', userId.substring(0, 8) + '...');
       const result = await removePain(userId, zona);
+      console.log('🗑️ BUG 7 DEBUG: Risultato removePain:', {
+        success: result.success,
+        error: result.error,
+        updatedPainsCount: result.updatedPains?.length || 0
+      });
       
       if (result.success) {
         // Ricarica i dolori aggiornati
+        console.log('🗑️ BUG 7 DEBUG: Ricarico dolori dopo rimozione...');
         await loadPains();
+        console.log('🗑️ BUG 7 DEBUG: Dolori ricaricati, nuovo count:', result.updatedPains?.length || 0);
         
         // Genera messaggio felice
         return generateHappyPainGoneResponse(zona, result.updatedPains);
       } else {
+        console.error('🗑️ BUG 7 DEBUG: removePain fallito:', result.error);
         return `Errore durante la rimozione del dolore: ${result.error || 'Errore sconosciuto'}`;
       }
     } catch (error) {
@@ -98,19 +108,29 @@ export default function usePainTracking(userId: string | null) {
    */
   const handleAllPainsGone = useCallback(async (): Promise<string> => {
     if (!userId) {
+      console.error('🗑️ BUG 7 DEBUG: userId non disponibile');
       return 'Errore: utente non autenticato';
     }
 
     try {
+      console.log('🗑️ BUG 7 DEBUG: Chiamando removeAllPains per userId:', userId.substring(0, 8) + '...');
       const result = await removeAllPains(userId);
+      console.log('🗑️ BUG 7 DEBUG: Risultato removeAllPains:', {
+        success: result.success,
+        error: result.error,
+        updatedPainsCount: result.updatedPains?.length || 0
+      });
       
       if (result.success) {
         // Ricarica i dolori (saranno vuoti)
+        console.log('🗑️ BUG 7 DEBUG: Ricarico dolori dopo rimozione tutti...');
         await loadPains();
+        console.log('🗑️ BUG 7 DEBUG: Dolori ricaricati, dovrebbero essere vuoti');
         
         // Genera messaggio super felice
         return generateAllPainsGoneResponse();
       } else {
+        console.error('🗑️ BUG 7 DEBUG: removeAllPains fallito:', result.error);
         return `Errore durante la rimozione dei dolori: ${result.error || 'Errore sconosciuto'}`;
       }
     } catch (error) {
