@@ -18,7 +18,6 @@ import { FeatureFlagDebug } from '@/components/FeatureFlagDebug'
 import LandingPage from '@/landing/pages/LandingPage'
 import { NewLandingPage } from '@/pages/landing/NewLandingPage'
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage'
-import { useFeatureFlag } from '@/hooks/useFeatureFlag'
 import LoginPage from '@/pages/auth/LoginPage'
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const TermsAndConditions = lazy(() => import('@/pages/TermsAndConditions'))
@@ -97,14 +96,6 @@ const ConditionalFeedbackWidget = () => {
   return <FeedbackWidget />;
 };
 
-// Componente wrapper per A/B testing landing page
-const LandingPageWrapper = () => {
-  const { useNewLanding } = useFeatureFlag();
-  const showNewLanding = useNewLanding();
-  
-  return showNewLanding ? <NewLandingPage /> : <LandingPage />;
-};
-
 // Componente wrapper per FeatureFlagDebug che accede alla location
 function FeatureFlagDebugWrapper() {
   const location = useLocation();
@@ -169,7 +160,7 @@ function App() {
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 {/* ROUTE PUBBLICHE */}
-                <Route path="/" element={<LandingPageWrapper />} />
+                <Route path="/" element={<NewLandingPage />} />
                 <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route path="/landing-v1" element={<LandingPage />} />
                 <Route path="/landing-new" element={<NewLandingPage />} />
