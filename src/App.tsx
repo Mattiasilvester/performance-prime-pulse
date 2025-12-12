@@ -12,10 +12,8 @@ import { Toaster } from '@/components/ui/toaster'
 import { Header } from '@/components/layout/Header'
 import BottomNavigation from '@/components/layout/BottomNavigation'
 import FeedbackWidget from '@/components/feedback/FeedbackWidget'
-import { FeatureFlagDebug } from '@/components/FeatureFlagDebug'
 
 // Import componenti core (non lazy)
-import LandingPage from '@/landing/pages/LandingPage'
 import { NewLandingPage } from '@/pages/landing/NewLandingPage'
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage'
 import LoginPage from '@/pages/auth/LoginPage'
@@ -96,23 +94,6 @@ const ConditionalFeedbackWidget = () => {
   return <FeedbackWidget />;
 };
 
-// Componente wrapper per FeatureFlagDebug che accede alla location
-function FeatureFlagDebugWrapper() {
-  const location = useLocation();
-  const isDashboardRoute = location.pathname.startsWith('/dashboard');
-  
-  return (
-    <>
-      {/* 
-        🔒 FEATURE FLAGS DEBUG
-        Visibile solo in landing page, nascosto in dashboard e route protette
-        TODO: Rimuovere definitivamente in futuro
-      */}
-      {import.meta.env.DEV && !isDashboardRoute && <FeatureFlagDebug />}
-    </>
-  );
-}
-
 function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
@@ -162,8 +143,6 @@ function App() {
                 {/* ROUTE PUBBLICHE */}
                 <Route path="/" element={<NewLandingPage />} />
                 <Route path="/onboarding" element={<OnboardingPage />} />
-                <Route path="/landing-v1" element={<LandingPage />} />
-                <Route path="/landing-new" element={<NewLandingPage />} />
                 <Route path="/auth/login" element={
                   session ? <Navigate to="/dashboard" /> : <LoginPage />
                 } />
@@ -440,7 +419,6 @@ function App() {
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </Suspense>
-            <FeatureFlagDebugWrapper />
           </Router>
           <Toaster />
           <Suspense fallback={null}>

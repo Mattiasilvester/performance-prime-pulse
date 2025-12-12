@@ -2,6 +2,50 @@
 
 ## Decisioni Architetturali
 
+### **12 Dicembre 2025 - Switch Landing Page e Redesign Features**
+
+#### **1. Rimozione Sistema A/B Testing**
+**Decisione**: Eliminato completamente sistema A/B testing per landing page.
+
+**Motivazioni**:
+- La nuova landing page è stata testata e validata
+- Sistema A/B testing aggiungeva complessità non necessaria
+- Mantenere due versioni della landing page aumenta manutenzione
+
+**Implementazione**:
+- Rimossi file: `FeatureFlagDebug.tsx`, `useFeatureFlag.ts`, `features.ts`
+- Rimossa logica condizionale da `App.tsx`
+- `NewLandingPage` ora è la landing page principale (route `/`)
+
+#### **2. Gestione Screenshot Dinamica**
+**Decisione**: Implementato sistema dinamico per caricamento screenshot PrimeBot con fallback.
+
+**Motivazioni**:
+- Import statico fallisce se file non esiste (errore build)
+- Necessario gestire caso file mancante senza rompere build
+- Placeholder elegante durante sviluppo
+
+**Implementazione**:
+- Uso di `new URL()` con `import.meta.url` per path dinamico
+- Gestione errori con `onError` handler su `<img>`
+- Placeholder visivo quando screenshot non disponibile
+
+#### **3. Componenti iPhone Mockup Riutilizzabili**
+**Decisione**: Creato componente `IPhoneMockup` riutilizzabile con animazioni Framer Motion.
+
+**Motivazioni**:
+- 3 mockup iPhone con contenuti diversi ma stesso frame
+- Evitare duplicazione codice
+- Animazioni consistenti tra tutti i mockup
+
+**Implementazione**:
+- Componente `IPhoneMockup` con prop `screen` per contenuto
+- Animazioni scroll reveal e hover effects 3D
+- Layout responsive: desktop (staggered), tablet (row), mobile (column)
+- Screen components separati: `PrimeBotScreen`, `PlanScreen`, `ProgressScreen`
+
+---
+
 ### **28 Novembre 2025 - Fix Sistema Limitazioni e PrimeBot**
 
 #### **1. Flag per Controllo Flusso Conversazionale**
