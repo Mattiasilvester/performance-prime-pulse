@@ -5,6 +5,20 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [Unreleased] - 2025-12-12
+
+### Changed 🔄
+- **Landing Page**: Switch definitivo alla nuova landing page, rimossa vecchia versione e sistema A/B testing
+- **Sezione Features**: Redesign completo con mockup iPhone interattivi (PrimeBot AI Coach, Piani Personalizzati, Tracking Progressi)
+- **Animazioni**: Implementate animazioni scroll reveal e hover effects 3D per mockup iPhone
+
+### Removed 🗑️
+- Vecchia landing page e tutti i componenti correlati (HeroSection, FeaturesSection, CTASection, Footer)
+- Sistema A/B testing per landing page (FeatureFlagDebug, useFeatureFlag, features.ts)
+- SmartHomePage (non più necessario con nuovo routing)
+
+---
+
 ## [Unreleased] - 2025-11-18
 
 ### Added ✨

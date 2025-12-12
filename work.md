@@ -9,6 +9,73 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **12 Dicembre 2025 - Sessione Switch Landing Page e Redesign Features**
+- **Ora Inizio**: ~12:00
+- **Ora Fine**: ~12:30
+- **Durata**: ~30 minuti
+- **Branch**: dev
+
+#### **🎯 Obiettivo:**
+Completare switch definitivo dalla vecchia landing page alla nuova, rimuovere sistema A/B testing, eliminare vecchia landing page e tutti i file correlati, e ridisegnare sezione Features con mockup iPhone interattivi.
+
+#### **✅ Implementato:**
+
+1. **Switch Landing Page Definitivo** 🔄
+   - Rimossa logica A/B testing da `App.tsx`
+   - `NewLandingPage` ora è la landing page principale (route `/`)
+   - Rimossa route `/landing-v1` e componente `LandingPageWrapper`
+   - File: `src/App.tsx` (rimossi 22 righe di codice A/B testing)
+
+2. **Eliminazione Vecchia Landing Page Completa** 🗑️
+   - Eliminata directory `src/landing/` completa (LandingPage.tsx, HeroSection, FeaturesSection, CTASection, Footer, FeatureModal, useScrollAnimation, landing.css)
+   - Eliminato `src/pages/SmartHomePage.tsx` (non più necessario)
+   - Eliminati file A/B testing: `FeatureFlagDebug.tsx`, `useFeatureFlag.ts`, `features.ts`
+   - Eliminato `src/components/seo/SchemaComponents.tsx` (usato solo da vecchia landing)
+   - Totale: 3,596 righe di codice rimosse
+
+3. **Redesign Sezione Features con iPhone Mockups** 🎨
+   - Creato componente `IPhoneMockup.tsx` riutilizzabile con animazioni Framer Motion
+   - Creati 3 screen components: `PrimeBotScreen.tsx`, `PlanScreen.tsx`, `ProgressScreen.tsx`
+   - Integrato screenshot PrimeBot reale (`primebot-screenshot.png`)
+   - Layout responsive: desktop (staggered), tablet (row), mobile (column)
+   - Animazioni scroll reveal e hover effects 3D
+   - File: `src/components/landing-new/SolutionSection.tsx` (266 righe modificate)
+
+4. **Integrazione Screenshot PrimeBot** 📸
+   - Sistema gestione screenshot con fallback placeholder
+   - Path: `src/assets/images/primebot-screenshot.png`
+   - Gestione errori caricamento immagine con placeholder elegante
+   - File: `src/components/landing-new/SolutionSection.tsx`
+
+#### **🐛 Bug Risolti:**
+
+1. **Errore Import Screenshot**
+   - **Causa**: Import statico falliva se file non esisteva
+   - **Soluzione**: Implementato sistema dinamico con `new URL()` e gestione errori
+   - **Risultato**: Componente funziona anche senza screenshot (mostra placeholder)
+
+2. **Build Errors per File Eliminati**
+   - **Causa**: Riferimenti a file eliminati causavano errori di compilazione
+   - **Soluzione**: Rimossi tutti gli import e riferimenti ai file eliminati
+   - **Risultato**: Build pulita senza errori
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato (solo rimozione file obsoleti)
+
+#### **📊 Metriche:**
+- Build time: 10.65s
+- Bundle size: 668KB (681.92 kB, gzipped: 204.28 kB)
+- Errori TS: 0
+- Righe rimosse: 3,596
+- Righe aggiunte: 184
+
+#### **📋 TODO Prossima Sessione:**
+1. Test completo responsive design su tutti i dispositivi
+2. Verificare performance animazioni Framer Motion
+3. Ottimizzare dimensioni screenshot PrimeBot se necessario
+
+---
+
 ### **6 Dicembre 2025 - Sessione Fix Critici PrimeBot: Gestione Dolori e Piani**
 - **Ora Inizio**: ~18:00
 - **Ora Fine**: ~18:30
