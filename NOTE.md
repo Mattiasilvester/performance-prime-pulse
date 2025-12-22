@@ -2,6 +2,47 @@
 
 ## Decisioni Architetturali
 
+### **1 Ottobre 2025 - Standardizzazione Nomi Esercizi**
+
+#### **1. Eliminazione Sistema Alias**
+**Decisione**: Rimosso completamente sistema alias per nomi esercizi.
+
+**Motivazioni**:
+- Sistema alias era una soluzione temporanea per gestire mismatch tra file
+- Aumentava complessità e manutenzione del codice
+- Creava confusione su quale fosse la fonte di verità
+- Standardizzazione completa elimina necessità di alias
+
+**Implementazione**:
+- Rinominati tutti gli esercizi in `exerciseGifs.ts` (fonte di verità)
+- Rinominati tutti gli esercizi in `exerciseDetails.ts` per matchare
+- Rinominati tutti gli esercizi in `workoutGenerator.ts` per matchare
+- Rimossa mappa `exerciseAliases` (~64 righe)
+- Semplificata funzione `getExerciseDetails()` a match esatto + case-insensitive
+
+**Risultato**:
+- Una sola fonte di verità: `exerciseGifs.ts`
+- Codice più semplice e manutenibile
+- Zero debito tecnico
+
+#### **2. Standardizzazione Nomenclatura**
+**Decisione**: Usare nomi inglesi standardizzati per tutti gli esercizi.
+
+**Motivazioni**:
+- Coerenza con standard internazionali fitness
+- Facilità manutenzione e ricerca
+- Compatibilità con API esterne future
+- Nomi più descrittivi e professionali
+
+**Implementazione**:
+- 59 esercizi rinominati seguendo pattern inglese
+- Esempi: "Scalatori" → "Mountain Climbers", "Pike Flessioni" → "Pike Push-up"
+- Mantenuta struttura categorie (FORZA, CARDIO, HIIT, MOBILITÀ)
+
+**Risultato**:
+- Nomenclatura coerente e professionale
+- Facile ricerca e manutenzione
+
 ### **12 Dicembre 2025 - Switch Landing Page e Redesign Features**
 
 #### **1. Rimozione Sistema A/B Testing**

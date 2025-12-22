@@ -20,10 +20,18 @@ export default function ProtectedRoute({ session, children }: ProtectedRouteProp
   }
 
   // ⚠️ BYPASS TEMPORANEO PER DEBUG - RIMUOVERE IN PRODUZIONE
-  // Permette accesso alla dashboard senza autenticazione in modalità sviluppo
-  if (import.meta.env.DEV && (location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard'))) {
-    console.log('⚠️ BYPASS ATTIVO - Accesso dashboard senza autenticazione (solo DEV)');
-    return <>{children}</>;
+  // Permette accesso a TUTTA L'APP senza autenticazione in modalità sviluppo
+  // Esclude solo route pubbliche (auth, landing, onboarding)
+  if (import.meta.env.DEV) {
+    const publicRoutes = ['/', '/auth', '/auth/login', '/auth/register', '/onboarding'];
+    const isPublicRoute = publicRoutes.some(route => 
+      location.pathname === route || location.pathname.startsWith(`${route}/`)
+    );
+    
+    if (!isPublicRoute) {
+      console.log('⚠️ BYPASS ATTIVO - Accesso app completa senza autenticazione (solo DEV)');
+      return <>{children}</>;
+    }
   }
 
   if (!session) {
