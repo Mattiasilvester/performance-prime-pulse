@@ -86,7 +86,7 @@ const detailedExerciseDatabase = {
   strength: [
     // PETTO
     { name: 'Flessioni', muscleGroup: 'Petto', equipment: 'Corpo libero', level: 'Principiante' },
-    { name: 'Pike Flessioni', muscleGroup: 'Petto', equipment: 'Corpo libero', level: 'Intermedio' },
+    { name: 'Pike Push-up', muscleGroup: 'Petto', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Flessioni Inclinate', muscleGroup: 'Petto', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Flessioni Declinate', muscleGroup: 'Petto', equipment: 'Corpo libero', level: 'Avanzato' },
     { name: 'Panca Piana', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
@@ -95,10 +95,10 @@ const detailedExerciseDatabase = {
     { name: 'Bench Press', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Incline Bench Press', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Decline Bench Press', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
-    { name: 'Dumbbell Press', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Dumbbell Chest Press', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Cable Crossover', muscleGroup: 'Petto', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Chest Press', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Aperture', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Aperture con Manubri', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Chest Press Inclinato', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Chest Press Declinato', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Aperture Inclinate', muscleGroup: 'Petto', equipment: 'Manubri', level: 'Intermedio' },
@@ -108,21 +108,21 @@ const detailedExerciseDatabase = {
     
     // SCHIENA
     { name: 'Superman', muscleGroup: 'Schiena', equipment: 'Corpo libero', level: 'Principiante' },
-    { name: 'Remata', muscleGroup: 'Schiena', equipment: 'Elastici', level: 'Intermedio' },
-    { name: 'Pull-ups', muscleGroup: 'Schiena', equipment: 'Corpo libero', level: 'Avanzato' },
+    { name: 'Rematore con Manubri', muscleGroup: 'Schiena', equipment: 'Elastici', level: 'Intermedio' },
+    { name: 'Pull-up', muscleGroup: 'Schiena', equipment: 'Corpo libero', level: 'Avanzato' },
     { name: 'Lat Machine', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
-    { name: 'Remata con Bilanciere', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
-    { name: 'Remata Inclinata', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Rematore con Bilanciere', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Bent-over Row', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'T-Bar Row', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
-    { name: 'Pulldown', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Principiante' },
-    { name: 'Cable Row', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Cable Pulldown', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Principiante' },
+    { name: 'Seated Cable Row', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Deadlift', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Avanzato' },
-    { name: 'Bent Over Row', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
-    { name: 'Remata con Manubri', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Remata Inclinata con Manubri', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Remata Unilaterale', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Remata Piegata', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Reverse Fly con Manubri', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Principiante' },
+    { name: 'Bent-over Row', muscleGroup: 'Schiena', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Rematore con Manubri', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Bent-over Row', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Rematore con Manubri', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Bent-over Row', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Reverse Fly', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Principiante' },
     { name: 'T-Raises', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'W-Raises', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Remata Alta', muscleGroup: 'Schiena', equipment: 'Manubri', level: 'Intermedio' },
@@ -132,17 +132,17 @@ const detailedExerciseDatabase = {
     { name: 'Alzate Frontali', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
     { name: 'Military Press', muscleGroup: 'Spalle', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Arnold Press', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Shoulder Press con Manubri', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Shoulder Press', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Alzate Laterali Inclinate', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Alzate Posteriori', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
     { name: 'Lateral Raises', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
     { name: 'Front Raises', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
-    { name: 'Upright Row con Manubri', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Shrugs con Manubri', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
+    { name: 'Upright Row', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Shrugs', muscleGroup: 'Spalle', equipment: 'Manubri', level: 'Principiante' },
     
     // BRACCIA
-    { name: 'Tricep Dips', muscleGroup: 'Braccia', equipment: 'Corpo libero', level: 'Intermedio' },
-    { name: 'Dip sulla Sedia', muscleGroup: 'Braccia', equipment: 'Corpo libero', level: 'Principiante' },
+    { name: 'Dip alle Parallele', muscleGroup: 'Braccia', equipment: 'Corpo libero', level: 'Intermedio' },
+    { name: 'Dip alla Sedia', muscleGroup: 'Braccia', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Curl con Manubri', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
     { name: 'French Press', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Hammer Curl', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
@@ -155,25 +155,25 @@ const detailedExerciseDatabase = {
     { name: 'Overhead Tricep Extension', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Intermedio' },
     
     // GAMBE
-    { name: 'Squats', muscleGroup: 'Gambe', equipment: 'Corpo libero', level: 'Principiante' },
+    { name: 'Squat', muscleGroup: 'Gambe', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Affondi', muscleGroup: 'Gambe', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Squat con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Stacchi', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Stacco da Terra', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Squat con Bilanciere', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Front Squat', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Avanzato' },
     { name: 'Overhead Squat', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Avanzato' },
     { name: 'Sumo Deadlift', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Romanian Deadlift', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
-    { name: 'Lunges con Bilanciere', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
+    { name: 'Affondi con Bilanciere', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
     { name: 'Bulgarian Split Squat', muscleGroup: 'Gambe', equipment: 'Bilanciere', level: 'Intermedio' },
-    { name: 'Single Leg Deadlift', muscleGroup: 'Gambe', equipment: 'Corpo libero', level: 'Intermedio' },
+    { name: 'Stacco su Una Gamba', muscleGroup: 'Gambe', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Calf Raises', muscleGroup: 'Gambe', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Goblet Squat', muscleGroup: 'Gambe', equipment: 'Kettlebell', level: 'Intermedio' },
-    { name: 'Swing', muscleGroup: 'Gambe', equipment: 'Kettlebell', level: 'Intermedio' },
+    { name: 'Kettlebell Swing', muscleGroup: 'Gambe', equipment: 'Kettlebell', level: 'Intermedio' },
     { name: 'Affondi con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Affondi Laterali con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Affondi Camminando', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Stacchi Rumeni con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Affondi Laterali', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Affondi Camminati', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
+    { name: 'Romanian Deadlift', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Step-up con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Bulgarian Split Squat', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Calf Raises con Manubri', muscleGroup: 'Gambe', equipment: 'Manubri', level: 'Principiante' },
@@ -181,51 +181,51 @@ const detailedExerciseDatabase = {
     // CORE
     { name: 'Plank', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Side Plank', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
-    { name: 'Russian Twists', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
+    { name: 'Russian Twist', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Mountain Climbers', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Crunch', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Leg Raises', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Dead Bug', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' },
-    { name: 'Glute Bridges', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' }
+    { name: 'Glute Bridge', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' }
   ],
   
   hiit: [
     // PRINCIPIANTE
     { name: 'Jumping Jacks', level: 'Principiante', duration: '5-10 min' },
     { name: 'Saltelli Laterali', level: 'Principiante', duration: '5-10 min' },
-    { name: 'Sprint sul posto', level: 'Principiante', duration: '5-10 min' },
+    { name: 'Corsa sul Posto', level: 'Principiante', duration: '5-10 min' },
     { name: 'Calci ai Glutei', level: 'Principiante', duration: '5-10 min' },
     { name: 'Passi Laterali', level: 'Principiante', duration: '5-10 min' },
-    { name: 'Ginocchia al Petto', level: 'Principiante', duration: '5-10 min' },
+    { name: 'High Knees', level: 'Principiante', duration: '5-10 min' },
     
     // INTERMEDIO
     { name: 'Jump Squats', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Burpees', level: 'Intermedio', duration: '15-20 min' },
-    { name: 'Scalatori', level: 'Intermedio', duration: '15-20 min' },
-    { name: 'Saltelli in Plank', level: 'Intermedio', duration: '15-20 min' },
-    { name: 'Saltelli al Petto', level: 'Intermedio', duration: '15-20 min' },
-    { name: 'Spinte in Squat', level: 'Intermedio', duration: '15-20 min' },
-    { name: 'Affondi Saltati', level: 'Intermedio', duration: '15-20 min' },
+    { name: 'Mountain Climbers', level: 'Intermedio', duration: '15-20 min' },
+    { name: 'Plank Jacks', level: 'Intermedio', duration: '15-20 min' },
+    { name: 'Jump Squats', level: 'Intermedio', duration: '15-20 min' },
+    { name: 'Thrusters', level: 'Intermedio', duration: '15-20 min' },
+    { name: 'Jump Lunges', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Mountain Climbers', level: 'Intermedio', duration: '15-20 min' },
     
     // AVANZATO
-    { name: 'Burpees esplosivi', level: 'Avanzato', duration: '25-30 min' },
-    { name: 'Saltelli a Stella', level: 'Avanzato', duration: '25-30 min' },
-    { name: 'Pattinatori Veloce', level: 'Avanzato', duration: '25-30 min' },
+    { name: 'Burpees Esplosivi', level: 'Avanzato', duration: '25-30 min' },
+    { name: 'Star Jumps', level: 'Avanzato', duration: '25-30 min' },
+    { name: 'Skater Veloci', level: 'Avanzato', duration: '25-30 min' },
     { name: 'Power Punches', level: 'Avanzato', duration: '25-30 min' },
-    { name: 'Explosive Flessioni', level: 'Avanzato', duration: '25-30 min' },
-    { name: 'Passi Rapidi', level: 'Avanzato', duration: '25-30 min' },
-    { name: 'Onde con le Braccia', level: 'Avanzato', duration: '25-30 min' }
+    { name: 'Explosive Push-up', level: 'Avanzato', duration: '25-30 min' },
+    { name: 'Quick Feet', level: 'Avanzato', duration: '25-30 min' },
+    { name: 'Arm Circles', level: 'Avanzato', duration: '25-30 min' }
   ]
 };
 
 const exerciseDatabase = {
   cardio: {
     exercises: [
-      'Jumping Jacks', 'Saltelli Laterali', 'Burpees', 'Scalatori',
-      'Sprint sul posto', 'Jump Squats', 'Saltelli in Plank', 'Saltelli da Pattinatore',
-      'Movimento Incrociato', 'Calci ai Glutei', 'Passi Laterali', 'Saltelli al Petto',
-      'Box Steps', 'Camminata dell\'Orso', 'Saltelli a Rana', 'Ginocchia al Petto'
+      'Jumping Jacks', 'Saltelli Laterali', 'Burpees', 'Mountain Climbers',
+      'Corsa sul Posto', 'Jump Squats', 'Plank Jacks', 'Saltelli da Pattinatore',
+      'Movimento Incrociato', 'Calci ai Glutei', 'Passi Laterali', 'Jump Squats',
+      'Box Steps', 'Camminata dell\'Orso', 'Saltelli a Rana', 'High Knees'
     ],
     durations: {
       short: { work: '20s', rest: '10s' },
@@ -235,10 +235,10 @@ const exerciseDatabase = {
   },
   strength: {
     exercises: [
-      'Flessioni', 'Plank', 'Pike Flessioni', 'Tricep Dips',
-      'Squats', 'Affondi', 'Sedia al Muro', 'Glute Bridges',
-      'Superman', 'Controllo Core', 'Russian Twists', 'Single Leg Deadlift',
-      'Dip sulla Sedia', 'Calf Raises', 'Side Plank', 'Apertura Inversa'
+      'Flessioni', 'Plank', 'Pike Push-up', 'Dip alle Parallele',
+      'Squat', 'Affondi', 'Sedia al Muro', 'Glute Bridge',
+      'Superman', 'Controllo Core', 'Russian Twist', 'Stacco su Una Gamba',
+      'Dip alla Sedia', 'Calf Raises', 'Side Plank', 'Apertura Inversa'
     ],
     durations: {
       short: { work: '30s', rest: '15s' },
@@ -248,10 +248,10 @@ const exerciseDatabase = {
   },
   hiit: {
     exercises: [
-      'Sprint sul posto', 'Jump Squats', 'Burpees esplosivi', 'Saltelli Laterali',
-      'Scalatori', 'Saltelli in Plank', 'Saltelli al Petto', 'Spinte in Squat',
-      'Passi Veloce', 'Explosive Flessioni', 'Affondi Saltati', 'Saltelli a Stella',
-      'Pattinatori Veloce', 'Power Punches', 'Passi Rapidi', 'Onde con le Braccia'
+      'Corsa sul Posto', 'Jump Squats', 'Burpees Esplosivi', 'Saltelli Laterali',
+      'Mountain Climbers', 'Plank Jacks', 'Jump Squats', 'Thrusters',
+      'Passi Veloce', 'Explosive Push-up', 'Jump Lunges', 'Star Jumps',
+      'Skater Veloci', 'Power Punches', 'Quick Feet', 'Arm Circles'
     ],
     durations: {
       short: { work: '20s', rest: '10s' },
@@ -261,10 +261,10 @@ const exerciseDatabase = {
   },
   mobility: {
     exercises: [
-      'Gatto e Mucca', 'Cerchi con i Fianchi', 'Rotazioni delle Spalle', 'Oscillazioni delle Gambe',
-      'Cerchi con le Braccia', 'Rotazioni del Collo', 'Cerchi con le Caviglie', 'Giro del Busto',
-      'Allungamento Posteriori', 'Allungamento Quadricipiti', 'Apertura del Petto', 'Flessione Laterale',
-      'Piegamento in Avanti', 'Posizione del Bambino', 'Posizione del Cobra', 'Allungamento Fianchi'
+      'Cat-Cow', 'Hip Circles', 'Shoulder Rolls', 'Leg Swings',
+      'Arm Circles', 'Neck Rotations', 'Ankle Circles', 'Torso Twists',
+      'Forward Fold', 'Stretch Quadricipiti', 'Chest Opener', 'Side Bend Stretch',
+      'Forward Fold', 'Child\'s Pose', 'Cobra Pose', 'Hip Flexor Stretch'
     ],
     durations: {
       short: { work: '45s', rest: '10s' },

@@ -9,6 +9,86 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **1 Ottobre 2025 - Sessione Standardizzazione Nomi Esercizi**
+- **Ora Inizio**: ~22:00
+- **Ora Fine**: ~23:30
+- **Durata**: ~1 ora e 30 minuti
+- **Branch**: dev
+
+#### **🎯 Obiettivo:**
+Standardizzare completamente i nomi degli esercizi tra `exerciseGifs.ts`, `exerciseDetails.ts` e `workoutGenerator.ts` per eliminare il sistema alias e creare una singola fonte di verità.
+
+#### **✅ Implementato:**
+
+1. **Standardizzazione Nomi Esercizi - Fase 1** 🔄
+   - Rinominati 59 esercizi in `exerciseGifs.ts` per allineamento con nomenclatura inglese
+   - Rinominati 59 esercizi in `exerciseDetails.ts` (chiavi, `name`, `id`)
+   - Categorie coinvolte: CARDIO (11), FORZA-PETTO (4), FORZA-SCHIENA (11), FORZA-SPALLE (4), FORZA-BRACCIA (2), FORZA-GAMBE (9), FORZA-CORE (2), MOBILITÀ (16)
+   - File: `src/data/exerciseGifs.ts` (135 modifiche), `src/data/exerciseDetails.ts` (177 modifiche)
+
+2. **Aggiunta 24 Esercizi Mancanti** ➕
+   - Aggiunti 24 esercizi presenti in `exerciseGifs.ts` ma mancanti in `exerciseDetails.ts`
+   - Categorie: CARDIO (8), FORZA-PETTO (3), FORZA-SPALLE (2), FORZA-CORE (1), HIIT (5), MOBILITÀ (5)
+   - Struttura completa con tutti i campi richiesti (muscles, execution, commonMistakes, tips, variations)
+   - File: `src/data/exerciseDetails.ts` (~1,200 righe aggiunte)
+
+3. **Standardizzazione workoutGenerator.ts** 🔄
+   - Rinominati 59 esercizi in `workoutGenerator.ts` per matchare esattamente `exerciseGifs.ts`
+   - Modificati sia `name` properties che stringhe in array esercizi
+   - File: `src/services/workoutGenerator.ts` (118 modifiche)
+
+4. **Rimozione Sistema Alias** 🗑️
+   - Eliminata completamente la mappa `exerciseAliases` da `exerciseDetails.ts` (~64 righe rimosse)
+   - Semplificata funzione `getExerciseDetails()` rimuovendo logica alias
+   - Funzione ora usa solo match esatto e case-insensitive
+   - File: `src/data/exerciseDetails.ts` (funzione semplificata)
+
+5. **Correzioni Finali** 🔧
+   - Corretto "Onde con le Braccia" → "Arm Circles" in `workoutGenerator.ts`
+   - Verificato allineamento 100% tra tutti i file
+   - File: `src/services/workoutGenerator.ts` (2 correzioni)
+
+#### **🐛 Bug Risolti:**
+
+1. **Mismatch Nomi Esercizi**
+   - **Causa**: 41 esercizi avevano nomi diversi tra `exerciseGifs.ts` e `exerciseDetails.ts`
+   - **Soluzione**: Standardizzazione completa con rinominazione in entrambi i file
+   - **Risultato**: Allineamento 100% raggiunto
+
+2. **Sistema Alias Complesso**
+   - **Causa**: Sistema alias temporaneo creato per gestire mismatch, ma aumentava complessità
+   - **Soluzione**: Rimozione completa alias dopo standardizzazione
+   - **Risultato**: Codice più semplice e manutenibile, una sola fonte di verità
+
+3. **Esercizi Mancanti in Database**
+   - **Causa**: 24 esercizi presenti in `exerciseGifs.ts` ma senza descrizioni dettagliate
+   - **Soluzione**: Aggiunti tutti gli esercizi mancanti con struttura completa
+   - **Risultato**: Database completo con tutte le descrizioni
+
+4. **Nomi Vecchi in workoutGenerator.ts**
+   - **Causa**: `workoutGenerator.ts` usava ancora nomi vecchi non standardizzati
+   - **Soluzione**: Rinominati tutti gli esercizi per matchare `exerciseGifs.ts`
+   - **Risultato**: Allineamento completo tra tutti i file
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato (solo standardizzazione dati, non logica componenti)
+
+#### **📊 Metriche:**
+- Build time: 16.83s
+- Bundle size: 681.98 kB (gzipped: 204.31 kB)
+- Errori TS: 0
+- Righe modificate: ~416 aggiunte, ~173 rimosse
+- Esercizi standardizzati: 59
+- Esercizi aggiunti: 24
+- Sistema alias rimosso: ~64 righe
+
+#### **📋 TODO Prossima Sessione:**
+1. Test completo funzionamento ExerciseGifLink con nuovi nomi
+2. Verificare che tutti gli esercizi mostrino descrizioni corrette
+3. Eventuale ottimizzazione performance se necessario
+
+---
+
 ### **12 Dicembre 2025 - Sessione Switch Landing Page e Redesign Features**
 - **Ora Inizio**: ~12:00
 - **Ora Fine**: ~12:30
