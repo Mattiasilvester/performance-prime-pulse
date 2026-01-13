@@ -256,18 +256,42 @@ Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Pri
     console.log(`📤 Invio a OpenAI: ${messages.length} messaggi totali (1 system + ${conversationHistory.length} cronologia + 1 nuovo)`);
 
     // Chiama l'API serverless invece di usare chiave diretta
-    const response = await fetch('/api/ai-chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages,
-        model: 'gpt-3.5-turbo'
-      })
-    });
-
-    const data = await response.json();
+    let response: Response;
+    let data: any;
+    
+    try {
+      response = await fetch('/api/ai-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages,
+          model: 'gpt-3.5-turbo'
+        })
+      });
+      
+      data = await response.json();
+    } catch (fetchError: any) {
+      // Gestione errore connessione (server proxy non disponibile)
+      if (fetchError.message?.includes('ECONNREFUSED') || 
+          fetchError.message?.includes('Failed to fetch') ||
+          fetchError.cause?.code === 'ECONNREFUSED') {
+        console.error('❌ ERRORE: Server proxy non disponibile su localhost:3001');
+        console.error('💡 SOLUZIONE: Avvia il server proxy con: npm run dev:api');
+        console.error('💡 OPPURE: Avvia tutto insieme con: npm run dev:all');
+        
+        return {
+          success: false,
+          message: '⚠️ Server backend non disponibile. Per far funzionare PrimeBot:\n\n1. Apri un nuovo terminale\n2. Esegui: npm run dev:api\n3. Oppure: npm run dev:all (avvia tutto insieme)\n\nIl server proxy è necessario per chiamare l\'API OpenAI in modo sicuro.',
+          remaining: limit.remaining
+        };
+      }
+      
+      // Rilancia altri errori
+      throw fetchError;
+    }
+    
     console.log('📡 Risposta OpenAI ricevuta:', response.status, response.statusText);
     console.log('📡 Dati risposta:', JSON.stringify(data, null, 2));
     
@@ -642,18 +666,41 @@ IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli t
 
     console.log('📤 Invio richiesta piano strutturato a OpenAI');
 
-    const response = await fetch('/api/ai-chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages,
-        model: 'gpt-3.5-turbo',
-      }),
-    });
-
-    const data = await response.json();
+    let response: Response;
+    let data: any;
+    
+    try {
+      response = await fetch('/api/ai-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages,
+          model: 'gpt-3.5-turbo',
+        }),
+      });
+      
+      data = await response.json();
+    } catch (fetchError: any) {
+      // Gestione errore connessione (server proxy non disponibile)
+      if (fetchError.message?.includes('ECONNREFUSED') || 
+          fetchError.message?.includes('Failed to fetch') ||
+          fetchError.cause?.code === 'ECONNREFUSED') {
+        console.error('❌ ERRORE: Server proxy non disponibile su localhost:3001');
+        console.error('💡 SOLUZIONE: Avvia il server proxy con: npm run dev:api');
+        
+        return {
+          success: false,
+          type: 'error',
+          message: '⚠️ Server backend non disponibile. Avvia il server proxy con: npm run dev:api',
+          remaining: limit.remaining,
+        };
+      }
+      
+      // Rilancia altri errori
+      throw fetchError;
+    }
 
     if (!response.ok) {
       throw new Error(`OpenAI API error: ${response.status}`);
@@ -699,25 +746,40 @@ ${workoutPlanSystemPrompt}
           },
         ];
 
-        const retryResponse = await fetch('/api/ai-chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            messages: retryMessages,
-            model: 'gpt-3.5-turbo',
-          }),
-        });
-
-        const retryData = await retryResponse.json();
-        if (retryResponse.ok && retryData.choices && retryData.choices[0]) {
-          aiResponse = retryData.choices[0].message.content;
-          console.log('📥 Risposta retry ricevuta:', aiResponse.substring(0, 200) + '...');
-          plan = convertAIResponseToPlan(aiResponse);
-          if (plan) {
-            console.log('✅ Piano generato dopo retry!');
+        let retryResponse: Response;
+        let retryData: any;
+        
+        try {
+          retryResponse = await fetch('/api/ai-chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messages: retryMessages,
+              model: 'gpt-3.5-turbo',
+            }),
+          });
+          
+          retryData = await retryResponse.json();
+          
+          if (retryResponse.ok && retryData.choices && retryData.choices[0]) {
+            aiResponse = retryData.choices[0].message.content;
+            console.log('📥 Risposta retry ricevuta:', aiResponse.substring(0, 200) + '...');
+            plan = convertAIResponseToPlan(aiResponse);
+            if (plan) {
+              console.log('✅ Piano generato dopo retry!');
+            }
           }
+        } catch (retryError: any) {
+          // Gestione errore connessione anche nel retry
+          if (retryError.message?.includes('ECONNREFUSED') || 
+              retryError.message?.includes('Failed to fetch') ||
+              retryError.cause?.code === 'ECONNREFUSED') {
+            console.error('❌ ERRORE: Server proxy non disponibile durante retry');
+            throw new Error('Server backend non disponibile. Avvia con: npm run dev:api');
+          }
+          console.error('❌ Errore durante retry:', retryError);
         }
       } catch (retryError) {
         console.error('❌ Errore durante retry:', retryError);

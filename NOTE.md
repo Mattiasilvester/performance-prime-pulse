@@ -2,6 +2,62 @@
 
 ## Decisioni Architetturali
 
+### **13 Gennaio 2026 - Sistema Professionisti e Ottimizzazioni Bundle**
+
+#### **1. Database Professionisti Esteso**
+**Decisione**: Aggiunta colonna `is_partner` e colonne per ricerca/filtri.
+
+**Motivazioni**:
+- Necessità di distinguere professionisti abbonati (Partner) da non abbonati
+- Richiesta funzionalità ricerca avanzata con filtri multipli
+- Supporto per sistema match basato su preferenze utente
+
+**Implementazione**:
+- Colonna `is_partner` BOOLEAN nella tabella `professionals`
+- Colonne aggiuntive: bio, foto_url, specializzazioni[], zona, modalita, prezzo_fascia, rating, reviews_count
+- Ordinamento query: is_partner DESC, rating DESC, reviews_count DESC
+
+#### **2. Lazy Loading Database GIF**
+**Decisione**: Spostato database GIF da inline object a JSON esterno con lazy loading.
+
+**Motivazioni**:
+- Ridurre bundle size iniziale (273KB → ~30KB)
+- Caricare dati solo quando necessario (quando utente apre modal GIF)
+- Migliorare performance iniziale app
+
+**Implementazione**:
+- Database GIF in `public/data/exerciseGifs.json`
+- Funzione async `getExerciseGifs()` con caching
+- Caricamento on-demand in `ExerciseGifLink` component
+
+#### **3. Dynamic Import PDF.js**
+**Decisione**: Convertito import statico PDF.js in dynamic import.
+
+**Motivazioni**:
+- PDF.js è grande (466KB) e usato raramente
+- Ridurre bundle size iniziale
+- Caricare solo quando necessario (analisi PDF)
+
+**Implementazione**:
+- Dynamic import dentro funzione `extractPDFText()`
+- Worker configuration dentro funzione
+- Bundle PDF.js separato e lazy-loaded
+
+#### **4. Scroll Position Management**
+**Decisione**: Implementato sistema salvataggio/ripristino posizione scroll con sessionStorage.
+
+**Motivazioni**:
+- Migliorare UX quando utente naviga tra lista e dettaglio
+- Mantenere contesto visivo utente
+- Evitare scroll animation visibile
+
+**Implementazione**:
+- Salvataggio posizione prima di navigare a dettaglio
+- Ripristino dopo caricamento professionisti con requestAnimationFrame
+- Visibility hidden durante ripristino per evitare animazione
+
+---
+
 ### **1 Ottobre 2025 - Standardizzazione Nomi Esercizi**
 
 #### **1. Eliminazione Sistema Alias**

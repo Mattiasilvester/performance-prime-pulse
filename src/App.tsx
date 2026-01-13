@@ -30,6 +30,8 @@ const Timer = lazy(() => import('@/pages/Timer'))
 const Schedule = lazy(() => import('@/components/schedule/Schedule').then(m => ({ default: m.Schedule })))
 const AICoach = lazy(() => import('@/components/ai/AICoach').then(m => ({ default: m.AICoach })))
 const Subscriptions = lazy(() => import('@/pages/Subscriptions'))
+const Professionals = lazy(() => import('@/pages/Professionals'))
+const ProfessionalDetail = lazy(() => import('@/pages/ProfessionalDetail'))
 const Profile = lazy(() => import('@/components/profile/Profile').then(m => ({ default: m.Profile })))
 const DiaryPage = lazy(() => import('@/pages/diary/DiaryPage'))
 const DiaryNotesPage = lazy(() => import('@/pages/diary/DiaryNotesPage'))
@@ -246,6 +248,30 @@ function App() {
                     <Suspense fallback={<LoadingSpinner />}>
                       <Subscriptions />
                     </Suspense>
+                    <BottomNavigation />
+                    <ConditionalFeedbackWidget />
+                  </ProtectedRoute>
+                } />
+                <Route path="/professionals" element={
+                  <ProtectedRoute session={session}>
+                    <Header />
+                    <div className="min-h-screen pt-24 pb-20">
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <Professionals />
+                      </Suspense>
+                    </div>
+                    <BottomNavigation />
+                    <ConditionalFeedbackWidget />
+                  </ProtectedRoute>
+                } />
+                <Route path="/professionals/:id" element={
+                  <ProtectedRoute session={session}>
+                    <Header />
+                    <div className="min-h-screen pt-24 pb-20">
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <ProfessionalDetail />
+                      </Suspense>
+                    </div>
                     <BottomNavigation />
                     <ConditionalFeedbackWidget />
                   </ProtectedRoute>

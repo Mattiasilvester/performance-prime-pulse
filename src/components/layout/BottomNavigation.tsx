@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Dumbbell, Calendar, Crown, User } from 'lucide-react';
+import { Home, Dumbbell, Calendar, Users, User } from 'lucide-react';
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
@@ -26,10 +26,10 @@ const BottomNavigation = () => {
       path: '/schedule'
     },
     {
-      id: 'subscriptions',
-      label: 'Abbonamenti',
-      icon: Crown,
-      path: '/subscriptions'
+      id: 'professionals',
+      label: 'Professionisti',
+      icon: Users,
+      path: '/professionals'
     },
     {
       id: 'profile',
