@@ -3,23 +3,9 @@
  * Con logging dettagliato, fallback OCR e gestione URL firmati Supabase
  */
 
-// @ts-ignore - pdfjs-dist types issue
-import * as pdfjsLib from 'pdfjs-dist';
 import { createWorker } from 'tesseract.js';
 import { supabase } from '@/integrations/supabase/client';
 import { env } from '@/config/env';
-
-// Configurazione PDF.js per browser - fallback locale per evitare errori 406
-try {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-  // FIX: Configurazione font per evitare errori FoxitDingbats.pfb
-  (pdfjsLib.GlobalWorkerOptions as any).standardFontDataUrl = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/standard_fonts/`;
-} catch (error) {
-  // Fallback locale se CDN non disponibile
-  console.warn('PDF.js CDN non disponibile, usando fallback locale');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-  (pdfjsLib.GlobalWorkerOptions as any).standardFontDataUrl = '/standard_fonts/';
-}
 
 // Flag debug
 const DEBUG_ANALYSIS = env.DEBUG_MODE; // Ripristinato normale
@@ -280,6 +266,22 @@ export class AdvancedWorkoutAnalyzer {
    */
   private static async extractPDFText(fileUrl: string): Promise<{ text: string; confidence: number }> {
     try {
+      // Dynamic import di PDF.js per ridurre bundle size
+      // @ts-ignore - pdfjs-dist types issue
+      const pdfjsLib = await import('pdfjs-dist');
+      
+      // Configurazione PDF.js per browser - fallback locale per evitare errori 406
+      try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+        // FIX: Configurazione font per evitare errori FoxitDingbats.pfb
+        (pdfjsLib.GlobalWorkerOptions as any).standardFontDataUrl = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/standard_fonts/`;
+      } catch (error) {
+        // Fallback locale se CDN non disponibile
+        console.warn('PDF.js CDN non disponibile, usando fallback locale');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+        (pdfjsLib.GlobalWorkerOptions as any).standardFontDataUrl = '/standard_fonts/';
+      }
+      
       const loadingTask = pdfjsLib.getDocument(fileUrl);
       const pdf = await loadingTask.promise;
       

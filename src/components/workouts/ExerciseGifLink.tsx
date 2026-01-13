@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, X, Target, FileText, AlertTriangle, Lightbulb, Wind, Clock, RefreshCw, BookOpen, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { exerciseDescriptions } from '@/data/exerciseDescriptions';
-import { getExerciseGifUrl } from '@/data/exerciseGifs';
+import { getExerciseGifUrlAsync } from '@/data/exerciseGifs';
 import { getExerciseDetails, ExerciseDetail } from '@/data/exerciseDetails';
 
 interface ExerciseGifLinkProps {
@@ -179,6 +179,8 @@ export const ExerciseGifLink: React.FC<ExerciseGifLinkProps> = ({
 }) => {
   const [showGif, setShowGif] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [gifUrl, setGifUrl] = useState<string>('https://example.com/gifs/default-exercise.gif');
+  const [isLoadingGif, setIsLoadingGif] = useState(false);
 
   // Ottiene i dettagli completi dell'esercizio
   const details = getExerciseDetails(exerciseName);
@@ -188,6 +190,23 @@ export const ExerciseGifLink: React.FC<ExerciseGifLinkProps> = ({
   const getExerciseDescription = (exerciseName: string): string => {
     return exerciseDescriptions[exerciseName] || 'Descrizione non disponibile per questo esercizio.';
   };
+
+  // Carica l'URL GIF quando il modal si apre
+  useEffect(() => {
+    if (showGif) {
+      setIsLoadingGif(true);
+      getExerciseGifUrlAsync(exerciseName)
+        .then(url => {
+          setGifUrl(url);
+          setIsLoadingGif(false);
+        })
+        .catch(error => {
+          console.error('Error loading GIF URL:', error);
+          setGifUrl('https://example.com/gifs/default-exercise.gif');
+          setIsLoadingGif(false);
+        });
+    }
+  }, [showGif, exerciseName]);
 
   const handleGifClick = () => {
     setShowGif(!showGif);
@@ -266,9 +285,13 @@ export const ExerciseGifLink: React.FC<ExerciseGifLinkProps> = ({
                       </div>
                     </div>
                     <img
-                      src={getExerciseGifUrl(exerciseName)}
+                      src={gifUrl}
                       alt={`GIF dimostrativa per ${exerciseName}`}
                       className="max-w-full max-h-full object-contain rounded-lg opacity-0"
+                      onError={() => {
+                        // Se l'immagine non carica, mantieni l'overlay
+                        setIsLoadingGif(false);
+                      }}
                     />
                   </div>
                 </div>

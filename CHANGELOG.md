@@ -5,6 +5,25 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [Unreleased] - 2026-01-13
+
+### Added ➕
+- **Pagina "Trova il tuo Professionista"**: Sistema completo ricerca e match professionisti con filtri, quiz interattivo e match rapido
+- **Pagina Dettaglio Professionista**: Dettaglio completo con bio, specializzazioni, recensioni, modal contatto e prenotazione
+- **Calendario Prenotazioni**: Sistema interattivo a 3 step per prenotare appuntamenti con professionisti
+- **Sistema Partner**: Distinzione visiva professionisti Partner vs Non Partner con badge e stile differenziato
+- **Modal Contatta**: Link funzionali WhatsApp ed Email per contattare professionisti
+
+### Changed 🔄
+- **Ordinamento Professionisti**: Partner sempre primi, poi ordinati per rating e recensioni
+- **Ottimizzazioni Bundle**: PDF.js, Recharts e ExerciseGifLink ottimizzati per ridurre bundle size iniziale
+
+### Fixed 🐛
+- **Scroll Position**: Risolto problema ripristino posizione scroll quando si torna alla lista professionisti
+- **PrimeBot Error Handling**: Migliorata gestione errori quando server proxy non è disponibile
+
+---
+
 ## [Unreleased] - 2025-12-12
 
 ### Changed 🔄
