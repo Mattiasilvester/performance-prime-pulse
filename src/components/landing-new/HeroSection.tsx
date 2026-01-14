@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, useAnimation, Variants } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Star, Users, TrendingUp, Award } from 'lucide-react';
 import { safeLocalStorage } from '@/utils/domHelpers';
@@ -293,7 +293,7 @@ export function HeroSection() {
         </motion.div>
 
         {/* CTA Section */}
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="flex flex-col items-center gap-4">
           <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -313,8 +313,25 @@ export function HeroSection() {
             </Button>
           </motion.div>
 
+          {/* CTA Secondaria: Diventa Partner */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+          >
+            <Link to="/partner">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-2 border-white/40 hover:border-[#FFD700] text-white hover:text-[#FFD700] font-semibold text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 rounded-full backdrop-blur-sm bg-black/40 hover:bg-black/60 transition-all duration-300"
+              >
+                Diventa partner
+              </Button>
+            </Link>
+          </motion.div>
+
           <motion.p
-            className="text-xs sm:text-sm text-gray-400 mt-4"
+            className="text-xs sm:text-sm text-gray-400 mt-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5 }}
