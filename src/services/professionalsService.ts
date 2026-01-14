@@ -8,6 +8,7 @@ export interface Professional {
   id: string;
   first_name: string;
   last_name: string;
+  email?: string;
   category: 'pt' | 'nutrizionista' | 'fisioterapista' | 'mental_coach' | 'osteopata';
   bio: string | null;
   foto_url: string | null;

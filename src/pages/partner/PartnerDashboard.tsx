@@ -1,0 +1,75 @@
+import { useState, useLayoutEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { Menu } from 'lucide-react';
+import { PartnerSidebar } from '@/components/partner/dashboard/PartnerSidebar';
+
+export default function PartnerDashboard() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const location = useLocation();
+
+  // useLayoutEffect viene eseguito prima del paint, evitando flash visivi
+  useLayoutEffect(() => {
+    // Salva il background originale del body e html
+    const originalBodyBg = document.body.style.backgroundColor;
+    const originalHtmlBg = document.documentElement.style.backgroundColor;
+    
+    // Imposta sfondo chiaro per body e html IMMEDIATAMENTE (doppio check)
+    document.body.style.backgroundColor = '#f9fafb'; // gray-50
+    document.documentElement.style.backgroundColor = '#f9fafb';
+    
+    // Aggiungi classi per identificare che siamo nella dashboard partner
+    // IMPORTANTE: Questo deve essere fatto PRIMA di qualsiasi altro script
+    // per proteggere la sidebar dagli script in index.html
+    document.body.classList.add('partner-dashboard-active');
+    document.documentElement.classList.add('partner-dashboard-active');
+    
+    // Imposta isMounted IMMEDIATAMENTE - non serve delay
+    // Il layout è gestito completamente via CSS media queries
+    setIsMounted(true);
+    
+    // Cleanup: ripristina quando si esce dalla dashboard
+    return () => {
+      document.body.style.backgroundColor = originalBodyBg;
+      document.documentElement.style.backgroundColor = originalHtmlBg;
+      document.body.classList.remove('partner-dashboard-active');
+      document.documentElement.classList.remove('partner-dashboard-active');
+    };
+  }, []);
+
+  // Mostra uno sfondo vuoto mentre si carica per evitare flash
+  if (!isMounted) {
+    return <div className="min-h-[100dvh] bg-gray-50" />;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Bottone hamburger mobile */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="fixed top-4 left-4 z-40 p-2 bg-white rounded-lg shadow-md md:hidden hover:bg-gray-50 transition-colors"
+      >
+        <Menu className="w-6 h-6 text-gray-600" />
+      </button>
+
+      <div className="flex">
+        {/* Sidebar */}
+        <PartnerSidebar 
+          isOpen={sidebarOpen} 
+          onClose={() => setSidebarOpen(false)}
+          currentPath={location.pathname}
+        />
+        
+        {/* Main content con margin-left su desktop */}
+        <main 
+          className="flex-1 min-h-screen bg-gray-50 partner-dashboard-main"
+        >
+          <div className="p-4 md:p-8">
+            <Outlet />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+

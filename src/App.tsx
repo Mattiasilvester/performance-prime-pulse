@@ -17,6 +17,18 @@ import FeedbackWidget from '@/components/feedback/FeedbackWidget'
 import { NewLandingPage } from '@/pages/landing/NewLandingPage'
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage'
 import LoginPage from '@/pages/auth/LoginPage'
+import Partner from '@/pages/Partner'
+import PartnerRegistration from '@/pages/partner/PartnerRegistration'
+import PartnerLogin from '@/pages/partner/PartnerLogin'
+import PartnerResetPassword from '@/pages/partner/PartnerResetPassword'
+import PartnerDashboard from '@/pages/partner/PartnerDashboard'
+import OverviewPage from '@/pages/partner/dashboard/OverviewPage'
+import CalendarioPage from '@/pages/partner/dashboard/CalendarioPage'
+import PrenotazioniPage from '@/pages/partner/dashboard/PrenotazioniPage'
+import ClientiPage from '@/pages/partner/dashboard/ClientiPage'
+import ProgettiPage from '@/pages/partner/dashboard/ProgettiPage'
+import ProfiloPage from '@/pages/partner/dashboard/ProfiloPage'
+import ImpostazioniPage from '@/pages/partner/dashboard/ImpostazioniPage'
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const TermsAndConditions = lazy(() => import('@/pages/TermsAndConditions'))
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
@@ -144,6 +156,19 @@ function App() {
               <Routes>
                 {/* ROUTE PUBBLICHE */}
                 <Route path="/" element={<NewLandingPage />} />
+                <Route path="/partner" element={<Partner />} />
+                <Route path="/partner/registrazione" element={<PartnerRegistration />} />
+                <Route path="/partner/login" element={<PartnerLogin />} />
+                <Route path="/partner/reset-password" element={<PartnerResetPassword />} />
+                <Route path="/partner/dashboard" element={<PartnerDashboard />}>
+                  <Route index element={<OverviewPage />} />
+                  <Route path="calendario" element={<CalendarioPage />} />
+                  <Route path="prenotazioni" element={<PrenotazioniPage />} />
+                  <Route path="clienti" element={<ClientiPage />} />
+                  <Route path="progetti" element={<ProgettiPage />} />
+                  <Route path="profilo" element={<ProfiloPage />} />
+                  <Route path="impostazioni" element={<ImpostazioniPage />} />
+                </Route>
                 <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route path="/auth/login" element={
                   session ? <Navigate to="/dashboard" /> : <LoginPage />

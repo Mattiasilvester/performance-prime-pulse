@@ -195,18 +195,24 @@
             document.body.style.position = 'relative';
             
             // Rimuovi fixed positioning SOLO per elementi non protetti
-            // PROTETTI: modal, header, bottom-navigation, notes-header-fixed, feedback-widget
-            document.querySelectorAll('*').forEach(el => {
-              const style = window.getComputedStyle(el);
-              const isProtected = el.classList.contains('modal') ||
-                                  el.tagName === 'HEADER' ||
-                                  el.classList.contains('bottom-navigation') ||
-                                  el.classList.contains('notes-header-fixed') ||
-                                  el.classList.contains('feedback-widget');
-              if (style.position === 'fixed' && !isProtected) {
-                el.style.position = 'relative';
-              }
-            });
+            // PROTETTI: modal, header, bottom-navigation, notes-header-fixed, feedback-widget, partner-sidebar
+            // ESCLUSI: elementi nella dashboard partner (hanno classe partner-dashboard-active sul body)
+            const isPartnerDashboard = document.body.classList.contains('partner-dashboard-active');
+            if (!isPartnerDashboard) {
+              document.querySelectorAll('*').forEach(el => {
+                const style = window.getComputedStyle(el);
+                const isProtected = el.classList.contains('modal') ||
+                                    el.tagName === 'HEADER' ||
+                                    el.classList.contains('bottom-navigation') ||
+                                    el.classList.contains('notes-header-fixed') ||
+                                    el.classList.contains('feedback-widget') ||
+                                    el.hasAttribute('data-partner-sidebar') || // Proteggi sidebar partner
+                                    el.closest('[class*="partner"]') !== null; // Proteggi elementi partner
+                if (style.position === 'fixed' && !isProtected) {
+                  el.style.position = 'relative';
+                }
+              });
+            }
           }, 100);
         });
       }

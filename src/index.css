@@ -767,3 +767,221 @@ body.admin-panel {
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+/* ============================================
+   PARTNER THEME - NAVY + CORAL SU GRIGIO GHIACCIO (SCOPED)
+   ============================================ */
+
+.partner-theme {
+  /* CSS Variables per palette Partner (HSL) */
+  --partner-background: hsl(210 25% 97%);
+  --partner-foreground: hsl(222 47% 11%);
+  --partner-primary: hsl(222 47% 15%);
+  --partner-primary-foreground: hsl(0 0% 100%);
+  --partner-accent: hsl(16 85% 58%);
+  --partner-accent-foreground: hsl(0 0% 100%);
+  --partner-muted: hsl(210 15% 92%);
+  --partner-muted-foreground: hsl(220 10% 45%);
+  --partner-card: hsl(0 0% 100%);
+  --partner-border: hsl(220 15% 88%);
+  
+  /* Gradienti e ombre */
+  --partner-gradient-hero: hsl(222 35% 25%);
+  --partner-gradient-hero-light: hsl(222 30% 30%);
+  --partner-gradient-accent: linear-gradient(135deg, hsl(16 85% 58%) 0%, hsl(25 90% 55%) 100%);
+  --partner-shadow-soft: 0 4px 24px -4px hsl(222 47% 11% / 0.08);
+  --partner-shadow-card: 0 8px 32px -8px hsl(222 47% 11% / 0.12);
+  --partner-shadow-accent: 0 8px 24px -4px hsl(16 85% 58% / 0.35);
+}
+
+/* Background principale */
+.partner-theme.partner-bg {
+  background: var(--partner-background);
+  color: var(--partner-foreground);
+}
+
+/* Utility Classes Partner */
+
+/* Background */
+.partner-bg {
+  background: var(--partner-background);
+}
+
+/* Hero Background */
+.partner-hero-bg {
+  background: linear-gradient(135deg, var(--partner-gradient-hero) 0%, var(--partner-gradient-hero-light) 100%);
+  position: relative;
+}
+
+.partner-hero-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--partner-gradient-accent);
+  opacity: 0.08;
+  z-index: 0;
+}
+
+/* Card */
+.partner-card {
+  background: var(--partner-card);
+  border: 1px solid var(--partner-border);
+  box-shadow: var(--partner-shadow-card);
+  transition: all 0.3s ease;
+}
+
+.partner-card:hover {
+  box-shadow: var(--partner-shadow-soft);
+  transform: translateY(-2px);
+}
+
+/* CTA Primary (Coral/Arancio) */
+.partner-btn-primary {
+  background: var(--partner-gradient-accent) !important;
+  color: var(--partner-accent-foreground) !important;
+  box-shadow: var(--partner-shadow-accent);
+  border: none !important;
+  transition: all 0.3s ease;
+}
+
+.partner-btn-primary:hover {
+  box-shadow: 0 12px 32px -4px hsl(16 85% 58% / 0.45);
+  transform: translateY(-2px);
+}
+
+/* CTA Secondary (Navy Outline) */
+.partner-btn-secondary {
+  border: 2px solid #ffffff !important;
+  color: #ffffff !important;
+  background: transparent !important;
+  transition: all 0.3s ease;
+}
+
+.partner-btn-secondary:hover {
+  background: #ffffff !important;
+  color: #001f3f !important;
+}
+
+/* Text Utilities */
+.partner-muted-text {
+  color: var(--partner-muted-foreground);
+}
+
+.partner-foreground-text {
+  color: var(--partner-foreground);
+}
+
+/* Fix layout dashboard partner - Usa CSS media queries invece di JavaScript */
+/* Questo è più affidabile e non ha problemi di timing */
+.partner-dashboard-main {
+  margin-left: 0;
+}
+
+@media (min-width: 768px) {
+  .partner-dashboard-main {
+    margin-left: 16rem; /* 64 * 0.25rem = 16rem */
+  }
+}
+
+/* Fix striscia nera: forza sfondo chiaro quando siamo nella dashboard partner */
+body.partner-dashboard-active,
+body.partner-dashboard-loading {
+  background-color: #f9fafb !important; /* gray-50 */
+}
+
+html.partner-dashboard-active,
+html.partner-dashboard-loading {
+  background-color: #f9fafb !important; /* gray-50 */
+}
+
+.partner-accent-text {
+  color: var(--partner-accent);
+}
+
+/* Section Backgrounds */
+.partner-section-muted {
+  background: var(--partner-muted);
+}
+
+.partner-section-bg {
+  background: var(--partner-background);
+}
+
+/* Header Partner */
+.partner-header {
+  background: var(--partner-primary) !important;
+  border-bottom-color: var(--partner-border) !important;
+  color: var(--partner-primary-foreground) !important;
+}
+
+/* Footer Partner */
+.partner-footer {
+  background: var(--partner-background) !important;
+  border-top-color: var(--partner-border) !important;
+}
+
+/* Badge Partner */
+.partner-badge {
+  background: hsl(16 85% 58% / 0.1);
+  border: 1px solid var(--partner-accent);
+  color: var(--partner-accent);
+}
+
+/* Icone Partner */
+.partner-icon-wrapper {
+  background: hsl(16 85% 58% / 0.1);
+  border: 1px solid var(--partner-border);
+}
+
+.partner-icon {
+  color: var(--partner-accent);
+}
+
+/* Pricing Card Hero */
+.partner-pricing-card {
+  background: var(--partner-card);
+  border: 2px solid var(--partner-accent);
+  box-shadow: var(--partner-shadow-accent);
+  position: relative;
+  overflow: hidden;
+}
+
+.partner-pricing-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--partner-gradient-accent);
+}
+
+/* Headings Partner */
+.partner-heading {
+  color: var(--partner-foreground);
+}
+
+.partner-heading-accent {
+  color: var(--partner-accent);
+}
+
+/* Divider Partner */
+.partner-divider {
+  border-color: var(--partner-border);
+}
+
+/* Check Icon Partner */
+.partner-check {
+  color: var(--partner-accent);
+}
+
+/* Footer Links Partner */
+.partner-footer-link {
+  color: var(--partner-muted-foreground);
+}
+
+.partner-footer-link:hover {
+  color: var(--partner-accent);
+}
+
+/* Glow Effect Arancio (delicato) - Rimosso, non più necessario con nuova palette */
