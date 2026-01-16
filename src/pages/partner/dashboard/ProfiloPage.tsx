@@ -524,25 +524,45 @@ export default function ProfiloPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Servizi e Tariffe</h2>
             <div className="space-y-0">
-              {/* Fascia prezzo */}
+              {/* Prezzo seduta */}
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm text-gray-500">Fascia prezzo</span>
+                  <span className="text-sm text-gray-500">Prezzo seduta</span>
                   {editingField === 'prezzo_fascia' ? (
                     <div className="mt-1">
-                      <select
-                        autoFocus
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent"
-                      >
-                        <option value="€">€ - Economico</option>
-                        <option value="€€">€€ - Medio</option>
-                        <option value="€€€">€€€ - Premium</option>
-                      </select>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-700 font-medium">€</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          placeholder="Inserisci il prezzo..."
+                          autoFocus
+                          value={editValue}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Permetti solo numeri positivi
+                            if (value === '' || (!isNaN(Number(value)) && Number(value) >= 0 && Number(value) <= 1000)) {
+                              setEditValue(value);
+                            }
+                          }}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent outline-none"
+                        />
+                      </div>
                       <div className="flex gap-2 mt-2">
                         <button 
-                          onClick={() => saveEdit('prezzo_fascia')}
+                          onClick={() => {
+                            const price = parseInt(editValue);
+                            if (isNaN(price) || price < 0) {
+                              toast.error('Inserisci un prezzo valido');
+                              return;
+                            }
+                            if (price > 1000) {
+                              toast.error('Il prezzo massimo è € 1000');
+                              return;
+                            }
+                            saveEdit('prezzo_fascia');
+                          }}
                           className="px-3 py-1.5 bg-[#EEBA2B] text-white rounded-lg text-sm font-medium hover:bg-[#D4A826] transition-colors"
                         >
                           Salva
@@ -556,12 +576,16 @@ export default function ProfiloPage() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-gray-900 break-words mt-1">{profile.prezzo_fascia || '-'}</p>
+                    <p className="text-gray-900 break-words mt-1">
+                      {profile.prezzo_fascia 
+                        ? `€ ${profile.prezzo_fascia}` 
+                        : 'Non impostato'}
+                    </p>
                   )}
                 </div>
                 {editingField !== 'prezzo_fascia' && (
                   <button 
-                    onClick={() => startEdit('prezzo_fascia', profile.prezzo_fascia)}
+                    onClick={() => startEdit('prezzo_fascia', profile.prezzo_fascia || '')}
                     className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors"
                   >
                     <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
@@ -855,7 +879,7 @@ export default function ProfiloPage() {
                   )}
                   {profile.prezzo_fascia && (
                     <p className="text-gray-900 font-semibold mt-2">
-                      {profile.prezzo_fascia}/sessione
+                      € {profile.prezzo_fascia}/sessione
                     </p>
                   )}
                 </div>
