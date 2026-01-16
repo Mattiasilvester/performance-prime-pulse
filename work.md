@@ -9,6 +9,79 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **16 Gennaio 2026 - Sessione Fix Prenotazioni e Profilo**
+**Ora inizio:** ~22:00
+**Ora fine:** ~23:30
+**Durata:** ~1 ora e 30 minuti
+**Branch:** dev
+
+#### **🎯 Obiettivo:**
+Fix UI/UX pagina Prenotazioni (dropdown mobile, filtri interattivi, conferma rapida) e modifica campo prezzo Profilo (da dropdown fascia a input numerico).
+
+#### **✅ Implementato:**
+
+1. **Fix Dropdown Mobile - Icone + Testo Breve** 📱
+   - Aggiunte icone ai 3 dropdown filtri (Status, Data, Modalità)
+   - Testo abbreviato per evitare tagli su mobile ("✓ Tutti" invece di "Tutti gli status")
+   - Icone: ✓ per Status, 📅 per Data, 📍 per Modalità
+   - File: `src/pages/partner/dashboard/PrenotazioniPage.tsx`
+
+2. **Card Filtri Cliccabili Interattive** 🎯
+   - Card stats (Oggi, Settimana, Confermati, In attesa) diventate cliccabili
+   - Click su card aggiorna filtri automaticamente e resetta gli altri
+   - Indicatore visivo: bordo oro quando filtro attivo
+   - Hover effects: shadow + scale + bordo oro
+   - Layout responsive: affiancate su mobile, stack verticale su desktop
+   - File: `src/pages/partner/dashboard/PrenotazioniPage.tsx`
+
+3. **Bottone Conferma Rapida Prenotazioni** ✅
+   - Bottone "Conferma" verde per prenotazioni con status "pending"
+   - Click cambia status da 'pending' a 'confirmed' con un click
+   - Aggiorna automaticamente lista e stats cards
+   - Toast di successo "Prenotazione confermata!"
+   - Visibile solo per prenotazioni in attesa
+   - File: `src/pages/partner/dashboard/PrenotazioniPage.tsx`
+
+4. **Fix Logica Filtri Date - Filtro "Oggi"** 🐛
+   - Risolto problema filtro "Oggi" che mostrava prenotazioni di giorni precedenti
+   - Implementata funzione helper `getLocalDateString()` per gestione date locale
+   - Fix timezone issues usando confronto stringhe YYYY-MM-DD invece di Date objects
+   - Logica "Settimana" corretta: dal Lunedì alla Domenica corrente (non ultimi 7 giorni)
+   - Logica "Mese" corretta: dal 1° all'ultimo giorno del mese corrente
+   - Aggiornata funzione `fetchStats()` con stessa logica corretta
+   - File: `src/pages/partner/dashboard/PrenotazioniPage.tsx`
+
+5. **Modifica Campo Prezzo - Da Dropdown Fascia a Input Numerico** 💰
+   - Sostituito dropdown "Fascia prezzo" (€/€€/€€€) con input numerico
+   - Label cambiata da "Fascia prezzo" a "Prezzo seduta"
+   - Layout con simbolo € PRIMA del numero (€ 50 invece di 50 €)
+   - Validazione prezzo: minimo 0, massimo 1000
+   - Placeholder "Inserisci il prezzo..."
+   - Visualizzazione formattata: "€ 50" in lettura, "Non impostato" se vuoto
+   - Aggiornata anche visualizzazione nella preview profilo
+   - File: `src/pages/partner/dashboard/ProfiloPage.tsx`
+
+#### **🐛 Bug Risolti:**
+- **Filtro "Oggi" mostrava giorni precedenti**: Risolto usando confronto stringhe locale YYYY-MM-DD invece di Date objects con timezone issues
+- **Dropdown mobile con testo tagliato**: Risolto abbreviando testo e aggiungendo icone visive
+- **Card stats non interattive**: Implementate come filtri cliccabili con feedback visivo
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato (solo modifiche a pagine dashboard esistenti)
+
+#### **📊 Metriche:**
+- Build time: 10.75s
+- Bundle principale: 856.08 kB (237.75 kB gzipped)
+- Errori TypeScript: 0
+- Errori linting: 0
+
+#### **📋 TODO Prossima Sessione:**
+1. Test completo filtri Prenotazioni su diversi scenari
+2. Valutazione aggiungere filtri avanzati (range date personalizzato)
+3. Ottimizzazione performance lista prenotazioni con molti record
+
+---
+
 ### **14 Gennaio 2026 - Sessione Dashboard Professionisti Completa**
 - **Ora Inizio**: ~21:30
 - **Ora Fine**: ~23:00
