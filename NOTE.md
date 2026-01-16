@@ -2,6 +2,12 @@
 
 ## Decisioni Architetturali
 
+### 16 Gennaio 2026 - Sessione Fix Prenotazioni e Profilo
+- **Helper funzione `getLocalDateString()`**: Funzione utility per ottenere date in formato YYYY-MM-DD usando metodi locali (getFullYear, getMonth, getDate) invece di toISOString() che causa problemi di timezone. Usata in PrenotazioniPage per filtri date corretti.
+- **Pattern filtri interattivi**: Card stats diventate filtri cliccabili con state management che resetta gli altri filtri quando si seleziona uno. Pattern riutilizzabile per altri filtri rapidi.
+- **Validazione input numerico prezzo**: Validazione lato client con limiti min/max (0-1000) e controllo tipo durante digitazione. Toast errori per UX chiara.
+- **Layout simbolo € prezzo**: Simbolo posizionato PRIMA del numero con flexbox (`<span>€</span> <input>`), non dopo. Pattern coerente con standard europei di formattazione valuta.
+
 ### **13 Gennaio 2026 - Sistema Professionisti e Ottimizzazioni Bundle**
 
 #### **1. Database Professionisti Esteso**
