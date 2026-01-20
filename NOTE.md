@@ -2,6 +2,17 @@
 
 ## Decisioni Architetturali
 
+### 21 Gennaio 2025 - Sessione Database Schema Cleanup
+- **Database Cleanup**: Rimossa tabella `users` duplicata, usare solo `profiles` collegata a `auth.users`
+- **Colonne Deprecate**: Rimosse `password_hash`, `password_salt`, `reset_token`, `reset_requested_at` da `professionals` (usare Supabase Auth)
+- **Professional Services**: Tabella `professional_services` creata per gestire servizi multipli per professionista (prima solo `prezzo_seduta` singolo)
+- **Reviews System**: Tabella `reviews` con trigger automatico per aggiornare `professionals.rating` e `reviews_count`
+- **Prezzo Seduta**: Aggiunta colonna `prezzo_seduta` (INTEGER) in `professionals`, aggiornato codice per usarla invece di `prezzo_fascia` (string)
+- **Migrazione Dati**: I dati in JSON in `bookings.notes` sono stati migrati a colonne separate (`client_name`, `client_email`, `client_phone`, `service_type`, `color`)
+- **Pattern RLS**: Tutte le nuove tabelle hanno RLS policies configurate per sicurezza (ogni utente vede/modifica solo i propri dati)
+- **Trigger Automatici**: Sistema di trigger PostgreSQL per aggiornare rating professionisti automaticamente quando cambiano recensioni
+- **Priorità Critica**: `professional_services` esiste ma codice non lo usa ancora - PRIORITÀ 1 per prossima sessione
+
 ### 16 Gennaio 2026 - Sessione Fix Prenotazioni e Profilo
 - **Helper funzione `getLocalDateString()`**: Funzione utility per ottenere date in formato YYYY-MM-DD usando metodi locali (getFullYear, getMonth, getDate) invece di toISOString() che causa problemi di timezone. Usata in PrenotazioniPage per filtri date corretti.
 - **Pattern filtri interattivi**: Card stats diventate filtri cliccabili con state management che resetta gli altri filtri quando si seleziona uno. Pattern riutilizzabile per altri filtri rapidi.
