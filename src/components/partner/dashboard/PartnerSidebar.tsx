@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -10,7 +10,8 @@ import {
   UserCircle,
   Settings,
   LogOut,
-  X
+  X,
+  ChevronDown
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -25,8 +26,6 @@ const menuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: 'Overview', path: '/partner/dashboard' },
   { icon: Calendar, label: 'Calendario', path: '/partner/dashboard/calendario' },
   { icon: ClipboardList, label: 'Prenotazioni', path: '/partner/dashboard/prenotazioni' },
-  { icon: Users, label: 'Clienti', path: '/partner/dashboard/clienti' },
-  { icon: FolderKanban, label: 'Progetti', path: '/partner/dashboard/progetti' },
   { icon: UserCircle, label: 'Profilo', path: '/partner/dashboard/profilo' },
   { icon: Settings, label: 'Impostazioni', path: '/partner/dashboard/impostazioni' },
 ];
@@ -40,12 +39,26 @@ interface PartnerSidebarProps {
 export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarProps) {
   const navigate = useNavigate();
   const [isMounted, setIsMounted] = useState(false);
+  const [clientiExpanded, setClientiExpanded] = useState(false);
+
+  // Auto-espandi/collassa in base all'URL
+  useEffect(() => {
+    const isInClientiSection = currentPath.startsWith('/partner/dashboard/clienti');
+    setClientiExpanded(isInClientiSection);
+  }, [currentPath]);
 
   // Traccia il mount per evitare glitch visivi al caricamento
   // useLayoutEffect viene eseguito prima del paint
   useLayoutEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Handler click Clienti
+  const handleClientiClick = () => {
+    navigate('/partner/dashboard/clienti');
+    // L'useEffect si occuperà di espandere il menu
+    onClose(); // Chiudi sidebar su mobile
+  };
 
   const handleLogout = async () => {
     try {
@@ -132,6 +145,52 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
               </Link>
             );
           })}
+
+          {/* Voce Clienti Espandibile */}
+          <div>
+            <button
+              onClick={handleClientiClick}
+              className={`
+                w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200
+                ${currentPath.startsWith('/partner/dashboard/clienti')
+                  ? 'bg-[#EEBA2B]/25 text-gray-900 border-l-4 border-[#EEBA2B] font-semibold'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }
+              `}
+            >
+              <div className="flex items-center gap-3">
+                <Users className="w-5 h-5" />
+                <span className="font-medium">Clienti</span>
+              </div>
+              <ChevronDown 
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  clientiExpanded ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+            
+            {/* Sottomenu Progetti */}
+            {clientiExpanded && (
+              <div className="ml-4 mt-1 space-y-1">
+                <button
+                  onClick={() => {
+                    navigate('/partner/dashboard/clienti/progetti');
+                    onClose();
+                  }}
+                  className={`
+                    w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200
+                    ${currentPath === '/partner/dashboard/clienti/progetti'
+                      ? 'bg-[#EEBA2B]/10 text-[#EEBA2B] font-medium'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                    }
+                  `}
+                >
+                  <FolderKanban className="w-4 h-4" />
+                  <span className="text-sm">Progetti</span>
+                </button>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Logout Button */}

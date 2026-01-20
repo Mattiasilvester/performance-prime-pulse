@@ -15,6 +15,12 @@ interface Booking {
   notes?: string;
   modalita?: string;
   user_id: string;
+  // Nuove colonne migrate da notes JSON
+  client_name?: string | null;
+  client_email?: string | null;
+  client_phone?: string | null;
+  service_type?: string | null;
+  color?: string | null;
   client?: {
     first_name: string;
     last_name: string;
@@ -163,7 +169,12 @@ const AgendaView = () => {
           status,
           notes,
           modalita,
-          user_id
+          user_id,
+          client_name,
+          client_email,
+          client_phone,
+          service_type,
+          color
         `)
         .eq('professional_id', professionalId)
         .gte('booking_date', startDateStr)
@@ -365,48 +376,88 @@ const AgendaView = () => {
     setSelectedDate(today);
   };
 
-  // Helper per estrarre le note pulite dal JSON
-  const parseBookingNotes = (notes: string | null): { 
+  // Helper per estrarre le note pulite (ora usa colonne dirette + fallback a notes JSON per retrocompatibilità)
+  const parseBookingNotes = (booking: any): { 
     clientName?: string; 
     clientEmail?: string; 
     clientPhone?: string;
     originalNotes?: string;
     color?: string;
-    isManualBooking?: boolean;
+    serviceType?: string;
   } | null => {
-    if (!notes) return null;
-    try {
-      const parsed = JSON.parse(notes);
+    // Priorità 1: Usa colonne dirette (nuovo sistema)
+    if (booking.client_name || booking.client_email || booking.service_type || booking.color) {
       return {
-        clientName: parsed.client_name,
-        clientEmail: parsed.client_email,
-        clientPhone: parsed.client_phone,
-        originalNotes: parsed.original_notes,
-        color: parsed.color,
-        isManualBooking: parsed.is_manual_booking
+        clientName: booking.client_name || undefined,
+        clientEmail: booking.client_email || undefined,
+        clientPhone: booking.client_phone || undefined,
+        serviceType: booking.service_type || undefined,
+        color: booking.color || undefined,
+        originalNotes: booking.notes ? (() => {
+          // Se notes è JSON, estrai original_notes, altrimenti usa notes come original_notes
+          try {
+            const parsed = JSON.parse(booking.notes);
+            return parsed.original_notes || booking.notes;
+          } catch {
+            return booking.notes;
+          }
+        })() : undefined
       };
-    } catch {
-      // Se non è JSON, sono note normali
-      return { originalNotes: notes };
     }
+    
+    // Priorità 2: Fallback a notes JSON (retrocompatibilità)
+    if (booking.notes) {
+      try {
+        const parsed = JSON.parse(booking.notes);
+        return {
+          clientName: parsed.client_name,
+          clientEmail: parsed.client_email,
+          clientPhone: parsed.client_phone,
+          originalNotes: parsed.original_notes,
+          color: parsed.color,
+          serviceType: parsed.service_type
+        };
+      } catch {
+        // Se non è JSON, sono note normali
+        return { originalNotes: booking.notes };
+      }
+    }
+    
+    return null;
   };
 
   // Helper per ottenere il colore dell'appuntamento
   const getBookingColor = (booking: any): string => {
-    const parsed = parseBookingNotes(booking.notes);
+    // Usa colonna diretta se disponibile
+    if (booking.color) return booking.color;
+    // Fallback a notes JSON per retrocompatibilità
+    const parsed = parseBookingNotes(booking);
     return parsed?.color || '#EEBA2B'; // Default oro
   };
 
   // Helper per ottenere le note da mostrare
   const getDisplayNotes = (booking: any): string | null => {
-    const parsed = parseBookingNotes(booking.notes);
-    return parsed?.originalNotes || null;
+    // Se notes è JSON, estrai original_notes, altrimenti usa notes direttamente
+    if (booking.notes) {
+      try {
+        const parsed = JSON.parse(booking.notes);
+        return parsed.original_notes || null;
+      } catch {
+        // Se non è JSON, usa notes direttamente
+        return booking.notes;
+      }
+    }
+    return null;
   };
 
-  // Helper per ottenere il nome cliente (da notes se manual booking)
+  // Helper per ottenere il nome cliente
   const getClientName = (booking: any): string => {
-    const parsed = parseBookingNotes(booking.notes);
+    // Priorità 1: Colonna diretta
+    if (booking.client_name) return booking.client_name;
+    // Priorità 2: Notes JSON (retrocompatibilità)
+    const parsed = parseBookingNotes(booking);
     if (parsed?.clientName) return parsed.clientName;
+    // Priorità 3: Profilo utente
     if (booking.profiles?.first_name) {
       return `${booking.profiles.first_name} ${booking.profiles.last_name || ''}`.trim();
     }
@@ -1042,7 +1093,7 @@ const AgendaView = () => {
       e.stopPropagation(); // Evita che si apra il modal di creazione
     }
     
-    const parsedNotes = parseBookingNotes(booking.notes);
+    const parsedNotes = parseBookingNotes(booking);
     
     setSelectedBooking(booking);
     setEditedBooking({
@@ -1050,9 +1101,9 @@ const AgendaView = () => {
       startTime: booking.booking_time?.slice(0, 5) || '09:00',
       endTime: getEndTime(booking.booking_time || '00:00', booking.duration_minutes || 60),
       clientName: getClientName(booking),
-      clientEmail: parsedNotes?.clientEmail || booking.profiles?.email || '',
-      clientPhone: parsedNotes?.clientPhone || '',
-      notes: parsedNotes?.originalNotes || '',
+      clientEmail: booking.client_email || parsedNotes?.clientEmail || booking.profiles?.email || '',
+      clientPhone: booking.client_phone || parsedNotes?.clientPhone || '',
+      notes: getDisplayNotes(booking) || '',
       status: booking.status || 'confirmed',
       color: getBookingColor(booking)
     });
@@ -1075,6 +1126,9 @@ const AgendaView = () => {
         return;
       }
 
+      // Prepara notes solo con original_notes (non più JSON completo)
+      const notesContent = editedBooking.notes || null;
+
       const { error } = await supabase
         .from('bookings')
         .update({
@@ -1082,14 +1136,12 @@ const AgendaView = () => {
           booking_time: editedBooking.startTime,
           duration_minutes: durationMinutes > 0 ? durationMinutes : 60,
           status: editedBooking.status,
-          notes: JSON.stringify({
-            client_name: editedBooking.clientName,
-            client_email: editedBooking.clientEmail || null,
-            client_phone: editedBooking.clientPhone || null,
-            original_notes: editedBooking.notes || null,
-            color: editedBooking.color,
-            is_manual_booking: true
-          }),
+          notes: notesContent,
+          // Salva nelle colonne separate
+          client_name: editedBooking.clientName || null,
+          client_email: editedBooking.clientEmail || null,
+          client_phone: editedBooking.clientPhone || null,
+          color: editedBooking.color || '#EEBA2B',
         })
         .eq('id', selectedBooking.id);
       
@@ -1167,19 +1219,10 @@ const AgendaView = () => {
         }
       }
       
-      // Prepara dati cliente da salvare in notes (JSON)
-      const clientData = {
-        client_name: newBooking.clientName,
-        client_email: newBooking.clientEmail || null,
-        client_phone: newBooking.clientPhone || null,
-        original_notes: newBooking.notes || null,
-        color: newBooking.color,
-        is_manual_booking: true
-      };
-      
-      const notesContent = JSON.stringify(clientData);
+      // Prepara notes solo con note testuali (non più JSON completo)
+      const notesContent = newBooking.notes || null;
 
-      // Prepara dati booking
+      // Prepara dati booking con colonne separate
       const bookingData: any = {
         professional_id: professionalId,
         booking_date: formatDateToString(newBooking.date),
@@ -1187,7 +1230,12 @@ const AgendaView = () => {
         duration_minutes: durationMinutes > 0 ? durationMinutes : 60,
         status: newBooking.status,
         notes: notesContent,
-        modalita: 'presenza'
+        modalita: 'presenza',
+        // Salva nelle colonne separate
+        client_name: newBooking.clientName || null,
+        client_email: newBooking.clientEmail || null,
+        client_phone: newBooking.clientPhone || null,
+        color: newBooking.color || '#EEBA2B'
       };
       
       // Se abbiamo trovato il cliente, usa il suo ID
@@ -1914,8 +1962,11 @@ const AgendaView = () => {
                   onChange={(e) => setNewBooking({...newBooking, status: e.target.value})}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent"
                 >
-                  <option value="confirmed">Confermato</option>
                   <option value="pending">In attesa</option>
+                  <option value="confirmed">Confermato</option>
+                  <option value="completed">Completato</option>
+                  <option value="cancelled">Cancellato</option>
+                  <option value="no_show">Non presentato</option>
                 </select>
               </div>
               
@@ -2156,19 +2207,26 @@ const AgendaView = () => {
                     onChange={(e) => setEditedBooking({...editedBooking, status: e.target.value})}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent"
                   >
-                    <option value="confirmed">Confermato</option>
                     <option value="pending">In attesa</option>
+                    <option value="confirmed">Confermato</option>
+                    <option value="completed">Completato</option>
                     <option value="cancelled">Cancellato</option>
+                    <option value="no_show">Non presentato</option>
                   </select>
                 ) : (
                   <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium text-white ${
+                    editedBooking.status === 'completed' ? 'bg-blue-500' :
                     editedBooking.status === 'confirmed' ? 'bg-green-500' :
                     editedBooking.status === 'pending' ? 'bg-yellow-500' :
-                    'bg-red-500'
+                    editedBooking.status === 'cancelled' ? 'bg-red-500' :
+                    'bg-gray-500'
                   }`}>
-                    {editedBooking.status === 'confirmed' ? 'Confermato' :
-                     editedBooking.status === 'pending' ? 'In attesa' : 
-                     'Cancellato'}
+                    {editedBooking.status === 'completed' ? 'Completato' :
+                     editedBooking.status === 'confirmed' ? 'Confermato' :
+                     editedBooking.status === 'pending' ? 'In attesa' :
+                     editedBooking.status === 'cancelled' ? 'Cancellato' :
+                     editedBooking.status === 'no_show' ? 'Non presentato' :
+                     editedBooking.status}
                   </span>
                 )}
               </div>
@@ -2332,21 +2390,29 @@ const AgendaView = () => {
                       </div>
                       <span
                         className={`px-2 py-1 rounded text-[10px] sm:text-xs font-medium self-start sm:self-auto ${
-                          booking.status === 'confirmed'
+                          booking.status === 'completed'
+                            ? 'bg-blue-100 text-blue-700'
+                            : booking.status === 'confirmed'
                             ? 'bg-green-100 text-green-700'
                             : booking.status === 'pending'
                             ? 'bg-yellow-100 text-yellow-700'
                             : booking.status === 'cancelled'
                             ? 'bg-red-100 text-red-700'
+                            : booking.status === 'no_show'
+                            ? 'bg-gray-100 text-gray-700'
                             : 'bg-gray-100 text-gray-700'
                         }`}
                       >
-                        {booking.status === 'confirmed'
+                        {booking.status === 'completed'
+                          ? 'Completato'
+                          : booking.status === 'confirmed'
                           ? 'Confermato'
                           : booking.status === 'pending'
                           ? 'In attesa'
                           : booking.status === 'cancelled'
                           ? 'Cancellato'
+                          : booking.status === 'no_show'
+                          ? 'Non presentato'
                           : booking.status}
                       </span>
                     </div>

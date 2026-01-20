@@ -13,12 +13,18 @@ interface Booking {
   notes: string | null;
   modalita: 'online' | 'presenza' | null;
   user_id: string;
+  // Nuove colonne migrate da notes JSON
+  client_name?: string | null;
+  client_email?: string | null;
+  client_phone?: string | null;
+  service_type?: string | null;
+  color?: string | null;
   client?: {
     first_name: string;
     last_name: string;
     email: string;
   };
-  // Dati da notes JSON per booking manuali
+  // Mantenuto per retrocompatibilità (deprecato)
   parsedNotes?: {
     client_name?: string;
     client_email?: string;
@@ -101,18 +107,43 @@ export default function PrenotazioniPage() {
     }
   };
 
-  const parseBookingNotes = (notes: string | null) => {
-    if (!notes) return null;
-    try {
-      return JSON.parse(notes);
-    } catch {
-      return { original_notes: notes };
+  // Helper per retrocompatibilità (ora usa colonne dirette)
+  const parseBookingNotes = (booking: Booking) => {
+    // Priorità 1: Usa colonne dirette (nuovo sistema)
+    if (booking.client_name || booking.client_email || booking.service_type) {
+      return {
+        client_name: booking.client_name || undefined,
+        client_email: booking.client_email || undefined,
+        client_phone: booking.client_phone || undefined,
+        service_type: booking.service_type || undefined,
+        original_notes: booking.notes ? (() => {
+          try {
+            const parsed = JSON.parse(booking.notes);
+            return parsed.original_notes || booking.notes;
+          } catch {
+            return booking.notes;
+          }
+        })() : undefined
+      };
     }
+    // Priorità 2: Fallback a notes JSON (retrocompatibilità)
+    if (booking.notes) {
+      try {
+        return JSON.parse(booking.notes);
+      } catch {
+        return { original_notes: booking.notes };
+      }
+    }
+    return null;
   };
 
   const getClientName = (booking: Booking): string => {
-    const parsed = parseBookingNotes(booking.notes);
+    // Priorità 1: Colonna diretta
+    if (booking.client_name) return booking.client_name;
+    // Priorità 2: Notes JSON (retrocompatibilità)
+    const parsed = parseBookingNotes(booking);
     if (parsed?.client_name) return parsed.client_name;
+    // Priorità 3: Profilo cliente
     if (booking.client) {
       return `${booking.client.first_name} ${booking.client.last_name || ''}`.trim();
     }
@@ -120,20 +151,35 @@ export default function PrenotazioniPage() {
   };
 
   const getClientEmail = (booking: Booking): string | null => {
-    const parsed = parseBookingNotes(booking.notes);
+    // Priorità 1: Colonna diretta
+    if (booking.client_email) return booking.client_email;
+    // Priorità 2: Notes JSON (retrocompatibilità)
+    const parsed = parseBookingNotes(booking);
     if (parsed?.client_email) return parsed.client_email;
+    // Priorità 3: Profilo cliente
     if (booking.client?.email) return booking.client.email;
     return null;
   };
 
   const getServiceType = (booking: Booking): string | null => {
-    const parsed = parseBookingNotes(booking.notes);
+    // Priorità 1: Colonna diretta
+    if (booking.service_type) return booking.service_type;
+    // Priorità 2: Notes JSON (retrocompatibilità)
+    const parsed = parseBookingNotes(booking);
     return parsed?.service_type || null;
   };
 
   const getDisplayNotes = (booking: Booking): string | null => {
-    const parsed = parseBookingNotes(booking.notes);
-    return parsed?.original_notes || null;
+    // Se notes è JSON, estrai original_notes, altrimenti usa notes direttamente
+    if (booking.notes) {
+      try {
+        const parsed = JSON.parse(booking.notes);
+        return parsed.original_notes || null;
+      } catch {
+        return booking.notes;
+      }
+    }
+    return null;
   };
 
   const fetchBookings = async () => {
@@ -151,7 +197,12 @@ export default function PrenotazioniPage() {
           status,
           notes,
           modalita,
-          user_id
+          user_id,
+          client_name,
+          client_email,
+          client_phone,
+          service_type,
+          color
         `)
         .eq('professional_id', professionalId)
         .order('booking_date', { ascending: false })
@@ -392,13 +443,13 @@ export default function PrenotazioniPage() {
     const booking = bookings.find(b => b.id === bookingId);
     if (!booking) return;
 
-    const parsed = parseBookingNotes(booking.notes);
+    const parsed = parseBookingNotes(booking);
     const clientName = getClientName(booking);
     const clientEmail = getClientEmail(booking) || '';
     const serviceType = getServiceType(booking) || '';
     const displayNotes = getDisplayNotes(booking) || '';
-    const color = parsed?.color || '#EEBA2B';
-    const clientPhone = parsed?.client_phone || '';
+    const color = booking.color || parsed?.color || '#EEBA2B';
+    const clientPhone = booking.client_phone || parsed?.client_phone || '';
 
     // Calcola ora fine da ora inizio + durata
     const startTime = booking.booking_time.slice(0, 5);
@@ -448,27 +499,8 @@ export default function PrenotazioniPage() {
     }
 
     try {
-      // Prepara notes JSON
-      const notesJson: any = {};
-      
-      // Se è un booking manuale, mantieni tutti i campi esistenti
-      const existingParsed = parseBookingNotes(editingBooking?.notes || null);
-      if (existingParsed) {
-        Object.assign(notesJson, existingParsed);
-      }
-
-      // Aggiorna con nuovi dati
-      if (editedBookingData.clientName) notesJson.client_name = editedBookingData.clientName;
-      if (editedBookingData.clientEmail) notesJson.client_email = editedBookingData.clientEmail;
-      if (editedBookingData.clientPhone) notesJson.client_phone = editedBookingData.clientPhone;
-      if (editedBookingData.serviceType) notesJson.service_type = editedBookingData.serviceType;
-      if (editedBookingData.notes) notesJson.original_notes = editedBookingData.notes;
-      notesJson.color = editedBookingData.color;
-
-      // Se non ci sono altri dati, salva solo le note come stringa semplice
-      const notesToSave = Object.keys(notesJson).length > 1 
-        ? JSON.stringify(notesJson)
-        : editedBookingData.notes || null;
+      // Prepara notes solo con note testuali (non più JSON completo)
+      const notesToSave = editedBookingData.notes || null;
 
       const { error } = await supabase
         .from('bookings')
@@ -479,6 +511,12 @@ export default function PrenotazioniPage() {
           modalita: editedBookingData.modalita || 'presenza',
           status: editedBookingData.status,
           notes: notesToSave,
+          // Salva nelle colonne separate
+          client_name: editedBookingData.clientName || null,
+          client_email: editedBookingData.clientEmail || null,
+          client_phone: editedBookingData.clientPhone || null,
+          service_type: editedBookingData.serviceType || null,
+          color: editedBookingData.color || '#EEBA2B',
         })
         .eq('id', editedBookingData.id);
 

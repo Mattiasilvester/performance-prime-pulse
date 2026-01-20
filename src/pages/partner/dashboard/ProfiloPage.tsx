@@ -24,7 +24,7 @@ interface ProfessionalProfile {
   titolo_studio: string | null;
   company_name: string | null;
   modalita: string;
-  prezzo_fascia: string | null;
+  prezzo_seduta: number | null;
   anni_esperienza?: number;
 }
 
@@ -93,7 +93,10 @@ export default function ProfiloPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const updateData: any = { [field]: editValue };
+      // Per prezzo_seduta, converti a number
+      const updateData: any = { 
+        [field]: field === 'prezzo_seduta' ? (editValue ? parseInt(editValue) : null) : editValue 
+      };
 
       const { error } = await supabase
         .from('professionals')
@@ -528,7 +531,7 @@ export default function ProfiloPage() {
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
                 <div className="flex-1 min-w-0">
                   <span className="text-sm text-gray-500">Prezzo seduta</span>
-                  {editingField === 'prezzo_fascia' ? (
+                  {editingField === 'prezzo_seduta' ? (
                     <div className="mt-1">
                       <div className="flex items-center gap-2">
                         <span className="text-gray-700 font-medium">€</span>
@@ -537,8 +540,8 @@ export default function ProfiloPage() {
                           min="0"
                           step="1"
                           placeholder="Inserisci il prezzo..."
-                          autoFocus
-                          value={editValue}
+                        autoFocus
+                        value={editValue}
                           onChange={(e) => {
                             const value = e.target.value;
                             // Permetti solo numeri positivi
@@ -561,7 +564,7 @@ export default function ProfiloPage() {
                               toast.error('Il prezzo massimo è € 1000');
                               return;
                             }
-                            saveEdit('prezzo_fascia');
+                            saveEdit('prezzo_seduta');
                           }}
                           className="px-3 py-1.5 bg-[#EEBA2B] text-white rounded-lg text-sm font-medium hover:bg-[#D4A826] transition-colors"
                         >
@@ -577,15 +580,15 @@ export default function ProfiloPage() {
                     </div>
                   ) : (
                     <p className="text-gray-900 break-words mt-1">
-                      {profile.prezzo_fascia 
-                        ? `€ ${profile.prezzo_fascia}` 
+                      {profile.prezzo_seduta 
+                        ? `€ ${profile.prezzo_seduta}` 
                         : 'Non impostato'}
                     </p>
                   )}
                 </div>
-                {editingField !== 'prezzo_fascia' && (
+                {editingField !== 'prezzo_seduta' && (
                   <button 
-                    onClick={() => startEdit('prezzo_fascia', profile.prezzo_fascia || '')}
+                    onClick={() => startEdit('prezzo_seduta', profile.prezzo_seduta?.toString() || '')}
                     className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors"
                   >
                     <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
@@ -877,9 +880,9 @@ export default function ProfiloPage() {
                       {profile.zona}
                     </p>
                   )}
-                  {profile.prezzo_fascia && (
+                  {profile.prezzo_seduta && (
                     <p className="text-gray-900 font-semibold mt-2">
-                      € {profile.prezzo_fascia}/sessione
+                      € {profile.prezzo_seduta}/sessione
                     </p>
                   )}
                 </div>
