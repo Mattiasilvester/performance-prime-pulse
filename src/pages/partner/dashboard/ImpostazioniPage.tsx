@@ -1,9 +1,16 @@
 import { useState } from 'react';
-import { Tag, Bell, CreditCard, Lock, User, MapPin, FileText, Link as LinkIcon, Globe, ChevronRight } from 'lucide-react';
+import { Tag, Bell, CreditCard, Lock, User, MapPin, FileText, Link as LinkIcon, Globe, ChevronRight, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import SpecializzazioniModal from '@/components/partner/settings/SpecializzazioniModal';
 import LinguaModal from '@/components/partner/settings/LinguaModal';
 import SocialLinksModal from '@/components/partner/settings/SocialLinksModal';
+import NotificationsModal from '@/components/partner/settings/NotificationsModal';
+import PrivacyModal from '@/components/partner/settings/PrivacyModal';
+import CoverageAreaModal from '@/components/partner/settings/CoverageAreaModal';
+import CancellationPolicyModal from '@/components/partner/settings/CancellationPolicyModal';
+import AccountModal from '@/components/partner/settings/AccountModal';
+import PaymentsModal from '@/components/partner/settings/PaymentsModal';
+import AcceptPaymentMethodsModal from '@/components/partner/settings/AcceptPaymentMethodsModal';
 
 interface SettingSection {
   id: string;
@@ -28,8 +35,14 @@ const settingsSections: SettingSection[] = [
   {
     id: 'pagamenti',
     title: 'Pagamenti',
-    description: 'Stripe e fatturazione',
+    description: 'Fatturazione e abbonamento',
     icon: CreditCard
+  },
+  {
+    id: 'pagamenti-accettati',
+    title: 'Pagamenti Accettati',
+    description: 'Metodi accettati dai clienti',
+    icon: Wallet
   },
   {
     id: 'privacy',
@@ -73,6 +86,13 @@ export default function ImpostazioniPage() {
   const [showSpecializzazioniModal, setShowSpecializzazioniModal] = useState(false);
   const [showLinguaModal, setShowLinguaModal] = useState(false);
   const [showSocialLinksModal, setShowSocialLinksModal] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showCoverageAreaModal, setShowCoverageAreaModal] = useState(false);
+  const [showCancellationPolicyModal, setShowCancellationPolicyModal] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showPaymentsModal, setShowPaymentsModal] = useState(false);
+  const [showAcceptPaymentMethodsModal, setShowAcceptPaymentMethodsModal] = useState(false);
 
   const handleCardClick = (section: SettingSection) => {
     if (section.id === 'specializzazioni') {
@@ -81,6 +101,20 @@ export default function ImpostazioniPage() {
       setShowLinguaModal(true);
     } else if (section.id === 'link-social') {
       setShowSocialLinksModal(true);
+    } else if (section.id === 'notifiche') {
+      setShowNotificationsModal(true);
+    } else if (section.id === 'privacy') {
+      setShowPrivacyModal(true);
+    } else if (section.id === 'area-copertura') {
+      setShowCoverageAreaModal(true);
+    } else if (section.id === 'politiche-cancellazione') {
+      setShowCancellationPolicyModal(true);
+    } else if (section.id === 'account') {
+      setShowAccountModal(true);
+    } else if (section.id === 'pagamenti') {
+      setShowPaymentsModal(true);
+    } else if (section.id === 'pagamenti-accettati') {
+      setShowAcceptPaymentMethodsModal(true);
     } else {
       toast.info(`Sezione ${section.title} in arrivo...`);
     }
@@ -162,6 +196,82 @@ export default function ImpostazioniPage() {
           onClose={() => setShowSocialLinksModal(false)}
           onSuccess={() => {
             setShowSocialLinksModal(false);
+          }}
+        />
+      )}
+
+      {/* Modal Notifiche */}
+      {showNotificationsModal && (
+        <NotificationsModal
+          onClose={() => setShowNotificationsModal(false)}
+          onSuccess={() => {
+            toast.success('Preferenze notifiche aggiornate!');
+            setShowNotificationsModal(false);
+          }}
+        />
+      )}
+
+      {/* Modal Privacy */}
+      {showPrivacyModal && (
+        <PrivacyModal
+          onClose={() => setShowPrivacyModal(false)}
+          onSuccess={() => {
+            toast.success('Impostazioni privacy aggiornate!');
+            setShowPrivacyModal(false);
+          }}
+        />
+      )}
+
+      {/* Modal Area di Copertura */}
+      {showCoverageAreaModal && (
+        <CoverageAreaModal
+          onClose={() => setShowCoverageAreaModal(false)}
+          onSuccess={() => {
+            toast.success('Area di copertura aggiornata!');
+            setShowCoverageAreaModal(false);
+          }}
+        />
+      )}
+
+      {/* Modal Politiche Cancellazione */}
+      {showCancellationPolicyModal && (
+        <CancellationPolicyModal
+          onClose={() => setShowCancellationPolicyModal(false)}
+          onSuccess={() => {
+            toast.success('Politiche di cancellazione aggiornate!');
+            setShowCancellationPolicyModal(false);
+          }}
+        />
+      )}
+
+      {/* Modal Account */}
+      {showAccountModal && (
+        <AccountModal
+          onClose={() => setShowAccountModal(false)}
+          onSuccess={() => {
+            toast.success('Account aggiornato con successo!');
+            setShowAccountModal(false);
+          }}
+        />
+      )}
+
+      {/* Modal Pagamenti */}
+      {showPaymentsModal && (
+        <PaymentsModal
+          onClose={() => setShowPaymentsModal(false)}
+          onSuccess={() => {
+            setShowPaymentsModal(false);
+          }}
+        />
+      )}
+
+      {/* Modal Pagamenti Accettati */}
+      {showAcceptPaymentMethodsModal && (
+        <AcceptPaymentMethodsModal
+          onClose={() => setShowAcceptPaymentMethodsModal(false)}
+          onSuccess={() => {
+            toast.success('Metodi di pagamento accettati aggiornati!');
+            setShowAcceptPaymentMethodsModal(false);
           }}
         />
       )}

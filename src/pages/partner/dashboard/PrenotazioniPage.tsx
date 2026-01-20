@@ -18,12 +18,21 @@ interface Booking {
   client_email?: string | null;
   client_phone?: string | null;
   service_type?: string | null;
+  service_id?: string | null; // FK a professional_services
   color?: string | null;
   client?: {
     first_name: string;
     last_name: string;
     email: string;
   };
+  // Nuovo: Relazione con professional_services
+  service?: {
+    id: string;
+    name: string;
+    price: number;
+    duration_minutes: number;
+    color: string;
+  } | null;
   // Mantenuto per retrocompatibilità (deprecato)
   parsedNotes?: {
     client_name?: string;
@@ -162,9 +171,11 @@ export default function PrenotazioniPage() {
   };
 
   const getServiceType = (booking: Booking): string | null => {
-    // Priorità 1: Colonna diretta
+    // Priorità 1: Nome servizio da professional_services (nuovo sistema)
+    if (booking.service?.name) return booking.service.name;
+    // Priorità 2: Colonna diretta service_type (retrocompatibilità)
     if (booking.service_type) return booking.service_type;
-    // Priorità 2: Notes JSON (retrocompatibilità)
+    // Priorità 3: Notes JSON (retrocompatibilità)
     const parsed = parseBookingNotes(booking);
     return parsed?.service_type || null;
   };
@@ -202,7 +213,9 @@ export default function PrenotazioniPage() {
           client_email,
           client_phone,
           service_type,
-          color
+          service_id,
+          color,
+          service:professional_services(id, name, price, duration_minutes, color)
         `)
         .eq('professional_id', professionalId)
         .order('booking_date', { ascending: false })
@@ -221,6 +234,16 @@ export default function PrenotazioniPage() {
               .eq('id', booking.user_id)
               .maybeSingle();
 
+            // Normalizza service: Supabase restituisce array per JOIN, ma noi vogliamo un singolo oggetto
+            let normalizedService: Booking['service'] = null;
+            if (booking.service) {
+              if (Array.isArray(booking.service)) {
+                normalizedService = booking.service.length > 0 ? booking.service[0] : null;
+              } else {
+                normalizedService = booking.service;
+              }
+            }
+
             return {
               ...booking,
               client: profile ? {
@@ -228,7 +251,8 @@ export default function PrenotazioniPage() {
                 last_name: profile.last_name || '',
                 email: profile.email || ''
               } : undefined,
-              parsedNotes: parseBookingNotes(booking.notes) || undefined
+              parsedNotes: parseBookingNotes(booking.notes) || undefined,
+              service: normalizedService
             };
           })
         );

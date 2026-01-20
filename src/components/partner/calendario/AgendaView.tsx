@@ -20,12 +20,21 @@ interface Booking {
   client_email?: string | null;
   client_phone?: string | null;
   service_type?: string | null;
+  service_id?: string | null; // FK a professional_services
   color?: string | null;
   client?: {
     first_name: string;
     last_name: string;
     email: string;
   };
+  // Nuovo: Relazione con professional_services
+  service?: {
+    id: string;
+    name: string;
+    price: number;
+    duration_minutes: number;
+    color: string;
+  } | null;
 }
 
 const WEEKDAYS_FULL = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
@@ -174,7 +183,9 @@ const AgendaView = () => {
           client_email,
           client_phone,
           service_type,
-          color
+          service_id,
+          color,
+          service:professional_services(id, name, price, duration_minutes, color)
         `)
         .eq('professional_id', professionalId)
         .gte('booking_date', startDateStr)
@@ -195,13 +206,24 @@ const AgendaView = () => {
               .eq('id', booking.user_id)
               .single();
 
+            // Normalizza service: Supabase restituisce array per JOIN, ma noi vogliamo un singolo oggetto
+            let normalizedService: Booking['service'] = null;
+            if (booking.service) {
+              if (Array.isArray(booking.service)) {
+                normalizedService = booking.service.length > 0 ? booking.service[0] : null;
+              } else {
+                normalizedService = booking.service;
+              }
+            }
+
             return {
               ...booking,
               client: profile ? {
                 first_name: profile.first_name || '',
                 last_name: profile.last_name || '',
                 email: profile.email || ''
-              } : undefined
+              } : undefined,
+              service: normalizedService
             };
           })
         );
@@ -386,13 +408,15 @@ const AgendaView = () => {
     serviceType?: string;
   } | null => {
     // Priorità 1: Usa colonne dirette (nuovo sistema)
-    if (booking.client_name || booking.client_email || booking.service_type || booking.color) {
+    if (booking.client_name || booking.client_email || booking.service_type || booking.service || booking.color) {
       return {
         clientName: booking.client_name || undefined,
         clientEmail: booking.client_email || undefined,
         clientPhone: booking.client_phone || undefined,
-        serviceType: booking.service_type || undefined,
-        color: booking.color || undefined,
+        // Priorità 1: Nome servizio da professional_services (nuovo sistema)
+        // Priorità 2: Colonna diretta service_type (retrocompatibilità)
+        serviceType: booking.service?.name || booking.service_type || undefined,
+        color: booking.service?.color || booking.color || undefined,
         originalNotes: booking.notes ? (() => {
           // Se notes è JSON, estrai original_notes, altrimenti usa notes come original_notes
           try {
