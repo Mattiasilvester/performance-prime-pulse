@@ -3,11 +3,87 @@
 
 ## 🎯 **STATO ATTUALE: PROGETTO IN SVILUPPO ATTIVO**
 
-**Performance Prime Pulse** è un'applicazione React in sviluppo attivo con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata, sistema filtri interattivi, overlay GIF esercizi, automazione feedback 15 giorni, PrimeBot OpenAI completamente integrato con risposte intelligenti e formattazione markdown, footer con effetto vetro identico all'header, sistema completo Piano Personalizzato con PrimeBot, e sistema limitazioni fisiche con esclusione esercizi e consigli terapeutici. Ultimi sviluppi: 1 Ottobre 2025.
+**Performance Prime Pulse** è un'applicazione React in sviluppo attivo con sistema di autenticazione completo, gestione errori avanzata, landing page ottimizzata, sistema filtri interattivi, overlay GIF esercizi, automazione feedback 15 giorni, PrimeBot OpenAI completamente integrato con risposte intelligenti e formattazione markdown, footer con effetto vetro identico all'header, sistema completo Piano Personalizzato con PrimeBot, e sistema limitazioni fisiche con esclusione esercizi e consigli terapeutici. Ultimi sviluppi: 21 Gennaio 2025.
 
 ---
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
+
+### **21 Gennaio 2025 - Sessione Database Schema Cleanup & Pianificazione**
+**Ora inizio:** ~16:00
+**Ora fine:** ~19:00
+**Durata:** ~3 ore
+**Branch:** dev
+
+#### **🎯 Obiettivo:**
+Cleanup database schema, creazione tabelle professional_services e reviews, integrazione prezzo_seduta, e pianificazione sviluppo futuro.
+
+#### **✅ Implementato:**
+
+1. **FASE 1: Database Cleanup** 🧹
+   - Rimossa tabella `users` duplicata (usa solo `profiles`)
+   - Rimosse colonne deprecate da `professionals`: `password_hash`, `password_salt`, `reset_token`, `reset_requested_at`
+   - Aggiunte colonne a `bookings`: `client_name`, `client_email`, `client_phone`, `service_type`, `color`
+   - Migrazione dati da JSON in `notes` alle nuove colonne
+   - File: `supabase/migrations/20250121_cleanup_fase1.sql`
+
+2. **FASE 2.1: Professional Services** 🛎️
+   - Creata tabella `professional_services` con struttura completa
+   - Aggiunta colonna `service_id` in `bookings` (FK a `professional_services`)
+   - Creazione servizi default per professionisti esistenti (usando `prezzo_seduta` se disponibile)
+   - RLS policies e indici configurati
+   - File: `supabase/migrations/20250121_fase2_professional_services.sql`
+
+3. **FASE 2.2: Reviews System** ⭐
+   - Creata tabella `reviews` con struttura completa (rating, commenti, risposte)
+   - Trigger automatico `update_professional_rating` per aggiornare `professionals.rating` e `reviews_count`
+   - RLS policies per sicurezza (professionisti vedono solo loro recensioni, utenti solo proprie)
+   - Indici per performance
+   - File: `supabase/migrations/20250121_fase2_reviews.sql`
+
+4. **FASE 2.3: Prezzo Seduta** 💰
+   - Aggiunta colonna `prezzo_seduta` (INTEGER) in `professionals`
+   - Migrazione valori da `prezzo_fascia` a `prezzo_seduta` (conversione approssimativa)
+   - Aggiornato `ProfiloPage.tsx` per usare `prezzo_seduta` (number) invece di `prezzo_fascia` (string)
+   - UI aggiornata: input numerico invece di dropdown fascia prezzo
+   - File: `supabase/migrations/20250121_add_prezzo_seduta_column.sql`, `src/pages/partner/dashboard/ProfiloPage.tsx`
+
+5. **Script Verifica Database** ✅
+   - Creato script completo di verifica post-migrazioni
+   - Verifica tutte le tabelle, colonne, trigger, policies
+   - Statistiche e report finali
+   - File: `supabase/migrations/20250121_test_complete_verification.sql`
+
+6. **Documentazione Pianificazione** 📋
+   - Creato `STATO_SVILUPPO.md`: stato attuale completo del progetto
+   - Creato `PIANO_SVILUPPO.md`: piano dettagliato con priorità, tempi, checklist
+   - Creato `DATABASE_SCHEMA.md`: documentazione completa schema database
+   - Identificata PRIORITÀ 1 critica: integrazione `professional_services` nel codice
+
+#### **🐛 Bug Risolti:**
+- Fix errore migrazione `professional_services`: gestione `prezzo_seduta` con check esistenza colonna (fallback a 0)
+- Fix errore script verifica: `RAISE NOTICE` deve essere dentro blocchi `DO $$`
+- Fix conversione `prezzo_fascia` → `prezzo_seduta`: gestione valori NULL e conversione corretta
+
+#### **🔒 Componenti Locked:**
+- `src/pages/partner/dashboard/ProfiloPage.tsx`: Modificato per usare `prezzo_seduta` (necessario per allineamento database)
+
+#### **📊 Metriche:**
+- Build time: 11.33s
+- Bundle size: ~963 KB (index) | ~256 KB gzipped
+- Errori TS: 0
+
+#### **📋 TODO Prossima Sessione:**
+1. **PRIORITÀ 1 CRITICA**: Integrare `professional_services` nel codice
+   - Creare `professionalServicesService.ts` (API service)
+   - Aggiornare `AddBookingModal.tsx` (dropdown servizi)
+   - Aggiornare `AgendaView.tsx` (mostrare service.name)
+   - Aggiornare `PrenotazioniPage.tsx` (mostrare service.name)
+   - Creare `ServicesModal.tsx` (gestione servizi in Impostazioni)
+2. Test completo post-integrazione
+3. Procedere con FASE 3 (completare Impostazioni) o FASE 4 (Recensioni UI)
+
+---
 
 ### **16 Gennaio 2026 - Sessione Fix Prenotazioni e Profilo**
 **Ora inizio:** ~22:00

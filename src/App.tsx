@@ -165,7 +165,7 @@ function App() {
                   <Route path="calendario" element={<CalendarioPage />} />
                   <Route path="prenotazioni" element={<PrenotazioniPage />} />
                   <Route path="clienti" element={<ClientiPage />} />
-                  <Route path="progetti" element={<ProgettiPage />} />
+                  <Route path="clienti/progetti" element={<ProgettiPage />} />
                   <Route path="profilo" element={<ProfiloPage />} />
                   <Route path="impostazioni" element={<ImpostazioniPage />} />
                 </Route>
