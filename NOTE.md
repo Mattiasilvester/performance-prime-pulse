@@ -2,6 +2,15 @@
 
 ## Decisioni Architetturali
 
+### 22 Gennaio 2025 - Sessione Pagamenti FASE A e B
+- **Payment Provider Pattern**: Sistema `payment_provider` (stripe/paypal) con colonne provider-specific per gestire metodi multipli abbonamento. Colonne comuni per display (`payment_method_last4`, `payment_method_brand`) e colonne specifiche per ogni provider (Stripe: `stripe_customer_id`, `payment_method_id`; PayPal: `paypal_subscription_id`, `paypal_subscription_email`)
+- **Separazione Logica Pagamenti**: Distinzione netta tra metodo pagamento abbonamento professionista (FASE A) e metodi pagamento accettati dai clienti (FASE B). Colonne separate in `professional_settings` per evitare confusione
+- **Modal Selezione Provider**: Modal "Aggiungi carta" mostra lista provider disponibili (Carta Stripe, PayPal). Pattern riutilizzabile per altre selezione metodi in futuro
+- **Toggle Switch Component**: Componente `ToggleSwitch.tsx` stile Apple/iOS riutilizzabile. Design pill-shape rettangolare (51x31px) con pallino bianco che scorre. Pattern applicato a tutti i modali impostazioni
+- **RLS Policy Idempotenza**: Aggiunto `DROP POLICY IF EXISTS` prima di creare policy in migrazioni SQL per permettere re-run senza errori. Pattern da applicare a tutte le future migrazioni con policies
+- **Tabella Subscription Invoices**: Tabella separata `subscription_invoices` per storico fatture abbonamenti con supporto sia Stripe (`stripe_invoice_id`) che PayPal (futuro). RLS policies per sicurezza, indici per performance
+- **Pattern Toggle Condizionale**: Campi extra (IBAN, email PayPal, telefono Satispay) visibili solo quando toggle metodo attivo. Pattern UX chiaro per evitare clutter
+
 ### 21 Gennaio 2025 - Sessione Database Schema Cleanup
 - **Database Cleanup**: Rimossa tabella `users` duplicata, usare solo `profiles` collegata a `auth.users`
 - **Colonne Deprecate**: Rimosse `password_hash`, `password_salt`, `reset_token`, `reset_requested_at` da `professionals` (usare Supabase Auth)

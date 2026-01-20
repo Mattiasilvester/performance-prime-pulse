@@ -31,8 +31,16 @@ interface Booking {
   booking_time: string;
   duration_minutes: number;
   service_type?: string | null;
+  service_id?: string | null; // FK a professional_services
   status: string;
   notes?: string | null;
+  service?: {
+    id: string;
+    name: string;
+    price: number;
+    duration_minutes: number;
+    color: string;
+  } | null;
 }
 
 interface Project {
@@ -99,7 +107,7 @@ export default function ClientDetailModal({
         return;
       }
       
-      // Fetch tutte le prenotazioni del professionista
+      // Fetch tutte le prenotazioni del professionista con JOIN a professional_services
       const { data, error } = await supabase
         .from('bookings')
         .select(`
@@ -115,7 +123,9 @@ export default function ClientDetailModal({
           client_email,
           client_phone,
           service_type,
-          color
+          service_id,
+          color,
+          service:professional_services(id, name, price, duration_minutes, color)
         `)
         .eq('professional_id', professionalId)
         .order('booking_date', { ascending: false })
@@ -164,8 +174,12 @@ export default function ClientDetailModal({
         duration_minutes: b.duration_minutes || 60,
         status: b.status,
         notes: b.notes,
-        // Usa colonna diretta service_type (nuovo sistema) o fallback a notes JSON (retrocompatibilità)
-        service_type: b.service_type || (b.notes ? (() => {
+        service_id: b.service_id || null,
+        service: b.service || null,
+        // Priorità 1: Nome servizio da professional_services (nuovo sistema)
+        // Priorità 2: Colonna diretta service_type (retrocompatibilità)
+        // Priorità 3: Notes JSON (retrocompatibilità)
+        service_type: b.service?.name || b.service_type || (b.notes ? (() => {
           try {
             const parsed = typeof b.notes === 'string' ? JSON.parse(b.notes) : b.notes;
             return parsed.service_type || null;

@@ -1,10 +1,11 @@
 // src/components/partner/bookings/AddBookingModal.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { getServicesByProfessional, type ProfessionalService } from '@/services/professionalServicesService';
 import { 
   X, Calendar, Clock, User, Briefcase, 
   Video, MapPin, FileText, Loader2
@@ -34,15 +35,56 @@ export default function AddBookingModal({
     date: new Date().toISOString().split('T')[0],
     time: '09:00',
     duration: 60,
-    serviceType: '',
+    serviceId: '', // Cambiato da serviceType a serviceId
     modalita: 'presenza' as 'online' | 'presenza',
     notes: ''
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [services, setServices] = useState<ProfessionalService[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+
+  // Carica servizi del professionista
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setLoadingServices(true);
+        const fetchedServices = await getServicesByProfessional(professionalId);
+        setServices(fetchedServices);
+        
+        // Se c'è solo un servizio, selezionalo automaticamente
+        if (fetchedServices.length === 1) {
+          setFormData(prev => ({ ...prev, serviceId: fetchedServices[0].id }));
+        }
+      } catch (error) {
+        console.error('Errore caricamento servizi:', error);
+        toast.error('Errore nel caricamento dei servizi');
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+
+    if (professionalId) {
+      loadServices();
+    }
+  }, [professionalId]);
 
   const handleChange = (field: string, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      // Se cambia il servizio, aggiorna anche la durata e modalità se disponibili
+      if (field === 'serviceId' && value) {
+        const selectedService = services.find(s => s.id === value);
+        if (selectedService) {
+          updated.duration = selectedService.duration_minutes;
+          updated.modalita = selectedService.is_online ? 'online' : 'presenza';
+        }
+      }
+      
+      return updated;
+    });
+    
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -96,8 +138,10 @@ export default function AddBookingModal({
         // Salva nelle colonne separate
         client_name: preselectedClientName || null,
         client_email: preselectedClientEmail || null,
-        service_type: formData.serviceType || null,
-        color: '#EEBA2B' // Default oro
+        service_id: formData.serviceId || null, // Usa service_id invece di service_type
+        // Manteniamo service_type per retrocompatibilità solo se non c'è service_id
+        service_type: formData.serviceId ? null : null,
+        color: formData.serviceId ? services.find(s => s.id === formData.serviceId)?.color || '#EEBA2B' : '#EEBA2B'
       };
       
       // Se abbiamo user_id del cliente, usa quello
@@ -289,21 +333,38 @@ export default function AddBookingModal({
             )}
           </div>
 
-          {/* Tipo servizio */}
+          {/* Tipo servizio - Dropdown */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Tipo servizio
+              Servizio
             </label>
             <div className="relative">
-              <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={formData.serviceType}
-                onChange={(e) => handleChange('serviceType', e.target.value)}
-                placeholder="Es: Personal Training, Consulenza, Follow-up"
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
-              />
+              <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+              {loadingServices ? (
+                <div className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                  <span className="text-sm text-gray-500">Caricamento servizi...</span>
+                </div>
+              ) : (
+                <select
+                  value={formData.serviceId}
+                  onChange={(e) => handleChange('serviceId', e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all bg-white"
+                >
+                  <option value="">Seleziona un servizio...</option>
+                  {services.map((service) => (
+                    <option key={service.id} value={service.id}>
+                      {service.name} - €{service.price} ({service.duration_minutes} min)
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
+            {services.length === 0 && !loadingServices && (
+              <p className="mt-1 text-sm text-gray-500">
+                Nessun servizio disponibile. Configura i servizi nel tuo profilo.
+              </p>
+            )}
           </div>
 
           {/* Modalità */}

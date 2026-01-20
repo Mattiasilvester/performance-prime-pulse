@@ -9,6 +9,56 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **22 Gennaio 2025 - Sessione Pagamenti FASE A e B Completa**
+**Ora inizio:** ~14:00
+**Ora fine:** ~18:00
+**Durata:** ~4 ore
+**Branch:** dev
+
+#### **🎯 Obiettivo:**
+Implementare sistema completo pagamenti professionisti in due fasi:
+- **FASE A**: Metodo di pagamento abbonamento PrimePro (Stripe/PayPal)
+- **FASE B**: Metodi di pagamento accettati dai clienti (Contanti, Carta, Bonifico, PayPal, Satispay)
+
+#### **✅ Implementato:**
+
+1. **FASE A: Metodo di Pagamento Abbonamento** 💳
+   - Migrazione SQL completa con colonne `payment_provider`, Stripe e PayPal
+   - Tabella `subscription_invoices` per storico fatture con RLS policies
+   - `PaymentsModal.tsx` aggiornato con supporto multi-provider (Stripe/PayPal)
+   - Modal selezione metodo "Aggiungi carta" con opzioni Carta Stripe e PayPal
+   - Visualizzazione metodo salvato (carta con ultime 4 cifre o PayPal con email)
+   - Componenti `PaymentMethodCard`, `InvoicesList`, `SubscriptionInfo`
+   - File: `supabase/migrations/20250122000002_subscription_payments.sql`, `src/components/partner/settings/PaymentsModal.tsx`
+
+2. **FASE B: Metodi di Pagamento Accettati dai Clienti** 💰
+   - Modal `AcceptPaymentMethodsModal.tsx` completo con 5 metodi (Contanti, Carta, Bonifico, PayPal, Satispay)
+   - Toggle stile Apple/iOS per ogni metodo (riusa `ToggleSwitch.tsx`)
+   - Campi extra condizionali (IBAN, email PayPal, telefono Satispay)
+   - Card "Pagamenti Accettati" aggiunta in `ImpostazioniPage.tsx`
+   - Salvataggio in `professional_settings` (colonne già esistenti da migrazione precedente)
+   - File: `src/components/partner/settings/AcceptPaymentMethodsModal.tsx`, `src/pages/partner/dashboard/ImpostazioniPage.tsx`
+
+#### **🐛 Bug Risolti:**
+- **Errore SQL policy già esistente**: Aggiunto `DROP POLICY IF EXISTS` prima di creare policy in `subscription_invoices` per evitare errori su re-run migrazione
+- File: `supabase/migrations/20250122000002_subscription_payments.sql`
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato
+
+#### **📊 Metriche:**
+- Build time: 12.93s
+- Bundle size: ~1MB (main chunk) | 267KB gzipped
+- Errori TS: 0
+
+#### **📋 TODO Prossima Sessione:**
+1. Implementare flusso aggiunta carta Stripe (integrazione Stripe Elements)
+2. Implementare flusso aggiunta PayPal (integrazione PayPal SDK)
+3. Implementare fetch fatture reali dalla tabella `subscription_invoices`
+4. Test UI completo modali pagamenti
+
+---
+
 ### **21 Gennaio 2025 - Sessione Database Schema Cleanup & Pianificazione**
 **Ora inizio:** ~16:00
 **Ora fine:** ~19:00

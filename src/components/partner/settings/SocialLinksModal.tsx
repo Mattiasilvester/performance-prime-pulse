@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { X, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { X, Link as LinkIcon, Loader2, Camera, Briefcase, Youtube, Music, Share2, Globe } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface SocialLinksModalProps {
@@ -15,7 +15,7 @@ interface SocialLinksModalProps {
 interface SocialField {
   key: string;
   label: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
   placeholder: string;
 }
 
@@ -23,37 +23,37 @@ const SOCIAL_FIELDS: SocialField[] = [
   { 
     key: 'instagram_url', 
     label: 'Instagram', 
-    icon: '📸',
+    icon: Camera,
     placeholder: '@username o https://instagram.com/username'
   },
   { 
     key: 'linkedin_url', 
     label: 'LinkedIn', 
-    icon: '💼',
+    icon: Briefcase,
     placeholder: 'https://linkedin.com/in/nome-cognome'
   },
   { 
     key: 'youtube_url', 
     label: 'YouTube', 
-    icon: '🎥',
+    icon: Youtube,
     placeholder: 'https://youtube.com/@canale'
   },
   { 
     key: 'tiktok_url', 
     label: 'TikTok', 
-    icon: '🎵',
+    icon: Music,
     placeholder: '@username'
   },
   { 
     key: 'facebook_url', 
     label: 'Facebook', 
-    icon: '📘',
+    icon: Share2,
     placeholder: 'https://facebook.com/pagina'
   },
   { 
     key: 'website_url', 
     label: 'Sito Web', 
-    icon: '🌐',
+    icon: Globe,
     placeholder: 'https://tuosito.it'
   },
 ];
@@ -287,7 +287,9 @@ export default function SocialLinksModal({ onClose, onSuccess }: SocialLinksModa
               {SOCIAL_FIELDS.map((field) => (
                 <div key={field.key}>
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <span>{field.icon}</span>
+                    <div className="flex-shrink-0 p-1.5 bg-gray-100 rounded-lg">
+                      {React.createElement(field.icon, { className: 'w-4 h-4 text-gray-600' })}
+                    </div>
                     <span>{field.label}</span>
                   </label>
                   <input
