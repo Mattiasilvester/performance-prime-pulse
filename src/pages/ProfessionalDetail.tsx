@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, MapPin, Video, Users, Euro, MessageCircle, Calendar, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Video, Users, Euro, MessageCircle, Calendar, X, ChevronLeft, ChevronRight, Ban } from 'lucide-react';
 import { getProfessionalById, Professional, getCategoryLabel, getCategoryIcon } from '@/services/professionalsService';
+import { useBlockedPeriods } from '@/hooks/useBlockedPeriods';
+import { toast } from 'sonner';
 
 // Recensioni demo
 const DEMO_REVIEWS = [
@@ -39,6 +41,34 @@ const ProfessionalDetail: React.FC = () => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [bookingStep, setBookingStep] = useState<'calendar' | 'time' | 'confirm'>('calendar');
+
+  // Calcola range date per il mese corrente (per ottimizzare fetch blocchi)
+  const monthDateRange = useMemo(() => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    const formatDate = (date: Date): string => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    };
+    
+    return {
+      startDate: formatDate(firstDay),
+      endDate: formatDate(lastDay),
+    };
+  }, [currentMonth]);
+
+  // Fetch giorni bloccati per il professionista
+  const { isDateBlocked, loading: loadingBlocks } = useBlockedPeriods({
+    professionalId: professional?.id || null,
+    startDate: monthDateRange.startDate,
+    endDate: monthDateRange.endDate,
+    autoFetch: !!professional?.id,
+  });
 
   useEffect(() => {
     const loadProfessional = async () => {
@@ -106,13 +136,31 @@ const ProfessionalDetail: React.FC = () => {
     return days;
   };
 
-  // Verifica se un giorno è disponibile (demo: tutti i giorni feriali futuri)
+  // Converte Date in stringa YYYY-MM-DD senza problemi di timezone
+  const formatDateToString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Verifica se un giorno è disponibile
   const isDayAvailable = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const dayOfWeek = date.getDay();
-    // Disponibile se: è futuro E non è domenica (0)
-    return date >= today && dayOfWeek !== 0;
+    
+    // Non disponibile se: passato, domenica, o bloccato dal professionista
+    if (date < today) return false;
+    if (dayOfWeek === 0) return false; // Domenica
+    if (isDateBlocked(date)) return false; // Giorno bloccato
+    
+    return true;
+  };
+
+  // Verifica se un giorno è bloccato
+  const isDayBlocked = (date: Date) => {
+    return isDateBlocked(date);
   };
 
   // Verifica se un giorno è oggi
@@ -149,10 +197,14 @@ const ProfessionalDetail: React.FC = () => {
 
   // Seleziona un giorno
   const handleDayClick = (date: Date) => {
-    if (isDayAvailable(date)) {
-      setSelectedDate(date);
-      setBookingStep('time');
+    if (!isDayAvailable(date)) {
+      if (isDayBlocked(date)) {
+        toast.error('Questo giorno non è disponibile per prenotazioni. Il professionista ha bloccato questa data.');
+      }
+      return;
     }
+    setSelectedDate(date);
+    setBookingStep('time');
   };
 
   // Seleziona un orario
@@ -493,37 +545,52 @@ const ProfessionalDetail: React.FC = () => {
 
                 {/* Griglia giorni */}
                 <div className="grid grid-cols-7 gap-1">
-                  {getDaysInMonth(currentMonth).map((date, index) => (
-                    <div key={index} className="aspect-square">
-                      {date ? (
+                  {getDaysInMonth(currentMonth).map((date, index) => {
+                    if (!date) {
+                      return <div key={index} className="aspect-square" />;
+                    }
+                    
+                    const available = isDayAvailable(date);
+                    const blocked = isDayBlocked(date);
+                    const selected = isSelected(date);
+                    const today = isToday(date);
+                    
+                    return (
+                      <div key={index} className="aspect-square relative">
                         <button
                           onClick={() => handleDayClick(date)}
-                          disabled={!isDayAvailable(date)}
-                          className={`w-full h-full rounded-lg text-sm font-medium transition-all
-                            ${isDayAvailable(date) 
+                          disabled={!available}
+                          className={`w-full h-full rounded-lg text-sm font-medium transition-all relative
+                            ${available 
                               ? 'hover:bg-[#EEBA2B] hover:text-black cursor-pointer' 
                               : 'text-gray-600 cursor-not-allowed'
                             }
-                            ${isSelected(date) 
+                            ${selected 
                               ? 'bg-[#EEBA2B] text-black' 
-                              : isDayAvailable(date) 
+                              : available 
                                 ? 'text-white bg-gray-800' 
-                                : 'bg-transparent'
+                                : blocked
+                                  ? 'bg-red-900/30 text-red-400 line-through'
+                                  : 'bg-transparent'
                             }
-                            ${isToday(date) && !isSelected(date) ? 'ring-2 ring-[#EEBA2B]' : ''}
+                            ${today && !selected ? 'ring-2 ring-[#EEBA2B]' : ''}
                           `}
                         >
                           {date.getDate()}
                         </button>
-                      ) : (
-                        <div className="w-full h-full" />
-                      )}
-                    </div>
-                  ))}
+                        {/* Indicatore giorno bloccato */}
+                        {blocked && (
+                          <div className="absolute bottom-0.5 left-1/2 transform -translate-x-1/2">
+                            <Ban className="w-3 h-3 text-red-500" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Legenda */}
-                <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-500">
+                <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-500 flex-wrap">
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded bg-gray-800"></div>
                     <span>Disponibile</span>
@@ -531,6 +598,11 @@ const ProfessionalDetail: React.FC = () => {
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded ring-2 ring-[#EEBA2B]"></div>
                     <span>Oggi</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded bg-red-900/30"></div>
+                    <Ban className="w-3 h-3 text-red-500" />
+                    <span>Non disponibile</span>
                   </div>
                 </div>
               </div>

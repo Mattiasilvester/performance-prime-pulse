@@ -11,7 +11,8 @@ import {
   Settings,
   LogOut,
   X,
-  ChevronDown
+  ChevronDown,
+  Briefcase
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -27,6 +28,7 @@ const menuItems: MenuItem[] = [
   { icon: Calendar, label: 'Calendario', path: '/partner/dashboard/calendario' },
   { icon: ClipboardList, label: 'Prenotazioni', path: '/partner/dashboard/prenotazioni' },
   { icon: UserCircle, label: 'Profilo', path: '/partner/dashboard/profilo' },
+  { icon: Briefcase, label: 'Servizi e Tariffe', path: '/partner/dashboard/servizi' },
   { icon: Settings, label: 'Impostazioni', path: '/partner/dashboard/impostazioni' },
 ];
 

@@ -12,6 +12,7 @@ export interface ProfessionalService {
   duration_minutes: number;
   price: number;
   is_online: boolean;
+  is_in_person: boolean;
   is_active: boolean;
   color: string;
   created_at: string;
@@ -25,6 +26,7 @@ export interface CreateServiceData {
   duration_minutes: number;
   price: number;
   is_online?: boolean;
+  is_in_person?: boolean;
   is_active?: boolean;
   color?: string;
 }
@@ -35,6 +37,7 @@ export interface UpdateServiceData {
   duration_minutes?: number;
   price?: number;
   is_online?: boolean;
+  is_in_person?: boolean;
   is_active?: boolean;
   color?: string;
 }
@@ -103,6 +106,7 @@ export async function createService(serviceData: CreateServiceData): Promise<Pro
         duration_minutes: serviceData.duration_minutes,
         price: serviceData.price,
         is_online: serviceData.is_online ?? false,
+        is_in_person: serviceData.is_in_person ?? true,
         is_active: serviceData.is_active ?? true,
         color: serviceData.color || '#EEBA2B',
       })

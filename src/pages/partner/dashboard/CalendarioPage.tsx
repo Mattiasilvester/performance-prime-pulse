@@ -3,7 +3,7 @@ import DisponibilitaManager from '@/components/partner/calendario/DisponibilitaM
 import AgendaView from '@/components/partner/calendario/AgendaView';
 
 export default function CalendarioPage() {
-  const [activeTab, setActiveTab] = useState<'disponibilita' | 'agenda'>('disponibilita');
+  const [activeTab, setActiveTab] = useState<'disponibilita' | 'agenda'>('agenda');
 
   return (
     <div>

@@ -29,6 +29,7 @@ import ClientiPage from '@/pages/partner/dashboard/ClientiPage'
 import ProgettiPage from '@/pages/partner/dashboard/ProgettiPage'
 import ProfiloPage from '@/pages/partner/dashboard/ProfiloPage'
 import ImpostazioniPage from '@/pages/partner/dashboard/ImpostazioniPage'
+import ServiziTariffePage from '@/pages/partner/ServiziTariffePage'
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const TermsAndConditions = lazy(() => import('@/pages/TermsAndConditions'))
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
@@ -167,6 +168,7 @@ function App() {
                   <Route path="clienti" element={<ClientiPage />} />
                   <Route path="clienti/progetti" element={<ProgettiPage />} />
                   <Route path="profilo" element={<ProfiloPage />} />
+                  <Route path="servizi" element={<ServiziTariffePage />} />
                   <Route path="impostazioni" element={<ImpostazioniPage />} />
                 </Route>
                 <Route path="/onboarding" element={<OnboardingPage />} />

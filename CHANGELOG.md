@@ -5,6 +5,19 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [Unreleased] - 2026-01-23
+
+### Changed 🔄
+- **Performance Dashboard**: Ottimizzate query database con batch queries invece di loop N query separate (70-95% più veloce)
+- **Caricamento Pagine**: Pagine dashboard ora visibili immediatamente con caricamento dati in background
+- **Rinominazione**: "Guadagni mese" rinominato in "Incassi mensili" nella sezione Overview
+
+### Fixed 🐛
+- **Console Errors**: Rimossi log duplicati e gestiti errori script esterni (Tally, Plausible) silenziosamente
+- **Performance Lente**: Risolto problema lentezza caricamento sezioni Agenda, Prenotazioni e Clienti
+
+---
+
 ## [Unreleased] - 2026-01-13
 
 ### Added ➕

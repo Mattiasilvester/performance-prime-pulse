@@ -35,9 +35,10 @@ class Analytics {
       script.setAttribute('data-domain', this.domain);
       script.src = 'https://plausible.io/js/script.outbound-links.js';
       
-      // Gestione errori per evitare 406
+      // Gestione errori silenziosa per evitare errori in console
       script.onerror = () => {
-        console.warn('Plausible script non disponibile, analytics disabilitate');
+        // Rimuovi console.warn per produzione - errore gestito silenziosamente
+        // console.warn('Plausible script non disponibile, analytics disabilitate');
         this.scriptLoaded = false;
       };
       

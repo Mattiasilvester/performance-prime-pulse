@@ -3,6 +3,7 @@ import { Calendar, User, Clock, CheckCircle, TrendingUp, Search, Filter, Edit2, 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { autoCompletePastBookings } from '@/services/bookingsService';
 
 interface Booking {
   id: string;
@@ -47,7 +48,7 @@ export default function PrenotazioniPage() {
   const { user } = useAuth();
   const [professionalId, setProfessionalId] = useState<string | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Inizia a false per mostrare UI subito
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('all');
@@ -91,8 +92,8 @@ export default function PrenotazioniPage() {
   // Fetch bookings quando professional_id è disponibile
   useEffect(() => {
     if (professionalId) {
+      // fetchBookings() chiamerà fetchStats() internamente dopo l'auto-completamento
       fetchBookings();
-      fetchStats();
     }
   }, [professionalId]);
 
@@ -197,7 +198,18 @@ export default function PrenotazioniPage() {
     if (!professionalId) return;
 
     try {
-      setLoading(true);
+      setLoading(true); // Mostra indicatori di caricamento mentre aggiorna
+      
+      // Ottimizzazione: auto-completamento in background (non blocca il caricamento)
+      autoCompletePastBookings(professionalId).then((completedCount) => {
+        if (completedCount > 0) {
+          console.log(`✅ [PRENOTAZIONI] Auto-completati ${completedCount} appuntamenti passati`);
+          // Ricarica bookings e stats dopo l'auto-completamento
+          fetchBookings();
+        }
+      }).catch((error) => {
+        console.error('Errore auto-completamento:', error);
+      });
       const { data, error } = await supabase
         .from('bookings')
         .select(`
@@ -215,6 +227,7 @@ export default function PrenotazioniPage() {
           service_type,
           service_id,
           color,
+          price,
           service:professional_services(id, name, price, duration_minutes, color)
         `)
         .eq('professional_id', professionalId)
@@ -223,42 +236,71 @@ export default function PrenotazioniPage() {
 
       if (error) throw error;
 
-      // Carica dati clienti per ogni booking
+      // Ottimizzazione: carica tutti i profili necessari in una singola query invece di N query separate
       if (data) {
-        const bookingsWithClients = await Promise.all(
-          data.map(async (booking) => {
-            // Carica profilo cliente da profiles
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('first_name, last_name, email')
-              .eq('id', booking.user_id)
-              .maybeSingle();
+        // Estrai tutti gli user_id unici (per i bookings che non hanno già client_name)
+        const userIdsToFetch = new Set<string>();
+        data.forEach((booking) => {
+          // Carica profilo solo se non abbiamo già client_name (prenotazione manuale)
+          if (!booking.client_name && booking.user_id) {
+            userIdsToFetch.add(booking.user_id);
+          }
+        });
 
-            // Normalizza service: Supabase restituisce array per JOIN, ma noi vogliamo un singolo oggetto
-            let normalizedService: Booking['service'] = null;
-            if (booking.service) {
-              if (Array.isArray(booking.service)) {
-                normalizedService = booking.service.length > 0 ? booking.service[0] : null;
-              } else {
-                normalizedService = booking.service;
-              }
-            }
+        // Carica tutti i profili necessari in una singola query batch
+        let profilesMap = new Map<string, { first_name: string; last_name: string; email: string }>();
+        if (userIdsToFetch.size > 0) {
+          const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name, email')
+            .in('id', Array.from(userIdsToFetch));
 
-            return {
-              ...booking,
-              client: profile ? {
+          if (!profilesError && profiles) {
+            profiles.forEach((profile) => {
+              profilesMap.set(profile.id, {
                 first_name: profile.first_name || '',
                 last_name: profile.last_name || '',
                 email: profile.email || ''
-              } : undefined,
-              parsedNotes: parseBookingNotes(booking.notes) || undefined,
-              service: normalizedService
-            };
-          })
-        );
+              });
+            });
+          }
+        }
+
+        // Normalizza i dati bookings (senza loop asincrono, solo mapping sincrono)
+        const bookingsWithClients = data.map((booking) => {
+          // Normalizza service: Supabase restituisce array per JOIN, ma noi vogliamo un singolo oggetto
+          let normalizedService: Booking['service'] = null;
+          if (booking.service) {
+            if (Array.isArray(booking.service)) {
+              normalizedService = booking.service.length > 0 ? booking.service[0] : null;
+            } else {
+              normalizedService = booking.service;
+            }
+          }
+
+          // Usa profilo se disponibile (solo per prenotazioni senza client_name)
+          let client = undefined;
+          if (!booking.client_name && booking.user_id) {
+            const profile = profilesMap.get(booking.user_id);
+            if (profile) {
+              client = profile;
+            }
+          }
+
+          return {
+            ...booking,
+            client,
+            parsedNotes: parseBookingNotes(booking.notes) || undefined,
+            service: normalizedService
+          };
+        });
 
         setBookings(bookingsWithClients);
       }
+      
+      // Ricarica sempre le statistiche dopo aver caricato le prenotazioni
+      // (per assicurarsi che riflettano gli aggiornamenti dell'auto-completamento)
+      await fetchStats();
     } catch (error: any) {
       console.error('Errore caricamento bookings:', error);
       toast.error('Errore nel caricamento delle prenotazioni');
@@ -282,33 +324,69 @@ export default function PrenotazioniPage() {
       const now = new Date();
       const todayStr = getLocalDateString(now);
 
-      // Stats today - confronto esatto con data odierna
+      // Stats today - confronto esatto con data odierna (include tutti gli stati)
       const { count: todayCount } = await supabase
         .from('bookings')
         .select('*', { count: 'exact', head: true })
         .eq('professional_id', professionalId)
-        .eq('booking_date', todayStr)
-        .in('status', ['pending', 'confirmed']);
+        .eq('booking_date', todayStr);
 
-      // Stats week - dal Lunedì corrente alla Domenica corrente
-      const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Lunedì
-      startOfWeek.setHours(0, 0, 0, 0);
+      // Stats week - ultimi 7 giorni (da oggi - 6 giorni fino a oggi)
+      // Esempio: se oggi è 21 gennaio, conta dal 15 al 21 (7 giorni inclusi)
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(now.getDate() - 6); // Oggi - 6 giorni = 7 giorni totali (inclusi oggi)
+      sevenDaysAgo.setHours(0, 0, 0, 0);
       
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6); // Domenica
-      endOfWeek.setHours(23, 59, 59, 999);
-      
-      const startOfWeekStr = getLocalDateString(startOfWeek);
-      const endOfWeekStr = getLocalDateString(endOfWeek);
+      const startOfWeekStr = getLocalDateString(sevenDaysAgo);
+      const endOfWeekStr = todayStr; // Fino a oggi incluso
 
-      const { count: weekCount } = await supabase
+      console.log('📅 [PRENOTAZIONI] Calcolo settimana:', {
+        oggi: todayStr,
+        setteGiorniFa: startOfWeekStr,
+        range: `${startOfWeekStr} → ${endOfWeekStr}`,
+        professionalId
+      });
+
+      // Stats week - ultimi 7 giorni (include tutti gli stati)
+      // DEBUG: Facciamo anche una query per vedere le date effettive
+      const { data: weekBookings, count: weekCount, error: weekError } = await supabase
         .from('bookings')
-        .select('*', { count: 'exact', head: true })
+        .select('id, booking_date, status', { count: 'exact' })
         .eq('professional_id', professionalId)
         .gte('booking_date', startOfWeekStr)
-        .lte('booking_date', endOfWeekStr)
-        .in('status', ['pending', 'confirmed']);
+        .lte('booking_date', endOfWeekStr);
+
+      if (weekError) {
+        console.error('❌ [PRENOTAZIONI] Errore query settimana:', weekError);
+      } else {
+        console.log('📊 [PRENOTAZIONI] Appuntamenti trovati nella settimana:', {
+          count: weekCount,
+          bookings: weekBookings?.map(b => ({ date: b.booking_date, status: b.status })) || [],
+          dateRange: `Dal ${startOfWeekStr} al ${endOfWeekStr}`
+        });
+        
+        // Log dettagliato per debugging
+        console.log('🔍 [PRENOTAZIONI] Dettaglio appuntamenti nella settimana:');
+        weekBookings?.forEach((b, index) => {
+          console.log(`  ${index + 1}. ${b.booking_date} - Status: ${b.status} - ID: ${b.id}`);
+        });
+        
+        // Verifica se ci sono appuntamenti fuori dal range
+        const { data: allBookings } = await supabase
+          .from('bookings')
+          .select('booking_date, status')
+          .eq('professional_id', professionalId)
+          .order('booking_date', { ascending: true })
+          .limit(20);
+        
+        console.log('📋 [PRENOTAZIONI] Ultimi 20 appuntamenti (per debug):', 
+          allBookings?.map(b => `${b.booking_date} (${b.status})`).join(', ') || 'nessuno'
+        );
+        allBookings?.forEach(b => {
+          const isInRange = b.booking_date >= startOfWeekStr && b.booking_date <= endOfWeekStr;
+          console.log(`  - ${b.booking_date} (${b.status}) ${isInRange ? '✅ IN RANGE' : '❌ FUORI'}`);
+        });
+      }
 
       // Stats confirmed
       const { count: confirmedCount } = await supabase
@@ -324,14 +402,17 @@ export default function PrenotazioniPage() {
         .eq('professional_id', professionalId)
         .eq('status', 'pending');
 
-      setStats({
+      const newStats = {
         today: todayCount || 0,
         week: weekCount || 0,
         confirmed: confirmedCount || 0,
         pending: pendingCount || 0,
-      });
+      };
+      
+      console.log('📊 [PRENOTAZIONI] Statistiche calcolate:', newStats);
+      setStats(newStats);
     } catch (error: any) {
-      console.error('Errore caricamento stats:', error);
+      console.error('❌ [PRENOTAZIONI] Errore caricamento stats:', error);
     }
   };
 
@@ -617,13 +698,14 @@ export default function PrenotazioniPage() {
     }
   };
 
-  if (loading && bookings.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-4 md:p-8 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EEBA2B]"></div>
-      </div>
-    );
-  }
+  // Rimuovo il check che nasconde la UI - mostriamo sempre la pagina
+  // if (loading && bookings.length === 0) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 p-4 md:p-8 flex items-center justify-center">
+  //       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EEBA2B]"></div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
