@@ -7,7 +7,8 @@ export default function MobileScrollFix() {
     // TEMPORANEAMENTE DISABILITATO per fix schermo nero mobile
     if (!isMobile) return;
     
-    console.log('MobileScrollFix: Mobile detected, applying minimal fixes only');
+    // Rimuovi console.log per produzione
+    // console.log('MobileScrollFix: Mobile detected, applying minimal fixes only');
     
     const fixMobileScroll = () => {
       // Fix body
@@ -58,11 +59,13 @@ export default function MobileScrollFix() {
     
     // REFRESH DETECTION E FIX
     const handlePageShow = (event: PageTransitionEvent) => {
-      console.log('Page show event:', event.persisted ? 'back/forward cache' : 'normal load');
+      // Rimuovi console.log per produzione
+      // console.log('Page show event:', event.persisted ? 'back/forward cache' : 'normal load');
       
       // Detecta refresh
       if (performance.navigation && performance.navigation.type === 1) {
-        console.log('Refresh detected - applying scroll fix');
+        // Rimuovi console.log per produzione
+        // console.log('Refresh detected - applying scroll fix');
         
         // Reset completo
         setTimeout(() => {
@@ -74,7 +77,8 @@ export default function MobileScrollFix() {
             window.scrollTo(0, 0);
           }, 10);
           
-          console.log('Refresh scroll fix applied');
+          // Rimuovi console.log per produzione
+          // console.log('Refresh scroll fix applied');
         }, 100);
       }
     };

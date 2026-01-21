@@ -1,6 +1,6 @@
 # 🗄️ SCHEMA DATABASE - PERFORMANCE PRIME PULSE
 
-**Ultimo aggiornamento:** 21 Gennaio 2025  
+**Ultimo aggiornamento:** 23 Gennaio 2025  
 **Database:** PostgreSQL (Supabase)
 
 ---
@@ -11,12 +11,13 @@
 2. [Tabelle Principali](#tabelle-principali)
 3. [Tabelle Professional System](#tabelle-professional-system)
 4. [Tabelle Clienti e Progetti](#tabelle-clienti-e-progetti)
-5. [Tabelle Workout System](#tabelle-workout-system)
-6. [Tabelle Admin System](#tabelle-admin-system)
-7. [Tabelle PrimeBot](#tabelle-primebot)
-8. [Indici](#indici)
-9. [Trigger e Funzioni](#trigger-e-funzioni)
-10. [RLS Policies](#rls-policies)
+5. [Tabelle Impostazioni Professionista](#tabelle-impostazioni-professionista)
+6. [Tabelle Workout System](#tabelle-workout-system)
+7. [Tabelle Admin System](#tabelle-admin-system)
+8. [Tabelle PrimeBot](#tabelle-primebot)
+9. [Indici](#indici)
+10. [Trigger e Funzioni](#trigger-e-funzioni)
+11. [RLS Policies](#rls-policies)
 
 ---
 
@@ -36,30 +37,7 @@ ENUM ('fisioterapista', 'nutrizionista', 'mental_coach', 'osteopata', 'pt')
 
 ## 📋 TABELLE PRINCIPALI
 
-### `users`
-Tabella utenti standard dell'applicazione.
-
-| Colonna | Tipo | Null | Default | Descrizione |
-|---------|------|------|---------|-------------|
-| `id` | UUID | NO | `gen_random_uuid()` | Primary Key |
-| `first_name` | VARCHAR(100) | NO | - | Nome |
-| `last_name` | VARCHAR(100) | NO | - | Cognome |
-| `email` | VARCHAR(255) | NO | - | Email (UNIQUE) |
-| `phone` | VARCHAR(30) | NO | - | Telefono |
-| `payment_method` | TEXT | YES | NULL | Metodo pagamento |
-| `category` | `user_category` | NO | - | Categoria utente |
-| `password_hash` | TEXT | NO | - | Hash password |
-| `password_salt` | TEXT | NO | - | Salt password |
-| `reset_token` | TEXT | YES | NULL | Token reset password |
-| `reset_requested_at` | TIMESTAMP WITH TIME ZONE | YES | NULL | Data richiesta reset |
-| `created_at` | TIMESTAMP WITH TIME ZONE | NO | `now()` | Data creazione |
-| `updated_at` | TIMESTAMP WITH TIME ZONE | NO | `now()` | Data ultimo aggiornamento |
-
-**Indici:**
-- `idx_users_email` su `email`
-- `idx_users_category` su `category`
-
-**RLS:** Abilitata
+**Nota:** La tabella `users` è stata rimossa (migrazione cleanup 21 Gennaio 2025). Il sistema ora usa `auth.users` (Supabase Auth) → `profiles` (1:1).
 
 ---
 
@@ -83,10 +61,6 @@ Tabella professionisti dell'applicazione.
 | `pec_email` | VARCHAR(255) | YES | NULL | Email PEC |
 | `phone` | VARCHAR(30) | NO | - | Telefono |
 | `office_phone` | VARCHAR(30) | YES | NULL | Telefono ufficio |
-| `password_hash` | TEXT | NO | - | Hash password (deprecato, usa Supabase Auth) |
-| `password_salt` | TEXT | NO | - | Salt password (deprecato) |
-| `reset_token` | TEXT | YES | NULL | Token reset (deprecato) |
-| `reset_requested_at` | TIMESTAMP WITH TIME ZONE | YES | NULL | Data reset (deprecato) |
 | `payment_method` | TEXT | YES | NULL | Metodo pagamento |
 | `category` | `professional_category` | NO | - | Categoria professionista |
 | `user_id` | UUID | YES | NULL | **FK → auth.users(id)** |
@@ -180,6 +154,66 @@ Disponibilità oraria settimanale dei professionisti.
 
 ---
 
+### `professional_blocked_periods`
+Periodi bloccati dai professionisti (ferie, indisponibilità, ecc.).
+
+| Colonna | Tipo | Null | Default | Descrizione |
+|---------|------|------|---------|-------------|
+| `id` | UUID | NO | `gen_random_uuid()` | Primary Key |
+| `professional_id` | UUID | NO | - | **FK → professionals(id)** |
+| `start_date` | DATE | NO | - | Data inizio blocco |
+| `end_date` | DATE | NO | - | Data fine blocco |
+| `block_type` | VARCHAR(10) | NO | - | Tipo blocco: 'day' (singolo giorno), 'week' (settimana intera) |
+| `reason` | VARCHAR(255) | YES | NULL | Motivo opzionale del blocco (es. Ferie, Malattia) |
+| `created_at` | TIMESTAMPTZ | NO | `now()` | Data creazione |
+| `updated_at` | TIMESTAMPTZ | NO | `now()` | Data ultimo aggiornamento |
+
+**Constraints:**
+- `CHECK (block_type IN ('day', 'week'))`
+- `CHECK (end_date >= start_date)`
+
+**Indici:**
+- `idx_blocked_periods_professional` su `professional_id`
+- `idx_blocked_periods_dates` su `(professional_id, start_date, end_date)`
+- `idx_blocked_periods_type` su `block_type`
+
+**RLS:** Abilitata
+
+**Funzioni Helper:**
+- `is_date_blocked(p_professional_id UUID, p_date DATE)` - Verifica se una data è bloccata
+- `get_blocked_dates_in_range(p_professional_id UUID, p_start DATE, p_end DATE)` - Ottiene tutte le date bloccate in un range
+
+---
+
+### `professional_services`
+Servizi offerti dai professionisti (Personal Training, Consulenza, etc.).
+
+| Colonna | Tipo | Null | Default | Descrizione |
+|---------|------|------|---------|-------------|
+| `id` | UUID | NO | `gen_random_uuid()` | Primary Key |
+| `professional_id` | UUID | NO | - | **FK → professionals(id)** |
+| `name` | VARCHAR(200) | NO | - | Nome servizio |
+| `description` | TEXT | YES | NULL | Descrizione servizio |
+| `duration_minutes` | INTEGER | NO | `60` | Durata in minuti (CHECK > 0) |
+| `price` | DECIMAL(10,2) | NO | - | Prezzo servizio (CHECK >= 0) |
+| `is_online` | BOOLEAN | NO | `false` | Se disponibile online |
+| `is_in_person` | BOOLEAN | NO | `true` | Se disponibile in presenza |
+| `is_active` | BOOLEAN | NO | `true` | Se servizio è attivo |
+| `color` | VARCHAR(7) | NO | `'#EEBA2B'` | Colore per visualizzazione calendario |
+| `created_at` | TIMESTAMPTZ | NO | `now()` | Data creazione |
+| `updated_at` | TIMESTAMPTZ | NO | `now()` | Data ultimo aggiornamento |
+
+**Constraints:**
+- `UNIQUE(professional_id, name)` - Nome servizio unico per professionista
+
+**Indici:**
+- `idx_professional_services_professional` su `professional_id`
+- `idx_professional_services_active` su `(professional_id, is_active)` WHERE is_active = TRUE
+
+**RLS:** Abilitata
+
+---
+
 ### `bookings`
 Prenotazioni appuntamenti tra utenti e professionisti.
 
@@ -192,9 +226,15 @@ Prenotazioni appuntamenti tra utenti e professionisti.
 | `booking_time` | TIME | NO | - | Ora appuntamento |
 | `duration_minutes` | INT | NO | `60` | Durata in minuti (CHECK > 0) |
 | `status` | VARCHAR(20) | NO | `'pending'` | Stato: 'pending', 'confirmed', 'cancelled', 'completed', 'no_show' |
-| `notes` | TEXT | YES | NULL | Note (può contenere JSON con client_name, client_email, etc.) |
+| `notes` | TEXT | YES | NULL | Note libere. Per prenotazioni manuali, può contenere JSON con original_notes. Le colonne client_name, client_email, client_phone, service_type, color ora sono separate. |
 | `cancellation_reason` | TEXT | YES | NULL | Motivo cancellazione |
 | `modalita` | VARCHAR(20) | NO | `'presenza'` | Modalità: 'online', 'presenza' |
+| `client_name` | VARCHAR(200) | YES | NULL | Nome cliente per prenotazioni manuali (estratto da notes JSON o inserito direttamente) |
+| `client_email` | VARCHAR(255) | YES | NULL | Email cliente per prenotazioni manuali (estratto da notes JSON o inserito direttamente) |
+| `client_phone` | VARCHAR(30) | YES | NULL | Telefono cliente per prenotazioni manuali (estratto da notes JSON o inserito direttamente) |
+| `service_id` | UUID | YES | NULL | **FK → professional_services(id)** - Riferimento al servizio prenotato |
+| `service_type` | VARCHAR(100) | YES | NULL | Tipo servizio (es: Personal Training, Consulenza) - retrocompatibilità, preferire service_id |
+| `color` | VARCHAR(7) | YES | `'#EEBA2B'` | Colore personalizzato per visualizzazione calendario |
 | `created_at` | TIMESTAMP WITH TIME ZONE | NO | `now()` | Data creazione |
 | `updated_at` | TIMESTAMP WITH TIME ZONE | NO | `now()` | Data ultimo aggiornamento |
 | `confirmed_at` | TIMESTAMP WITH TIME ZONE | YES | NULL | Data conferma |
@@ -207,6 +247,9 @@ Prenotazioni appuntamenti tra utenti e professionisti.
 - `idx_bookings_status` su `status`
 - `idx_bookings_date_time` su `booking_date, booking_time`
 - `idx_bookings_unique_slot` UNIQUE su `(professional_id, booking_date, booking_time)` WHERE status NOT IN ('cancelled')
+- `idx_bookings_client_name` su `client_name` (WHERE client_name IS NOT NULL)
+- `idx_bookings_client_email` su `client_email` (WHERE client_email IS NOT NULL)
+- `idx_bookings_service_type` su `service_type` (WHERE service_type IS NOT NULL)
 
 **RLS:** Abilitata
 
@@ -369,6 +412,33 @@ Impostazioni complete del professionista (1:1 con professionals).
 
 **Indici:**
 - `idx_professional_settings_professional` su `professional_id`
+
+**RLS:** Abilitata
+
+---
+
+### `subscription_invoices`
+Fatture abbonamenti PrimePro per professionisti.
+
+| Colonna | Tipo | Null | Default | Descrizione |
+|---------|------|------|---------|-------------|
+| `id` | UUID | NO | `gen_random_uuid()` | Primary Key |
+| `professional_id` | UUID | NO | - | **FK → professionals(id)** |
+| `stripe_invoice_id` | VARCHAR(255) | YES | NULL | Stripe Invoice ID |
+| `invoice_number` | VARCHAR(50) | YES | NULL | Numero fattura |
+| `amount` | DECIMAL(10,2) | NO | - | Importo fattura |
+| `currency` | VARCHAR(3) | NO | `'EUR'` | Valuta |
+| `status` | VARCHAR(20) | NO | `'paid'` | Stato: 'draft', 'open', 'paid', 'void', 'uncollectible' |
+| `description` | TEXT | YES | NULL | Descrizione fattura |
+| `invoice_pdf_url` | TEXT | YES | NULL | URL PDF fattura |
+| `invoice_date` | DATE | NO | - | Data fattura |
+| `paid_at` | TIMESTAMPTZ | YES | NULL | Data pagamento |
+| `created_at` | TIMESTAMPTZ | NO | `now()` | Data creazione |
+
+**Indici:**
+- `idx_invoices_professional` su `professional_id`
+- `idx_invoices_date` su `invoice_date` (DESC)
+- `idx_invoices_status` su `status`
 
 **RLS:** Abilitata
 
@@ -606,13 +676,14 @@ Preferenze PrimeBot utente.
 Funzione trigger per aggiornare automaticamente il campo `updated_at`.
 
 **Tabelle che utilizzano questo trigger:**
-- `users`
 - `professionals`
 - `clients`
 - `projects`
 - `bookings`
 - `professional_clients`
 - `professional_settings`
+- `professional_blocked_periods`
+- `professional_services`
 
 ---
 
@@ -658,22 +729,40 @@ Funzione trigger per aggiornare automaticamente il campo `updated_at`.
 - **Professional manages own languages**: ALL usando `professional_id` e `user_id`
 - **Public can view public languages**: SELECT per profili pubblici
 
+### `professional_blocked_periods`
+- **Professionals can view own blocked periods**: SELECT usando `professional_id` e `user_id`
+- **Professionals can insert own blocked periods**: INSERT usando `professional_id` e `user_id`
+- **Professionals can update own blocked periods**: UPDATE usando `professional_id` e `user_id`
+- **Professionals can delete own blocked periods**: DELETE usando `professional_id` e `user_id`
+- **Users can view blocked periods for availability check**: SELECT permesso a tutti (per escludere giorni bloccati durante prenotazione)
+
+### `professional_services`
+- **Professionals can manage own services**: ALL usando `professional_id` e `user_id`
+- **Public can view active services**: SELECT per servizi attivi di professionisti pubblici
+
+### `subscription_invoices`
+- **Professionals can view own invoices**: SELECT usando `professional_id` e `user_id`
+
 ---
 
 ## 📝 NOTE IMPORTANTI
 
-1. **Autenticazione**: Il sistema usa Supabase Auth (`auth.users`). La colonna `professionals.user_id` collega il professionista al suo account Supabase.
+1. **Autenticazione**: Il sistema usa Supabase Auth (`auth.users`). La colonna `professionals.user_id` collega il professionista al suo account Supabase. La tabella `users` è stata rimossa (cleanup 21 Gennaio 2025).
 
-2. **Deprecazioni**: I campi `password_hash`, `password_salt`, `reset_token`, `reset_requested_at` in `professionals` sono deprecati ma mantenuti per retrocompatibilità.
+2. **Cleanup Database**: I campi deprecati `password_hash`, `password_salt`, `reset_token`, `reset_requested_at` in `professionals` sono stati rimossi (cleanup 21 Gennaio 2025). L'autenticazione avviene esclusivamente tramite Supabase Auth.
 
-3. **JSON in Notes**: Il campo `notes` in `bookings` può contenere JSON con `client_name`, `client_email`, `client_phone`, `original_notes`, `service_type`, `color` per prenotazioni create manualmente.
+3. **Bookings - Colonne Separate**: Il campo `notes` in `bookings` può ancora contenere JSON per retrocompatibilità, ma ora esistono colonne separate (`client_name`, `client_email`, `client_phone`, `service_type`, `color`, `service_id`) per migliorare query e indici. La migrazione è stata completata il 21 Gennaio 2025.
 
-4. **RLS Abilitata**: Tutte le tabelle hanno Row Level Security abilitata per sicurezza.
+4. **Professional Services**: I professionisti possono gestire servizi multipli tramite la tabella `professional_services`. Le prenotazioni ora possono riferirsi a un servizio specifico tramite `service_id`.
 
-5. **Indici**: Gli indici sono stati creati per ottimizzare le query più frequenti.
+5. **Blocked Periods**: I professionisti possono bloccare giorni o settimane tramite `professional_blocked_periods`. Questi periodi vengono automaticamente esclusi quando gli utenti cercano disponibilità.
+
+6. **RLS Abilitata**: Tutte le tabelle hanno Row Level Security abilitata per sicurezza.
+
+7. **Indici**: Gli indici sono stati creati per ottimizzare le query più frequenti.
 
 ---
 
-**Documento generato il:** 21 Gennaio 2025  
-**Versione Database:** 1.0
+**Documento generato il:** 23 Gennaio 2025  
+**Versione Database:** 2.0
 

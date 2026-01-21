@@ -88,13 +88,15 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script src="https://tally.so/widgets/embed.js"></script>
+    <!-- Tally Widget - Caricamento con gestione errori -->
+    <script src="https://tally.so/widgets/embed.js" onerror="console.warn('Tally widget non disponibile')"></script>
     
     <!-- EMERGENCY FIX SCRIPT -->
     <script>
       // Emergency fix per production
       window.addEventListener('load', () => {
-        console.log('Emergency fix applied');
+        // Rimuovi console.log per produzione
+        // console.log('Emergency fix applied');
         // Fix scroll mobile
         document.body.style.overflow = 'auto';
         // Fix footer color - RIMOSSO per evitare rettangolo nero
@@ -145,16 +147,19 @@
             }
           }, { passive: true });
           
-          console.log('Mobile scroll fix applied');
+          // Rimuovi console.log per produzione
+          // console.log('Mobile scroll fix applied');
         });
         
         // REFRESH DETECTION E FIX
         window.addEventListener('pageshow', function(event) {
-          console.log('Page show event:', event.persisted ? 'back/forward cache' : 'normal load');
+          // Rimuovi console.log per produzione
+          // console.log('Page show event:', event.persisted ? 'back/forward cache' : 'normal load');
           
           // Detecta refresh
           if (performance.navigation && performance.navigation.type === 1) {
-            console.log('Refresh detected - applying scroll fix');
+            // Rimuovi console.log per produzione
+            // console.log('Refresh detected - applying scroll fix');
             
             // Reset completo
             setTimeout(() => {
@@ -182,7 +187,8 @@
                 window.scrollTo(0, 0);
               }, 10);
               
-              console.log('Refresh scroll fix applied');
+              // Rimuovi console.log per produzione
+              // console.log('Refresh scroll fix applied');
             }, 100);
           }
         });

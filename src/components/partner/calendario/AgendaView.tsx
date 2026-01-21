@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Clock, User, X, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Clock, User, X, AlertTriangle, Ban } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { ManageBlocksModal } from '@/components/partner/calendar/ManageBlocksModal';
+import { useBlockedPeriods } from '@/hooks/useBlockedPeriods';
+import { ClientAutocomplete } from '@/components/partner/bookings/ClientAutocomplete';
+import AddClientModal from '@/components/partner/clients/AddClientModal';
+import { autoCompletePastBookings } from '@/services/bookingsService';
 
 type ViewType = 'day' | 'week' | 'month';
 
@@ -44,9 +49,9 @@ const AgendaView = () => {
   const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [viewType, setViewType] = useState<ViewType>('month');
+  const [viewType, setViewType] = useState<ViewType>('day');
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(false); // Inizia a false per mostrare UI subito
   const [isNavigating, setIsNavigating] = useState(false);
   const [professionalId, setProfessionalId] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -60,11 +65,15 @@ const AgendaView = () => {
     notes: string;
     status: string;
     color: string;
+    price: string; // Prezzo personalizzato (opzionale)
   } | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showManageBlocksModal, setShowManageBlocksModal] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [showAddClientModal, setShowAddClientModal] = useState(false);
   
   // Stato per drag & drop - SEMPLIFICATO
   const [dragState, setDragState] = useState<{
@@ -109,6 +118,7 @@ const AgendaView = () => {
     notes: string;
     status: string;
     color: string;
+    price: string; // Prezzo personalizzato (opzionale)
   } | null>(null);
 
   // Carica professional_id e bookings iniziali
@@ -121,10 +131,16 @@ const AgendaView = () => {
 
   // Carica bookings quando professional_id è disponibile (primo caricamento)
   useEffect(() => {
+    console.log('🔄 [AGENDA] useEffect trigger - professionalId:', professionalId, 'initialLoading:', initialLoading);
     if (professionalId && initialLoading) {
+      console.log('🔄 [AGENDA] useEffect: professionalId disponibile, initialLoading=true, chiamo fetchBookings(true)');
       fetchBookings(true);
+    } else if (professionalId && !initialLoading) {
+      console.log('ℹ️ [AGENDA] useEffect: professionalId disponibile ma initialLoading=false, non chiamo fetchBookings');
+    } else if (!professionalId) {
+      console.log('⚠️ [AGENDA] useEffect: professionalId non ancora disponibile');
     }
-  }, [professionalId]);
+  }, [professionalId, initialLoading]);
 
   // Carica bookings quando cambia mese (silenzioso, senza loading)
   useEffect(() => {
@@ -153,9 +169,27 @@ const AgendaView = () => {
   };
 
   const fetchBookings = async (isInitialLoad: boolean = false) => {
-    if (!professionalId) return;
+    if (!professionalId) {
+      console.log('⚠️ [AGENDA] fetchBookings: professionalId non disponibile');
+      return;
+    }
+
+    console.log(`🔄 [AGENDA] fetchBookings chiamato - isInitialLoad: ${isInitialLoad}, professionalId: ${professionalId}`);
 
     try {
+      // Ottimizzazione: auto-completamento in background (non blocca il caricamento)
+      if (isInitialLoad) {
+        // Avvia auto-completamento in background senza attendere
+        autoCompletePastBookings(professionalId).then((completedCount) => {
+          if (completedCount > 0) {
+            console.log(`✅ [AGENDA] Auto-completati ${completedCount} appuntamenti passati`);
+            // I bookings verranno ricaricati automaticamente al cambio mese o quando necessario
+          }
+        }).catch((error) => {
+          console.error('Errore auto-completamento:', error);
+        });
+      }
+
       if (isInitialLoad) {
         setInitialLoading(true);
       } else {
@@ -185,6 +219,7 @@ const AgendaView = () => {
           service_type,
           service_id,
           color,
+          price,
           service:professional_services(id, name, price, duration_minutes, color)
         `)
         .eq('professional_id', professionalId)
@@ -195,38 +230,63 @@ const AgendaView = () => {
 
       if (error) throw error;
 
-      // Carica dati clienti per ogni booking
+      // Ottimizzazione: carica tutti i profili necessari in una singola query invece di N query separate
       if (data) {
-        const bookingsWithClients = await Promise.all(
-          data.map(async (booking) => {
-            // Carica profilo cliente da profiles
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('first_name, last_name, email')
-              .eq('id', booking.user_id)
-              .single();
+        // Estrai tutti gli user_id unici (per i bookings che non hanno già client_name)
+        const userIdsToFetch = new Set<string>();
+        data.forEach((booking) => {
+          // Carica profilo solo se non abbiamo già client_name (prenotazione manuale)
+          if (!booking.client_name && booking.user_id) {
+            userIdsToFetch.add(booking.user_id);
+          }
+        });
 
-            // Normalizza service: Supabase restituisce array per JOIN, ma noi vogliamo un singolo oggetto
-            let normalizedService: Booking['service'] = null;
-            if (booking.service) {
-              if (Array.isArray(booking.service)) {
-                normalizedService = booking.service.length > 0 ? booking.service[0] : null;
-              } else {
-                normalizedService = booking.service;
-              }
-            }
+        // Carica tutti i profili necessari in una singola query batch
+        let profilesMap = new Map<string, { first_name: string; last_name: string; email: string }>();
+        if (userIdsToFetch.size > 0) {
+          const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name, email')
+            .in('id', Array.from(userIdsToFetch));
 
-            return {
-              ...booking,
-              client: profile ? {
+          if (!profilesError && profiles) {
+            profiles.forEach((profile) => {
+              profilesMap.set(profile.id, {
                 first_name: profile.first_name || '',
                 last_name: profile.last_name || '',
                 email: profile.email || ''
-              } : undefined,
-              service: normalizedService
-            };
-          })
-        );
+              });
+            });
+          }
+        }
+
+        // Normalizza i dati bookings (senza loop asincrono, solo mapping sincrono)
+        const bookingsWithClients = data.map((booking) => {
+          // Normalizza service: Supabase restituisce array per JOIN, ma noi vogliamo un singolo oggetto
+          let normalizedService: Booking['service'] = null;
+          if (booking.service) {
+            if (Array.isArray(booking.service)) {
+              normalizedService = booking.service.length > 0 ? booking.service[0] : null;
+            } else {
+              normalizedService = booking.service;
+            }
+          }
+
+          // Usa profilo se disponibile (solo per prenotazioni senza client_name)
+          let client = undefined;
+          if (!booking.client_name && booking.user_id) {
+            const profile = profilesMap.get(booking.user_id);
+            if (profile) {
+              client = profile;
+            }
+          }
+
+          return {
+            ...booking,
+            client,
+            service: normalizedService
+          };
+        });
 
         setBookings(bookingsWithClients);
       }
@@ -247,6 +307,21 @@ const AgendaView = () => {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  };
+
+  // Hook per gestire i blocchi periodi (dopo formatDateToString)
+  const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  const { blockedDates, isDateBlocked, refetch: refetchBlocks } = useBlockedPeriods({
+    professionalId,
+    startDate: formatDateToString(startOfMonth),
+    endDate: formatDateToString(endOfMonth),
+    autoFetch: !!professionalId,
+  });
+
+  // Callback quando i blocchi cambiano
+  const handleBlocksChanged = () => {
+    refetchBlocks();
   };
 
   // Genera giorni del mese per la griglia
@@ -530,8 +605,10 @@ const AgendaView = () => {
       clientPhone: '',
       notes: '',
       status: 'confirmed',
-      color: '#EEBA2B' // Default oro
+      color: '#EEBA2B', // Default oro
+      price: '' // Prezzo opzionale
     });
+    setSelectedClientId(null); // Reset client selezionato quando si apre il modal
     setShowCreateModal(true);
   };
 
@@ -1129,7 +1206,8 @@ const AgendaView = () => {
       clientPhone: booking.client_phone || parsedNotes?.clientPhone || '',
       notes: getDisplayNotes(booking) || '',
       status: booking.status || 'confirmed',
-      color: getBookingColor(booking)
+      color: getBookingColor(booking),
+      price: booking.price ? booking.price.toString() : '' // Prezzo personalizzato
     });
     setIsEditing(false);
     setShowDetailModal(true);
@@ -1166,6 +1244,10 @@ const AgendaView = () => {
           client_email: editedBooking.clientEmail || null,
           client_phone: editedBooking.clientPhone || null,
           color: editedBooking.color || '#EEBA2B',
+          // Prezzo personalizzato (opzionale)
+          price: editedBooking.price && !isNaN(parseFloat(editedBooking.price.replace(',', '.'))) 
+            ? parseFloat(editedBooking.price.replace(',', '.')) 
+            : null
         })
         .eq('id', selectedBooking.id);
       
@@ -1229,9 +1311,26 @@ const AgendaView = () => {
         return;
       }
 
-      // Cerca cliente per email (opzionale)
-      let clientId: string | null = null;
-      if (newBooking.clientEmail) {
+      // Priorità 1: Se cliente selezionato dall'autocomplete, usa il suo user_id dalla tabella clients
+      // Priorità 2: Cerca cliente per email (opzionale)
+      // Priorità 3: Usa user_id del professionista come placeholder
+      let clientUserId: string | null = null;
+      
+      // Se abbiamo un client_id dalla tabella clients, cerca il corrispondente user_id
+      if (selectedClientId) {
+        const { data: clientData } = await supabase
+          .from('clients')
+          .select('user_id')
+          .eq('id', selectedClientId)
+          .maybeSingle();
+        
+        if (clientData?.user_id) {
+          clientUserId = clientData.user_id;
+        }
+      }
+      
+      // Se non trovato tramite client_id, prova con email
+      if (!clientUserId && newBooking.clientEmail) {
         const { data: clientData } = await supabase
           .from('profiles')
           .select('id')
@@ -1239,7 +1338,7 @@ const AgendaView = () => {
           .maybeSingle();
         
         if (clientData) {
-          clientId = clientData.id;
+          clientUserId = clientData.id;
         }
       }
       
@@ -1259,13 +1358,17 @@ const AgendaView = () => {
         client_name: newBooking.clientName || null,
         client_email: newBooking.clientEmail || null,
         client_phone: newBooking.clientPhone || null,
-        color: newBooking.color || '#EEBA2B'
+        color: newBooking.color || '#EEBA2B',
+        // Prezzo personalizzato (opzionale)
+        price: newBooking.price && !isNaN(parseFloat(newBooking.price.replace(',', '.'))) 
+          ? parseFloat(newBooking.price.replace(',', '.')) 
+          : null
       };
       
       // Se abbiamo trovato il cliente, usa il suo ID
       // Altrimenti, usa l'ID dell'utente corrente come placeholder
-      if (clientId) {
-        bookingData.user_id = clientId;
+      if (clientUserId) {
+        bookingData.user_id = clientUserId;
       } else {
         // Usa l'ID dell'utente corrente (professionista) come placeholder
         // Questo permette di creare l'appuntamento anche senza cliente registrato
@@ -1288,7 +1391,7 @@ const AgendaView = () => {
       // Aggiorna lista bookings
       await fetchBookings(false);
       
-      if (clientId) {
+      if (clientUserId) {
         toast.success('Appuntamento creato con successo!');
       } else {
         toast.success('Appuntamento creato (cliente non registrato)');
@@ -1296,6 +1399,8 @@ const AgendaView = () => {
       
       setShowCreateModal(false);
       setNewBooking(null);
+      setSelectedClientId(null); // Reset client selezionato
+      setSelectedClientId(null); // Reset client selezionato
     } catch (err: any) {
       console.error('Errore creazione appuntamento:', err);
       toast.error(err.message || 'Errore nella creazione dell\'appuntamento');
@@ -1305,14 +1410,14 @@ const AgendaView = () => {
   const calendarDays = generateCalendarDays();
   const selectedBookings = selectedDate ? getBookingsForDate(selectedDate) : [];
 
-  // Mostra loading SOLO al primo caricamento
-  if (initialLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EEBA2B]"></div>
-      </div>
-    );
-  }
+  // Rimuovo il check che nasconde la UI - mostriamo sempre la pagina mentre i dati caricano in background
+  // if (initialLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center py-12">
+  //       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EEBA2B]"></div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="space-y-6">
@@ -1326,7 +1431,7 @@ const AgendaView = () => {
         )}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           {/* Selettore vista */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {(['day', 'week', 'month'] as ViewType[]).map((view) => (
               <button
                 key={view}
@@ -1340,6 +1445,18 @@ const AgendaView = () => {
                 {view === 'day' ? 'Giorno' : view === 'week' ? 'Settimana' : 'Mese'}
               </button>
             ))}
+            
+            {/* Bottone Gestisci Blocchi - Solo per vista Giorno e Settimana */}
+            {(viewType === 'day' || viewType === 'week') && (
+              <button
+                onClick={() => setShowManageBlocksModal(true)}
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-500 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-red-600 transition-colors flex items-center gap-1.5"
+              >
+                <Ban className="w-4 h-4" />
+                <span className="hidden sm:inline">Gestisci Blocchi</span>
+                <span className="sm:hidden">Blocchi</span>
+              </button>
+            )}
           </div>
 
           {/* Navigazione mese */}
@@ -1398,15 +1515,19 @@ const AgendaView = () => {
               <button
                 key={index}
                 onClick={() => {
-                  if (isCurrent) {
+                  if (isCurrent && !isDateBlocked(date)) {
                     setSelectedDate(date);
                   }
                 }}
                 className={`
-                  aspect-square sm:aspect-square sm:w-[60px] sm:h-[60px] sm:mx-auto p-1 sm:p-1 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-colors relative
+                  aspect-square sm:aspect-square sm:w-[60px] sm:h-[60px] sm:mx-auto 
+                  flex flex-col items-center justify-center gap-0.5
+                  rounded-lg cursor-pointer transition-colors
                   text-xs sm:text-sm
                   ${!isCurrent ? 'text-gray-300' : ''}
-                  ${isToday(date) && isCurrent
+                  ${isDateBlocked(date) && isCurrent
+                    ? 'bg-red-100 text-red-600 cursor-not-allowed'
+                    : isToday(date) && isCurrent
                     ? 'bg-[#EEBA2B] text-white font-semibold'
                     : isSelected(date) && isCurrent
                     ? 'bg-[#EEBA2B]/20 text-[#EEBA2B] font-semibold'
@@ -1415,12 +1536,18 @@ const AgendaView = () => {
                     : 'text-gray-300'
                   }
                 `}
-                disabled={!isCurrent}
+                disabled={!isCurrent || isDateBlocked(date)}
               >
-                <span>{date.getDate()}</span>
+                <span className={isDateBlocked(date) && isCurrent ? 'line-through' : ''}>
+                  {date.getDate()}
+                </span>
+                {/* Indicatore blocco */}
+                {isDateBlocked(date) && isCurrent && (
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                )}
                 {/* Indicatori appuntamenti */}
-                {bookingCount > 0 && isCurrent && (
-                  <div className="flex gap-0.5 mt-0.5">
+                {bookingCount > 0 && isCurrent && !isDateBlocked(date) && (
+                  <div className="flex gap-0.5">
                     {Array.from({ length: Math.min(bookingCount, 3) }).map((_, i) => (
                       <span
                         key={i}
@@ -1466,16 +1593,29 @@ const AgendaView = () => {
                 <div 
                   key={i}
                   className={`p-2 sm:p-2 text-center border-r border-gray-200 last:border-r-0 ${
-                    isToday(day) ? 'bg-[#EEBA2B]/10' : 'bg-gray-50'
+                    isDateBlocked(day)
+                      ? 'bg-red-100'
+                      : isToday(day) 
+                      ? 'bg-[#EEBA2B]/10' 
+                      : 'bg-gray-50'
                   }`}
                 >
-                  <div className="text-xs text-gray-500 hidden sm:block">
+                  <div className={`text-xs hidden sm:block ${
+                    isDateBlocked(day) ? 'text-red-500' : 'text-gray-500'
+                  }`}>
                     {day.toLocaleDateString('it-IT', { weekday: 'short' })}
                   </div>
-                  <div className={`text-sm sm:text-lg font-semibold ${
-                    isToday(day) ? 'text-[#EEBA2B]' : 'text-gray-900'
+                  <div className={`text-sm sm:text-lg font-semibold flex items-center justify-center gap-1 ${
+                    isDateBlocked(day)
+                      ? 'text-red-500 line-through'
+                      : isToday(day)
+                      ? 'text-[#EEBA2B]'
+                      : 'text-gray-900'
                   }`}>
-                    {day.getDate()}
+                    <span>{day.getDate()}</span>
+                    {isDateBlocked(day) && (
+                      <Ban className="w-3 h-3 sm:w-4 sm:h-4" />
+                    )}
                   </div>
                 </div>
               ))}
@@ -1644,6 +1784,25 @@ const AgendaView = () => {
       {/* Vista Giornaliera */}
       {viewType === 'day' && (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          {/* Banner giorno bloccato */}
+          {isDateBlocked(currentDate) && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+              <Ban className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold text-red-700">Giorno bloccato</p>
+                <p className="text-sm text-red-600">
+                  Questo giorno non è disponibile per le prenotazioni.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowManageBlocksModal(true)}
+                className="ml-auto px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200 transition flex-shrink-0"
+              >
+                Gestisci
+              </button>
+            </div>
+          )}
+
           {/* Header con data e info giorno */}
           <div className={`p-3 sm:p-4 border-b border-gray-200 ${
             isToday(currentDate) ? 'bg-[#EEBA2B]/10' : 'bg-gray-50'
@@ -1922,13 +2081,30 @@ const AgendaView = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Nome cliente *
                 </label>
-                <input
-                  type="text"
-                  value={newBooking.clientName}
-                  onChange={(e) => setNewBooking({...newBooking, clientName: e.target.value})}
-                  placeholder="Es. Mario Rossi"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-shadow"
-                />
+                {professionalId ? (
+                  <ClientAutocomplete
+                    professionalId={professionalId}
+                    value={newBooking.clientName}
+                    onChange={(value) => setNewBooking({...newBooking, clientName: value})}
+                    onClientSelect={(client) => {
+                      setSelectedClientId(client?.id || null);
+                      // Se cliente selezionato, prova a pre-compilare email se disponibile
+                      if (client) {
+                        // Non pre-compiliamo email automaticamente, l'utente può inserirla manualmente
+                      }
+                    }}
+                    onCreateNewClient={() => setShowAddClientModal(true)}
+                    placeholder="Cerca o scrivi nome cliente..."
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={newBooking.clientName}
+                    onChange={(e) => setNewBooking({...newBooking, clientName: e.target.value})}
+                    placeholder="Es. Mario Rossi"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-shadow"
+                  />
+                )}
               </div>
               
               {/* Email cliente */}
@@ -1974,6 +2150,41 @@ const AgendaView = () => {
                   rows={3}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-shadow resize-none"
                 />
+              </div>
+              
+              {/* Prezzo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Prezzo (€) <span className="text-gray-400 font-normal">(opzionale)</span>
+                </label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.,]?[0-9]*"
+                  value={newBooking.price}
+                  onChange={(e) => {
+                    // Permetti solo numeri, virgola e punto
+                    const value = e.target.value.replace(/[^0-9,.-]/g, '');
+                    setNewBooking({...newBooking, price: value});
+                  }}
+                  onBlur={(e) => {
+                    // Normalizza il valore su blur: converte virgola in punto e formatta
+                    let value = e.target.value.replace(',', '.');
+                    if (value && !isNaN(parseFloat(value))) {
+                      const num = Math.max(0, parseFloat(value)); // Assicura >= 0
+                      const formatted = num.toFixed(2);
+                      setNewBooking({...newBooking, price: formatted});
+                    } else if (value) {
+                      // Se c'è un valore non valido, reset
+                      setNewBooking({...newBooking, price: ''});
+                    }
+                  }}
+                  placeholder="Es. 50,00"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-shadow"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Se lasciato vuoto, verrà usato il prezzo del servizio (se disponibile)
+                </p>
               </div>
               
               {/* Status */}
@@ -2216,6 +2427,51 @@ const AgendaView = () => {
                 ) : (
                   <p className="px-4 py-2.5 bg-gray-50 rounded-xl text-gray-900 min-h-[60px]">
                     {editedBooking.notes || '-'}
+                  </p>
+                )}
+              </div>
+              
+              {/* Prezzo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Prezzo (€) <span className="text-gray-400 font-normal">(opzionale)</span>
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*[.,]?[0-9]*"
+                    value={editedBooking.price}
+                    onChange={(e) => {
+                      // Permetti solo numeri, virgola e punto
+                      const value = e.target.value.replace(/[^0-9,.-]/g, '');
+                      setEditedBooking({...editedBooking, price: value});
+                    }}
+                    onBlur={(e) => {
+                      // Normalizza il valore su blur: converte virgola in punto e formatta
+                      let value = e.target.value.replace(',', '.');
+                      if (value && !isNaN(parseFloat(value))) {
+                        const num = Math.max(0, parseFloat(value)); // Assicura >= 0
+                        const formatted = num.toFixed(2);
+                        setEditedBooking({...editedBooking, price: formatted});
+                      } else if (value) {
+                        // Se c'è un valore non valido, reset
+                        setEditedBooking({...editedBooking, price: ''});
+                      }
+                    }}
+                    placeholder="Es. 50,00"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-shadow"
+                  />
+                ) : (
+                  <p className="px-4 py-2.5 bg-gray-50 rounded-xl text-gray-900">
+                    {editedBooking.price 
+                      ? `€${parseFloat(editedBooking.price.replace(',', '.')).toFixed(2).replace('.', ',')}` 
+                      : '-'}
+                  </p>
+                )}
+                {isEditing && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Se lasciato vuoto, verrà usato il prezzo del servizio (se disponibile)
                   </p>
                 )}
               </div>
@@ -2499,6 +2755,42 @@ const AgendaView = () => {
             <span>{getDragPreviewTime() || '--:--'}</span>
           </div>
         </>
+      )}
+
+      {/* Modal Gestisci Blocchi */}
+      {professionalId && (
+        <ManageBlocksModal
+          isOpen={showManageBlocksModal}
+          onClose={() => setShowManageBlocksModal(false)}
+          professionalId={professionalId}
+          currentView={viewType === 'day' ? 'day' : 'week'}
+          onBlocksChanged={handleBlocksChanged}
+        />
+      )}
+
+      {/* Modal Crea Nuovo Cliente */}
+      {professionalId && showAddClientModal && (
+        <AddClientModal
+          professionalId={professionalId}
+          onClose={() => {
+            setShowAddClientModal(false);
+          }}
+          onSuccess={() => {
+            // Il modal si chiude automaticamente dopo il successo
+            setShowAddClientModal(false);
+          }}
+          onClientCreated={(newClient) => {
+            // Auto-seleziona il cliente appena creato nell'autocomplete
+            setNewBooking(prev => prev ? {
+              ...prev,
+              clientName: newClient.full_name
+            } : null);
+            setSelectedClientId(newClient.id);
+            setShowAddClientModal(false);
+            toast.success(`Cliente "${newClient.full_name}" creato e selezionato!`);
+          }}
+          initialName={newBooking?.clientName || ''}
+        />
       )}
 
     </div>

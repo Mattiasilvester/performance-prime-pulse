@@ -9,6 +9,63 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **23 Gennaio 2025 - Sessione Ottimizzazioni Performance e UX**
+**Ora inizio:** ~[da determinare]
+**Ora fine:** ~[da determinare]
+**Durata:** ~[da determinare]
+**Branch:** dev
+
+#### **🎯 Obiettivo:**
+Ottimizzare le performance delle sezioni dashboard e migliorare l'esperienza utente con caricamento in background e riduzione query database.
+
+#### **✅ Implementato:**
+
+1. **Ottimizzazioni Performance Database** 🚀
+   - **PrenotazioniPage.tsx**: Sostituito loop N query separate a `profiles` con query batch singola (50 query → 1 query)
+   - **ClientiPage.tsx**: Sostituito loop N query separate a `bookings` con query batch singola (20 query → 1 query)
+   - **AgendaView.tsx**: Sostituito loop N query separate a `profiles` con query batch singola
+   - **Auto-completamento in background**: Spostato `autoCompletePastBookings()` in background per non bloccare caricamento
+   - **Aggiunto campo `price`**: Aggiunto campo `price` alle query SELECT per evitare query separate
+   - File: `src/pages/partner/dashboard/PrenotazioniPage.tsx`, `src/pages/partner/dashboard/ClientiPage.tsx`, `src/components/partner/calendario/AgendaView.tsx`
+
+2. **Caricamento in Background (Progressive Loading)** ⚡
+   - **PrenotazioniPage.tsx**: `loading` iniziale cambiato da `true` a `false` - pagina visibile subito
+   - **ClientiPage.tsx**: `loading` iniziale cambiato da `true` a `false` - lista visibile subito
+   - **AgendaView.tsx**: `initialLoading` iniziale cambiato da `true` a `false` - calendario visibile subito
+   - **OverviewPage.tsx**: `loading` iniziale cambiato da `true` a `false` - card visibili subito
+   - Rimossi spinner che nascondevano la UI durante caricamento iniziale
+   - File: Tutte le pagine dashboard modificate
+
+3. **Pulizia Console Errors** 🧹
+   - **MobileScrollFix.tsx**: Rimossi tutti i `console.log` per produzione
+   - **index.html**: Rimossi tutti i `console.log` dagli script inline
+   - **analytics.ts**: Gestione errori silenziosa per script Plausible non disponibili
+   - **Tally Widget**: Aggiunto `onerror` handler silenzioso per evitare errori console
+   - File: `src/components/MobileScrollFix.tsx`, `index.html`, `src/services/analytics.ts`
+
+4. **Rinominazione "Guadagni mese" → "Incassi mensili"** 📊
+   - **OverviewPage.tsx**: Cambiato label card da "Guadagni mese" a "Incassi mensili"
+   - File: `src/pages/partner/dashboard/OverviewPage.tsx`
+
+#### **🐛 Bug Risolti:**
+- **Performance lente sezioni dashboard**: Risolto con query batch invece di loop N query separate
+- **Console inquinata da log duplicati**: Risolto rimuovendo console.log da componenti e script
+- **Errori ERR_CONNECTION_CLOSED script esterni**: Risolto con gestione errori silenziosa
+- **UI bloccata durante caricamento**: Risolto con caricamento in background e UI visibile subito
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato
+
+#### **📊 Metriche:**
+- Build time: 11.64s
+- Bundle size: ~1.1MB (index.js principale)
+- Errori TypeScript: 0
+
+#### **📋 TODO Prossima Sessione:**
+1. [Da definire in base a priorità utente]
+
+---
+
 ### **22 Gennaio 2025 - Sessione Pagamenti FASE A e B Completa**
 **Ora inizio:** ~14:00
 **Ora fine:** ~18:00

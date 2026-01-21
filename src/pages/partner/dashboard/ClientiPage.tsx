@@ -27,7 +27,7 @@ export default function ClientiPage() {
   const { user } = useAuth();
   const [professionalId, setProfessionalId] = useState<string | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Inizia a false per mostrare UI subito
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'pp'>('all');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -183,55 +183,74 @@ export default function ClientiPage() {
       
       // Se ci sono dati reali, usali (calcolando sessioni)
       if (data && data.length > 0) {
-        const clientsWithStats = await Promise.all(
-          data.map(async (client) => {
-            // Query prenotazioni del cliente (fetch tutte e filtra lato client)
-            const { data: allBookings } = await supabase
-              .from('bookings')
-              .select('booking_date, notes, user_id, client_email')
-              .eq('professional_id', professionalId)
-              .order('booking_date', { ascending: false })
-              .limit(100);
+        // OTTIMIZZAZIONE CRITICA: carica tutte le prenotazioni in UNA singola query invece di N query separate
+        const { data: allBookings, error: bookingsError } = await supabase
+          .from('bookings')
+          .select('booking_date, notes, user_id, client_email, client_name')
+          .eq('professional_id', professionalId)
+          .order('booking_date', { ascending: false });
+
+        if (bookingsError) {
+          console.error('Errore caricamento bookings per clienti:', bookingsError);
+        }
+
+        // Filtra e calcola statistiche per ogni cliente dal dataset condiviso
+        const clientsWithStats = data.map((client) => {
+          // Filtra lato client per match con questo cliente
+          const bookings = (allBookings || []).filter((booking: any) => {
+            // Match per user_id
+            if (client.user_id && booking.user_id === client.user_id) {
+              return true;
+            }
             
-            // Filtra lato client per match con questo cliente
-            const bookings = (allBookings || []).filter((booking: any) => {
-              // Match per user_id
-              if (client.user_id && booking.user_id === client.user_id) {
+            // Match per nome cliente - priorità colonna diretta, poi fallback a notes JSON
+            if (client.full_name && booking.client_name) {
+              // Confronto case-insensitive e normalizzato (trim)
+              const bookingName = booking.client_name.trim().toLowerCase();
+              const clientName = client.full_name.trim().toLowerCase();
+              if (bookingName === clientName) {
                 return true;
               }
-              
-              // Match per email - priorità colonna diretta, poi fallback a notes JSON
-              if (client.email) {
-                // Priorità 1: Colonna diretta
-                if (booking.client_email === client.email) {
-                  return true;
-                }
-                // Priorità 2: Notes JSON (retrocompatibilità)
-                if (booking.notes) {
-                  try {
-                    const parsed = typeof booking.notes === 'string' 
-                      ? JSON.parse(booking.notes) 
-                      : booking.notes;
-                    return parsed?.client_email === client.email;
-                  } catch {
-                    return false;
+            }
+            
+            // Match per email - priorità colonna diretta, poi fallback a notes JSON
+            if (client.email) {
+              // Priorità 1: Colonna diretta
+              if (booking.client_email && booking.client_email.toLowerCase() === client.email.toLowerCase()) {
+                return true;
+              }
+              // Priorità 2: Notes JSON (retrocompatibilità)
+              if (booking.notes) {
+                try {
+                  const parsed = typeof booking.notes === 'string' 
+                    ? JSON.parse(booking.notes) 
+                    : booking.notes;
+                  if (parsed?.client_email && parsed.client_email.toLowerCase() === client.email.toLowerCase()) {
+                    return true;
                   }
+                } catch {
+                  // Se notes non è JSON valido, ignora
                 }
               }
-              
-              return false;
-            });
+            }
+            
+            return false;
+          });
 
-            const totalSessions = bookings?.length || 0;
-            const lastSession = bookings?.[0]?.booking_date || null;
+          // Ordina per data (più recente prima) e prendi la prima per last_session_date
+          const sortedBookings = bookings.sort((a: any, b: any) => {
+            return new Date(b.booking_date).getTime() - new Date(a.booking_date).getTime();
+          });
 
-            return {
-              ...client,
-              total_sessions: totalSessions,
-              last_session_date: lastSession
-            };
-          })
-        );
+          const totalSessions = sortedBookings?.length || 0;
+          const lastSession = sortedBookings?.[0]?.booking_date || null;
+
+          return {
+            ...client,
+            total_sessions: totalSessions,
+            last_session_date: lastSession
+          };
+        });
 
         setClients(clientsWithStats);
         calculateStats(clientsWithStats);
@@ -403,12 +422,8 @@ export default function ClientiPage() {
 
       {/* Lista Clienti */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center text-gray-500">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EEBA2B] mx-auto"></div>
-            <p className="mt-4">Caricamento clienti...</p>
-          </div>
-        ) : filteredClients.length === 0 ? (
+        {/* Mostra sempre la lista (anche vuota) mentre carica in background */}
+        {filteredClients.length === 0 ? (
           <div className="p-8 text-center">
             <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">Nessun cliente trovato</p>

@@ -141,10 +141,20 @@ export default function ClientDetailModal({
           return true;
         }
         
+        // Match per nome cliente - priorità colonna diretta, poi fallback a notes JSON
+        if (client.full_name && booking.client_name) {
+          // Confronto case-insensitive e normalizzato (trim)
+          const bookingName = booking.client_name.trim().toLowerCase();
+          const clientName = client.full_name.trim().toLowerCase();
+          if (bookingName === clientName) {
+            return true;
+          }
+        }
+        
         // Match per email - priorità colonna diretta, poi fallback a notes JSON
         if (client.email) {
           // Priorità 1: Colonna diretta
-          if (booking.client_email === client.email) {
+          if (booking.client_email && booking.client_email.toLowerCase() === client.email.toLowerCase()) {
             return true;
           }
           // Priorità 2: Notes JSON (retrocompatibilità)
@@ -154,7 +164,7 @@ export default function ClientDetailModal({
                 ? JSON.parse(booking.notes) 
                 : booking.notes;
               
-              if (parsedNotes?.client_email === client.email) {
+              if (parsedNotes?.client_email && parsedNotes.client_email.toLowerCase() === client.email.toLowerCase()) {
                 return true;
               }
             } catch {
