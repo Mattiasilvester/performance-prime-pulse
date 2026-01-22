@@ -7,14 +7,21 @@ e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Unreleased] - 2026-01-23
 
+### Added ➕
+- **Sistema Recensioni Dashboard Professionista**: Pagina completa recensioni con statistiche (rating medio, totale, verificate), distribuzione rating, filtri per rating (1-5 stelle), e possibilità di rispondere alle recensioni
+- **Modal Risposta Recensioni**: Professionisti possono rispondere e modificare risposte alle recensioni dei clienti
+
 ### Changed 🔄
 - **Performance Dashboard**: Ottimizzate query database con batch queries invece di loop N query separate (70-95% più veloce)
 - **Caricamento Pagine**: Pagine dashboard ora visibili immediatamente con caricamento dati in background
 - **Rinominazione**: "Guadagni mese" rinominato in "Incassi mensili" nella sezione Overview
+- **Layout Recensioni**: Stelle spostate sopra nome utente, badge "Verificata" e data sulla stessa riga delle stelle (coerente su tutte le visualizzazioni)
+- **Filtri Recensioni Mobile**: Layout filtri mobile migliorato - testo sopra, bottoni in orizzontale sotto
 
 ### Fixed 🐛
 - **Console Errors**: Rimossi log duplicati e gestiti errori script esterni (Tally, Plausible) silenziosamente
 - **Performance Lente**: Risolto problema lentezza caricamento sezioni Agenda, Prenotazioni e Clienti
+- **Errore Sintassi reviewsService.ts**: Risolto errore "Expression expected" causato da blocco catch duplicato
 
 ---
 

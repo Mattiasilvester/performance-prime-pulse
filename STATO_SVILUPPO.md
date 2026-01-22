@@ -1,7 +1,7 @@
 # 📊 STATO SVILUPPO PERFORMANCE PRIME PULSE
 
-**Data aggiornamento**: 21 Gennaio 2025  
-**Ultima sessione**: FASE 2 - Database Schema Cleanup & Migrations
+**Data aggiornamento**: 23 Gennaio 2025  
+**Ultima sessione**: FASE 3.1 - Integrazione professional_services completata
 
 ---
 
@@ -51,21 +51,28 @@
 
 ### **FASE 3: Aggiornamento Codice per Nuove Tabelle**
 
-#### **3.1 Professional Services** ⚠️ DA FARE
-**Priorità**: 🔴 **ALTA**
+#### **3.1 Professional Services** ✅ **COMPLETATO**
+**Priorità**: ~~🔴 **ALTA**~~ ✅ **COMPLETATO** (23 Gennaio 2025)
 
-**Cosa fare**:
-- [ ] Aggiornare `AddBookingModal.tsx` per usare dropdown servizi da `professional_services`
-- [ ] Aggiornare `AgendaView.tsx` per mostrare nome servizio invece di `service_type`
-- [ ] Aggiornare `PrenotazioniPage.tsx` per mostrare nome servizio
-- [ ] Creare modal per gestire servizi (CRUD) in Impostazioni
-- [ ] Permettere ai professionisti di creare/modificare/eliminare servizi
+**Cosa completato**:
+- [x] ✅ Creato `professionalServicesService.ts` con funzioni CRUD complete
+- [x] ✅ Aggiornato `AddBookingModal.tsx` per usare dropdown servizi da `professional_services` con `serviceId`
+- [x] ✅ Aggiornato `AgendaView.tsx` per mostrare `service.name` (con retrocompatibilità `service_type`)
+- [x] ✅ Aggiornato `PrenotazioniPage.tsx` per mostrare `service.name` (con retrocompatibilità)
+- [x] ✅ Creato `ServiziTariffePage.tsx` per gestione servizi completa (CRUD)
+- [x] ✅ Creato `ServiceFormModal.tsx` per creazione/modifica servizi
+- [x] ✅ Aggiornato `ClientDetailModal.tsx` per mostrare `service.name`
+- [x] ✅ Implementato pattern retrocompatibilità: `service?.name` > `service_type` > Notes JSON
 
-**File da modificare**:
-- `src/components/partner/bookings/AddBookingModal.tsx`
-- `src/components/partner/calendario/AgendaView.tsx`
-- `src/pages/partner/dashboard/PrenotazioniPage.tsx`
-- `src/pages/partner/dashboard/ImpostazioniPage.tsx` (nuovo modal)
+**File modificati/creati**:
+- ✅ `src/services/professionalServicesService.ts` (NUOVO)
+- ✅ `src/components/partner/bookings/AddBookingModal.tsx` (AGGIORNATO)
+- ✅ `src/components/partner/calendario/AgendaView.tsx` (AGGIORNATO)
+- ✅ `src/pages/partner/dashboard/PrenotazioniPage.tsx` (AGGIORNATO)
+- ✅ `src/pages/partner/ServiziTariffePage.tsx` (NUOVO)
+- ✅ `src/components/partner/services/ServiceFormModal.tsx` (NUOVO)
+- ✅ `src/components/partner/services/ServiceCard.tsx` (NUOVO)
+- ✅ `src/components/partner/clients/ClientDetailModal.tsx` (AGGIORNATO)
 
 ---
 
@@ -145,9 +152,9 @@
 - [x] RLS policies configurate correttamente
 - [x] Indici creati per performance
 
-#### **Codice Base** ⚠️
+#### **Codice Base** ✅
 - [x] `ProfiloPage.tsx` aggiornato per `prezzo_seduta`
-- [ ] **`professional_services` usato nel codice** (DA FARE)
+- [x] **`professional_services` usato nel codice** ✅ **COMPLETATO** (23 Gennaio 2025)
 - [ ] **`reviews` system integrato** (DA FARE)
 
 #### **Test Funzionali** ⚠️
@@ -179,28 +186,37 @@
 
 ---
 
-### **STEP 2: Aggiornamento Codice per Professional Services** 🔴 **ALTA PRIORITÀ**
-Prima di implementare nuove features, è **critico** aggiornare il codice per usare la nuova tabella `professional_services`:
+### **STEP 2: Aggiornamento Codice per Professional Services** ✅ **COMPLETATO**
+~~Prima di implementare nuove features, è **critico** aggiornare il codice per usare la nuova tabella `professional_services`:~~
 
-1. **Creare servizio API** (`src/services/professionalServicesService.ts`):
-   - `fetchServices(professionalId)`
-   - `createService(professionalId, serviceData)`
-   - `updateService(serviceId, serviceData)`
-   - `deleteService(serviceId)`
+**Status**: ✅ **COMPLETATO** (23 Gennaio 2025)
 
-2. **Aggiornare componenti esistenti**:
-   - `AddBookingModal.tsx`: Dropdown servizi invece di input testo
-   - `AgendaView.tsx`: Mostra nome servizio da `professional_services`
-   - `PrenotazioniPage.tsx`: Mostra nome servizio
+1. ✅ **Servizio API creato** (`src/services/professionalServicesService.ts`):
+   - ✅ `getServicesByProfessional(professionalId)`
+   - ✅ `getServiceById(serviceId)`
+   - ✅ `createService(serviceData)`
+   - ✅ `updateService(serviceId, updateData)`
+   - ✅ `deleteService(serviceId)`
+   - ✅ `deactivateService(serviceId)`
 
-3. **Creare modal gestione servizi**:
-   - `ServicesModal.tsx` in Impostazioni
-   - CRUD completo servizi
+2. ✅ **Componenti esistenti aggiornati**:
+   - ✅ `AddBookingModal.tsx`: Dropdown servizi con `serviceId` (FK)
+   - ✅ `AgendaView.tsx`: Mostra `service.name` con retrocompatibilità
+   - ✅ `PrenotazioniPage.tsx`: Mostra `service.name` con retrocompatibilità
+   - ✅ `ClientDetailModal.tsx`: Mostra `service.name` con retrocompatibilità
 
-**Perché è importante**: Se continuiamo senza aggiornare il codice, avremo:
-- Dati duplicati (servizi in `professional_services` + `service_type` in `bookings`)
-- Inconsistenze nel database
-- Difficoltà future a migrare
+3. ✅ **Gestione servizi completa**:
+   - ✅ `ServiziTariffePage.tsx`: Pagina completa gestione servizi
+   - ✅ `ServiceFormModal.tsx`: Form creazione/modifica servizi
+   - ✅ `ServiceCard.tsx`: Card visualizzazione servizio
+   - ✅ CRUD completo funzionante
+
+**Pattern implementato**: Retrocompatibilità completa
+- Priorità 1: `service?.name` (da `professional_services`)
+- Priorità 2: `service_type` (colonna diretta, dati vecchi)
+- Priorità 3: Notes JSON (dati molto vecchi)
+
+**Risultato**: Sistema completamente funzionante con supporto dati vecchi e nuovi.
 
 ---
 
@@ -228,11 +244,14 @@ Implementare UI per:
 ## 🔍 PROBLEMI NOTI / DA RISOLVERE
 
 ### **1. Inconsistenza Codice/Database**
-**Problema**: Il codice usa ancora `service_type` (VARCHAR) invece di `service_id` (FK a `professional_services`)
+**Problema**: ~~Il codice usa ancora `service_type` (VARCHAR) invece di `service_id` (FK a `professional_services`)~~
 
-**Impatto**: 🔴 **ALTO** - Duplicazione dati e inconsistenza
+**Status**: ✅ **RISOLTO** (23 Gennaio 2025)
 
-**Soluzione**: Vedere STEP 2 sopra
+**Soluzione implementata**: 
+- ✅ Codice aggiornato per usare `service_id` (FK) come priorità
+- ✅ Retrocompatibilità mantenuta per `service_type` (dati vecchi)
+- ✅ Pattern: `service?.name` > `service_type` > Notes JSON
 
 ---
 
@@ -269,16 +288,16 @@ Implementare UI per:
 
 1. ✅ **Eseguire test completo** (script SQL fornito)
 2. ✅ **Testare UI** esistente (ProfiloPage, Impostazioni modali)
-3. 🔴 **AGGIORNARE CODICE** per usare `professional_services` (STEP 2)
-4. 🔴 **Testare integrazione** `professional_services` completa
+3. ✅ **AGGIORNARE CODICE** per usare `professional_services` (STEP 2) - **COMPLETATO**
+4. ✅ **Testare integrazione** `professional_services` completa - **VERIFICATO**
 
 **DOPO aver completato STEP 2**, procedere con:
-- Completamento Impostazioni (modal mancanti)
-- Sistema Recensioni UI
+- ✅ Completamento Impostazioni (modal mancanti) - **IN CORSO**
+- Sistema Recensioni UI - **DA FARE**
 - Altre features pianificate
 
 ---
 
-**Ultima revisione**: 21 Gennaio 2025  
-**Prossima revisione**: Dopo completamento STEP 2
+**Ultima revisione**: 23 Gennaio 2025  
+**Prossima revisione**: Dopo completamento FASE 3 o FASE 4
 

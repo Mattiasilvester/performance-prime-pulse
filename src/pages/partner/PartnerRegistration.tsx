@@ -10,8 +10,9 @@ import { StepPassword } from '@/components/partner/onboarding/StepPassword';
 import { StepCategory } from '@/components/partner/onboarding/StepCategory';
 import { StepProfessionalInfo } from '@/components/partner/onboarding/StepProfessionalInfo';
 import { StepBio } from '@/components/partner/onboarding/StepBio';
+import { StepModalitaPrezzi } from '@/components/partner/onboarding/StepModalitaPrezzi';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 interface FormData {
   first_name: string;
@@ -27,6 +28,9 @@ interface FormData {
   certificazioni: string[];
   studio_sede: string;
   bio: string;
+  modalita: 'online' | 'presenza' | 'entrambi';
+  prezzo_seduta: number | null;
+  prezzo_fascia: '€' | '€€' | '€€€';
 }
 
 export default function PartnerRegistration() {
@@ -50,12 +54,15 @@ export default function PartnerRegistration() {
     titolo_studio: '',
     certificazioni: [],
     studio_sede: '',
-    bio: ''
+    bio: '',
+    modalita: 'entrambi',
+    prezzo_seduta: null,
+    prezzo_fascia: '€€'
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const updateFormData = (field: string, value: string | string[]) => {
+  const updateFormData = (field: string, value: string | string[] | number | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Rimuovi errore quando l'utente modifica
     if (errors[field]) {
@@ -136,6 +143,19 @@ export default function PartnerRegistration() {
         } else if (formData.bio.trim().length < 50) {
           newErrors.bio = 'La descrizione deve essere di almeno 50 caratteri';
         }
+        break;
+
+      case 6:
+        if (!formData.modalita) {
+          newErrors.modalita = 'Seleziona una modalità di lavoro';
+        }
+        // prezzo_seduta è opzionale, ma se inserito deve essere valido
+        if (formData.prezzo_seduta !== null && formData.prezzo_seduta !== undefined) {
+          if (formData.prezzo_seduta < 0 || formData.prezzo_seduta > 1000) {
+            newErrors.prezzo_seduta = 'Il prezzo deve essere tra 0 e 1000€';
+          }
+        }
+        // prezzo_fascia è sempre presente (default o calcolato)
         break;
     }
 
@@ -232,7 +252,10 @@ export default function PartnerRegistration() {
         company_name: formData.studio_sede.trim(),
         titolo_studio: formData.titolo_studio.trim(),
         certificazioni: formData.certificazioni,
-        customCategory: formData.customCategory.trim() || undefined
+        customCategory: formData.customCategory.trim() || undefined,
+        modalita: formData.modalita,
+        prezzo_seduta: formData.prezzo_seduta,
+        prezzo_fascia: formData.prezzo_fascia
       });
 
       navigate('/partner/dashboard');
@@ -291,6 +314,13 @@ export default function PartnerRegistration() {
         return formData.city.trim() && formData.titolo_studio.trim() && formData.certificazioni.length > 0 && formData.studio_sede.trim();
       case 5:
         return formData.bio.trim().length >= 50;
+      case 6:
+        // modalita è sempre presente (default: 'entrambi')
+        // prezzo_seduta è opzionale, ma se presente deve essere valido
+        if (formData.prezzo_seduta !== null && formData.prezzo_seduta !== undefined) {
+          return formData.prezzo_seduta >= 0 && formData.prezzo_seduta <= 1000;
+        }
+        return true; // Se prezzo_seduta non è inserito, va bene (usa prezzo_fascia)
       default:
         return false;
     }
@@ -387,6 +417,19 @@ export default function PartnerRegistration() {
                 bio={formData.bio}
                 onChange={(value) => updateFormData('bio', value)}
                 error={errors.bio}
+              />
+            )}
+
+            {currentStep === 6 && (
+              <StepModalitaPrezzi
+                key="step6"
+                data={{
+                  modalita: formData.modalita,
+                  prezzo_seduta: formData.prezzo_seduta,
+                  prezzo_fascia: formData.prezzo_fascia
+                }}
+                onChange={updateFormData}
+                errors={errors}
               />
             )}
           </AnimatePresence>

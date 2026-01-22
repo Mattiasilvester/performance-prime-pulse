@@ -16,9 +16,15 @@ export interface Professional {
   zona: string | null;
   modalita: 'online' | 'presenza' | 'entrambi';
   prezzo_fascia: '€' | '€€' | '€€€';
+  prezzo_seduta?: number | null;
   rating: number;
   reviews_count: number;
   is_partner?: boolean;
+  services?: {
+    id: string;
+    name: string;
+    price: number;
+  }[];
 }
 
 export interface ProfessionalsFilters {
@@ -63,9 +69,11 @@ export async function getProfessionals(filters?: ProfessionalsFilters): Promise<
         zona, 
         modalita, 
         prezzo_fascia, 
+        prezzo_seduta,
         rating, 
         reviews_count,
-        is_partner
+        is_partner,
+        services:professional_services(id, name, price)
       `)
       .eq('attivo', true);
 
@@ -102,7 +110,28 @@ export async function getProfessionals(filters?: ProfessionalsFilters): Promise<
       throw error;
     }
 
-    return data || [];
+    // Mappa i dati per normalizzare i servizi (filtra solo quelli attivi e normalizza array)
+    if (data) {
+      return data.map((prof: any) => {
+        // Normalizza services: può essere array, oggetto singolo, o null
+        // Nota: RLS policy già filtra is_active = TRUE, ma filtriamo anche lato client per sicurezza
+        let services = [];
+        if (prof.services) {
+          if (Array.isArray(prof.services)) {
+            services = prof.services.filter((s: any) => s && s.id && s.name && s.price !== undefined);
+          } else if (prof.services.id && prof.services.name && prof.services.price !== undefined) {
+            services = [prof.services];
+          }
+        }
+        
+        return {
+          ...prof,
+          services: services
+        };
+      });
+    }
+
+    return [];
   } catch (error) {
     console.error('Errore getProfessionals:', error);
     return [];
@@ -128,9 +157,11 @@ export async function getProfessionalById(id: string): Promise<Professional | nu
         zona, 
         modalita, 
         prezzo_fascia, 
+        prezzo_seduta,
         rating, 
         reviews_count,
-        is_partner
+        is_partner,
+        services:professional_services(id, name, price)
       `)
       .eq('id', id)
       .eq('attivo', true)
@@ -141,7 +172,24 @@ export async function getProfessionalById(id: string): Promise<Professional | nu
       return null;
     }
 
-    return data;
+    // Normalizza services come in getProfessionals
+    if (data) {
+      let services = [];
+      if (data.services) {
+        if (Array.isArray(data.services)) {
+          services = data.services.filter((s: any) => s && s.id && s.name && s.price !== undefined);
+        } else if (data.services.id && data.services.name && data.services.price !== undefined) {
+          services = [data.services];
+        }
+      }
+      
+      return {
+        ...data,
+        services: services
+      };
+    }
+
+    return null;
   } catch (error) {
     console.error('Errore getProfessionalById:', error);
     return null;

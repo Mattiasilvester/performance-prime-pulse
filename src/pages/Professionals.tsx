@@ -21,6 +21,39 @@ const Professionals: React.FC = () => {
   // Auth
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Helper per renderizzare prezzi (servizi > prezzo_seduta > prezzo_fascia)
+  const renderPricing = (professional: Professional) => {
+    if (professional.services && professional.services.length > 0) {
+      // Mostra primi 2 servizi in tag orizzontali
+      return (
+        <div className="flex items-center gap-2 flex-wrap">
+          {professional.services.slice(0, 2).map((service: any, idx: number) => (
+            <span 
+              key={service.id || idx}
+              className="bg-[#EEBA2B]/20 text-[#EEBA2B] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#EEBA2B]/30"
+            >
+              {service.name} €{service.price}
+            </span>
+          ))}
+        </div>
+      );
+    } else if (professional.prezzo_seduta) {
+      // Mostra prezzo seduta
+      return (
+        <span className="text-[#EEBA2B] font-bold text-sm">
+          €{professional.prezzo_seduta}/seduta
+        </span>
+      );
+    } else {
+      // Fallback a prezzo fascia
+      return (
+        <span className="text-[#EEBA2B] font-bold text-sm">
+          {professional.prezzo_fascia}
+        </span>
+      );
+    }
+  };
   
   // State
   const [professionals, setProfessionals] = useState<Professional[]>([]);
@@ -406,7 +439,11 @@ const Professionals: React.FC = () => {
                     <span className="text-yellow-400">
                       ⭐ {professional.rating.toFixed(1)} ({professional.reviews_count})
                     </span>
-                    <span className="text-[#EEBA2B] font-bold">{professional.prezzo_fascia}</span>
+                  </div>
+                  
+                  {/* Prezzi: Servizi > Prezzo Seduta > Prezzo Fascia */}
+                  <div className="mt-2">
+                    {renderPricing(professional)}
                   </div>
                 </div>
 
@@ -493,7 +530,11 @@ const Professionals: React.FC = () => {
                     <span className="text-yellow-400">
                       ⭐ {professional.rating.toFixed(1)} ({professional.reviews_count})
                     </span>
-                    <span className="text-[#EEBA2B] font-bold">{professional.prezzo_fascia}</span>
+                  </div>
+                  
+                  {/* Prezzi: Servizi > Prezzo Seduta > Prezzo Fascia */}
+                  <div className="mt-2">
+                    {renderPricing(professional)}
                   </div>
                 </div>
 

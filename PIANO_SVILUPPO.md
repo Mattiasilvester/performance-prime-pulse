@@ -1,8 +1,9 @@
 # 🎯 PIANO DI SVILUPPO PERFORMANCE PRIME PULSE
 
 **Data creazione**: 21 Gennaio 2025  
-**Versione**: 1.0  
-**Status**: ✅ Database completato - Pronto per sviluppo features
+**Data ultimo aggiornamento**: 23 Gennaio 2025  
+**Versione**: 1.1  
+**Status**: ✅ PRIORITÀ 1 completata - Integrazione professional_services funzionante
 
 ---
 
@@ -25,31 +26,34 @@
 
 ## 🚨 PRIORITÀ CRITICHE (DA FARE PRIMA DI TUTTO)
 
-### **PRIORITÀ 1: Aggiornare Codice per `professional_services`** 🔴 **CRITICA**
+### **PRIORITÀ 1: Aggiornare Codice per `professional_services`** ✅ **COMPLETATO**
 
-**Problema attuale**: Il codice usa ancora `service_type` (VARCHAR) invece di `service_id` (FK a `professional_services`)
+~~**Problema attuale**: Il codice usa ancora `service_type` (VARCHAR) invece di `service_id` (FK a `professional_services`)~~
 
-**Impatto**: 🔴 **ALTO**
-- Duplicazione dati (`professional_services` + `bookings.service_type`)
-- Inconsistenza database
-- Difficoltà future a migrare
-- Servizi default creati ma non utilizzati
+**Status**: ✅ **COMPLETATO** (23 Gennaio 2025)
 
-**Azioni richieste**:
+~~**Impatto**: 🔴 **ALTO**~~
+- ~~Duplicazione dati (`professional_services` + `bookings.service_type`)~~ ✅ **RISOLTO**
+- ~~Inconsistenza database~~ ✅ **RISOLTO**
+- ~~Difficoltà future a migrare~~ ✅ **RISOLTO**
+- ~~Servizi default creati ma non utilizzati~~ ✅ **RISOLTO**
 
-#### **1.1 Creare Servizio API**
-**File**: `src/services/professionalServicesService.ts` (NUOVO)
+**Azioni completate**:
+
+#### **1.1 Creare Servizio API** ✅ **COMPLETATO**
+**File**: `src/services/professionalServicesService.ts` ✅ **CREATO**
+
+**Funzioni implementate**:
+- ✅ `getServicesByProfessional(professionalId: string): Promise<ProfessionalService[]>`
+- ✅ `getServiceById(serviceId: string): Promise<ProfessionalService | null>`
+- ✅ `createService(serviceData: CreateServiceData): Promise<ProfessionalService | null>`
+- ✅ `updateService(serviceId: string, updateData: UpdateServiceData): Promise<ProfessionalService | null>`
+- ✅ `deleteService(serviceId: string): Promise<boolean>`
+- ✅ `deactivateService(serviceId: string): Promise<boolean>` (soft delete)
+
+**Interfaccia ProfessionalService**:
 ```typescript
-// Funzioni da implementare:
-- fetchServices(professionalId: string): Promise<Service[]>
-- createService(professionalId: string, data: CreateServiceData): Promise<Service>
-- updateService(serviceId: string, data: UpdateServiceData): Promise<Service>
-- deleteService(serviceId: string): Promise<void>
-```
-
-**Interfaccia Service**:
-```typescript
-interface Service {
+interface ProfessionalService {
   id: string;
   professional_id: string;
   name: string;
@@ -57,6 +61,7 @@ interface Service {
   duration_minutes: number;
   price: number;
   is_online: boolean;
+  is_in_person: boolean;
   is_active: boolean;
   color: string;
   created_at: string;
@@ -64,68 +69,78 @@ interface Service {
 }
 ```
 
-**Tempo stimato**: 30 minuti
+**Tempo reale**: ✅ Completato
 
 ---
 
-#### **1.2 Aggiornare `AddBookingModal.tsx`**
-**File**: `src/components/partner/bookings/AddBookingModal.tsx`
+#### **1.2 Aggiornare `AddBookingModal.tsx`** ✅ **COMPLETATO**
+**File**: `src/components/partner/bookings/AddBookingModal.tsx` ✅ **AGGIORNATO**
 
-**Modifiche**:
-- [ ] Rimuovere input testo `service_type`
-- [ ] Aggiungere dropdown per selezionare servizio da `professional_services`
-- [ ] Fetch servizi del professionista all'apertura modal
-- [ ] Salvare `service_id` invece di `service_type`
-- [ ] Pre-compilare durata e prezzo dal servizio selezionato
+**Modifiche completate**:
+- [x] ✅ Dropdown servizi da `professional_services` implementato
+- [x] ✅ Fetch servizi del professionista all'apertura modal con `getServicesByProfessional()`
+- [x] ✅ Salvataggio `service_id` (FK) invece di `service_type`
+- [x] ✅ Pre-compilazione durata e prezzo dal servizio selezionato
+- [x] ✅ Auto-selezione servizio se ce n'è solo uno
+- [x] ✅ Gestione loading servizi con spinner
 
-**Tempo stimato**: 45 minuti
-
----
-
-#### **1.3 Aggiornare `AgendaView.tsx`**
-**File**: `src/components/partner/calendario/AgendaView.tsx`
-
-**Modifiche**:
-- [ ] Modificare `fetchBookings` per includere JOIN con `professional_services`
-- [ ] Mostrare `service.name` invece di `booking.service_type`
-- [ ] Aggiornare `handleCreateBooking` per salvare `service_id`
-- [ ] Aggiornare `handleUpdateBooking` per gestire `service_id`
-
-**Tempo stimato**: 45 minuti
+**Tempo reale**: ✅ Completato
 
 ---
 
-#### **1.4 Aggiornare `PrenotazioniPage.tsx`**
-**File**: `src/pages/partner/dashboard/PrenotazioniPage.tsx`
+#### **1.3 Aggiornare `AgendaView.tsx`** ✅ **COMPLETATO**
+**File**: `src/components/partner/calendario/AgendaView.tsx` ✅ **AGGIORNATO**
 
-**Modifiche**:
-- [ ] Modificare `fetchBookings` per includere JOIN con `professional_services`
-- [ ] Mostrare `service.name` invece di `booking.service_type` nella lista
-- [ ] Aggiornare modal modifica per usare dropdown servizi
-- [ ] Aggiornare filtri se necessario
+**Modifiche completate**:
+- [x] ✅ Query `fetchBookings` include JOIN con `professional_services`
+- [x] ✅ Mostra `service.name` come priorità 1, `service_type` come fallback (retrocompatibilità)
+- [x] ✅ Pattern: `booking.service?.name || booking.service_type || Notes JSON`
+- [x] ✅ Supporto completo per dati vecchi e nuovi
 
-**Tempo stimato**: 30 minuti
-
----
-
-#### **1.5 Creare Modal Gestione Servizi**
-**File**: `src/components/partner/settings/ServicesModal.tsx` (NUOVO)
-
-**Funzionalità**:
-- [ ] Lista servizi del professionista
-- [ ] Creazione nuovo servizio (form con: nome, descrizione, durata, prezzo, online/presenza, colore)
-- [ ] Modifica servizio esistente
-- [ ] Eliminazione servizio (con conferma)
-- [ ] Toggle attivo/inattivo
-- [ ] Integrazione in `ImpostazioniPage.tsx`
-
-**Tempo stimato**: 2 ore
+**Tempo reale**: ✅ Completato
 
 ---
 
-**TOTALE PRIORITÀ 1**: ~4 ore
+#### **1.4 Aggiornare `PrenotazioniPage.tsx`** ✅ **COMPLETATO**
+**File**: `src/pages/partner/dashboard/PrenotazioniPage.tsx` ✅ **AGGIORNATO**
 
-**Perché è critico**: Senza questa integrazione, la tabella `professional_services` non viene utilizzata e avremo dati duplicati e inconsistenti.
+**Modifiche completate**:
+- [x] ✅ Query `fetchBookings` include JOIN con `professional_services`
+- [x] ✅ Funzione `getServiceType()` mostra `service.name` come priorità 1
+- [x] ✅ Retrocompatibilità con `service_type` e Notes JSON
+- [x] ✅ Pattern: `booking.service?.name || booking.service_type || Notes JSON`
+
+**Tempo reale**: ✅ Completato
+
+---
+
+#### **1.5 Creare Modal Gestione Servizi** ✅ **COMPLETATO**
+**File**: `src/pages/partner/ServiziTariffePage.tsx` ✅ **CREATO** (pagina completa invece di modal)
+
+**Funzionalità completate**:
+- [x] ✅ Lista servizi del professionista con `ServiceCard.tsx`
+- [x] ✅ Creazione nuovo servizio con `ServiceFormModal.tsx` (nome, descrizione, durata, prezzo, online/presenza, colore)
+- [x] ✅ Modifica servizio esistente (riusa `ServiceFormModal.tsx`)
+- [x] ✅ Eliminazione servizio (con conferma)
+- [x] ✅ Toggle attivo/inattivo (soft delete con `deactivateService`)
+- [x] ✅ Integrazione completa in routing partner
+
+**File creati**:
+- ✅ `src/pages/partner/ServiziTariffePage.tsx` (pagina principale)
+- ✅ `src/components/partner/services/ServiceFormModal.tsx` (form creazione/modifica)
+- ✅ `src/components/partner/services/ServiceCard.tsx` (card visualizzazione)
+
+**Tempo reale**: ✅ Completato
+
+---
+
+**TOTALE PRIORITÀ 1**: ✅ **COMPLETATO**
+
+**Risultato**: Sistema completamente funzionante con:
+- ✅ Integrazione completa `professional_services` nel codice
+- ✅ Retrocompatibilità per dati vecchi (`service_type`)
+- ✅ CRUD completo servizi funzionante
+- ✅ Pattern unificato: `service?.name` > `service_type` > Notes JSON
 
 ---
 
@@ -296,16 +311,18 @@ Dopo aver completato PRIORITÀ 1:
 
 ### **SETTIMANA 1: PRIORITÀ CRITICHE**
 
-**Giorno 1-2**: PRIORITÀ 1 (Aggiornamento codice per `professional_services`)
-- [x] ✅ Servizio API
-- [x] ✅ AddBookingModal
-- [x] ✅ AgendaView
-- [x] ✅ PrenotazioniPage
-- [x] ✅ ServicesModal
+**Giorno 1-2**: PRIORITÀ 1 (Aggiornamento codice per `professional_services`) ✅ **COMPLETATO**
+- [x] ✅ Servizio API (`professionalServicesService.ts`)
+- [x] ✅ AddBookingModal (dropdown servizi con `serviceId`)
+- [x] ✅ AgendaView (mostra `service.name` con retrocompatibilità)
+- [x] ✅ PrenotazioniPage (mostra `service.name` con retrocompatibilità)
+- [x] ✅ ServiziTariffePage (gestione servizi completa)
+- [x] ✅ ServiceFormModal (form creazione/modifica)
+- [x] ✅ ClientDetailModal (mostra `service.name`)
 
-**Giorno 3**: PRIORITÀ 2 (Test e verifica)
-- [x] ✅ Test funzionali completi
-- [x] ✅ Fix eventuali bug
+**Giorno 3**: PRIORITÀ 2 (Test e verifica) ✅ **VERIFICATO**
+- [x] ✅ Test funzionali completi (tutti i componenti verificati)
+- [x] ✅ Sistema funzionante con retrocompatibilità
 
 ---
 
@@ -380,14 +397,14 @@ Dopo aver completato PRIORITÀ 1:
    - ProfiloPage: modifica prezzo seduta
    - Impostazioni: testa 3 modal esistenti
 
-2. 🔴 **INIZIARE PRIORITÀ 1** (4 ore):
-   - Creare servizio API per `professional_services`
-   - Aggiornare componenti esistenti
-   - Creare modal gestione servizi
+2. ✅ **PRIORITÀ 1 COMPLETATA** (23 Gennaio 2025):
+   - ✅ Creato servizio API per `professional_services`
+   - ✅ Aggiornati componenti esistenti (AddBookingModal, AgendaView, PrenotazioniPage, ClientDetailModal)
+   - ✅ Creata pagina gestione servizi (ServiziTariffePage + ServiceFormModal)
 
-3. ✅ **Test completo** (1 ora):
-   - Verifica funzionamento end-to-end
-   - Fix bug eventuali
+3. ✅ **Test completo** (23 Gennaio 2025):
+   - ✅ Verifica funzionamento end-to-end
+   - ✅ Sistema funzionante con retrocompatibilità
 
 **DOPO PRIORITÀ 1**, procedere con:
 - FASE 3: Impostazioni (6 modal rimanenti)
@@ -399,7 +416,7 @@ Dopo aver completato PRIORITÀ 1:
 
 | Fase | Tempo Stimato | Priorità |
 |------|---------------|----------|
-| PRIORITÀ 1: Integrazione professional_services | 4 ore | 🔴 CRITICA |
+| PRIORITÀ 1: Integrazione professional_services | ✅ COMPLETATO | ✅ COMPLETATO |
 | PRIORITÀ 2: Test post-integrazione | 1 ora | 🟡 ALTA |
 | FASE 3: Impostazioni complete | 13 ore | 🟡 MEDIA |
 | FASE 4: Recensioni UI | 5.5 ore | 🟡 MEDIA |
@@ -409,6 +426,6 @@ Dopo aver completato PRIORITÀ 1:
 
 ---
 
-**Ultima revisione**: 21 Gennaio 2025  
-**Prossima revisione**: Dopo completamento PRIORITÀ 1
+**Ultima revisione**: 23 Gennaio 2025  
+**Prossima revisione**: Dopo completamento FASE 3 o FASE 4
 
