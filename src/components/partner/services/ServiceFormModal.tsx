@@ -77,6 +77,24 @@ export const ServiceFormModal = ({ isOpen, onClose, onSave, service }: ServiceFo
     }
   }, [service, isOpen]);
 
+  // Helper per convertire is_online/is_in_person in modalità
+  const getServiceModality = (): 'online' | 'presenza' | 'entrambi' => {
+    if (formData.is_online && formData.is_in_person) return 'entrambi';
+    if (formData.is_online) return 'online';
+    return 'presenza';
+  };
+
+  // Helper per impostare is_online/is_in_person da modalità
+  const setServiceModality = (modality: 'online' | 'presenza' | 'entrambi') => {
+    if (modality === 'entrambi') {
+      setFormData(prev => ({ ...prev, is_online: true, is_in_person: true }));
+    } else if (modality === 'online') {
+      setFormData(prev => ({ ...prev, is_online: true, is_in_person: false }));
+    } else {
+      setFormData(prev => ({ ...prev, is_online: false, is_in_person: true }));
+    }
+  };
+
   const validate = (): string | null => {
     if (!formData.name.trim()) return 'Inserisci il nome del servizio';
     
@@ -260,28 +278,19 @@ export const ServiceFormModal = ({ isOpen, onClose, onSave, service }: ServiceFo
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Modalità <span className="text-red-500">*</span>
             </label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.is_in_person}
-                  onChange={(e) => setFormData(prev => ({ ...prev, is_in_person: e.target.checked }))}
-                  disabled={saving}
-                  className="w-5 h-5 rounded border-gray-300 text-[#EEBA2B] focus:ring-[#EEBA2B] disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <span className="text-sm text-gray-700">🏠 In presenza</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.is_online}
-                  onChange={(e) => setFormData(prev => ({ ...prev, is_online: e.target.checked }))}
-                  disabled={saving}
-                  className="w-5 h-5 rounded border-gray-300 text-[#EEBA2B] focus:ring-[#EEBA2B] disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <span className="text-sm text-gray-700">💻 Online</span>
-              </label>
-            </div>
+            <select
+              value={getServiceModality()}
+              onChange={(e) => setServiceModality(e.target.value as 'online' | 'presenza' | 'entrambi')}
+              disabled={saving}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#EEBA2B] focus:ring-1 focus:ring-[#EEBA2B] outline-none text-gray-900 disabled:bg-gray-50 disabled:cursor-not-allowed"
+            >
+              <option value="presenza">🏠 Solo In Presenza</option>
+              <option value="online">💻 Solo Online</option>
+              <option value="entrambi">🔄 Entrambi</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Scegli come vuoi erogare questo servizio
+            </p>
           </div>
 
           {/* Colore */}

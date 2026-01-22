@@ -12,7 +12,8 @@ import {
   LogOut,
   X,
   ChevronDown,
-  Briefcase
+  Briefcase,
+  Star
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -29,7 +30,7 @@ const menuItems: MenuItem[] = [
   { icon: ClipboardList, label: 'Prenotazioni', path: '/partner/dashboard/prenotazioni' },
   { icon: UserCircle, label: 'Profilo', path: '/partner/dashboard/profilo' },
   { icon: Briefcase, label: 'Servizi e Tariffe', path: '/partner/dashboard/servizi' },
-  { icon: Settings, label: 'Impostazioni', path: '/partner/dashboard/impostazioni' },
+  { icon: Star, label: 'Recensioni', path: '/partner/dashboard/recensioni' },
 ];
 
 interface PartnerSidebarProps {
@@ -193,6 +194,24 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
               </div>
             )}
           </div>
+
+          {/* Impostazioni - Dopo Clienti */}
+          <Link
+            to="/partner/dashboard/impostazioni"
+            onClick={() => {
+              onClose();
+            }}
+            className={`
+              flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+              ${currentPath.startsWith('/partner/dashboard/impostazioni')
+                ? 'bg-[#EEBA2B]/25 text-gray-900 border-l-4 border-[#EEBA2B] font-semibold'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              }
+            `}
+          >
+            <Settings className="w-5 h-5" />
+            <span>Impostazioni</span>
+          </Link>
         </nav>
 
         {/* Logout Button */}

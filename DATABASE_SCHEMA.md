@@ -1,7 +1,8 @@
 # 🗄️ SCHEMA DATABASE - PERFORMANCE PRIME PULSE
 
 **Ultimo aggiornamento:** 23 Gennaio 2025  
-**Database:** PostgreSQL (Supabase)
+**Database:** PostgreSQL (Supabase)  
+**Verifica Database:** ✅ Database pulito (verifica completata 23 Gennaio 2025)
 
 ---
 
@@ -9,7 +10,10 @@
 
 1. [Tipo Enum](#tipo-enum)
 2. [Tabelle Principali](#tabelle-principali)
+   - [profiles](#profiles)
+   - [professionals](#professionals)
 3. [Tabelle Professional System](#tabelle-professional-system)
+   - [reviews](#reviews) ⚠️
 4. [Tabelle Clienti e Progetti](#tabelle-clienti-e-progetti)
 5. [Tabelle Impostazioni Professionista](#tabelle-impostazioni-professionista)
 6. [Tabelle Workout System](#tabelle-workout-system)
@@ -38,6 +42,45 @@ ENUM ('fisioterapista', 'nutrizionista', 'mental_coach', 'osteopata', 'pt')
 ## 📋 TABELLE PRINCIPALI
 
 **Nota:** La tabella `users` è stata rimossa (migrazione cleanup 21 Gennaio 2025). Il sistema ora usa `auth.users` (Supabase Auth) → `profiles` (1:1).
+
+---
+
+### `profiles`
+Tabella profili utenti (1:1 con `auth.users`).
+
+| Colonna | Tipo | Null | Default | Descrizione |
+|---------|------|------|---------|-------------|
+| `id` | UUID | NO | - | Primary Key, **FK → auth.users(id)** |
+| `first_name` | TEXT | YES | NULL | Nome |
+| `last_name` | TEXT | YES | NULL | Cognome |
+| `full_name` | TEXT | YES | NULL | Nome completo |
+| `email` | TEXT | YES | NULL | Email |
+| `phone` | TEXT | YES | NULL | Telefono |
+| `birth_date` | DATE | YES | NULL | Data di nascita |
+| `birth_place` | TEXT | YES | NULL | Luogo di nascita |
+| `avatar_url` | TEXT | YES | NULL | URL avatar |
+| `role` | TEXT | YES | NULL | Ruolo utente (es: 'super_admin') |
+| `last_login` | TIMESTAMPTZ | YES | NULL | Ultimo accesso |
+| `feedback_15d_sent` | BOOLEAN | YES | `false` | Flag feedback 15 giorni inviato |
+| `created_at` | TIMESTAMPTZ | NO | `now()` | Data creazione |
+| `updated_at` | TIMESTAMPTZ | NO | `now()` | Data ultimo aggiornamento |
+
+**Constraints:**
+- `PRIMARY KEY (id)` - Chiave primaria
+- `FOREIGN KEY (id) REFERENCES auth.users(id)` - Riferimento a Supabase Auth
+
+**Indici:**
+- Indice primario su `id`
+
+**RLS:** Abilitata
+
+**Trigger:**
+- `handle_new_user()` - Crea automaticamente profilo quando viene creato utente in `auth.users`
+
+**Note:**
+- Tabella creata automaticamente tramite trigger quando un utente si registra
+- Usata per dati profilo utente (non onboarding)
+- Collegata 1:1 con `auth.users` di Supabase Auth
 
 ---
 
@@ -256,7 +299,9 @@ Prenotazioni appuntamenti tra utenti e professionisti.
 ---
 
 ### `professional_clients`
-Relazione tra professionisti e loro clienti.
+⚠️ **LEGACY - NON USATA NEL CODICE**
+
+Relazione tra professionisti e loro clienti. **Questa tabella esiste ma non è utilizzata nel codice**. Il sistema usa la tabella `clients` per gestire i clienti dei professionisti.
 
 | Colonna | Tipo | Null | Default | Descrizione |
 |---------|------|------|---------|-------------|
@@ -280,6 +325,8 @@ Relazione tra professionisti e loro clienti.
 - `idx_prof_clients_status` su `status`
 
 **RLS:** Abilitata
+
+**Nota:** ⚠️ **TABELLA LEGACY** - Non utilizzata nel codice. Il sistema usa `clients` per gestire i clienti. Considerare rimozione se non ci sono dati importanti.
 
 ---
 
@@ -464,6 +511,57 @@ Lingue parlate dal professionista con livello di competenza (1:N con professiona
 - `idx_professional_languages_code` su `language_code`
 
 **RLS:** Abilitata
+
+---
+
+### `reviews`
+⚠️ **TABELLA CREATA MA NON INTEGRATA NEL CODICE**
+
+Recensioni degli utenti per i professionisti. La tabella è completa con trigger, RLS e funzionalità, ma il codice attualmente usa `DEMO_REVIEWS` hardcoded.
+
+| Colonna | Tipo | Null | Default | Descrizione |
+|---------|------|------|---------|-------------|
+| `id` | UUID | NO | `gen_random_uuid()` | Primary Key |
+| `professional_id` | UUID | NO | - | **FK → professionals(id)** |
+| `user_id` | UUID | NO | - | **FK → auth.users(id)** |
+| `booking_id` | UUID | YES | NULL | **FK → bookings(id)** (opzionale) |
+| `rating` | INTEGER | NO | - | Rating da 1 a 5 (CHECK 1-5) |
+| `title` | VARCHAR(200) | YES | NULL | Titolo recensione |
+| `comment` | TEXT | YES | NULL | Commento recensione |
+| `response` | TEXT | YES | NULL | Risposta professionista |
+| `response_at` | TIMESTAMPTZ | YES | NULL | Data risposta professionista |
+| `is_visible` | BOOLEAN | NO | `true` | Se visibile pubblicamente |
+| `is_verified` | BOOLEAN | NO | `false` | Se verificata (prenotazione completata) |
+| `created_at` | TIMESTAMPTZ | NO | `now()` | Data creazione |
+| `updated_at` | TIMESTAMPTZ | NO | `now()` | Data ultimo aggiornamento |
+
+**Constraints:**
+- `UNIQUE(user_id, booking_id)` - Un utente può lasciare solo una recensione per booking
+- `CHECK (rating BETWEEN 1 AND 5)`
+
+**Indici:**
+- `idx_reviews_professional` su `professional_id`
+- `idx_reviews_user` su `user_id`
+- `idx_reviews_booking` su `booking_id` (WHERE booking_id IS NOT NULL)
+- `idx_reviews_visible` su `(professional_id, is_visible)` WHERE is_visible = TRUE
+- `idx_reviews_rating` su `(professional_id, rating)` WHERE is_visible = TRUE
+
+**Trigger:**
+- `update_reviews_updated_at()` - Aggiorna `updated_at` automaticamente
+- `update_professional_rating()` - Aggiorna `professionals.rating` e `professionals.reviews_count` automaticamente quando vengono inserite/modificate/eliminate recensioni
+
+**RLS:** Abilitata
+
+**Policies:**
+- Chiunque può vedere recensioni visibili
+- Utenti autenticati possono vedere le proprie recensioni (anche non visibili)
+- Professionisti possono vedere tutte le recensioni per loro
+- Utenti autenticati possono inserire recensioni (solo per se stessi)
+- Utenti possono aggiornare solo le proprie recensioni
+- Professionisti possono rispondere alle proprie recensioni
+- Utenti possono eliminare solo le proprie recensioni
+
+**Nota:** ⚠️ **TABELLA COMPLETA MA NON INTEGRATA** - Il codice in `ProfessionalDetail.tsx` usa `DEMO_REVIEWS` hardcoded invece di questa tabella. Vedi `RACCOMANDAZIONE_REVIEWS.md` per decisione.
 
 ---
 

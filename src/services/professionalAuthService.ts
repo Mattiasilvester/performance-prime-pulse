@@ -13,6 +13,9 @@ export interface ProfessionalRegistrationData {
   titolo_studio?: string;
   certificazioni?: string[];
   customCategory?: string;
+  modalita?: 'online' | 'presenza' | 'entrambi';
+  prezzo_seduta?: number | null;
+  prezzo_fascia?: '€' | '€€' | '€€€';
 }
 
 export const professionalAuthService = {
@@ -57,8 +60,9 @@ export const professionalAuthService = {
         approved_at: new Date().toISOString(),
         attivo: true,
         is_partner: false, // Diventa partner dopo pagamento
-        modalita: 'entrambi',
-        prezzo_fascia: '€€',
+        modalita: data.modalita || 'entrambi',
+        prezzo_seduta: data.prezzo_seduta ?? null,
+        prezzo_fascia: data.prezzo_fascia || '€€',
         rating: 0,
         reviews_count: 0,
         // Campi obbligatori che non abbiamo nel form (valori placeholder)

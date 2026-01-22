@@ -2,6 +2,13 @@
 
 ## Decisioni Architetturali
 
+### 23 Gennaio 2025 - Sessione Sistema Recensioni Completo
+- **Service Layer Pattern**: Funzione `getReviewsByProfessional()` con parametro `onlyVisible` per distinguere visualizzazione pubblica (solo recensioni visibili) vs dashboard professionista (tutte le recensioni, anche non visibili). Pattern riutilizzabile per altri servizi che necessitano di filtri condizionali
+- **Componenti Modulari Recensioni**: Separazione responsabilità in `ReviewList.tsx` (statistiche e filtri), `ReviewCard.tsx` (singola recensione), `ReviewResponseModal.tsx` (risposta). Pattern modulare facilita manutenzione e riutilizzo
+- **Layout Coerente**: Stesso layout recensioni (stelle → nome → titolo → commento) sia lato utente che lato professionista. Pattern di coerenza UI importante per UX
+- **Responsive Design Pattern**: Layout filtri mobile (verticale) vs desktop (orizzontale) usando classi Tailwind `md:hidden` e `hidden md:flex`. Pattern da applicare a tutti i componenti con layout diverso mobile/desktop
+- **Statistiche Real-time**: Statistiche recensioni (rating medio, totale, verificate) calcolate client-side da array recensioni. Pattern efficiente per dataset piccoli, considerare calcolo server-side per dataset grandi
+
 ### 23 Gennaio 2025 - Sessione Ottimizzazioni Performance
 - **Query Batch Pattern**: Sostituito pattern loop con N query separate (`Promise.all` con `map` async) con query batch singola usando `.in()` per array di ID. Pattern applicato a `profiles` e `bookings` queries. Miglioramento performance: 70-95% più veloce (50 query → 1 query)
 - **Progressive Loading Pattern**: Pagine dashboard mostrano UI immediatamente con `loading = false` iniziale, dati caricano in background. Migliora perceived performance senza cambiare tempi reali. Pattern applicato a tutte le pagine dashboard

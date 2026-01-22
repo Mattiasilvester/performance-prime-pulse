@@ -1,9 +1,9 @@
 // src/pages/partner/ServiziTariffePage.tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Plus, Briefcase, FileText } from 'lucide-react';
+import { Loader2, Plus, Briefcase, FileText, Settings, Euro, Monitor, Home, RefreshCw, Info, ChevronDown } from 'lucide-react';
 import { ServiceCard } from '@/components/partner/services/ServiceCard';
 import { ServiceFormModal } from '@/components/partner/services/ServiceFormModal';
 import { 
@@ -24,16 +24,53 @@ interface ServiceFormData {
   is_active: boolean;
 }
 
+interface ProfessionalSettings {
+  prezzo_seduta: number | null;
+  modalita: 'online' | 'presenza' | 'entrambi';
+}
+
 export default function ServiziTariffePage() {
   const [services, setServices] = useState<ProfessionalService[]>([]);
   const [loading, setLoading] = useState(true);
   const [professionalId, setProfessionalId] = useState<string | null>(null);
+  const [professionalSettings, setProfessionalSettings] = useState<ProfessionalSettings>({
+    prezzo_seduta: null,
+    modalita: 'entrambi'
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [showModalityDropdown, setShowModalityDropdown] = useState(false);
+  const modalityDropdownRef = useRef<HTMLDivElement>(null);
   
   // Modal states
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingService, setEditingService] = useState<ProfessionalService | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<ProfessionalService | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const modalityOptions = [
+    { value: 'online' as const, label: 'Solo Online', icon: Monitor },
+    { value: 'presenza' as const, label: 'Solo In Presenza', icon: Home },
+    { value: 'entrambi' as const, label: 'Entrambi', icon: RefreshCw }
+  ];
+
+  const selectedModality = modalityOptions.find(opt => opt.value === professionalSettings.modalita) || modalityOptions[2];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalityDropdownRef.current && !modalityDropdownRef.current.contains(event.target as Node)) {
+        setShowModalityDropdown(false);
+      }
+    };
+
+    if (showModalityDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showModalityDropdown]);
 
   useEffect(() => {
     fetchProfessionalAndServices();
@@ -49,10 +86,10 @@ export default function ServiziTariffePage() {
         return;
       }
 
-      // Get professional ID
+      // Get professional ID and settings
       const { data: professional, error: profError } = await supabase
         .from('professionals')
-        .select('id')
+        .select('id, prezzo_seduta, modalita')
         .eq('user_id', user.id)
         .single();
 
@@ -63,6 +100,10 @@ export default function ServiziTariffePage() {
       }
 
       setProfessionalId(professional.id);
+      setProfessionalSettings({
+        prezzo_seduta: professional.prezzo_seduta,
+        modalita: (professional.modalita as 'online' | 'presenza' | 'entrambi') || 'entrambi'
+      });
 
       // Fetch services (tutti, non solo attivi, per gestione completa)
       const { data: servicesData, error: servicesError } = await supabase
@@ -203,6 +244,33 @@ export default function ServiziTariffePage() {
     setShowFormModal(true);
   };
 
+  const handleSaveSettings = async () => {
+    if (!professionalId) {
+      toast.error('Errore: professionista non trovato');
+      return;
+    }
+
+    setSavingSettings(true);
+    try {
+      const { error } = await supabase
+        .from('professionals')
+        .update({
+          prezzo_seduta: professionalSettings.prezzo_seduta || null,
+          modalita: professionalSettings.modalita
+        })
+        .eq('id', professionalId);
+
+      if (error) throw error;
+
+      toast.success('Impostazioni salvate con successo!');
+    } catch (error: any) {
+      console.error('Errore salvataggio impostazioni:', error);
+      toast.error('Errore nel salvataggio delle impostazioni');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       {/* Header */}
@@ -214,6 +282,128 @@ export default function ServiziTariffePage() {
         <p className="text-gray-600">
           Gestisci i servizi che offri ai tuoi clienti. I servizi attivi saranno visibili durante la prenotazione.
         </p>
+      </div>
+
+      {/* Impostazioni Generali */}
+      <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Settings className="w-5 h-5 text-[#EEBA2B]" />
+          <h2 className="text-lg font-semibold text-gray-900">Impostazioni Generali</h2>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          Queste impostazioni vengono usate quando non hai servizi specifici attivi o come riferimento generale.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+          {/* Prezzo Seduta Generale */}
+          <div className="flex flex-col min-w-0">
+            <label htmlFor="prezzo_seduta" className="block text-sm font-medium text-gray-700 mb-2">
+              Prezzo seduta generale (€)
+            </label>
+            <div className="relative w-full">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10">
+                <Euro className="w-5 h-5" />
+              </div>
+              <input
+                type="number"
+                id="prezzo_seduta"
+                min="0"
+                max="1000"
+                value={professionalSettings.prezzo_seduta || ''}
+                onChange={(e) => setProfessionalSettings(prev => ({
+                  ...prev,
+                  prezzo_seduta: e.target.value ? parseInt(e.target.value) : null
+                }))}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent outline-none"
+                placeholder="Es: 50, 80, 100"
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Usato quando non hai servizi attivi
+            </p>
+          </div>
+
+          {/* Modalità Generale */}
+          <div className="flex flex-col min-w-0">
+            <label htmlFor="modalita_generale" className="block text-sm font-medium text-gray-700 mb-2">
+              Modalità di lavoro generale
+            </label>
+            <div className="relative w-full" ref={modalityDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setShowModalityDropdown(!showModalityDropdown)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent outline-none bg-white text-left flex items-center justify-between hover:border-gray-400 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <selectedModality.icon className="w-5 h-5 text-gray-600" />
+                  <span className="text-gray-900">{selectedModality.label}</span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showModalityDropdown ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showModalityDropdown && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+                  {modalityOptions.map((option) => {
+                    const Icon = option.icon;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          setProfessionalSettings(prev => ({
+                            ...prev,
+                            modalita: option.value
+                          }));
+                          setShowModalityDropdown(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left flex items-center gap-2 hover:bg-gray-50 transition-colors ${
+                          professionalSettings.modalita === option.value ? 'bg-[#EEBA2B]/10' : ''
+                        }`}
+                      >
+                        <Icon className={`w-5 h-5 ${professionalSettings.modalita === option.value ? 'text-[#EEBA2B]' : 'text-gray-600'}`} />
+                        <span className={professionalSettings.modalita === option.value ? 'text-[#EEBA2B] font-medium' : 'text-gray-900'}>
+                          {option.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Modalità predefinita per i tuoi servizi
+            </p>
+          </div>
+        </div>
+
+        {/* Info Box */}
+        {services.filter(s => s.is_active).length > 0 && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
+            <Info className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+            <p className="text-xs text-blue-800">
+              <strong>Nota:</strong> Hai {services.filter(s => s.is_active).length} servizio/i attivo/i. 
+              I servizi attivi hanno priorità sul prezzo generale nella visualizzazione pubblica.
+            </p>
+          </div>
+        )}
+
+        {/* Bottone Salva */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleSaveSettings}
+            disabled={savingSettings}
+            className="bg-[#EEBA2B] text-black font-semibold px-6 py-2.5 rounded-lg hover:bg-[#d4a827] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {savingSettings ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Salvataggio...
+              </>
+            ) : (
+              'Salva Impostazioni'
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Bottone nuovo servizio */}

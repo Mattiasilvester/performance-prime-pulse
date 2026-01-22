@@ -1,40 +1,53 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, MapPin, Video, Users, Euro, MessageCircle, Calendar, X, ChevronLeft, ChevronRight, Ban } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Video, Users, Euro, MessageCircle, Calendar, X, ChevronLeft, ChevronRight, Ban, CheckCircle, Plus } from 'lucide-react';
 import { getProfessionalById, Professional, getCategoryLabel, getCategoryIcon } from '@/services/professionalsService';
 import { useBlockedPeriods } from '@/hooks/useBlockedPeriods';
 import { toast } from 'sonner';
+import { getReviewsByProfessional, Review, getAvailableBookingsForReview, hasUserReviewedProfessional } from '@/services/reviewsService';
+import { useAuth } from '@/hooks/useAuth';
+import ReviewForm from '@/components/user/ReviewForm';
 
-// Recensioni demo
-const DEMO_REVIEWS = [
-  {
-    id: 1,
-    name: 'Marco G.',
-    rating: 5,
-    date: '2 settimane fa',
-    text: 'Professionista eccezionale! Ho raggiunto i miei obiettivi in tempi record. Molto preparato e disponibile.',
-  },
-  {
-    id: 2,
-    name: 'Laura B.',
-    rating: 5,
-    date: '1 mese fa',
-    text: 'Consigliatissimo! Approccio personalizzato e risultati visibili fin da subito. Super motivante!',
-  },
-  {
-    id: 3,
-    name: 'Giuseppe R.',
-    rating: 4,
-    date: '2 mesi fa',
-    text: 'Ottima esperienza. Competente e professionale. Lo consiglio a chi vuole risultati concreti.',
-  },
-];
+// Helper per formattare data relativa
+const formatRelativeDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  
+  if (diffInDays === 0) return 'Oggi';
+  if (diffInDays === 1) return 'Ieri';
+  if (diffInDays < 7) return `${diffInDays} giorni fa`;
+  if (diffInDays < 14) return '1 settimana fa';
+  if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} settimane fa`;
+  if (diffInDays < 60) return '1 mese fa';
+  if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} mesi fa`;
+  return `${Math.floor(diffInDays / 365)} anni fa`;
+};
+
+// Helper per ottenere nome utente
+const getUserDisplayName = (review: Review): string => {
+  if (review.user?.full_name) return review.user.full_name;
+  if (review.user?.first_name && review.user?.last_name) {
+    return `${review.user.first_name} ${review.user.last_name}`;
+  }
+  if (review.user?.first_name) return review.user.first_name;
+  return 'Utente';
+};
 
 const ProfessionalDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [availableBookings, setAvailableBookings] = useState<Array<{ id: string; booking_date: string; booking_time: string; service_name?: string | null }>>([]);
+  const [canReview, setCanReview] = useState(false);
+  const [checkingCanReview, setCheckingCanReview] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -80,6 +93,61 @@ const ProfessionalDetail: React.FC = () => {
     };
     loadProfessional();
   }, [id]);
+
+  // Fetch recensioni quando professional è caricato
+  useEffect(() => {
+    const loadReviews = async () => {
+      if (!professional?.id) return;
+      setReviewsLoading(true);
+      try {
+        const reviewsData = await getReviewsByProfessional(professional.id);
+        setReviews(reviewsData);
+      } catch (error) {
+        console.error('Errore caricamento recensioni:', error);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+    loadReviews();
+  }, [professional?.id]);
+
+  // Verifica se l'utente può lasciare una recensione
+  useEffect(() => {
+    const checkCanReview = async () => {
+      if (!user?.id || !professional?.id) {
+        setCanReview(false);
+        return;
+      }
+
+      setCheckingCanReview(true);
+      try {
+        // Verifica booking completati disponibili
+        const bookings = await getAvailableBookingsForReview(user.id, professional.id);
+        setAvailableBookings(bookings);
+
+        // L'utente può lasciare recensione se:
+        // 1. Ha booking completati senza recensione, OPPURE
+        // 2. Non ha ancora lasciato una recensione generale (senza booking_id)
+        const hasGeneralReview = await hasUserReviewedProfessional(user.id, professional.id);
+        
+        setCanReview(bookings.length > 0 || !hasGeneralReview);
+        
+        // Seleziona il primo booking disponibile (se ce ne sono)
+        if (bookings.length > 0) {
+          setSelectedBookingId(bookings[0].id);
+        } else {
+          setSelectedBookingId(null);
+        }
+      } catch (error) {
+        console.error('Errore verifica possibilità recensione:', error);
+        setCanReview(false);
+      } finally {
+        setCheckingCanReview(false);
+      }
+    };
+
+    checkCanReview();
+  }, [user?.id, professional?.id]);
 
   // Scroll in alto quando la pagina si carica
   useEffect(() => {
@@ -339,7 +407,7 @@ const ProfessionalDetail: React.FC = () => {
           <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
             📝 Chi sono
           </h2>
-          <p className="text-gray-300 leading-relaxed">
+          <p className="text-gray-300 leading-relaxed break-words whitespace-normal overflow-hidden">
             {professional.bio || 'Nessuna descrizione disponibile.'}
           </p>
         </div>
@@ -403,15 +471,46 @@ const ProfessionalDetail: React.FC = () => {
 
         {/* RECENSIONI */}
         <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            ⭐ Recensioni ({professional.reviews_count})
-          </h2>
-          <div className="space-y-4">
-            {DEMO_REVIEWS.map((review) => (
-              <div key={review.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              ⭐ Recensioni ({professional.reviews_count})
+            </h2>
+            {canReview && user && (
+              <button
+                onClick={() => setShowReviewForm(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-[#EEBA2B] text-black rounded-lg font-semibold hover:bg-[#d4a827] transition-colors text-sm"
+                disabled={checkingCanReview}
+              >
+                <Plus className="w-4 h-4" />
+                Lascia Recensione
+              </button>
+            )}
+          </div>
+          
+          {reviewsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#EEBA2B]"></div>
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-400 text-sm mb-4">Nessuna recensione ancora</p>
+              {canReview && user && (
+                <button
+                  onClick={() => setShowReviewForm(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#EEBA2B] text-black rounded-lg font-semibold hover:bg-[#d4a827] transition-colors text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Sii il primo a lasciare una recensione
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((review) => (
+                <div key={review.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                  {/* Stelle con badge e data sulla stessa riga */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <Star 
                           key={i} 
@@ -419,14 +518,48 @@ const ProfessionalDetail: React.FC = () => {
                         />
                       ))}
                     </div>
-                    <span className="text-white font-medium">{review.name}</span>
+                    <div className="flex items-center gap-2">
+                      {review.is_verified && (
+                        <span className="flex items-center gap-1 text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded">
+                          <CheckCircle className="w-3 h-3" />
+                          Verificata
+                        </span>
+                      )}
+                      <span className="text-gray-500 text-sm">{formatRelativeDate(review.created_at)}</span>
+                    </div>
                   </div>
-                  <span className="text-gray-500 text-sm">{review.date}</span>
+                  
+                  {/* Nome utente */}
+                  <div className="mb-3">
+                    <span className="text-white font-medium">{getUserDisplayName(review)}</span>
+                  </div>
+                  
+                  {/* Titolo */}
+                  {review.title && (
+                    <h3 className="text-white font-semibold text-sm mb-2">{review.title}</h3>
+                  )}
+                  
+                  {/* Commento */}
+                  {review.comment && (
+                    <p className="text-gray-300 text-sm mb-3">{review.comment}</p>
+                  )}
+                  
+                  {/* Risposta professionista */}
+                  {review.response && (
+                    <div className="mt-3 pt-3 border-t border-gray-700">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[#EEBA2B] font-semibold text-xs">Risposta del professionista</span>
+                        {review.response_at && (
+                          <span className="text-gray-500 text-xs">{formatRelativeDate(review.response_at)}</span>
+                        )}
+                      </div>
+                      <p className="text-gray-300 text-sm">{review.response}</p>
+                    </div>
+                  )}
                 </div>
-                <p className="text-gray-300 text-sm">{review.text}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
       </div>
@@ -700,6 +833,52 @@ const ProfessionalDetail: React.FC = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* MODAL REVIEW FORM */}
+      {showReviewForm && professional && user && (
+        <ReviewForm
+          professionalId={professional.id}
+          bookingId={selectedBookingId}
+          onClose={() => setShowReviewForm(false)}
+          onSuccess={() => {
+            // Ricarica recensioni dopo la creazione
+            const loadReviews = async () => {
+              if (!professional?.id) return;
+              try {
+                const reviewsData = await getReviewsByProfessional(professional.id);
+                setReviews(reviewsData);
+                // Ricarica anche il professionista per aggiornare reviews_count
+                const updatedProfessional = await getProfessionalById(professional.id);
+                if (updatedProfessional) {
+                  setProfessional(updatedProfessional);
+                }
+              } catch (error) {
+                console.error('Errore ricaricamento recensioni:', error);
+              }
+            };
+            loadReviews();
+            // Ricarica anche la verifica canReview
+            setCanReview(false);
+            const checkCanReview = async () => {
+              if (!user?.id || !professional?.id) return;
+              try {
+                const bookings = await getAvailableBookingsForReview(user.id, professional.id);
+                setAvailableBookings(bookings);
+                const hasGeneralReview = await hasUserReviewedProfessional(user.id, professional.id);
+                setCanReview(bookings.length > 0 || !hasGeneralReview);
+                if (bookings.length > 0) {
+                  setSelectedBookingId(bookings[0].id);
+                } else {
+                  setSelectedBookingId(null);
+                }
+              } catch (error) {
+                console.error('Errore verifica possibilità recensione:', error);
+              }
+            };
+            checkCanReview();
+          }}
+        />
       )}
     </div>
   );
