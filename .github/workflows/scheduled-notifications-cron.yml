@@ -1,0 +1,20 @@
+name: Scheduled Notifications Cron
+
+on:
+  schedule:
+    # Esegui ogni 5 minuti (più frequente dei booking reminders per maggiore precisione)
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Permette esecuzione manuale
+
+jobs:
+  send-scheduled-notifications:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call send-scheduled-notifications function
+        run: |
+          curl -X POST \
+            https://kfxoyucatvvcgmqalxsg.supabase.co/functions/v1/send-scheduled-notifications \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json"
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}

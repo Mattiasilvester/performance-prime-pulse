@@ -1,12 +1,34 @@
-import { useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { PartnerSidebar } from '@/components/partner/dashboard/PartnerSidebar';
+import { pushNotificationService } from '@/services/pushNotificationService';
+import { useProfessionalId } from '@/hooks/useProfessionalId';
 
 export default function PartnerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const location = useLocation();
+  const professionalId = useProfessionalId();
+
+  // Inizializza service worker per notifiche push quando si entra nella dashboard
+  useEffect(() => {
+    const initPushNotifications = async () => {
+      // Solo se siamo professionisti e il browser supporta push
+      if (professionalId && pushNotificationService.isSupported()) {
+        try {
+          const initialized = await pushNotificationService.initialize();
+          if (initialized) {
+            console.log('[PartnerDashboard] Service Worker inizializzato per notifiche push');
+          }
+        } catch (error) {
+          console.error('[PartnerDashboard] Errore inizializzazione push:', error);
+        }
+      }
+    };
+
+    initPushNotifications();
+  }, [professionalId]);
 
   // useLayoutEffect viene eseguito prima del paint, evitando flash visivi
   useLayoutEffect(() => {
@@ -44,10 +66,10 @@ export default function PartnerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Bottone hamburger mobile */}
+      {/* Bottone hamburger mobile - posizionato sopra l'header */}
       <button
         onClick={() => setSidebarOpen(true)}
-        className="fixed top-4 left-4 z-40 p-2 bg-white rounded-lg shadow-md md:hidden hover:bg-gray-50 transition-colors"
+        className="fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md md:hidden hover:bg-gray-50 transition-colors"
       >
         <Menu className="w-6 h-6 text-gray-600" />
       </button>

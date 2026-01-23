@@ -464,6 +464,42 @@ Impostazioni complete del professionista (1:1 con professionals).
 
 ---
 
+### `professional_notifications`
+Notifiche per professionisti PrimePro.
+
+| Colonna | Tipo | Null | Default | Descrizione |
+|---------|------|------|---------|-------------|
+| `id` | UUID | NO | `gen_random_uuid()` | Primary Key |
+| `professional_id` | UUID | NO | - | **FK → professionals(id)** |
+| `type` | VARCHAR(50) | NO | - | Tipo notifica (CHECK: new_booking, booking_confirmed, booking_cancelled, booking_reminder, new_client, new_project, new_review, review_response) |
+| `title` | TEXT | NO | - | Titolo breve notifica |
+| `message` | TEXT | NO | - | Messaggio completo notifica |
+| `data` | JSONB | YES | `{}` | Dati aggiuntivi (booking_id, client_id, project_id, ecc.) |
+| `is_read` | BOOLEAN | NO | `false` | Stato lettura |
+| `read_at` | TIMESTAMPTZ | YES | NULL | Timestamp lettura |
+| `created_at` | TIMESTAMPTZ | NO | `now()` | Data creazione |
+| `updated_at` | TIMESTAMPTZ | NO | `now()` | Data ultimo aggiornamento |
+
+**Indici:**
+- `idx_professional_notifications_professional` su `professional_id`
+- `idx_professional_notifications_unread` su `professional_id, is_read` (WHERE is_read = false)
+- `idx_professional_notifications_created_at` su `professional_id, created_at DESC`
+- `idx_professional_notifications_type` su `professional_id, type`
+- `idx_professional_notifications_data_gin` su `data` (GIN index per JSONB)
+
+**RLS:** Abilitata
+
+**Trigger:**
+- `update_professional_notifications_updated_at()` - Aggiorna `updated_at` e `read_at` automaticamente
+
+**Note:**
+- Tabella creata per sistema notifiche professionisti
+- Supporta 8 tipi di notifiche diversi
+- Dati JSONB per informazioni aggiuntive flessibili
+- Indici ottimizzati per query frequenti (notifiche non lette, ordinamento per data)
+
+---
+
 ### `subscription_invoices`
 Fatture abbonamenti PrimePro per professionisti.
 
@@ -822,6 +858,12 @@ Funzione trigger per aggiornare automaticamente il campo `updated_at`.
 ### `professional_settings`
 - **Professional manages own settings**: ALL usando `professional_id` e `user_id`
 - **Public can view public settings**: SELECT per profili pubblici
+
+### `professional_notifications`
+- **Professionals can view own notifications**: SELECT usando `professional_id` e `user_id`
+- **Professionals can update own notifications**: UPDATE usando `professional_id` e `user_id` (es. marcare come lette)
+- **Professionals can insert own notifications**: INSERT usando `professional_id` e `user_id` (per test, in produzione usare service role)
+- **Professionals can delete own notifications**: DELETE usando `professional_id` e `user_id`
 
 ### `professional_languages`
 - **Professional manages own languages**: ALL usando `professional_id` e `user_id`

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { X, User, Mail, Phone, FileText, Star, Loader2, FolderOpen, Target, Calendar } from 'lucide-react';
+import { X, User, Mail, Phone, FileText, Star, Loader2, FolderOpen, Target, Calendar, Euro } from 'lucide-react';
 
 interface AddClientModalProps {
   professionalId: string;
@@ -24,6 +24,7 @@ export default function AddClientModal({
     full_name: initialName || '',
     email: '',
     phone: '',
+    session_price: '',
     notes: '',
     is_pp_subscriber: false
   });
@@ -82,6 +83,7 @@ export default function AddClientModal({
           full_name: formData.full_name.trim(),
           email: formData.email.trim() || null,
           phone: formData.phone.trim() || null,
+          session_price: formData.session_price ? parseFloat(formData.session_price) : null,
           notes: formData.notes.trim() || null,
           is_pp_subscriber: formData.is_pp_subscriber
         })
@@ -90,9 +92,21 @@ export default function AddClientModal({
       
       if (clientError) throw clientError;
       
+      // Crea notifica per nuovo cliente (in background, non blocca il flusso)
+      try {
+        const { notifyNewClient } = await import('@/services/notificationService');
+        await notifyNewClient(professionalId, {
+          id: newClient.id,
+          name: newClient.full_name,
+          email: newClient.email || undefined
+        });
+      } catch (notifErr) {
+        console.error('Errore creazione notifica:', notifErr);
+      }
+      
       // 2. Se checkbox attivo, crea anche il progetto
       if (createProject && projectData.name.trim()) {
-        const { error: projectError } = await supabase
+        const { data: newProject, error: projectError } = await supabase
           .from('projects')
           .insert({
             professional_id: professionalId,
@@ -102,7 +116,9 @@ export default function AddClientModal({
             start_date: projectData.start_date,
             notes: projectData.notes.trim() || null,
             status: 'active'
-          });
+          })
+          .select()
+          .single();
 
         if (projectError) {
           // Cliente creato ma progetto fallito
@@ -111,6 +127,20 @@ export default function AddClientModal({
         } else {
           // Entrambi creati con successo
           toast.success('Cliente e progetto creati con successo!');
+          
+          // Crea notifica per nuovo progetto (in background)
+          if (newProject) {
+            try {
+              const { notifyNewProject } = await import('@/services/notificationService');
+              await notifyNewProject(professionalId, {
+                id: newProject.id,
+                name: newProject.name,
+                clientName: newClient.full_name
+              });
+            } catch (notifErr) {
+              console.error('Errore creazione notifica progetto:', notifErr);
+            }
+          }
         }
       } else {
         // Solo cliente creato
@@ -130,6 +160,7 @@ export default function AddClientModal({
         full_name: '',
         email: '',
         phone: '',
+        session_price: '',
         notes: '',
         is_pp_subscriber: false
       });
@@ -200,6 +231,7 @@ export default function AddClientModal({
       full_name: '',
       email: '',
       phone: '',
+      session_price: '',
       notes: '',
       is_pp_subscriber: false
     });
@@ -299,6 +331,31 @@ export default function AddClientModal({
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
                 placeholder="+39 333 1234567"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          {/* Prezzo della seduta */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Prezzo della seduta <span className="text-gray-400 font-normal">(opzionale)</span>
+            </label>
+            <div className="relative">
+              <Euro className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                inputMode="decimal"
+                value={formData.session_price}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Permetti numeri, punto decimale e campo vuoto
+                  if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                    handleChange('session_price', value);
+                  }
+                }}
+                placeholder="0.00"
                 className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
                 disabled={loading}
               />

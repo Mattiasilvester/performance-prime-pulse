@@ -7,6 +7,8 @@ import { User, Search, Loader2, Plus, Check } from 'lucide-react';
 interface Client {
   id: string;
   full_name: string;
+  email?: string | null;
+  phone?: string | null;
 }
 
 interface ClientAutocompleteProps {
@@ -49,7 +51,7 @@ export const ClientAutocomplete = ({
       try {
         const { data, error } = await supabase
           .from('clients')
-          .select('id, full_name')
+          .select('id, full_name, email, phone')
           .eq('professional_id', professionalId)
           .ilike('full_name', `%${value}%`)
           .order('full_name', { ascending: true })

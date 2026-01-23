@@ -2,6 +2,20 @@
 
 ## Decisioni Architetturali
 
+### 23 Gennaio 2025 - Sessione Sistema Notifiche Completo
+- **Pattern Cron Jobs Esterni**: Supabase non ha scheduling integrato, quindi usiamo GitHub Actions per cron jobs. Pattern: workflow YAML con `schedule: cron` che chiama Edge Function tramite curl con `SUPABASE_ANON_KEY`. Pattern riutilizzabile per altri job schedulati
+- **Service Worker Pattern**: Service Worker (`sw.js`) registrato in `main.tsx` e protetto da cleanup PWA. Pattern: mantenere service worker attivo anche durante cleanup altri service worker. Usare `skipWaiting()` e `clients.claim()` per attivazione immediata
+- **VAPID Keys Pattern**: VAPID keys devono essere generate con `web-push generate-vapid-keys` e configurate come secrets Supabase. Pattern: chiave pubblica nel frontend, chiave privata solo server-side. Validazione chiave con `urlBase64ToUint8Array` con error handling robusto
+- **Real-time Subscription Pattern**: Supabase Realtime per notifiche con auto-reconnection. Pattern: `useRef` per channel, cleanup in `useEffect`, gestione `mounted` state per evitare memory leaks. Reconnection automatica con timeout esponenziale
+- **Notification Grouping Pattern**: Raggruppamento notifiche simili entro 24h usando utility function. Pattern: funzione pura `groupNotifications()` che restituisce array misto (singole notifiche + gruppi). Type guard `isNotificationGroup()` per TypeScript safety
+- **Scheduled Notifications Pattern**: Notifiche programmate con tolleranza ±5 minuti. Pattern: Edge Function controlla `scheduled_for <= now + 5min` per evitare perdite. Cron job ogni 5 minuti per precisione. Status tracking (`pending`, `sent`, `failed`) per debugging
+- **Sound/Vibration Service Pattern**: Singleton service per suoni e vibrazioni con preferenze localStorage. Pattern: lazy initialization AudioContext (richiede user interaction), preferenze sincronizzate con database. Pattern riutilizzabile per altri servizi audio
+- **Expansion/Collapse Pattern**: Click sulla notifica per espandere messaggio troncato. Pattern: stato locale `isExpanded` per ogni notifica, rilevamento troncamento con `scrollHeight > clientHeight` o stima lunghezza. Icona freccia che cambia direzione
+- **Badge Pattern**: Badge "Promemoria" sopra titolo per notifiche custom. Pattern: condizionale rendering basato su `type === 'custom'`. Design coerente con altri badge (colore giallo, bordo, padding)
+- **Edge Function Error Handling**: Edge Functions devono gestire gracefully errori database (es. `.maybeSingle()` invece di `.single()`). Pattern: try-catch completo, logging dettagliato, risposte JSON strutturate con `success`, `processed`, `sent`, `failed`
+- **Migration Pattern**: Migrazioni SQL devono essere idempotenti (`IF NOT EXISTS`, `DROP CONSTRAINT IF EXISTS`). Pattern: ogni migration deve poter essere rieseguita senza errori. Commenti SQL per documentazione
+- **Type Safety Pattern**: TypeScript types aggiornati per includere nuovi tipi (es. `'custom'` in `ProfessionalNotification['type']`). Pattern: aggiornare types quando si aggiungono nuovi valori a enum/union types
+
 ### 23 Gennaio 2025 - Sessione Sistema Recensioni Completo
 - **Service Layer Pattern**: Funzione `getReviewsByProfessional()` con parametro `onlyVisible` per distinguere visualizzazione pubblica (solo recensioni visibili) vs dashboard professionista (tutte le recensioni, anche non visibili). Pattern riutilizzabile per altri servizi che necessitano di filtri condizionali
 - **Componenti Modulari Recensioni**: Separazione responsabilità in `ReviewList.tsx` (statistiche e filtri), `ReviewCard.tsx` (singola recensione), `ReviewResponseModal.tsx` (risposta). Pattern modulare facilita manutenzione e riutilizzo
