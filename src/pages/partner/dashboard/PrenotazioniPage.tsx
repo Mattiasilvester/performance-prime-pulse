@@ -646,6 +646,13 @@ export default function PrenotazioniPage() {
 
   const handleConfirm = async (bookingId: string) => {
     try {
+      // Recupera dati prenotazione prima di aggiornare
+      const { data: bookingData } = await supabase
+        .from('bookings')
+        .select('client_name, booking_date, booking_time, professional_id')
+        .eq('id', bookingId)
+        .single();
+
       const { error } = await supabase
         .from('bookings')
         .update({ 
@@ -655,6 +662,21 @@ export default function PrenotazioniPage() {
         .eq('id', bookingId);
       
       if (error) throw error;
+      
+      // Crea notifica per prenotazione confermata (in background)
+      if (bookingData && bookingData.professional_id) {
+        try {
+          const { notifyBookingConfirmed } = await import('@/services/notificationService');
+          await notifyBookingConfirmed(bookingData.professional_id, {
+            id: bookingId,
+            clientName: bookingData.client_name || 'Cliente',
+            bookingDate: bookingData.booking_date,
+            bookingTime: bookingData.booking_time
+          });
+        } catch (notifErr) {
+          console.error('Errore creazione notifica:', notifErr);
+        }
+      }
       
       // Refresh lista e stats
       await fetchBookings();
@@ -676,6 +698,13 @@ export default function PrenotazioniPage() {
     if (!deletingBookingId) return;
 
     try {
+      // Recupera dati prenotazione prima di aggiornare
+      const { data: bookingData } = await supabase
+        .from('bookings')
+        .select('client_name, booking_date, booking_time, professional_id, cancellation_reason')
+        .eq('id', deletingBookingId)
+        .single();
+
       const { error } = await supabase
         .from('bookings')
         .update({ 
@@ -685,6 +714,22 @@ export default function PrenotazioniPage() {
         .eq('id', deletingBookingId);
 
       if (error) throw error;
+
+      // Crea notifica per prenotazione cancellata (in background)
+      if (bookingData && bookingData.professional_id) {
+        try {
+          const { notifyBookingCancelled } = await import('@/services/notificationService');
+          await notifyBookingCancelled(bookingData.professional_id, {
+            id: deletingBookingId,
+            clientName: bookingData.client_name || 'Cliente',
+            bookingDate: bookingData.booking_date,
+            bookingTime: bookingData.booking_time,
+            reason: bookingData.cancellation_reason || undefined
+          });
+        } catch (notifErr) {
+          console.error('Errore creazione notifica:', notifErr);
+        }
+      }
 
       await fetchBookings();
       await fetchStats();

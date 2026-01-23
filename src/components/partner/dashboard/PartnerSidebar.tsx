@@ -13,10 +13,22 @@ import {
   X,
   ChevronDown,
   Briefcase,
-  Star
+  Star,
+  Bell,
+  Loader2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { usePartnerNotifications } from '@/hooks/usePartnerNotifications';
+import { NotificationItem } from '@/components/partner/notifications/NotificationItem';
+import { NotificationGroup } from '@/components/partner/notifications/NotificationGroup';
+import { groupNotifications, isNotificationGroup } from '@/utils/notificationGrouping';
 
 interface MenuItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -43,6 +55,16 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
   const navigate = useNavigate();
   const [isMounted, setIsMounted] = useState(false);
   const [clientiExpanded, setClientiExpanded] = useState(false);
+  
+  // Hook notifiche
+  const {
+    notifications,
+    unreadCount,
+    isLoading: notificationsLoading,
+    markAsRead,
+    markAllAsRead,
+    removeNotification
+  } = usePartnerNotifications();
 
   // Auto-espandi/collassa in base all'URL
   useEffect(() => {
@@ -118,6 +140,133 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
           >
             <X className="w-5 h-5 text-gray-600" />
           </button>
+          <div className="flex items-center gap-2">
+            {/* Bottone Notifiche */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="relative p-2.5 text-gray-700 hover:bg-[#EEBA2B]/10 hover:text-[#EEBA2B] transition-all duration-200 rounded-lg border border-gray-200 hover:border-[#EEBA2B]/30"
+                >
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#EEBA2B] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold min-w-[20px] shadow-md animate-pulse">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 bg-white border border-gray-200 shadow-lg z-[99999]" align="end">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                    <h3 className="font-semibold text-gray-900">Notifiche</h3>
+                    {unreadCount > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            await markAllAsRead();
+                            toast.success('Tutte le notifiche sono state segnate come lette');
+                          } catch (err) {
+                            toast.error('Errore nel segnare le notifiche come lette');
+                          }
+                        }}
+                        className="text-xs text-[#EEBA2B] hover:bg-[#EEBA2B]/10"
+                      >
+                        Segna tutte come lette
+                      </Button>
+                    )}
+                  </div>
+                  <div className="max-h-64 overflow-y-auto space-y-2">
+                    {notificationsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 text-gray-400 animate-spin" />
+                      </div>
+                    ) : notifications.length > 0 ? (
+                      (() => {
+                        // Raggruppa notifiche (notifiche dello stesso tipo entro 24h vengono raggruppate)
+                        const grouped = groupNotifications(notifications, 24);
+                        
+                        return grouped.map((item) => {
+                          if (isNotificationGroup(item)) {
+                            // Renderizza gruppo
+                            return (
+                              <NotificationGroup
+                                key={item.id}
+                                group={item}
+                                onMarkAsRead={async (id) => {
+                                  try {
+                                    await markAsRead(id);
+                                  } catch (err) {
+                                    toast.error('Errore nel segnare la notifica come letta');
+                                  }
+                                }}
+                                onRemove={async (id) => {
+                                  try {
+                                    await removeNotification(id);
+                                    toast.success('Notifica rimossa');
+                                  } catch (err) {
+                                    toast.error('Errore nella rimozione della notifica');
+                                  }
+                                }}
+                                onMarkGroupAsRead={async (ids) => {
+                                  try {
+                                    // Marca tutte le notifiche del gruppo come lette
+                                    await Promise.all(ids.map(id => markAsRead(id)));
+                                    toast.success('Notifiche segnate come lette');
+                                  } catch (err) {
+                                    toast.error('Errore nel segnare le notifiche come lette');
+                                  }
+                                }}
+                              />
+                            );
+                          } else {
+                            // Renderizza notifica singola
+                            return (
+                              <NotificationItem
+                                key={item.id}
+                                notification={item}
+                                onMarkAsRead={async (id) => {
+                                  try {
+                                    await markAsRead(id);
+                                  } catch (err) {
+                                    toast.error('Errore nel segnare la notifica come letta');
+                                  }
+                                }}
+                                onRemove={async (id) => {
+                                  try {
+                                    await removeNotification(id);
+                                    toast.success('Notifica rimossa');
+                                  } catch (err) {
+                                    toast.error('Errore nella rimozione della notifica');
+                                  }
+                                }}
+                              />
+                            );
+                          }
+                        });
+                      })()
+                    ) : (
+                      <div className="text-center py-8 text-gray-500 text-sm">
+                        <Bell className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                        <p>Nessuna notifica</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+            
+            {/* Bottone chiudi mobile */}
+            <button
+              onClick={onClose}
+              className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
         </div>
 
         {/* Menu Items */}

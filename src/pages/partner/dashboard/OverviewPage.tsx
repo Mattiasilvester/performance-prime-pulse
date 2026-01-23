@@ -1,8 +1,9 @@
-import { Users, Calendar, FolderKanban, Euro, ClipboardList, Clock, User, Briefcase, UserPlus, CheckCircle, FolderPlus, ChevronDown, ChevronUp, X, MapPin, Video } from 'lucide-react';
+import { Users, Calendar, FolderKanban, Euro, ClipboardList, Clock, User, Briefcase, UserPlus, CheckCircle, FolderPlus, ChevronDown, ChevronUp, X, MapPin, Video, Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { ScheduleNotificationModal } from '@/components/partner/notifications/ScheduleNotificationModal';
 
 interface UpcomingBooking {
   id: string;
@@ -42,6 +43,7 @@ export default function OverviewPage() {
   const [isActivitiesExpanded, setIsActivitiesExpanded] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<UpcomingBooking | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [stats, setStats] = useState({
     clienti: 0,
     prenotazioni: 0,
@@ -664,19 +666,30 @@ export default function OverviewPage() {
           <h2 className="text-xl font-semibold text-gray-900">
             Attività recenti
           </h2>
-          {recentActivities.length > 5 && (
+          <div className="flex items-center gap-2">
+            {/* Bottone Promemoria */}
             <button
-              onClick={() => setIsActivitiesExpanded(!isActivitiesExpanded)}
-              className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-colors"
-              aria-label={isActivitiesExpanded ? 'Riduci attività' : 'Espandi attività'}
+              onClick={() => setShowScheduleModal(true)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#EEBA2B] bg-[#EEBA2B]/10 hover:bg-[#EEBA2B]/20 rounded-lg transition-colors border border-[#EEBA2B]/30"
             >
-              {isActivitiesExpanded ? (
-                <ChevronUp className="w-4 h-4" />
-              ) : (
-                <ChevronDown className="w-4 h-4" />
-              )}
+              <Bell className="w-4 h-4" />
+              <span className="hidden sm:inline">Promemoria</span>
+              <span className="sm:hidden">Promemoria</span>
             </button>
-          )}
+            {recentActivities.length > 5 && (
+              <button
+                onClick={() => setIsActivitiesExpanded(!isActivitiesExpanded)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                aria-label={isActivitiesExpanded ? 'Riduci attività' : 'Espandi attività'}
+              >
+                {isActivitiesExpanded ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+            )}
+          </div>
         </div>
         
         {recentActivitiesLoading ? (
@@ -736,6 +749,16 @@ export default function OverviewPage() {
           }}
         />
       )}
+
+      {/* Modal Promemoria */}
+      <ScheduleNotificationModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        onSuccess={() => {
+          // Ricarica attività recenti per mostrare la nuova notifica programmata
+          fetchRecentActivities();
+        }}
+      />
     </div>
   );
 }

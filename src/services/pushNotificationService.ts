@@ -1,4 +1,6 @@
-// Servizio per gestire notifiche push
+// Servizio per gestire notifiche push professionali
+import { supabase } from '@/integrations/supabase/client';
+
 export interface PushPermissionStatus {
   status: 'granted' | 'denied' | 'default' | 'not-asked';
   timestamp: number;
@@ -13,7 +15,11 @@ export interface PushSubscription {
   };
 }
 
-const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa40HIeFy8gW8Jw3IryPpg4LwDa5LkGv1VJ0lz0QH6BV1kLbM7o1fU0gD8WU';
+// VAPID Public Key (base64 URL-safe)
+// NOTA: Questa è una chiave di test generata. Per produzione, genera le tue chiavi VAPID
+// usando: npx web-push generate-vapid-keys
+// Chiave generata: 2025-01-23
+const VAPID_PUBLIC_KEY = 'BJLafKLwCjWph5pDeh6zaAVRrmURBhLUSssTUnpmW_QAFT44ulLMCNM8hXBGkcZUbatGD0XDTRFtiU7DFdY5eE8';
 const PERMISSION_KEY = 'pp_push_permission_status';
 const SUBSCRIPTION_KEY = 'pp_push_subscription';
 
@@ -24,24 +30,52 @@ class PushNotificationService {
   async initialize(): Promise<boolean> {
     try {
       if (!('serviceWorker' in navigator)) {
-        console.log('Service Worker not supported');
+        console.log('[Push] Service Worker not supported');
         return false;
       }
 
       if (!('PushManager' in window)) {
-        console.log('Push messaging not supported');
+        console.log('[Push] Push messaging not supported');
         return false;
       }
 
-      // Registra il service worker
-      // DISABILITATO PER MOBILE REFRESH FIX
-      // this.registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('Service worker registration disabled for mobile refresh fix');
-      console.log('Service Worker registered:', this.registration);
+      // Registra il service worker (riabilitato per notifiche push)
+      // Usa scope '/' per evitare conflitti con mobile refresh
+      this.registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/'
+      });
+      
+      console.log('[Push] Service Worker registered:', this.registration);
+      
+      // Attendi che il service worker sia attivo (gestisce tutti i casi)
+      if (this.registration.installing) {
+        // Service worker in fase di installazione
+        await new Promise<void>((resolve) => {
+          const installing = this.registration!.installing!;
+          
+          installing.addEventListener('statechange', () => {
+            if (installing.state === 'installed' || installing.state === 'activated') {
+              resolve();
+            }
+          });
+          
+          // Se già installato, risolvi immediatamente
+          if (installing.state === 'installed' || installing.state === 'activated') {
+            resolve();
+          }
+        });
+      } else if (this.registration.waiting) {
+        // Service worker in attesa (già installato ma non ancora attivo)
+        console.log('[Push] Service Worker in attesa, attivazione...');
+        // Il service worker si attiverà automaticamente con skipWaiting()
+      } else if (this.registration.active) {
+        // Service worker già attivo
+        console.log('[Push] Service Worker già attivo');
+      }
 
       return true;
     } catch (error) {
-      console.error('Error registering service worker:', error);
+      console.error('[Push] Error registering service worker:', error);
       return false;
     }
   }
@@ -119,12 +153,20 @@ class PushNotificationService {
     }
 
     try {
-     // ... existing code ...
-     const subscription = await this.registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource
-    });
-// ... existing code ...
+      // Converti VAPID key in Uint8Array
+      let applicationServerKey: BufferSource;
+      try {
+        applicationServerKey = this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+      } catch (keyError) {
+        console.error('[Push] Errore conversione VAPID key:', keyError);
+        throw new Error('VAPID key non valida. Contatta il supporto tecnico.');
+      }
+
+      // Crea subscription push
+      const subscription = await this.registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: applicationServerKey
+      });
 
       const pushSubscription: PushSubscription = {
         endpoint: subscription.endpoint,
@@ -170,33 +212,100 @@ class PushNotificationService {
   }
 
   // Invia subscription al backend
-  async sendSubscriptionToBackend(subscription: PushSubscription): Promise<boolean> {
+  async sendSubscriptionToBackend(subscription: PushSubscription, professionalId: string): Promise<boolean> {
     try {
-      // Qui implementerai l'invio al backend Supabase
-      console.log('Sending subscription to backend:', subscription);
-      
-      // Placeholder per ora
+      if (!professionalId) {
+        console.error('[Push] Professional ID mancante');
+        return false;
+      }
+
+      console.log('[Push] Sending subscription to backend:', { endpoint: subscription.endpoint, professionalId });
+
+      // Ottieni user agent per metadata
+      const userAgent = navigator.userAgent;
+
+      // Salva o aggiorna subscription nel database
+      const { data, error } = await supabase
+        .from('push_subscriptions')
+        .upsert(
+          {
+            professional_id: professionalId,
+            endpoint: subscription.endpoint,
+            p256dh: subscription.keys.p256dh,
+            auth: subscription.keys.auth,
+            user_agent: userAgent,
+            is_active: true,
+            last_used_at: new Date().toISOString()
+          },
+          {
+            onConflict: 'endpoint', // Se endpoint esiste già, aggiorna
+            ignoreDuplicates: false
+          }
+        )
+        .select()
+        .single();
+
+      if (error) {
+        console.error('[Push] Error saving subscription to database:', error);
+        return false;
+      }
+
+      console.log('[Push] Subscription saved successfully:', data);
       return true;
     } catch (error) {
-      console.error('Error sending subscription to backend:', error);
+      console.error('[Push] Error sending subscription to backend:', error);
+      return false;
+    }
+  }
+
+  // Rimuovi subscription dal backend
+  async removeSubscriptionFromBackend(endpoint: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('push_subscriptions')
+        .update({ is_active: false })
+        .eq('endpoint', endpoint);
+
+      if (error) {
+        console.error('[Push] Error removing subscription:', error);
+        return false;
+      }
+
+      console.log('[Push] Subscription removed successfully');
+      return true;
+    } catch (error) {
+      console.error('[Push] Error removing subscription:', error);
       return false;
     }
   }
 
   // Utility functions
   private urlBase64ToUint8Array(base64String: string): Uint8Array {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
+    try {
+      // Rimuovi eventuali spazi o caratteri non validi
+      let base64 = base64String.trim();
+      
+      // Aggiungi padding se necessario
+      const padding = '='.repeat((4 - base64.length % 4) % 4);
+      base64 = base64 + padding;
+      
+      // Converti da base64 URL-safe a base64 standard
+      base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+      
+      // Decodifica base64
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
 
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      
+      return outputArray;
+    } catch (error) {
+      console.error('[Push] Errore conversione VAPID key:', error);
+      console.error('[Push] Chiave ricevuta:', base64String);
+      throw new Error(`VAPID key non valida: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
     }
-    return outputArray;
   }
 
   private arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -209,9 +318,38 @@ class PushNotificationService {
   }
 
   // Pulisci dati notifiche
-  clearNotificationData(): void {
+  async clearNotificationData(): Promise<void> {
+    // Rimuovi subscription dal backend se esiste
+    const savedSubscription = localStorage.getItem(SUBSCRIPTION_KEY);
+    if (savedSubscription) {
+      try {
+        const subscription: PushSubscription = JSON.parse(savedSubscription);
+        await this.removeSubscriptionFromBackend(subscription.endpoint);
+      } catch (error) {
+        console.error('[Push] Error removing subscription during cleanup:', error);
+      }
+    }
+
+    // Rimuovi subscription dal service worker
+    if (this.registration) {
+      try {
+        const subscription = await this.registration.pushManager.getSubscription();
+        if (subscription) {
+          await subscription.unsubscribe();
+        }
+      } catch (error) {
+        console.error('[Push] Error unsubscribing from service worker:', error);
+      }
+    }
+
+    // Pulisci localStorage
     localStorage.removeItem(PERMISSION_KEY);
     localStorage.removeItem(SUBSCRIPTION_KEY);
+  }
+
+  // Ottieni registration (per uso esterno)
+  getRegistration(): ServiceWorkerRegistration | null {
+    return this.registration;
   }
 }
 

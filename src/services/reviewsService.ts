@@ -157,6 +157,46 @@ export async function createReview(reviewData: CreateReviewData): Promise<Review
       throw error;
     }
 
+    // Crea notifica per nuova recensione (in background, non blocca il flusso)
+    if (data) {
+      try {
+        console.log('[NOTIFICA RECENSIONE] Inizio creazione notifica per recensione:', data.id);
+        console.log('[NOTIFICA RECENSIONE] Professional ID:', reviewData.professional_id);
+        console.log('[NOTIFICA RECENSIONE] User ID:', reviewData.user_id);
+        
+        // Recupera nome cliente per la notifica
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', reviewData.user_id)
+          .maybeSingle();
+
+        if (profileError) {
+          console.error('[NOTIFICA RECENSIONE] Errore recupero profilo:', profileError);
+        }
+
+        const clientName = profileData 
+          ? `${profileData.first_name} ${profileData.last_name}`.trim()
+          : 'Cliente';
+
+        console.log('[NOTIFICA RECENSIONE] Nome cliente:', clientName);
+
+        const { notifyNewReview } = await import('@/services/notificationService');
+        await notifyNewReview(reviewData.professional_id, {
+          id: data.id,
+          clientName,
+          rating: reviewData.rating,
+          comment: reviewData.comment || undefined
+        });
+        
+        console.log('[NOTIFICA RECENSIONE] Notifica creata con successo');
+      } catch (notifErr) {
+        // Non bloccare il flusso se la notifica fallisce
+        console.error('[NOTIFICA RECENSIONE] Errore creazione notifica recensione:', notifErr);
+        console.error('[NOTIFICA RECENSIONE] Stack trace:', notifErr instanceof Error ? notifErr.stack : 'N/A');
+      }
+    }
+
     return data;
   } catch (error) {
     console.error('Errore createReview:', error);
@@ -343,6 +383,13 @@ export async function respondToReview(
   responseData: ReviewResponseData
 ): Promise<Review | null> {
   try {
+    // Recupera dati recensione prima di aggiornare
+    const { data: reviewData } = await supabase
+      .from('reviews')
+      .select('professional_id, user_id')
+      .eq('id', reviewId)
+      .single();
+
     const { data, error } = await supabase
       .from('reviews')
       .update({
@@ -356,6 +403,31 @@ export async function respondToReview(
     if (error) {
       console.error('Errore risposta recensione:', error);
       throw error;
+    }
+
+    // Crea notifica per risposta a recensione (in background)
+    if (data && reviewData) {
+      try {
+        // Recupera nome cliente per la notifica
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', reviewData.user_id)
+          .maybeSingle();
+
+        const clientName = profileData 
+          ? `${profileData.first_name} ${profileData.last_name}`.trim()
+          : 'Cliente';
+
+        const { notifyReviewResponse } = await import('@/services/notificationService');
+        await notifyReviewResponse(reviewData.professional_id, {
+          id: reviewId,
+          clientName
+        });
+      } catch (notifErr) {
+        // Non bloccare il flusso se la notifica fallisce
+        console.error('Errore creazione notifica risposta recensione:', notifErr);
+      }
     }
 
     return data;

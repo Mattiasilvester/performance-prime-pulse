@@ -1391,9 +1391,43 @@ const AgendaView = () => {
       // Aggiorna lista bookings
       await fetchBookings(false);
       
+      // Crea notifica per nuova prenotazione (in background, non blocca il flusso)
+      if (data && professionalId) {
+        try {
+          // Recupera nome servizio se presente
+          let serviceName: string | undefined;
+          if (data.service_id) {
+            const { data: serviceData } = await supabase
+              .from('professional_services')
+              .select('name')
+              .eq('id', data.service_id)
+              .maybeSingle();
+            serviceName = serviceData?.name;
+          }
+
+          const { notifyNewBooking } = await import('@/services/notificationService');
+          await notifyNewBooking(professionalId, {
+            id: data.id,
+            clientName: newBooking.clientName,
+            bookingDate: formatDateToString(newBooking.date),
+            bookingTime: newBooking.startTime,
+            serviceName
+          });
+        } catch (notifErr) {
+          // Non bloccare il flusso se la notifica fallisce
+          console.error('Errore creazione notifica:', notifErr);
+        }
+      }
+      
+      // Messaggio toast differenziato in base allo stato del cliente
       if (clientUserId) {
+        // Cliente con account utente registrato
         toast.success('Appuntamento creato con successo!');
+      } else if (selectedClientId) {
+        // Cliente esistente nella tabella clients ma senza account utente
+        toast.success('Appuntamento creato (cliente esistente, senza account)');
       } else {
+        // Cliente non esistente nella tabella clients
         toast.success('Appuntamento creato (cliente non registrato)');
       }
       
@@ -2088,9 +2122,14 @@ const AgendaView = () => {
                     onChange={(value) => setNewBooking({...newBooking, clientName: value})}
                     onClientSelect={(client) => {
                       setSelectedClientId(client?.id || null);
-                      // Se cliente selezionato, prova a pre-compilare email se disponibile
+                      // Se cliente selezionato, compila automaticamente nome, email e telefono
                       if (client) {
-                        // Non pre-compiliamo email automaticamente, l'utente può inserirla manualmente
+                        setNewBooking({
+                          ...newBooking,
+                          clientName: client.full_name,
+                          clientEmail: client.email || '',
+                          clientPhone: client.phone || ''
+                        });
                       }
                     }}
                     onCreateNewClient={() => setShowAddClientModal(true)}

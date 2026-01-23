@@ -282,7 +282,7 @@ export const ServiceFormModal = ({ isOpen, onClose, onSave, service }: ServiceFo
               value={getServiceModality()}
               onChange={(e) => setServiceModality(e.target.value as 'online' | 'presenza' | 'entrambi')}
               disabled={saving}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#EEBA2B] focus:ring-1 focus:ring-[#EEBA2B] outline-none text-gray-900 disabled:bg-gray-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:border-[#EEBA2B] focus:ring-1 focus:ring-[#EEBA2B] outline-none text-gray-900 disabled:bg-gray-50 disabled:cursor-not-allowed"
             >
               <option value="presenza">🏠 Solo In Presenza</option>
               <option value="online">💻 Solo Online</option>

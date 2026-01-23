@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { pushNotificationService, PushPermissionStatus } from '@/services/pushNotificationService';
+import { useProfessionalId } from '@/hooks/useProfessionalId';
 
 interface PushPermissionModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const PushPermissionModal: React.FC<PushPermissionModalProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const professionalId = useProfessionalId();
 
   // Testi dinamici basati sul trigger
   const getContent = () => {
@@ -89,12 +91,21 @@ export const PushPermissionModal: React.FC<PushPermissionModalProps> = ({
       const permissionStatus = await pushNotificationService.requestPermission();
       
       if (permissionStatus.status === 'granted') {
+        // Verifica che abbiamo professionalId
+        if (!professionalId) {
+          throw new Error('ID professionista non disponibile. Accedi come professionista per attivare le notifiche push.');
+        }
+
         // Crea subscription
         const subscription = await pushNotificationService.createSubscription();
         if (subscription) {
-          // Invia al backend
-          await pushNotificationService.sendSubscriptionToBackend(subscription);
-          onPermissionGranted();
+          // Invia al backend con professionalId
+          const saved = await pushNotificationService.sendSubscriptionToBackend(subscription, professionalId);
+          if (saved) {
+            onPermissionGranted();
+          } else {
+            throw new Error('Errore nel salvataggio della subscription. Riprova più tardi.');
+          }
         }
         onClose();
       } else {

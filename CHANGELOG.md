@@ -8,6 +8,14 @@ e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 ## [Unreleased] - 2026-01-23
 
 ### Added ➕
+- **Sistema Notifiche Completo PrimePro**: Sistema completo notifiche professionisti con tutte le features
+  - **Promemoria Prenotazioni Automatici**: Promemoria automatici X ore prima degli appuntamenti (configurabile, default: 24h e 2h prima)
+  - **Notifiche Push Browser**: Notifiche push anche quando l'app è chiusa tramite Service Worker
+  - **Notifiche Raggruppate**: Raggruppamento automatico notifiche simili entro 24h con expand/collapse
+  - **Suoni e Vibrazioni**: Suoni diversi per tipo notifica e vibrazioni su mobile (configurabile)
+  - **Notifiche Programmated**: Creazione promemoria personalizzati con invio automatico alla data/ora specificata
+  - **Espansione Messaggi**: Click sulla notifica per espandere/collassare messaggi troncati
+  - **Badge "Promemoria"**: Badge visibile sopra titolo per notifiche create tramite promemoria programmati
 - **Sistema Recensioni Dashboard Professionista**: Pagina completa recensioni con statistiche (rating medio, totale, verificate), distribuzione rating, filtri per rating (1-5 stelle), e possibilità di rispondere alle recensioni
 - **Modal Risposta Recensioni**: Professionisti possono rispondere e modificare risposte alle recensioni dei clienti
 
@@ -19,9 +27,15 @@ e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 - **Filtri Recensioni Mobile**: Layout filtri mobile migliorato - testo sopra, bottoni in orizzontale sotto
 
 ### Fixed 🐛
+- **CHECK Constraint Notifiche**: Aggiunto tipo 'custom' al CHECK constraint di `professional_notifications` per permettere notifiche personalizzate
+- **Service Worker Push**: Risolto problema registrazione service worker per push notifications
+- **VAPID Keys**: Generata nuova chiave VAPID valida per test push notifications
+- **Errori 406 Supabase**: Sostituito `.single()` con `.maybeSingle()` per gestione graceful dati mancanti
+- **Z-Index Conflicts**: Risolti conflitti z-index tra bottoni esercizi, widget feedback e menu dropdown
 - **Console Errors**: Rimossi log duplicati e gestiti errori script esterni (Tally, Plausible) silenziosamente
 - **Performance Lente**: Risolto problema lentezza caricamento sezioni Agenda, Prenotazioni e Clienti
 - **Errore Sintassi reviewsService.ts**: Risolto errore "Expression expected" causato da blocco catch duplicato
+- **Duplicazione PartnerSidebar**: Rimossa duplicazione funzione e sistemati import
 
 ---
 

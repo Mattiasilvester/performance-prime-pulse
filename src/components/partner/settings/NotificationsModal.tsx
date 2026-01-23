@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { X, Bell, Loader2, Calendar, AlertCircle, Clock, MessageSquare, Star, BarChart3 } from 'lucide-react';
+import { X, Bell, Loader2, Calendar, AlertCircle, Clock, MessageSquare, Star, BarChart3, Smartphone, Volume2, Vibrate } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
+import { pushNotificationService } from '@/services/pushNotificationService';
 
 interface NotificationsModalProps {
   onClose: () => void;
@@ -47,13 +48,34 @@ const NOTIFICATION_FIELDS = [
     label: 'Nuove recensioni',
     description: 'Ricevi una notifica quando ricevi una recensione',
     icon: Star,
-    defaultValue: false
+    defaultValue: true  // Cambiato a true per allinearsi con il default del DB
   },
   {
     key: 'notify_weekly_summary',
     label: 'Riepilogo settimanale',
     description: 'Ricevi un riepilogo settimanale delle tue attività',
     icon: BarChart3,
+    defaultValue: true
+  },
+  {
+    key: 'notify_push',
+    label: 'Notifiche push',
+    description: 'Ricevi notifiche push anche quando l\'app è chiusa',
+    icon: Smartphone,
+    defaultValue: false
+  },
+  {
+    key: 'notification_sound_enabled',
+    label: 'Suoni notifiche',
+    description: 'Riproduci un suono quando arriva una nuova notifica',
+    icon: Volume2,
+    defaultValue: true
+  },
+  {
+    key: 'notification_vibration_enabled',
+    label: 'Vibrazioni notifiche',
+    description: 'Attiva vibrazione quando arriva una nuova notifica (solo mobile)',
+    icon: Vibrate,
     defaultValue: true
   },
 ] as const;
@@ -106,7 +128,7 @@ export default function NotificationsModal({ onClose, onSuccess }: Notifications
       setLoading(true);
       const { data, error } = await supabase
         .from('professional_settings')
-        .select('notify_new_booking, notify_booking_cancelled, notify_booking_reminder, notify_messages, notify_reviews, notify_weekly_summary')
+        .select('notify_new_booking, notify_booking_cancelled, notify_booking_reminder, notify_messages, notify_reviews, notify_weekly_summary, notify_push, notification_sound_enabled, notification_vibration_enabled')
         .eq('professional_id', professionalId)
         .maybeSingle();
 
@@ -135,10 +157,93 @@ export default function NotificationsModal({ onClose, onSuccess }: Notifications
     }
   };
 
-  const handleToggle = (key: string) => {
+  const handleToggle = async (key: string) => {
+    const newValue = !formData[key];
+    
+    // Se si sta attivando "Notifiche push", richiedi permessi e crea subscription
+    if (key === 'notify_push' && newValue) {
+      try {
+        // Verifica supporto
+        if (!pushNotificationService.isSupported()) {
+          toast.error('Le notifiche push non sono supportate dal tuo browser');
+          return; // Non cambiare il toggle
+        }
+
+        // Inizializza service worker se non già fatto
+        const initialized = await pushNotificationService.initialize();
+        if (!initialized) {
+          toast.error('Impossibile inizializzare il servizio notifiche');
+          return;
+        }
+
+        // Verifica stato permessi attuale
+        const currentPermission = Notification.permission;
+        console.log('[Push] Stato permessi attuale:', currentPermission);
+
+        let permissionStatus;
+        
+        if (currentPermission === 'granted') {
+          // Permessi già concessi, usa lo stato esistente
+          console.log('[Push] Permessi già concessi, procedo con subscription');
+          permissionStatus = {
+            status: 'granted' as const,
+            timestamp: Date.now(),
+            userChoice: 'accepted' as const
+          };
+          pushNotificationService.savePermissionStatus(permissionStatus);
+        } else if (currentPermission === 'denied') {
+          // Permessi negati, non possiamo procedere
+          toast.error('Permessi notifiche negati. Abilita le notifiche nelle impostazioni del browser e ricarica la pagina.');
+          return; // Non cambiare il toggle
+        } else {
+          // Permessi non ancora richiesti, richiedili
+          console.log('[Push] Richiedo permessi...');
+          permissionStatus = await pushNotificationService.requestPermission();
+        }
+        
+        if (permissionStatus.status === 'granted') {
+          // Crea subscription
+          console.log('[Push] Creo subscription...');
+          const subscription = await pushNotificationService.createSubscription();
+          if (subscription) {
+            // Salva subscription nel database
+            console.log('[Push] Salvo subscription nel database...');
+            const saved = await pushNotificationService.sendSubscriptionToBackend(subscription, professionalId!);
+            if (saved) {
+              toast.success('Notifiche push attivate con successo!');
+            } else {
+              toast.error('Errore nel salvataggio della subscription');
+              return; // Non cambiare il toggle
+            }
+          } else {
+            toast.error('Errore nella creazione della subscription');
+            return; // Non cambiare il toggle
+          }
+        } else {
+          // Permessi negati o default
+          toast.error('Permessi notifiche negati. Abilita le notifiche nelle impostazioni del browser.');
+          return; // Non cambiare il toggle
+        }
+      } catch (error: any) {
+        console.error('Errore attivazione push:', error);
+        toast.error(error.message || 'Errore nell\'attivazione delle notifiche push');
+        return; // Non cambiare il toggle
+      }
+    } else if (key === 'notify_push' && !newValue) {
+      // Se si sta disattivando, rimuovi subscription
+      try {
+        await pushNotificationService.clearNotificationData();
+        toast.success('Notifiche push disattivate');
+      } catch (error) {
+        console.error('Errore disattivazione push:', error);
+        // Continua comunque a disattivare la preferenza
+      }
+    }
+
+    // Aggiorna il form data
     setFormData(prev => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: newValue
     }));
   };
 
@@ -161,8 +266,18 @@ export default function NotificationsModal({ onClose, onSuccess }: Notifications
           notify_messages: formData.notify_messages,
           notify_reviews: formData.notify_reviews,
           notify_weekly_summary: formData.notify_weekly_summary,
+          notify_push: formData.notify_push,
+          notification_sound_enabled: formData.notification_sound_enabled,
+          notification_vibration_enabled: formData.notification_vibration_enabled,
           updated_at: new Date().toISOString()
         }, { onConflict: 'professional_id' });
+
+      // Sincronizza preferenze con il servizio suoni
+      if (typeof window !== 'undefined') {
+        const { notificationSoundService } = await import('@/services/notificationSoundService');
+        notificationSoundService.setSoundEnabled(formData.notification_sound_enabled ?? true);
+        notificationSoundService.setVibrationEnabled(formData.notification_vibration_enabled ?? true);
+      }
 
       if (error) throw error;
 

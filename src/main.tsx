@@ -9,12 +9,25 @@ import { safeGetElement } from '@/utils/domHelpers'
 // Dev imports rimossi - file non esistenti
 
 // TEMP: Bonifica PWA/Service Worker (rimuovere dopo 1–2 release)
+// NOTA: NON deregistrare sw.js (service worker per notifiche push)
 if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
   navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(r => r.unregister());
+    regs.forEach(r => {
+      // Mantieni sw.js per notifiche push, deregistra solo altri service worker
+      if (r.scope && !r.scope.includes('/sw.js') && r.active?.scriptURL && !r.active.scriptURL.includes('sw.js')) {
+        r.unregister();
+      }
+    });
   }).catch(() => {});
   if (typeof caches !== "undefined" && caches?.keys) {
-    caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(() => {});
+    caches.keys().then(keys => {
+      // Mantieni cache per push notifications, elimina solo altre cache
+      keys.forEach(k => {
+        if (!k.includes('pp-push')) {
+          caches.delete(k);
+        }
+      });
+    }).catch(() => {});
   }
 }
 
