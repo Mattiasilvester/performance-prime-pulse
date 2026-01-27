@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { X, CreditCard, Loader2, Download, AlertTriangle, Info, CheckCircle2, Clock, FileText, Edit, Trash2, Circle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import AddStripeCardModal from './AddStripeCardModal';
 
 interface PaymentsModalProps {
   onClose: () => void;
@@ -52,7 +53,7 @@ interface Invoice {
 
 const PLANS = {
   basic: { name: 'Basic', price: 25 },
-  pro: { name: 'Pro', price: 35 },
+  pro: { name: 'Prime Business', price: 50 },
   advanced: { name: 'Advanced', price: 50 },
 };
 
@@ -70,8 +71,21 @@ const PaymentMethodCard = ({
   onEditCard, 
   onRemoveCard 
 }: PaymentMethodCardProps) => {
+  // Se in dev e non c'è carta, mostra placeholder
+  const isDev = import.meta.env.DEV;
+  const cardData = settings.payment_method_last4 
+    ? {
+        last4: settings.payment_method_last4,
+        brand: settings.payment_method_brand,
+        expMonth: settings.payment_method_exp_month,
+        expYear: settings.payment_method_exp_year,
+      }
+    : isDev 
+      ? { last4: '4242', brand: 'visa', expMonth: 12, expYear: 2028 }
+      : null;
+
   const hasPaymentMethod = settings.payment_provider && (
-    (settings.payment_provider === 'stripe' && settings.payment_method_last4) ||
+    (settings.payment_provider === 'stripe' && (settings.payment_method_last4 || cardData)) ||
     (settings.payment_provider === 'paypal' && settings.paypal_subscription_email)
   );
   
@@ -108,9 +122,13 @@ const PaymentMethodCard = ({
     );
   }
 
-  const expMonth = settings.payment_method_exp_month?.toString().padStart(2, '0') || 'MM';
-  const expYear = settings.payment_method_exp_year?.toString().slice(-2) || 'YY';
+  // Usa dati reali o placeholder
+  const displayLast4 = cardData?.last4 || settings.payment_method_last4 || '4242';
+  const displayBrand = cardData?.brand || settings.payment_method_brand || 'visa';
+  const displayExpMonth = (cardData?.expMonth || settings.payment_method_exp_month)?.toString().padStart(2, '0') || '12';
+  const displayExpYear = (cardData?.expYear || settings.payment_method_exp_year)?.toString().slice(-2) || '28';
   const isPayPal = settings.payment_provider === 'paypal';
+  const isPlaceholder = isDev && !settings.payment_method_last4 && cardData;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5">
@@ -138,10 +156,11 @@ const PaymentMethodCard = ({
             ) : (
               <>
                 <p className="font-mono font-semibold text-gray-900 text-lg">
-                  •••• •••• •••• {settings.payment_method_last4}
+                  •••• •••• •••• {displayLast4}
+                  {isPlaceholder && <span className="ml-2 text-xs text-amber-600 font-normal">(Test)</span>}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {getBrandDisplay(settings.payment_method_brand, settings.payment_provider)} • Scade {expMonth}/{expYear}
+                  {getBrandDisplay(displayBrand, settings.payment_provider)} • Scade {displayExpMonth}/{displayExpYear}
                 </p>
               </>
             )}
@@ -392,54 +411,80 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('professional_settings')
+      
+      // Carica dati da professional_subscriptions (dove sono salvati i dati Stripe)
+      const { data: subscription, error: subError } = await supabase
+        .from('professional_subscriptions')
         .select(`
-          payment_provider,
           stripe_customer_id,
           payment_method_id,
-          payment_method_last4,
-          payment_method_brand,
-          payment_method_exp_month,
-          payment_method_exp_year,
-          paypal_subscription_id,
-          paypal_subscription_email,
-          subscription_status,
-          subscription_plan,
-          subscription_trial_ends_at,
-          subscription_current_period_end
+          card_last4,
+          card_brand,
+          card_exp_month,
+          card_exp_year,
+          status,
+          trial_end,
+          current_period_end
         `)
         .eq('professional_id', professionalId)
         .maybeSingle();
 
-      if (error) throw error;
-
-      if (data) {
-        setSettings({
-          payment_provider: (data.payment_provider as 'stripe' | 'paypal' | null) || null,
-          // Dati comuni
-          payment_method_last4: data.payment_method_last4 || null,
-          payment_method_brand: data.payment_method_brand || null,
-          payment_method_exp_month: data.payment_method_exp_month || null,
-          payment_method_exp_year: data.payment_method_exp_year || null,
-          // Dati Stripe
-          stripe_customer_id: data.stripe_customer_id || null,
-          payment_method_id: data.payment_method_id || null,
-          // Dati PayPal
-          paypal_subscription_id: data.paypal_subscription_id || null,
-          paypal_subscription_email: data.paypal_subscription_email || null,
-          // Info abbonamento
-          subscription_status: (data.subscription_status || 'trial') as 'trial' | 'active' | 'past_due' | 'cancelled',
-          subscription_plan: (data.subscription_plan || 'pro') as 'basic' | 'pro' | 'advanced',
-          subscription_trial_ends_at: data.subscription_trial_ends_at || null,
-          subscription_current_period_end: data.subscription_current_period_end || null,
-        });
+      if (subError && subError.code !== 'PGRST116') {
+        console.error('Errore fetch subscription:', subError);
       }
+
+      // Determina payment_provider in base ai dati presenti
+      let paymentProvider: 'stripe' | 'paypal' | null = null;
+      if (subscription?.stripe_customer_id || subscription?.payment_method_id) {
+        paymentProvider = 'stripe';
+      }
+
+      // Carica dati PayPal da professional_settings (se necessario in futuro)
+      const { data: settings, error: settingsError } = await supabase
+        .from('professional_settings')
+        .select('paypal_subscription_id, paypal_subscription_email')
+        .eq('professional_id', professionalId)
+        .maybeSingle();
+
+      if (settingsError && settingsError.code !== 'PGRST116') {
+        console.error('Errore fetch settings:', settingsError);
+      }
+
+      if (settings?.paypal_subscription_id || settings?.paypal_subscription_email) {
+        paymentProvider = 'paypal';
+      }
+
+      // Determina subscription status
+      let subscriptionStatus: 'trial' | 'active' | 'past_due' | 'cancelled' = 'trial';
+      if (subscription?.status) {
+        if (subscription.status === 'trialing') subscriptionStatus = 'trial';
+        else if (subscription.status === 'active') subscriptionStatus = 'active';
+        else if (subscription.status === 'past_due') subscriptionStatus = 'past_due';
+        else if (subscription.status === 'canceled') subscriptionStatus = 'cancelled';
+      }
+
+      setSettings({
+        payment_provider: paymentProvider,
+        // Dati comuni
+        payment_method_last4: subscription?.card_last4 || null,
+        payment_method_brand: subscription?.card_brand || null,
+        payment_method_exp_month: subscription?.card_exp_month || null,
+        payment_method_exp_year: subscription?.card_exp_year || null,
+        // Dati Stripe
+        stripe_customer_id: subscription?.stripe_customer_id || null,
+        payment_method_id: subscription?.payment_method_id || null,
+        // Dati PayPal
+        paypal_subscription_id: settings?.paypal_subscription_id || null,
+        paypal_subscription_email: settings?.paypal_subscription_email || null,
+        // Info abbonamento
+        subscription_status: subscriptionStatus,
+        subscription_plan: 'pro', // Default, può essere recuperato da subscription se necessario
+        subscription_trial_ends_at: subscription?.trial_end || null,
+        subscription_current_period_end: subscription?.current_period_end || null,
+      });
     } catch (err: any) {
       console.error('Errore fetch settings abbonamento:', err);
-      if (err.code !== 'PGRST116') {
-        toast.error('Errore nel caricamento delle impostazioni');
-      }
+      toast.error('Errore nel caricamento delle impostazioni');
     } finally {
       setLoading(false);
     }
@@ -470,6 +515,7 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
   };
 
   const [showAddPaymentMethodModal, setShowAddPaymentMethodModal] = useState(false);
+  const [showAddStripeCardModal, setShowAddStripeCardModal] = useState(false);
 
   const handleAddCard = () => {
     setShowAddPaymentMethodModal(true);
@@ -477,17 +523,28 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
 
   const handleSelectPaymentMethod = (provider: 'stripe' | 'paypal') => {
     setShowAddPaymentMethodModal(false);
-    // TODO: Implementare flussi specifici per ogni provider
     if (provider === 'stripe') {
-      toast.info('Integrazione Stripe in arrivo! Contattaci per maggiori informazioni.');
+      // Apri modal Stripe per aggiungere carta
+      setShowAddStripeCardModal(true);
     } else if (provider === 'paypal') {
       toast.info('Integrazione PayPal in arrivo! Contattaci per maggiori informazioni.');
     }
   };
 
+  const handleStripeCardSuccess = () => {
+    // Ricarica le impostazioni dopo aver aggiunto la carta
+    fetchSettings();
+    onSuccess();
+  };
+
   const handleEditCard = () => {
-    // TODO: Integrare Stripe Elements o Checkout
-    toast.info('Integrazione Stripe in arrivo! Contattaci per maggiori informazioni.');
+    // Per ora, per modificare la carta, l'utente deve rimuoverla e aggiungerne una nuova
+    // In futuro possiamo implementare un flusso di modifica con Stripe
+    if (settings.payment_provider === 'stripe') {
+      setShowAddStripeCardModal(true);
+    } else {
+      toast.info('Integrazione Stripe in arrivo! Contattaci per maggiori informazioni.');
+    }
   };
 
   const handleRemoveCard = async () => {
@@ -503,10 +560,27 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
     if (!confirmed) return;
 
     try {
-      const { error } = await supabase
+      // Rimuovi payment method da professional_subscriptions
+      const { error: subError } = await supabase
+        .from('professional_subscriptions')
+        .update({
+          payment_method_id: null,
+          card_last4: null,
+          card_brand: null,
+          card_exp_month: null,
+          card_exp_year: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('professional_id', professionalId);
+
+      if (subError && subError.code !== 'PGRST116') {
+        throw subError;
+      }
+
+      // Rimuovi anche da professional_settings se presente
+      const { error: settingsError } = await supabase
         .from('professional_settings')
-        .upsert({
-          professional_id: professionalId,
+        .update({
           payment_provider: null,
           payment_method_id: null,
           payment_method_last4: null,
@@ -516,9 +590,13 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
           paypal_subscription_id: null,
           paypal_subscription_email: null,
           updated_at: new Date().toISOString(),
-        }, { onConflict: 'professional_id' });
+        })
+        .eq('professional_id', professionalId);
 
-      if (error) throw error;
+      if (settingsError && settingsError.code !== 'PGRST116') {
+        console.warn('Errore rimozione da professional_settings:', settingsError);
+        // Non bloccare se c'è errore qui, i dati principali sono in professional_subscriptions
+      }
       
       setSettings(prev => ({
         ...prev,
@@ -719,6 +797,7 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
             </div>
             <SubscriptionInfo settings={settings} />
           </div>
+
         </div>
 
         {/* Footer */}
@@ -765,6 +844,16 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
         onClose={() => setShowAddPaymentMethodModal(false)}
         onSelect={handleSelectPaymentMethod}
       />
+
+      {/* Modal aggiunta carta Stripe */}
+      {professionalId && (
+        <AddStripeCardModal
+          isOpen={showAddStripeCardModal}
+          onClose={() => setShowAddStripeCardModal(false)}
+          onSuccess={handleStripeCardSuccess}
+          professionalId={professionalId}
+        />
+      )}
     </>
   );
 }

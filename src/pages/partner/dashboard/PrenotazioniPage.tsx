@@ -649,7 +649,7 @@ export default function PrenotazioniPage() {
       // Recupera dati prenotazione prima di aggiornare
       const { data: bookingData } = await supabase
         .from('bookings')
-        .select('client_name, booking_date, booking_time, professional_id')
+        .select('client_name, booking_date, booking_time, professional_id, service_id')
         .eq('id', bookingId)
         .single();
 
@@ -666,12 +666,24 @@ export default function PrenotazioniPage() {
       // Crea notifica per prenotazione confermata (in background)
       if (bookingData && bookingData.professional_id) {
         try {
+          // Recupera nome servizio se presente
+          let serviceName: string | undefined;
+          if (bookingData.service_id) {
+            const { data: serviceData } = await supabase
+              .from('professional_services')
+              .select('name')
+              .eq('id', bookingData.service_id)
+              .maybeSingle();
+            serviceName = serviceData?.name;
+          }
+
           const { notifyBookingConfirmed } = await import('@/services/notificationService');
           await notifyBookingConfirmed(bookingData.professional_id, {
             id: bookingId,
             clientName: bookingData.client_name || 'Cliente',
             bookingDate: bookingData.booking_date,
-            bookingTime: bookingData.booking_time
+            bookingTime: bookingData.booking_time,
+            serviceName
           });
         } catch (notifErr) {
           console.error('Errore creazione notifica:', notifErr);
@@ -701,7 +713,7 @@ export default function PrenotazioniPage() {
       // Recupera dati prenotazione prima di aggiornare
       const { data: bookingData } = await supabase
         .from('bookings')
-        .select('client_name, booking_date, booking_time, professional_id, cancellation_reason')
+        .select('client_name, booking_date, booking_time, professional_id, cancellation_reason, service_id')
         .eq('id', deletingBookingId)
         .single();
 
@@ -718,13 +730,25 @@ export default function PrenotazioniPage() {
       // Crea notifica per prenotazione cancellata (in background)
       if (bookingData && bookingData.professional_id) {
         try {
+          // Recupera nome servizio se presente
+          let serviceName: string | undefined;
+          if (bookingData.service_id) {
+            const { data: serviceData } = await supabase
+              .from('professional_services')
+              .select('name')
+              .eq('id', bookingData.service_id)
+              .maybeSingle();
+            serviceName = serviceData?.name;
+          }
+
           const { notifyBookingCancelled } = await import('@/services/notificationService');
           await notifyBookingCancelled(bookingData.professional_id, {
             id: deletingBookingId,
             clientName: bookingData.client_name || 'Cliente',
             bookingDate: bookingData.booking_date,
             bookingTime: bookingData.booking_time,
-            reason: bookingData.cancellation_reason || undefined
+            reason: bookingData.cancellation_reason || undefined,
+            serviceName
           });
         } catch (notifErr) {
           console.error('Errore creazione notifica:', notifErr);

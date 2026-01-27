@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Clock, User, X, AlertTriangle, Ban } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Clock, User, X, AlertTriangle, Ban, Briefcase, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -8,6 +8,8 @@ import { useBlockedPeriods } from '@/hooks/useBlockedPeriods';
 import { ClientAutocomplete } from '@/components/partner/bookings/ClientAutocomplete';
 import AddClientModal from '@/components/partner/clients/AddClientModal';
 import { autoCompletePastBookings } from '@/services/bookingsService';
+import { getServicesByProfessional, type ProfessionalService } from '@/services/professionalServicesService';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type ViewType = 'day' | 'week' | 'month';
 
@@ -66,6 +68,7 @@ const AgendaView = () => {
     status: string;
     color: string;
     price: string; // Prezzo personalizzato (opzionale)
+    serviceId: string; // ID servizio selezionato
   } | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -74,6 +77,8 @@ const AgendaView = () => {
   const [showManageBlocksModal, setShowManageBlocksModal] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [services, setServices] = useState<ProfessionalService[]>([]);
+  const [loadingServices, setLoadingServices] = useState(false);
   
   // Stato per drag & drop - SEMPLIFICATO
   const [dragState, setDragState] = useState<{
@@ -148,6 +153,35 @@ const AgendaView = () => {
       fetchBookings(false);
     }
   }, [currentDate, professionalId]);
+
+  // Carica servizi del professionista quando professionalId è disponibile
+  useEffect(() => {
+    const loadServices = async () => {
+      if (!professionalId) return;
+      
+      try {
+        setLoadingServices(true);
+        const fetchedServices = await getServicesByProfessional(professionalId);
+        setServices(fetchedServices);
+        
+        // Se c'è solo un servizio e stiamo creando un nuovo booking, selezionalo automaticamente
+        if (fetchedServices.length === 1 && newBooking && !newBooking.serviceId) {
+          setNewBooking(prev => prev ? {
+            ...prev,
+            serviceId: fetchedServices[0].id,
+            endTime: calculateEndTime(prev.startTime, fetchedServices[0].duration_minutes)
+          } : null);
+        }
+      } catch (error) {
+        console.error('Errore caricamento servizi:', error);
+        toast.error('Errore nel caricamento dei servizi');
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+
+    loadServices();
+  }, [professionalId]); // Solo professionalId come dipendenza per evitare loop
 
   const loadProfessionalId = async () => {
     if (!user) return;
@@ -606,7 +640,8 @@ const AgendaView = () => {
       notes: '',
       status: 'confirmed',
       color: '#EEBA2B', // Default oro
-      price: '' // Prezzo opzionale
+      price: '', // Prezzo opzionale
+      serviceId: '' // Inizializza senza servizio selezionato
     });
     setSelectedClientId(null); // Reset client selezionato quando si apre il modal
     setShowCreateModal(true);
@@ -1274,12 +1309,48 @@ const AgendaView = () => {
     if (!selectedBooking) return;
     
     try {
+      // Recupera dati prenotazione prima di eliminare (per notifica)
+      const { data: bookingData } = await supabase
+        .from('bookings')
+        .select('client_name, booking_date, booking_time, professional_id, service_id, cancellation_reason')
+        .eq('id', selectedBooking.id)
+        .maybeSingle();
+
       const { error } = await supabase
         .from('bookings')
         .delete()
         .eq('id', selectedBooking.id);
       
       if (error) throw error;
+
+      // Crea notifica per prenotazione cancellata (in background, non blocca il flusso)
+      if (bookingData && bookingData.professional_id) {
+        try {
+          // Recupera nome servizio se presente
+          let serviceName: string | undefined;
+          if (bookingData.service_id) {
+            const { data: serviceData } = await supabase
+              .from('professional_services')
+              .select('name')
+              .eq('id', bookingData.service_id)
+              .maybeSingle();
+            serviceName = serviceData?.name;
+          }
+
+          const { notifyBookingCancelled } = await import('@/services/notificationService');
+          await notifyBookingCancelled(bookingData.professional_id, {
+            id: selectedBooking.id,
+            clientName: bookingData.client_name || 'Cliente',
+            bookingDate: bookingData.booking_date,
+            bookingTime: bookingData.booking_time,
+            reason: bookingData.cancellation_reason || undefined,
+            serviceName
+          });
+        } catch (notifErr) {
+          // Non bloccare il flusso se la notifica fallisce
+          console.error('Errore creazione notifica:', notifErr);
+        }
+      }
       
       await fetchBookings(false);
       toast.success('Appuntamento eliminato!');
@@ -1345,6 +1416,11 @@ const AgendaView = () => {
       // Prepara notes solo con note testuali (non più JSON completo)
       const notesContent = newBooking.notes || null;
 
+      // Trova servizio selezionato per ottenere colore e altre info
+      const selectedService = newBooking.serviceId 
+        ? services.find(s => s.id === newBooking.serviceId)
+        : null;
+
       // Prepara dati booking con colonne separate
       const bookingData: any = {
         professional_id: professionalId,
@@ -1358,8 +1434,9 @@ const AgendaView = () => {
         client_name: newBooking.clientName || null,
         client_email: newBooking.clientEmail || null,
         client_phone: newBooking.clientPhone || null,
-        color: newBooking.color || '#EEBA2B',
-        // Prezzo personalizzato (opzionale)
+        service_id: newBooking.serviceId || null, // FK a professional_services
+        color: selectedService?.color || newBooking.color || '#EEBA2B',
+        // Prezzo personalizzato (opzionale) - ha priorità sul prezzo del servizio
         price: newBooking.price && !isNaN(parseFloat(newBooking.price.replace(',', '.'))) 
           ? parseFloat(newBooking.price.replace(',', '.')) 
           : null
@@ -1433,7 +1510,6 @@ const AgendaView = () => {
       
       setShowCreateModal(false);
       setNewBooking(null);
-      setSelectedClientId(null); // Reset client selezionato
       setSelectedClientId(null); // Reset client selezionato
     } catch (err: any) {
       console.error('Errore creazione appuntamento:', err);
@@ -2175,6 +2251,58 @@ const AgendaView = () => {
                   placeholder="+39 333 1234567"
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-shadow"
                 />
+              </div>
+              
+              {/* Tipo servizio - Dropdown */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Tipo di servizio
+                </label>
+                {loadingServices ? (
+                  <div className="w-full pl-4 pr-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                    <span className="text-sm text-gray-500">Caricamento servizi...</span>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <Select
+                      value={newBooking.serviceId}
+                      onValueChange={(selectedServiceId) => {
+                        const selectedService = services.find(s => s.id === selectedServiceId);
+                        
+                        setNewBooking({
+                          ...newBooking,
+                          serviceId: selectedServiceId,
+                          // Auto-compila durata se servizio selezionato
+                          endTime: selectedService 
+                            ? calculateEndTime(newBooking.startTime, selectedService.duration_minutes)
+                            : calculateEndTime(newBooking.startTime, 60), // Default 1 ora se nessun servizio
+                          // Auto-compila prezzo se servizio selezionato (formattato con virgola e 2 decimali)
+                          price: selectedService 
+                            ? selectedService.price.toFixed(2).replace('.', ',')
+                            : '' // Reset prezzo se nessun servizio selezionato
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-shadow relative bg-[#3A3A3A]">
+                        <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                        <SelectValue placeholder="Seleziona un servizio..." />
+                      </SelectTrigger>
+                      <SelectContent className="z-[100]" position="popper">
+                        {services.map((service) => (
+                          <SelectItem key={service.id} value={service.id}>
+                            {service.name} - €{service.price} ({service.duration_minutes} min)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {services.length === 0 && !loadingServices && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Nessun servizio disponibile. Configura i servizi nel tuo profilo.
+                  </p>
+                )}
               </div>
               
               {/* Note */}

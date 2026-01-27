@@ -1010,3 +1010,29 @@ html.partner-dashboard-loading {
 }
 
 /* Glow Effect Arancio (delicato) - Rimosso, non più necessario con nuova palette */
+
+/* ============================================
+   FIX PER STRIPE PAYMENT ELEMENT IFRAME
+   ============================================ */
+
+/* Fix per Stripe PaymentElement iframe - garantisce pointer-events */
+.StripeElement,
+.StripeElement iframe,
+.__PrivateStripeElement,
+.__PrivateStripeElement iframe {
+  pointer-events: auto !important;
+  z-index: 1 !important;
+}
+
+/* Assicura che il container del PaymentElement non blocchi */
+[class*="p-PaymentElement"],
+[class*="p-Input"] {
+  pointer-events: auto !important;
+}
+
+/* Fix per iframe Stripe in generale */
+iframe[src*="js.stripe.com"],
+iframe[src*="hooks.stripe.com"] {
+  pointer-events: auto !important;
+  z-index: 1 !important;
+}

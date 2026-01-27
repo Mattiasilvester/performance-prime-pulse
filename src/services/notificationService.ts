@@ -93,13 +93,26 @@ async function sendPushNotificationAsync(professionalId: string, notificationId:
     });
 
     if (error) {
-      console.error('[PUSH] Errore chiamata Edge Function:', error);
+      // Se l'Edge Function non esiste o non è deployata, log silenzioso (non è critico)
+      if (error.message?.includes('Function not found') || error.message?.includes('404')) {
+        console.log('[PUSH] Edge Function non deployata, skip push notification');
+        return;
+      }
+      // Per altri errori (CORS, network, ecc.), log solo in dev
+      if (import.meta.env.DEV) {
+        console.warn('[PUSH] Errore chiamata Edge Function (non bloccante):', error);
+      }
       return;
     }
 
-    console.log('[PUSH] Push inviate con successo:', data);
+    if (import.meta.env.DEV) {
+      console.log('[PUSH] Push inviate con successo:', data);
+    }
   } catch (error) {
-    console.error('[PUSH] Errore invio push:', error);
+    // Gestione silenziosa errori push (non bloccanti)
+    if (import.meta.env.DEV) {
+      console.warn('[PUSH] Errore invio push (non bloccante):', error);
+    }
     // Non lanciare errore, push è opzionale
   }
 }
@@ -230,6 +243,7 @@ export async function notifyBookingConfirmed(
     clientName: string;
     bookingDate: string;
     bookingTime: string;
+    serviceName?: string;
   }
 ): Promise<void> {
   const date = new Date(bookingData.bookingDate);
@@ -242,12 +256,13 @@ export async function notifyBookingConfirmed(
     professionalId,
     type: 'booking_confirmed',
     title: 'Prenotazione confermata',
-    message: `La prenotazione con ${bookingData.clientName} per il ${formattedDate} alle ${bookingData.bookingTime} è stata confermata`,
+    message: `La prenotazione con ${bookingData.clientName} per il ${formattedDate} alle ${bookingData.bookingTime} è stata confermata${bookingData.serviceName ? ` - ${bookingData.serviceName}` : ''}`,
     data: {
       booking_id: bookingData.id,
       client_name: bookingData.clientName,
       booking_date: bookingData.bookingDate,
-      booking_time: bookingData.bookingTime
+      booking_time: bookingData.bookingTime,
+      service_name: bookingData.serviceName
     }
   });
 }
@@ -263,6 +278,7 @@ export async function notifyBookingCancelled(
     bookingDate: string;
     bookingTime: string;
     reason?: string;
+    serviceName?: string;
   }
 ): Promise<void> {
   const date = new Date(bookingData.bookingDate);
@@ -275,13 +291,14 @@ export async function notifyBookingCancelled(
     professionalId,
     type: 'booking_cancelled',
     title: 'Prenotazione cancellata',
-    message: `La prenotazione con ${bookingData.clientName} per il ${formattedDate} alle ${bookingData.bookingTime} è stata cancellata${bookingData.reason ? `: ${bookingData.reason}` : ''}`,
+    message: `La prenotazione con ${bookingData.clientName} per il ${formattedDate} alle ${bookingData.bookingTime} è stata cancellata${bookingData.serviceName ? ` - ${bookingData.serviceName}` : ''}${bookingData.reason ? `: ${bookingData.reason}` : ''}`,
     data: {
       booking_id: bookingData.id,
       client_name: bookingData.clientName,
       booking_date: bookingData.bookingDate,
       booking_time: bookingData.bookingTime,
-      reason: bookingData.reason
+      reason: bookingData.reason,
+      service_name: bookingData.serviceName
     }
   });
 }
@@ -393,6 +410,7 @@ export async function notifyBookingReminder(
     bookingDate: string;
     bookingTime: string;
     hoursBefore: number;
+    serviceName?: string;
   }
 ): Promise<string | null> {
   const date = new Date(bookingData.bookingDate);
@@ -412,13 +430,14 @@ export async function notifyBookingReminder(
         professional_id: professionalId,
         type: 'booking_reminder',
         title: 'Promemoria appuntamento',
-        message: `Appuntamento con ${bookingData.clientName} tra ${hoursText} - ${formattedDate} alle ${bookingData.bookingTime}`,
+        message: `Appuntamento con ${bookingData.clientName} tra ${hoursText} - ${formattedDate} alle ${bookingData.bookingTime}${bookingData.serviceName ? ` - ${bookingData.serviceName}` : ''}`,
         data: {
           booking_id: bookingData.id,
           client_name: bookingData.clientName,
           booking_date: bookingData.bookingDate,
           booking_time: bookingData.bookingTime,
-          hours_before: bookingData.hoursBefore
+          hours_before: bookingData.hoursBefore,
+          service_name: bookingData.serviceName
         },
         is_read: false
       })

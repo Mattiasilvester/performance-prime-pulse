@@ -2,6 +2,12 @@
 
 ## Decisioni Architetturali
 
+### 27 Gennaio 2025 - Sessione Fix Stripe Payments
+- **Pattern Gestione Eventi Modal con Iframe**: `stopPropagation()` blocca eventi su iframe esterni (Stripe, PayPal). Pattern: NON usare `stopPropagation()` sul container che contiene iframe. Usare `e.target === e.currentTarget` per chiudere modal solo su click overlay. Aggiungere CSS `pointer-events: auto !important` per iframe esterni. Pattern applicabile a tutti i modal che contengono iframe
+- **Pattern Placeholder Data per Development**: Mostrare dati di test in development per facilitare sviluppo senza dipendenze esterne. Pattern: `const isDev = import.meta.env.DEV; const cardData = realData || (isDev ? placeholderData : null);`. Pattern riutilizzabile per qualsiasi componente che richiede dati esterni in development
+- **Stripe PaymentElement Options**: `paymentMethodTypes` non è una proprietà valida di `StripePaymentElementOptions`. Stripe PaymentElement mostra automaticamente card inputs se non vengono esplicitamente abilitati altri metodi. Pattern: non specificare `paymentMethodTypes`, usare solo `fields`, `wallets`, `business` nelle options
+- **CSS Isolation per Iframe**: Aggiungere `isolation: 'isolate'` al container che contiene iframe esterni per creare nuovo stacking context e evitare conflitti z-index. Pattern utile quando iframe devono apparire sopra altri elementi
+
 ### 23 Gennaio 2025 - Sessione Sistema Notifiche Completo
 - **Pattern Cron Jobs Esterni**: Supabase non ha scheduling integrato, quindi usiamo GitHub Actions per cron jobs. Pattern: workflow YAML con `schedule: cron` che chiama Edge Function tramite curl con `SUPABASE_ANON_KEY`. Pattern riutilizzabile per altri job schedulati
 - **Service Worker Pattern**: Service Worker (`sw.js`) registrato in `main.tsx` e protetto da cleanup PWA. Pattern: mantenere service worker attivo anche durante cleanup altri service worker. Usare `skipWaiting()` e `clients.claim()` per attivazione immediata
