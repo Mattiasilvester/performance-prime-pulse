@@ -1,0 +1,31 @@
+name: Subscription Reminders Cron
+
+on:
+  schedule:
+    # Esegui ogni giorno alle 09:00 UTC (10:00 ora italiana)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # Permette esecuzione manuale
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Subscription Reminders Edge Function
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/subscription-reminders" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Edge Function failed with status $http_code"
+            exit 1
+          fi
+          
+          echo "✅ Subscription reminders sent successfully"
