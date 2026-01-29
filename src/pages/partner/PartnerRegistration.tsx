@@ -240,7 +240,7 @@ export default function PartnerRegistration() {
         bioWithCategory = `Categoria: ${formData.customCategory.trim()}\n\n${bioWithCategory}`;
       }
 
-      await professionalAuthService.register({
+      const result = await professionalAuthService.register({
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
         email: formData.email.trim().toLowerCase(),
@@ -258,6 +258,13 @@ export default function PartnerRegistration() {
         prezzo_fascia: formData.prezzo_fascia
       });
 
+      if (result.requiresEmailConfirmation) {
+        toast.success('Registrazione completata', {
+          description: 'Controlla la tua email per confermare l\'account. Poi potrai accedere alla dashboard.'
+        });
+        navigate('/partner/login');
+        return;
+      }
       navigate('/partner/dashboard');
     } catch (err: unknown) {
       console.error('Errore registrazione:', err);
@@ -277,6 +284,18 @@ export default function PartnerRegistration() {
         setErrors({ password: 'Questa password è troppo comune. Scegli una password più sicura e unica.' });
         toast.error('Password troppo comune', {
           description: 'Torna indietro e scegli una password più sicura e unica'
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Email già registrata (Auth): torna allo step 1 e mostra errore sotto l'email
+      if (errorMessage.includes('already registered') || errorMessage.includes('già registrat')) {
+        setEmailError('Questa email è già registrata. Usa un\'altra email o accedi al tuo account.');
+        setCurrentStep(1);
+        setError(null);
+        toast.error('Email già in uso', {
+          description: 'Questa email è già registrata. Usa un\'altra email o accedi.'
         });
         setLoading(false);
         return;

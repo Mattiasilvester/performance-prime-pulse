@@ -6,7 +6,10 @@ import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { X, CreditCard, Loader2, Download, AlertTriangle, Info, CheckCircle2, Clock, FileText, Edit, Trash2, Circle } from 'lucide-react';
+import { getStripeErrorMessage } from '@/utils/stripeErrors';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
+import { InvoicesCard } from '@/components/partner/subscription/InvoicesCard';
 import AddStripeCardModal from './AddStripeCardModal';
 
 interface PaymentsModalProps {
@@ -187,94 +190,15 @@ const PaymentMethodCard = ({
   );
 };
 
-// Componente InvoicesList
-interface InvoicesListProps {
-  invoices: Invoice[];
-  loading: boolean;
-}
+// Componente InvoicesList rimosso - ora usiamo InvoicesCard da subscription components
 
-const InvoicesList = ({ invoices, loading }: InvoicesListProps) => {
-  if (loading) {
-    return (
-      <div className="bg-gray-50 rounded-xl p-8 text-center">
-        <Loader2 className="w-6 h-6 text-gray-400 animate-spin mx-auto mb-2" />
-        <p className="text-gray-500">Caricamento fatture...</p>
-      </div>
-    );
-  }
-
-  if (invoices.length === 0) {
-    return (
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-          <FileText className="w-8 h-8 text-gray-400" />
-        </div>
-        <p className="font-medium text-gray-700 mb-1">Nessuna fattura disponibile</p>
-        <p className="text-sm text-gray-500">
-          Le fatture appariranno qui dopo il primo pagamento dell'abbonamento.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
-      {/* Header */}
-      <div className="bg-gray-50 px-4 py-3 grid grid-cols-4 gap-4 text-xs font-semibold text-gray-500 uppercase">
-        <span>Data</span>
-        <span>Descrizione</span>
-        <span>Importo</span>
-        <span className="text-right">Fattura</span>
-      </div>
-      
-      {/* Rows */}
-      {invoices.map((invoice, index) => (
-        <div
-          key={invoice.id}
-          className={`px-4 py-4 grid grid-cols-4 gap-4 items-center ${
-            index !== invoices.length - 1 ? 'border-b border-gray-100' : ''
-          }`}
-        >
-          <span className="text-sm text-gray-900">
-            {new Date(invoice.invoice_date).toLocaleDateString('it-IT', {
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric',
-            })}
-          </span>
-          <span className="text-sm text-gray-700">
-            {invoice.description || 'Abbonamento PrimePro'}
-          </span>
-          <span className="text-sm font-semibold text-gray-900">
-            €{invoice.amount.toFixed(2)}
-          </span>
-          <div className="text-right">
-            {invoice.invoice_pdf_url ? (
-              <a
-                href={invoice.invoice_pdf_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[#EEBA2B] hover:text-[#d4a827] font-medium text-sm transition"
-              >
-                <Download className="w-4 h-4" />
-                Scarica
-              </a>
-            ) : (
-              <span className="text-gray-400 text-sm">—</span>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// Componente SubscriptionInfo
-interface SubscriptionInfoProps {
+// Componente SubscriptionSection (FASE 2: Sezione Abbonamento completa)
+export interface SubscriptionSectionProps {
   settings: PaymentSettings;
+  onCancelSubscription: () => void;
 }
 
-const SubscriptionInfo = ({ settings }: SubscriptionInfoProps) => {
+export const SubscriptionSection = ({ settings, onCancelSubscription }: SubscriptionSectionProps) => {
   const plan = PLANS[settings.subscription_plan] || PLANS.pro;
   
   const getStatusBadge = () => {
@@ -294,6 +218,17 @@ const SubscriptionInfo = ({ settings }: SubscriptionInfoProps) => {
 
   const status = getStatusBadge();
   const StatusIcon = status.icon;
+  
+  // Calcola prossimo addebito (solo se active)
+  const nextPaymentDate = settings.subscription_status === 'active' && settings.subscription_current_period_end
+    ? new Date(settings.subscription_current_period_end).toLocaleDateString('it-IT', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : null;
+
+  // Trial info
   const trialEndsAt = settings.subscription_trial_ends_at 
     ? new Date(settings.subscription_trial_ends_at).toLocaleDateString('it-IT', {
         day: 'numeric',
@@ -302,8 +237,19 @@ const SubscriptionInfo = ({ settings }: SubscriptionInfoProps) => {
       })
     : null;
 
+  // Calcola giorni rimanenti nel trial
+  const trialDaysRemaining = settings.subscription_status === 'trial' && settings.subscription_trial_ends_at
+    ? Math.ceil(
+        (new Date(settings.subscription_trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      )
+    : null;
+
+  // Mostra bottone cancella solo se active (non in trial)
+  const showCancelButton = settings.subscription_status === 'active';
+
   return (
     <div className="bg-gray-50 rounded-xl p-5 space-y-4">
+      {/* Piano e Status */}
       <div className="flex items-center justify-between">
         <div>
           <span className="text-sm text-gray-500 block mb-1">Piano attuale</span>
@@ -316,27 +262,72 @@ const SubscriptionInfo = ({ settings }: SubscriptionInfoProps) => {
           {status.text}
         </span>
       </div>
-      
-      {settings.subscription_status === 'trial' && trialEndsAt && (
-        <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-4">
-          <div className="flex-shrink-0 p-1 bg-blue-100 rounded-lg">
-            <Info className="w-4 h-4 text-blue-600" />
+
+      {/* Prossimo Addebito (solo se active) */}
+      {settings.subscription_status === 'active' && nextPaymentDate && (
+        <div className="bg-gradient-to-r from-[#EEBA2B]/10 to-[#EEBA2B]/5 border-2 border-[#EEBA2B]/20 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Prossimo addebito</p>
+              <p className="text-lg font-bold text-gray-900">{nextPaymentDate}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Importo</p>
+              <p className="text-lg font-bold text-[#EEBA2B]">€{plan.price},00</p>
+            </div>
           </div>
-          <p className="text-sm text-blue-800 flex-1">
-            Hai 6 mesi di prova gratuita. Il periodo di prova termina il <strong>{trialEndsAt}</strong>. 
-            Al termine, verrà addebitato l'importo sulla carta salvata.
-          </p>
         </div>
       )}
-      
+
+      {/* Trial Info */}
+      {settings.subscription_status === 'trial' && trialEndsAt && (
+        <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-4">
+          <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm text-blue-800 font-medium mb-1">Periodo di prova attivo</p>
+            <p className="text-sm text-blue-700">
+              {trialDaysRemaining !== null && trialDaysRemaining > 0 ? (
+                <>
+                  <strong>{trialDaysRemaining} giorni</strong> rimanenti nel periodo di prova. 
+                  Il periodo termina il <strong>{trialEndsAt}</strong>.
+                </>
+              ) : (
+                <>
+                  Il periodo di prova termina il <strong>{trialEndsAt}</strong>.
+                </>
+              )}
+              {' '}Aggiungi un metodo di pagamento per continuare dopo la scadenza.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Past Due Alert */}
       {settings.subscription_status === 'past_due' && (
         <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-lg p-4">
-          <div className="flex-shrink-0 p-1 bg-red-100 rounded-lg">
-            <AlertTriangle className="w-4 h-4 text-red-600" />
+          <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm text-red-800 font-medium mb-1">Pagamento in ritardo</p>
+            <p className="text-sm text-red-700 mb-3">
+              Il pagamento dell'abbonamento è fallito. Aggiorna il metodo di pagamento per continuare a usare PrimePro.
+            </p>
+            <button className="text-sm text-red-700 font-medium hover:text-red-800 underline">
+              Aggiorna metodo di pagamento
+            </button>
           </div>
-          <p className="text-sm text-red-800 flex-1">
-            Il pagamento dell'abbonamento è in ritardo. Aggiorna il metodo di pagamento per continuare a usare PrimePro.
-          </p>
+        </div>
+      )}
+
+      {/* Bottone Cancella (solo se active) */}
+      {showCancelButton && (
+        <div className="pt-3 border-t border-gray-200">
+          <button
+            onClick={onCancelSubscription}
+            className="w-full px-4 py-2.5 border-2 border-red-300 text-red-700 font-semibold rounded-lg hover:bg-red-50 hover:border-red-400 transition flex items-center justify-center gap-2"
+          >
+            <X className="w-4 h-4" />
+            Cancella Abbonamento
+          </button>
         </div>
       )}
     </div>
@@ -346,6 +337,8 @@ const SubscriptionInfo = ({ settings }: SubscriptionInfoProps) => {
 // Componente principale
 export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps) {
   const { user } = useAuth();
+  // Usa useSubscription hook per ottenere fatture (include placeholder in dev)
+  const { invoices, formatInvoiceAmount } = useSubscription();
   const [professionalId, setProfessionalId] = useState<string | null>(null);
   const [settings, setSettings] = useState<PaymentSettings>({
     // Provider attivo
@@ -367,9 +360,7 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
     subscription_trial_ends_at: null,
     subscription_current_period_end: null,
   });
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingInvoices, setLoadingInvoices] = useState(true);
 
   // Carica professional_id
   useEffect(() => {
@@ -380,7 +371,7 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
   useEffect(() => {
     if (professionalId) {
       fetchSettings();
-      fetchInvoices();
+      // Le fatture vengono caricate automaticamente da useSubscription hook
     }
   }, [professionalId]);
 
@@ -392,9 +383,10 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
         .from('professionals')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) return;
       if (data) {
         setProfessionalId(data.id);
       }
@@ -490,29 +482,7 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
     }
   };
 
-  const fetchInvoices = async () => {
-    if (!professionalId) return;
-
-    try {
-      setLoadingInvoices(true);
-      const { data, error } = await supabase
-        .from('subscription_invoices')
-        .select('*')
-        .eq('professional_id', professionalId)
-        .order('invoice_date', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      setInvoices(data || []);
-    } catch (err: any) {
-      console.error('Errore fetch fatture:', err);
-      if (err.code !== 'PGRST116') {
-        // Ignora se tabella non esiste ancora
-      }
-    } finally {
-      setLoadingInvoices(false);
-    }
-  };
+  // fetchInvoices rimosso - ora usiamo useSubscription hook
 
   const [showAddPaymentMethodModal, setShowAddPaymentMethodModal] = useState(false);
   const [showAddStripeCardModal, setShowAddStripeCardModal] = useState(false);
@@ -544,6 +514,58 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
       setShowAddStripeCardModal(true);
     } else {
       toast.info('Integrazione Stripe in arrivo! Contattaci per maggiori informazioni.');
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!professionalId) {
+      toast.error('Errore: professionista non trovato');
+      return;
+    }
+
+    // Modal conferma con opzioni
+    const cancelAtPeriodEnd = window.confirm(
+      'Vuoi cancellare l\'abbonamento?\n\n' +
+      'OK = Cancella alla fine del periodo corrente (consigliato)\n' +
+      'Annulla = Cancella immediatamente'
+    );
+
+    if (!cancelAtPeriodEnd) {
+      // Cancella immediatamente
+      const confirmed = window.confirm(
+        'Sei sicuro di voler cancellare l\'abbonamento immediatamente? ' +
+        'Perderai l\'accesso a PrimePro subito.'
+      );
+      if (!confirmed) return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Chiama Edge Function per cancellare subscription
+      const { data, error } = await supabase.functions.invoke('stripe-cancel-subscription', {
+        body: {
+          cancel_immediately: !cancelAtPeriodEnd, // true = cancella subito, false = fine periodo
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.success) {
+        throw new Error(data?.error || 'Errore durante la cancellazione');
+      }
+
+      toast.success(
+        cancelAtPeriodEnd 
+          ? 'Abbonamento verrà cancellato alla fine del periodo corrente.'
+          : 'Abbonamento cancellato immediatamente.'
+      );
+      
+      fetchSettings(); // Ricarica dati
+    } catch (err: any) {
+      console.error('Errore cancellazione subscription:', err);
+      toast.error(getStripeErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -774,14 +796,13 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
           <div className="border-t border-gray-200 my-6"></div>
 
           {/* Sezione Storico Fatture */}
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex-shrink-0 p-1 bg-gray-100 rounded-lg">
-                <FileText className="w-4 h-4 text-gray-600" />
-              </div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Storico Fatture</h3>
-            </div>
-            <InvoicesList invoices={invoices} loading={loadingInvoices} />
+          <div className="mb-6">
+            {/* Usa InvoicesCard per coerenza con pagina Abbonamento */}
+            {/* InvoicesCard ha già il suo header interno con icona e titolo */}
+            <InvoicesCard
+              invoices={invoices}
+              formatInvoiceAmount={formatInvoiceAmount}
+            />
           </div>
 
           {/* Divider */}
@@ -793,9 +814,9 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
               <div className="flex-shrink-0 p-1 bg-gray-100 rounded-lg">
                 <Info className="w-4 h-4 text-gray-600" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Informazioni Abbonamento</h3>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Abbonamento</h3>
             </div>
-            <SubscriptionInfo settings={settings} />
+            <SubscriptionSection settings={settings} onCancelSubscription={handleCancelSubscription} />
           </div>
 
         </div>

@@ -91,7 +91,7 @@ export default function ServiziTariffePage() {
         .from('professionals')
         .select('id, prezzo_seduta, modalita')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profError) throw profError;
       if (!professional) {

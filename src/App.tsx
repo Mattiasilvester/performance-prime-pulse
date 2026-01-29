@@ -31,6 +31,7 @@ import ProfiloPage from '@/pages/partner/dashboard/ProfiloPage'
 import ImpostazioniPage from '@/pages/partner/dashboard/ImpostazioniPage'
 import ReviewsPage from '@/pages/partner/dashboard/ReviewsPage'
 import ServiziTariffePage from '@/pages/partner/ServiziTariffePage'
+import AbbonamentoPage from '@/pages/partner/dashboard/AbbonamentoPage'
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const TermsAndConditions = lazy(() => import('@/pages/TermsAndConditions'))
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
@@ -70,6 +71,7 @@ const DatabaseDiagnostic = lazy(() => import('@/pages/admin/DatabaseDiagnostic')
 const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics'))
 const AdminSystem = lazy(() => import('@/pages/admin/AdminSystem'))
 const AdminAuditLogs = lazy(() => import('@/pages/admin/AdminAuditLogs'))
+const AdminCancellations = lazy(() => import('@/pages/admin/AdminCancellations'))
 const AdminGuard = lazy(() => import('@/components/admin/AdminGuard'))
 const AdminLayout = lazy(() => import('@/components/admin/AdminLayout'))
 
@@ -171,6 +173,7 @@ function App() {
                   <Route path="profilo" element={<ProfiloPage />} />
                   <Route path="servizi" element={<ServiziTariffePage />} />
                   <Route path="recensioni" element={<ReviewsPage />} />
+                  <Route path="abbonamento" element={<AbbonamentoPage />} />
                   <Route path="impostazioni" element={<ImpostazioniPage />} />
                 </Route>
                 <Route path="/onboarding" element={<OnboardingPage />} />
@@ -457,6 +460,11 @@ function App() {
                           <Route path="logs" element={
                             <Suspense fallback={<LoadingSpinner />}>
                               <AdminAuditLogs />
+                            </Suspense>
+                          } />
+                          <Route path="cancellations" element={
+                            <Suspense fallback={<LoadingSpinner />}>
+                              <AdminCancellations />
                             </Suspense>
                           } />
                           <Route path="diagnostic" element={

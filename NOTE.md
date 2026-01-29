@@ -2,6 +2,10 @@
 
 ## Decisioni Architetturali
 
+### 29 Gennaio 2026 - Sessione Fix Dashboard Partner
+- **Pattern query professional by user_id**: Usare sempre `.maybeSingle()` invece di `.single()` quando si carica il professionista per `user_id`, perché il record può non esistere ancora (trigger signup in ritardo) o essere assente. Gestire `data === null` con early return o messaggio utente. Evita 406 e PGRST116.
+- **Fallback nome da user_metadata**: Per il saluto in dashboard partner, usare `user.user_metadata.first_name` / `last_name` come fallback se il record in `professionals` non c’è o ha nome vuoto, così il nome dell’onboarding viene mostrato subito.
+
 ### 27 Gennaio 2025 - Sessione Fix Stripe Payments
 - **Pattern Gestione Eventi Modal con Iframe**: `stopPropagation()` blocca eventi su iframe esterni (Stripe, PayPal). Pattern: NON usare `stopPropagation()` sul container che contiene iframe. Usare `e.target === e.currentTarget` per chiudere modal solo su click overlay. Aggiungere CSS `pointer-events: auto !important` per iframe esterni. Pattern applicabile a tutti i modal che contengono iframe
 - **Pattern Placeholder Data per Development**: Mostrare dati di test in development per facilitare sviluppo senza dipendenze esterne. Pattern: `const isDev = import.meta.env.DEV; const cardData = realData || (isDev ? placeholderData : null);`. Pattern riutilizzabile per qualsiasi componente che richiede dati esterni in development

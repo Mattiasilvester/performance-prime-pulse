@@ -6,7 +6,8 @@ import {
   BarChart3, 
   Settings, 
   FileText,
-  LogOut
+  LogOut,
+  XCircle
 } from 'lucide-react';
 import { useAdminAuthBypass } from '@/hooks/useAdminAuthBypass';
 
@@ -49,6 +50,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       icon: FileText, 
       label: 'Audit Logs', 
       path: '/nexus-prime-control/audit-logs' 
+    },
+    { 
+      icon: XCircle, 
+      label: 'Cancellazioni', 
+      path: '/nexus-prime-control/cancellations' 
     },
   ];
 

@@ -174,12 +174,16 @@ export async function getProfessionalById(id: string): Promise<Professional | nu
 
     // Normalizza services come in getProfessionals
     if (data) {
-      let services = [];
+      let services: { id: string; name: string; price: number }[] = [];
       if (data.services) {
         if (Array.isArray(data.services)) {
           services = data.services.filter((s: any) => s && s.id && s.name && s.price !== undefined);
-        } else if (data.services.id && data.services.name && data.services.price !== undefined) {
-          services = [data.services];
+        } else {
+          // Type guard per oggetto singolo
+          const serviceObj = data.services as any;
+          if (serviceObj && serviceObj.id && serviceObj.name && serviceObj.price !== undefined) {
+            services = [serviceObj];
+          }
         }
       }
       

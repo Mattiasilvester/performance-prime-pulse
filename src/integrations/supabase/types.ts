@@ -298,8 +298,8 @@ export type Database = {
           id?: string
           last_name: string
           office_phone?: string | null
-          password_hash: string
-          password_salt: string
+          password_hash?: string
+          password_salt?: string
           payment_method?: string | null
           pec_email?: string | null
           phone: string

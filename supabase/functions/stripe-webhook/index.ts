@@ -66,6 +66,12 @@ Deno.serve(async (req) => {
 
     // 3. Gestisci eventi
     switch (event.type) {
+      case 'customer.subscription.created': {
+        const subscription = event.data.object as Stripe.Subscription;
+        await handleSubscriptionCreated(supabaseAdmin, subscription);
+        break;
+      }
+
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
         await handleSubscriptionUpdated(supabaseAdmin, subscription);
@@ -156,6 +162,67 @@ async function handleSubscriptionUpdated(
   }
 
   console.log(`[STRIPE] Subscription ${subscription.id} aggiornata`);
+
+  // Notifica se cancel_at_period_end è diventato true (cancellazione programmata)
+  // Verifica se prima era false e ora è true (nuova cancellazione programmata)
+  if (subscription.cancel_at_period_end === true) {
+    // Recupera subscription aggiornata dal database per avere la data formattata correttamente
+    // (usa la stessa logica del frontend per evitare discrepanze di timezone)
+    const { data: updatedSub, error: fetchError } = await supabase
+      .from('professional_subscriptions')
+      .select('current_period_end')
+      .eq('stripe_subscription_id', subscription.id)
+      .maybeSingle();
+
+    // Formatta data per notifica usando la stessa logica del frontend
+    let formattedDate = 'fine periodo corrente';
+    if (updatedSub?.current_period_end) {
+      // Usa la data ISO dal database (stessa logica del frontend)
+      const date = new Date(updatedSub.current_period_end);
+      formattedDate = date.toLocaleDateString('it-IT', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+    }
+
+    await sendSubscriptionNotification(
+      supabaseAdmin,
+      subscription.id,
+      'subscription_cancellation_scheduled',
+      'Abbonamento in cancellazione',
+      `Il tuo abbonamento Prime Business verrà cancellato il ${formattedDate}. Continuerai ad avere accesso fino a quella data.`
+    );
+  }
+}
+
+// Helper: Gestisce creazione subscription
+async function handleSubscriptionCreated(
+  supabase: ReturnType<typeof createClient>,
+  subscription: Stripe.Subscription,
+) {
+  console.log(`[STRIPE] Creazione subscription: ${subscription.id}`);
+
+  // Trova professional_id dalla subscription
+  const { data: subData, error: subError } = await supabase
+    .from('professional_subscriptions')
+    .select('professional_id')
+    .eq('stripe_subscription_id', subscription.id)
+    .maybeSingle();
+
+  if (subError || !subData) {
+    console.error('[STRIPE] Subscription non trovata nel database:', subscription.id);
+    return;
+  }
+
+  // Invia notifica creazione abbonamento
+  await sendSubscriptionNotification(
+    supabase,
+    subscription.id,
+    'subscription_created',
+    'Abbonamento attivato',
+    'Il tuo abbonamento Prime Business è stato attivato con successo! Benvenuto nella community PrimePro.'
+  );
 }
 
 // Helper: Gestisce cancellazione subscription
@@ -164,6 +231,18 @@ async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription,
 ) {
   console.log(`[STRIPE] Cancellazione subscription: ${subscription.id}`);
+
+  // Recupera professional_id e cancellation_reason prima di aggiornare
+  const { data: subData, error: fetchError } = await supabase
+    .from('professional_subscriptions')
+    .select('professional_id, cancellation_reason')
+    .eq('stripe_subscription_id', subscription.id)
+    .maybeSingle();
+
+  if (fetchError || !subData) {
+    console.error('[STRIPE] Subscription non trovata per cancellazione:', subscription.id);
+    return;
+  }
 
   const { error } = await supabase
     .from('professional_subscriptions')
@@ -180,6 +259,15 @@ async function handleSubscriptionDeleted(
   }
 
   console.log(`[STRIPE] Subscription ${subscription.id} cancellata`);
+
+  // Invia notifica cancellazione
+  await sendSubscriptionNotification(
+    supabase,
+    subscription.id,
+    'subscription_cancelled',
+    'Abbonamento cancellato',
+    'Il tuo abbonamento Prime Business è stato cancellato. Grazie per aver utilizzato PrimePro!'
+  );
 }
 
 // Helper: Gestisce invoice pagata
@@ -262,6 +350,63 @@ async function handleInvoicePaymentFailed(
   }
 
   console.log(`[STRIPE] Subscription ${invoice.subscription} aggiornata a past_due`);
+
+  // Invia notifica pagamento fallito
+  await sendSubscriptionNotification(
+    supabase,
+    invoice.subscription,
+    'subscription_payment_failed',
+    'Pagamento fallito',
+    `Il pagamento dell'abbonamento Prime Business è fallito. Aggiorna il metodo di pagamento per continuare a usare PrimePro.`
+  );
+}
+
+// Helper: Invia notifica per eventi subscription
+async function sendSubscriptionNotification(
+  supabase: ReturnType<typeof createClient>,
+  stripeSubscriptionId: string,
+  notificationType: string,
+  title: string,
+  message: string,
+) {
+  try {
+    // Recupera professional_id dalla subscription
+    const { data: subscription, error: subError } = await supabase
+      .from('professional_subscriptions')
+      .select('professional_id')
+      .eq('stripe_subscription_id', stripeSubscriptionId)
+      .maybeSingle();
+
+    if (subError || !subscription) {
+      console.error('[STRIPE NOTIFICATION] Subscription non trovata:', stripeSubscriptionId);
+      return;
+    }
+
+    // Crea notifica nel database (tipo 'custom' per notifiche subscription)
+    const { error: notifError } = await supabase
+      .from('professional_notifications')
+      .insert({
+        professional_id: subscription.professional_id,
+        type: 'custom', // Usa tipo 'custom' per notifiche subscription
+        title,
+        message,
+        data: {
+          notification_type: notificationType,
+          stripe_subscription_id: stripeSubscriptionId,
+        },
+        is_read: false,
+      });
+
+    if (notifError) {
+      console.error('[STRIPE NOTIFICATION] Errore creazione notifica:', notifError);
+      // Non bloccare il flusso se la notifica fallisce
+    } else {
+      console.log(`[STRIPE NOTIFICATION] Notifica ${notificationType} creata per professional ${subscription.professional_id}`);
+    }
+  } catch (err) {
+    console.error('[STRIPE NOTIFICATION] Errore invio notifica:', err);
+    // Non bloccare il flusso principale
+  }
 }
 
 // Helper: Mappa status Stripe a status database

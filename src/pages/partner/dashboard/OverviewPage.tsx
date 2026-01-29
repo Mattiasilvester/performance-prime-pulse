@@ -19,6 +19,7 @@ interface UpcomingBooking {
     color: string;
   } | null;
   service_type?: string | null;
+  color?: string | null; // Colore salvato nel booking
 }
 
 interface RecentActivity {
@@ -29,6 +30,10 @@ interface RecentActivity {
   icon: typeof UserPlus;
   iconColor: string;
   bgColor: string;
+  // ID per aprire modal dettagli
+  bookingId?: string;
+  clientId?: string;
+  projectId?: string;
 }
 
 export default function OverviewPage() {
@@ -44,6 +49,10 @@ export default function OverviewPage() {
   const [selectedBooking, setSelectedBooking] = useState<UpcomingBooking | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<RecentActivity | null>(null);
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [activityDetails, setActivityDetails] = useState<any>(null);
+  const [activityDetailsLoading, setActivityDetailsLoading] = useState(false);
   const [stats, setStats] = useState({
     clienti: 0,
     prenotazioni: 0,
@@ -51,7 +60,17 @@ export default function OverviewPage() {
     guadagni: 0
   });
 
-  // Carica professional_id
+  // Nome da user_metadata (onboarding) come fallback immediato
+  useEffect(() => {
+    if (!user?.user_metadata) return;
+    const meta = user.user_metadata as Record<string, unknown>;
+    const fn = (meta?.first_name as string)?.trim?.() || '';
+    const ln = (meta?.last_name as string)?.trim?.() || '';
+    const fromMeta = [fn, ln].filter(Boolean).join(' ').trim();
+    if (fromMeta) setUserName(fromMeta);
+  }, [user?.id, user?.user_metadata]);
+
+  // Carica professional_id (e nome da DB se presente)
   useEffect(() => {
     loadProfessionalId();
   }, [user]);
@@ -65,25 +84,35 @@ export default function OverviewPage() {
     }
   }, [professionalId]);
 
-  const loadProfessionalId = async () => {
+  const loadProfessionalId = async (retryCount = 0) => {
     if (!user?.id) return;
+
+    const maxRetries = 2;
+    const delays = [1500, 3000];
 
     try {
       const { data, error } = await supabase
         .from('professionals')
         .select('id, first_name, last_name')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       if (data) {
         setProfessionalId(data.id);
-        setUserName(`${data.first_name} ${data.last_name}`);
+        const nameFromDb = [data.first_name, data.last_name].filter(Boolean).join(' ').trim();
+        if (nameFromDb) setUserName(nameFromDb);
+        // se nameFromDb è vuoto resta il nome da user_metadata (già impostato sopra)
+      } else if (retryCount < maxRetries) {
+        // Trigger signup può creare il professional subito dopo: ritenta
+        setTimeout(() => loadProfessionalId(retryCount + 1), delays[retryCount]);
       }
     } catch (error: any) {
-      console.error('Errore caricamento professional_id:', error);
-      if (error.code !== 'PGRST116') {
-        // Ignora se non trovato (utente non è professionista)
+      if (error?.code !== 'PGRST116') {
+        console.error('Errore caricamento professional_id:', error);
+      }
+      if (retryCount < maxRetries) {
+        setTimeout(() => loadProfessionalId(retryCount + 1), delays[retryCount]);
       }
     }
   };
@@ -263,6 +292,7 @@ export default function OverviewPage() {
           service_id,
           service_type,
           notes,
+          color,
           service:professional_services(id, name, color)
         `)
         .eq('professional_id', professionalId)
@@ -285,6 +315,7 @@ export default function OverviewPage() {
         modalita: booking.modalita || null,
         service: booking.service || null,
         service_type: booking.service_type || null,
+        color: booking.color || null, // Aggiungi colore dal booking
       }));
 
       setUpcomingBookings(mappedBookings);
@@ -393,6 +424,7 @@ export default function OverviewPage() {
             icon: UserPlus,
             iconColor: 'text-orange-500',
             bgColor: 'bg-orange-100',
+            clientId: client.id, // Salva ID per aprire modal
           });
         });
       }
@@ -411,6 +443,7 @@ export default function OverviewPage() {
             icon: Calendar,
             iconColor: 'text-blue-500',
             bgColor: 'bg-blue-100',
+            bookingId: booking.id, // Salva ID per aprire modal
           });
         });
       }
@@ -429,6 +462,7 @@ export default function OverviewPage() {
             icon: CheckCircle,
             iconColor: 'text-green-500',
             bgColor: 'bg-green-100',
+            bookingId: booking.id, // Salva ID per aprire modal
           });
         });
       }
@@ -444,6 +478,7 @@ export default function OverviewPage() {
             icon: FolderPlus,
             iconColor: 'text-purple-500',
             bgColor: 'bg-purple-100',
+            projectId: project.id, // Salva ID per aprire modal
           });
         });
       }
@@ -456,6 +491,67 @@ export default function OverviewPage() {
       setRecentActivities([]);
     } finally {
       setRecentActivitiesLoading(false);
+    }
+  };
+
+  // Handler per click su attività recente
+  const handleActivityClick = async (activity: RecentActivity) => {
+    setSelectedActivity(activity);
+    setShowActivityModal(true);
+    setActivityDetailsLoading(true);
+    setActivityDetails(null);
+
+    try {
+      if (activity.bookingId) {
+        // Carica dettagli booking completo
+        const { data, error } = await supabase
+          .from('bookings')
+          .select(`
+            id,
+            booking_date,
+            booking_time,
+            duration_minutes,
+            status,
+            client_name,
+            client_email,
+            client_phone,
+            modalita,
+            service_id,
+            service_type,
+            notes,
+            color,
+            service:professional_services(id, name, color, price)
+          `)
+          .eq('id', activity.bookingId)
+          .single();
+
+        if (error) throw error;
+        setActivityDetails({ type: 'booking', data });
+      } else if (activity.clientId) {
+        // Carica dettagli cliente completo
+        const { data, error } = await supabase
+          .from('clients')
+          .select('*')
+          .eq('id', activity.clientId)
+          .single();
+
+        if (error) throw error;
+        setActivityDetails({ type: 'client', data });
+      } else if (activity.projectId) {
+        // Carica dettagli progetto completo
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', activity.projectId)
+          .single();
+
+        if (error) throw error;
+        setActivityDetails({ type: 'project', data });
+      }
+    } catch (error: any) {
+      console.error('Errore caricamento dettagli attività:', error);
+    } finally {
+      setActivityDetailsLoading(false);
     }
   };
 
@@ -537,33 +633,33 @@ export default function OverviewPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Bentornato, {userName}!
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          {userName !== 'Professionista' ? `Benvenuto, ${userName}!` : 'Bentornato, Professionista!'}
         </h1>
-        <p className="text-gray-500 capitalize">{formattedDate}</p>
+        <p className="text-sm sm:text-base text-gray-500 capitalize">{formattedDate}</p>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <div
               key={index}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+              className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100"
             >
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">{stat.label}</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">{stat.label}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
                     {stat.value}
                   </p>
                 </div>
-                <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center`}>
-                  <Icon className={`w-6 h-6 ${stat.iconColor}`} />
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 ${stat.bgColor} rounded-xl flex items-center justify-center flex-shrink-0 ml-2`}>
+                  <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.iconColor}`} />
                 </div>
               </div>
             </div>
@@ -572,8 +668,8 @@ export default function OverviewPage() {
       </div>
 
       {/* Prossimi Appuntamenti */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
           Prossimi appuntamenti
         </h2>
         
@@ -597,7 +693,8 @@ export default function OverviewPage() {
         ) : (
           <div className="space-y-3">
             {upcomingBookings.map((booking) => {
-              const serviceColor = booking.service?.color || '#EEBA2B';
+              // Priorità: colore salvato nel booking, poi colore del servizio, poi default
+              const serviceColor = booking.color || booking.service?.color || '#EEBA2B';
               const statusColor = booking.status === 'confirmed' 
                 ? 'bg-green-100 text-green-700' 
                 : 'bg-yellow-100 text-yellow-700';
@@ -610,11 +707,11 @@ export default function OverviewPage() {
                     setSelectedBooking(booking);
                     setShowBookingModal(true);
                   }}
-                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
                 >
                   {/* Indicatore data/ora */}
                   <div 
-                    className="flex-shrink-0 w-12 h-12 rounded-lg flex flex-col items-center justify-center text-white font-semibold text-xs"
+                    className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex flex-col items-center justify-center text-white font-semibold text-[10px] sm:text-xs"
                     style={{ backgroundColor: serviceColor }}
                   >
                     <span className="text-[10px] uppercase leading-tight">
@@ -661,9 +758,9 @@ export default function OverviewPage() {
       </div>
 
       {/* Attività Recenti */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">
+      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
             Attività recenti
           </h2>
           <div className="flex items-center gap-2">
@@ -716,19 +813,20 @@ export default function OverviewPage() {
               return (
                 <div
                   key={activity.id}
-                  className="flex items-start gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors"
+                  onClick={() => handleActivityClick(activity)}
+                  className="flex items-start gap-3 sm:gap-4 p-2.5 sm:p-3 rounded-lg sm:rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   {/* Icona attività */}
-                  <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${activity.bgColor}`}>
-                    <Icon className={`w-5 h-5 ${activity.iconColor}`} />
+                  <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${activity.bgColor}`}>
+                    <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${activity.iconColor}`} />
                   </div>
 
                   {/* Dettagli attività */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 mb-1">
+                    <p className="text-sm sm:text-sm font-medium text-gray-900 mb-0.5 sm:mb-1 line-clamp-2">
                       {activity.message}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-[10px] sm:text-xs text-gray-500">
                       {formatRelativeTime(activity.timestamp)}
                     </p>
                   </div>
@@ -759,6 +857,20 @@ export default function OverviewPage() {
           fetchRecentActivities();
         }}
       />
+
+      {/* Modal Dettagli Attività Recente */}
+      {showActivityModal && selectedActivity && (
+        <ActivityDetailModal
+          activity={selectedActivity}
+          details={activityDetails}
+          loading={activityDetailsLoading}
+          onClose={() => {
+            setShowActivityModal(false);
+            setSelectedActivity(null);
+            setActivityDetails(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -770,7 +882,8 @@ interface BookingDetailModalProps {
 }
 
 function BookingDetailModal({ booking, onClose }: BookingDetailModalProps) {
-  const serviceColor = booking.service?.color || '#EEBA2B';
+  // Priorità: colore salvato nel booking, poi colore del servizio, poi default
+  const serviceColor = booking.color || booking.service?.color || '#EEBA2B';
   const statusColor = booking.status === 'confirmed' 
     ? 'bg-green-100 text-green-700 border-green-200' 
     : 'bg-yellow-100 text-yellow-700 border-yellow-200';
@@ -818,37 +931,37 @@ function BookingDetailModal({ booking, onClose }: BookingDetailModalProps) {
 
   const modalContent = (
     <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-0"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 flex-shrink-0">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <div 
-              className="p-2 rounded-xl"
+              className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl flex-shrink-0"
               style={{ backgroundColor: serviceColor + '20' }}
             >
-              <Calendar className="w-5 h-5" style={{ color: serviceColor }} />
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: serviceColor }} />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
               Dettagli Appuntamento
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
+            className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition flex-shrink-0"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 sm:space-y-4">
           {/* Data e Ora */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -949,3 +1062,333 @@ function BookingDetailModal({ booking, onClose }: BookingDetailModalProps) {
     : modalContent;
 }
 
+// Componente Modal Dettagli Attività Recente
+interface ActivityDetailModalProps {
+  activity: RecentActivity;
+  details: any;
+  loading: boolean;
+  onClose: () => void;
+}
+
+function ActivityDetailModal({ activity, details, loading, onClose }: ActivityDetailModalProps) {
+  const Icon = activity.icon;
+
+  const modalContent = (
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col mx-4 sm:mx-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${activity.bgColor}`}>
+              <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${activity.iconColor}`} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Dettagli Attività</h2>
+              <p className="text-xs sm:text-sm text-gray-500 truncate">{activity.message}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EEBA2B]"></div>
+            </div>
+          ) : details?.type === 'booking' ? (
+            <BookingActivityDetails booking={details.data} />
+          ) : details?.type === 'client' ? (
+            <ClientActivityDetails client={details.data} />
+          ) : details?.type === 'project' ? (
+            <ProjectActivityDetails project={details.data} />
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Nessun dettaglio disponibile</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  return typeof document !== 'undefined' 
+    ? createPortal(modalContent, document.body)
+    : modalContent;
+}
+
+// Componente Dettagli Booking
+function BookingActivityDetails({ booking }: { booking: any }) {
+  const formatFullDate = (dateStr: string): string => {
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('it-IT', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const formatTime = (timeStr: string): string => {
+    return timeStr.substring(0, 5);
+  };
+
+  const calculateEndTime = (startTime: string, durationMinutes: number): string => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const startTotalMinutes = hours * 60 + minutes;
+    const endTotalMinutes = startTotalMinutes + durationMinutes;
+    const endHours = Math.floor(endTotalMinutes / 60);
+    const endMins = endTotalMinutes % 60;
+    return `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`;
+  };
+
+  const serviceColor = booking.color || booking.service?.color || '#EEBA2B';
+  const serviceName = booking.service?.name || booking.service_type || 'Servizio';
+
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      {/* Data e Ora */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+          <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Data e Ora</span>
+        </div>
+        <div className="pl-5 sm:pl-6">
+          <p className="font-semibold text-gray-900 capitalize">
+            {formatFullDate(booking.booking_date)}
+          </p>
+          <p className="text-gray-600">
+            Dalle {formatTime(booking.booking_time)} alle {calculateEndTime(booking.booking_time, booking.duration_minutes)}
+          </p>
+        </div>
+      </div>
+
+      {/* Cliente */}
+      {booking.client_name && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>Cliente</span>
+          </div>
+          <div className="pl-5 sm:pl-6 space-y-1">
+            <p className="font-semibold text-gray-900">{booking.client_name}</p>
+            {booking.client_email && (
+              <p className="text-sm text-gray-600">{booking.client_email}</p>
+            )}
+            {booking.client_phone && (
+              <p className="text-sm text-gray-600">{booking.client_phone}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Servizio */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+          <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Servizio</span>
+        </div>
+        <div className="pl-5 sm:pl-6">
+          <div className="flex items-center gap-2">
+            <div 
+              className="w-4 h-4 rounded"
+              style={{ backgroundColor: serviceColor }}
+            />
+            <p className="font-semibold text-gray-900">{serviceName}</p>
+          </div>
+          {booking.service?.price && (
+            <p className="text-sm text-gray-600 mt-1">Prezzo: €{booking.service.price.toFixed(2)}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Durata */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+          <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Durata</span>
+        </div>
+        <p className="pl-5 sm:pl-6 font-semibold text-gray-900 text-sm sm:text-base">
+          {booking.duration_minutes} minuti
+        </p>
+      </div>
+
+      {/* Modalità */}
+      {booking.modalita && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+            {booking.modalita === 'online' ? (
+              <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            ) : (
+              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            )}
+            <span>Modalità</span>
+          </div>
+          <p className="pl-5 sm:pl-6 font-semibold text-gray-900 capitalize text-sm sm:text-base">
+            {booking.modalita === 'online' ? 'Online' : 'In presenza'}
+          </p>
+        </div>
+      )}
+
+      {/* Status */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Stato</span>
+        </div>
+        <div className="pl-5 sm:pl-6">
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+            booking.status === 'completed' 
+              ? 'bg-green-100 text-green-700' 
+              : booking.status === 'confirmed'
+              ? 'bg-blue-100 text-blue-700'
+              : 'bg-yellow-100 text-yellow-700'
+          }`}>
+            {booking.status === 'completed' 
+              ? 'Completato' 
+              : booking.status === 'confirmed'
+              ? 'Confermato'
+              : booking.status === 'cancelled'
+              ? 'Cancellato'
+              : 'In attesa'}
+          </span>
+        </div>
+      </div>
+
+      {/* Note */}
+      {booking.notes && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+            <ClipboardList className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>Note</span>
+          </div>
+          <p className="pl-5 sm:pl-6 text-gray-700 whitespace-pre-wrap text-sm sm:text-base">{booking.notes}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Componente Dettagli Cliente
+function ClientActivityDetails({ client }: { client: any }) {
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+          <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Nome Completo</span>
+        </div>
+        <p className="pl-5 sm:pl-6 font-semibold text-gray-900 text-sm sm:text-base">{client.full_name || (client.first_name + ' ' + client.last_name)}</p>
+      </div>
+
+      {client.email && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+            <span>Email</span>
+          </div>
+          <p className="pl-5 sm:pl-6 text-gray-700 text-sm sm:text-base break-all">{client.email}</p>
+        </div>
+      )}
+
+      {client.phone && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+            <span>Telefono</span>
+          </div>
+          <p className="pl-5 sm:pl-6 text-gray-700 text-sm sm:text-base">{client.phone}</p>
+        </div>
+      )}
+
+      {client.notes && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+            <ClipboardList className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>Note</span>
+          </div>
+          <p className="pl-5 sm:pl-6 text-gray-700 whitespace-pre-wrap text-sm sm:text-base">{client.notes}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Componente Dettagli Progetto
+function ProjectActivityDetails({ project }: { project: any }) {
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+          <FolderKanban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Nome Progetto</span>
+        </div>
+        <p className="pl-5 sm:pl-6 font-semibold text-gray-900 text-sm sm:text-base">{project.name}</p>
+      </div>
+
+      {project.objective && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+            <span>Obiettivo</span>
+          </div>
+          <p className="pl-5 sm:pl-6 text-gray-700 text-sm sm:text-base">{project.objective}</p>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+          <span>Stato</span>
+        </div>
+        <div className="pl-5 sm:pl-6">
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+            project.status === 'active' 
+              ? 'bg-green-100 text-green-700' 
+              : project.status === 'completed'
+              ? 'bg-blue-100 text-blue-700'
+              : 'bg-gray-100 text-gray-700'
+          }`}>
+            {project.status === 'active' 
+              ? 'Attivo' 
+              : project.status === 'completed'
+              ? 'Completato'
+              : project.status === 'paused'
+              ? 'In pausa'
+              : project.status}
+          </span>
+        </div>
+      </div>
+
+      {project.start_date && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>Data Inizio</span>
+          </div>
+          <p className="pl-5 sm:pl-6 text-gray-700 text-sm sm:text-base">
+            {new Date(project.start_date).toLocaleDateString('it-IT')}
+          </p>
+        </div>
+      )}
+
+      {project.notes && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+            <ClipboardList className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>Note</span>
+          </div>
+          <p className="pl-5 sm:pl-6 text-gray-700 whitespace-pre-wrap text-sm sm:text-base">{project.notes}</p>
+        </div>
+      )}
+    </div>
+  );
+}

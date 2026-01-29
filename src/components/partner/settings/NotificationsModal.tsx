@@ -107,9 +107,10 @@ export default function NotificationsModal({ onClose, onSuccess }: Notifications
         .from('professionals')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) return;
       if (data) {
         setProfessionalId(data.id);
       }
