@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import { Dumbbell, Target, Clock, Award, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +9,7 @@ interface Activity {
   time: string;
   ago: string;
   status: string;
-  icon: any;
+  icon: LucideIcon;
   color: string;
 }
 

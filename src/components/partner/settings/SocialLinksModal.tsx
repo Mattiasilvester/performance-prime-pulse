@@ -75,6 +75,7 @@ export default function SocialLinksModal({ onClose, onSuccess }: SocialLinksModa
   // Carica professional_id
   useEffect(() => {
     loadProfessionalId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   // Fetch dati quando professional_id è disponibile
@@ -82,6 +83,7 @@ export default function SocialLinksModal({ onClose, onSuccess }: SocialLinksModa
     if (professionalId) {
       fetchSocialLinks();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [professionalId]);
 
   const loadProfessionalId = async () => {
@@ -98,7 +100,7 @@ export default function SocialLinksModal({ onClose, onSuccess }: SocialLinksModa
       if (data) {
         setProfessionalId(data.id);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore caricamento professional_id:', err);
       toast.error('Errore nel caricamento dei dati');
     }
@@ -126,9 +128,9 @@ export default function SocialLinksModal({ onClose, onSuccess }: SocialLinksModa
           website_url: data.website_url || '',
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch link social:', err);
-      if (err.code !== 'PGRST116') {
+      if ((err as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento dei link social');
       }
     } finally {
@@ -209,7 +211,7 @@ export default function SocialLinksModal({ onClose, onSuccess }: SocialLinksModa
       toast.success('Link social salvati con successo!');
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore salvataggio link social:', err);
       toast.error('Errore nel salvataggio dei link social');
     } finally {

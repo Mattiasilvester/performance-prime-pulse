@@ -13,7 +13,7 @@ export interface PrimeBotInteraction {
   user_context?: {
     page?: string;
     previous_intent?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   bot_intent?: string;
   timestamp?: string;

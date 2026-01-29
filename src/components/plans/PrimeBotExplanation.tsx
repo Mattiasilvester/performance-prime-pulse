@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tipi dinamici risposta AI */
 import {
   Bot,
   Sparkles,
@@ -10,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePlanCreationStore } from '@/stores/planCreationStore';
-import type { WorkoutPlan } from '@/types/plan';
+import type { WorkoutPlan, PlanWorkoutItem } from '@/types/plan';
 
 interface ExplanationData {
   title: string;
@@ -194,7 +195,7 @@ function generateExplanation(plan: WorkoutPlan): ExplanationData {
  */
 function generateDailyExplanation(plan: WorkoutPlan): ExplanationData {
   const goal = (plan.goal as string) || 'Full Body';
-  const workout = plan.workouts?.[0];
+  const workout = plan.workouts?.[0] as PlanWorkoutItem | undefined;
   const workoutCount = workout?.exercises?.length || 0;
 
   return {
@@ -226,7 +227,7 @@ function generateDailyExplanation(plan: WorkoutPlan): ExplanationData {
  * Genera struttura per piano giornaliero
  */
 function generateDailyStructure(plan: WorkoutPlan): string {
-  const workout = plan.workouts?.[0];
+  const workout = plan.workouts?.[0] as PlanWorkoutItem | undefined;
   if (!workout || !workout.exercises) {
     return 'Workout personalizzato pronto per te!';
   }

@@ -133,7 +133,7 @@ const ResetPassword = () => {
           timeoutRef.current = null;
         }, 2000);
       }
-    } catch (error: any) {
+    } catch (_error: unknown) {
       toast({
         title: "Errore",
         description: "Si è verificato un errore. Riprova più tardi.",

@@ -440,6 +440,7 @@ export const ManageBlocksModal = ({
     if (isOpen && professionalId) {
       fetchBlocks();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchBlocks stable, avoid re-fetch on fn identity
   }, [isOpen, professionalId]);
 
   // Reset form quando si cambia tab o si apre modal

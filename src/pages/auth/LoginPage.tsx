@@ -42,12 +42,12 @@ export default function LoginPage() {
       // ✅ Aspetta che sessione sia salvata
       await new Promise(resolve => setTimeout(resolve, 500));
       navigate('/dashboard')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error)
-      
+      const err = error as Error
       toast({
         title: "Errore durante l'accesso",
-        description: error.message,
+        description: err.message,
         variant: "destructive",
         duration: 3000,
       })
@@ -76,12 +76,12 @@ export default function LoginPage() {
       })
 
       setResetEmail('')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Password reset error:', error)
-      
+      const err = error as Error
       toast({
         title: "Errore durante l'invio",
-        description: error.message,
+        description: err.message,
         variant: "destructive",
         duration: 3000,
       })
@@ -110,7 +110,7 @@ export default function LoginPage() {
         })
         setIsLoading(false)
       }
-    } catch (error: any) {
+    } catch (_error: unknown) {
       toast({
         title: "Errore durante il login con Google",
         description: "Si è verificato un errore imprevisto",
@@ -139,7 +139,7 @@ export default function LoginPage() {
         })
         setIsLoading(false)
       }
-    } catch (error: any) {
+    } catch (_error: unknown) {
       toast({
         title: "Errore durante il login con Apple",
         description: "Si è verificato un errore imprevisto",

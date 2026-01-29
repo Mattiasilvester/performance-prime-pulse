@@ -1,15 +1,15 @@
-
 import { useState } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { ScheduleWorkoutItem } from './AppointmentCalendar';
 
 interface WorkoutViewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  workout: any;
+  workout: ScheduleWorkoutItem;
   onWorkoutDeleted?: () => void;
 }
 
@@ -116,7 +116,7 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
           <div className="mb-6">
             <h5 className="text-white font-medium mb-3">Esercizi:</h5>
             <div className="space-y-3">
-              {workout.exercises.map((exercise: any, index: number) => (
+              {workout.exercises.map((exercise: { name?: string; sets?: number; reps?: number; rest?: string }, index: number) => (
                 <div key={index} className="bg-white/10 rounded-lg p-3">
                   <h6 className="text-white font-medium">{exercise.name}</h6>
                   <div className="flex space-x-4 mt-1 text-sm text-white/70">

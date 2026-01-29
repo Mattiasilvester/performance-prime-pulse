@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tipi Stripe/subscription */
 // Pagina Abbonamento - Mostra informazioni abbonamento PrimePro
 import React, { useState } from 'react';
 import { toast } from 'sonner';

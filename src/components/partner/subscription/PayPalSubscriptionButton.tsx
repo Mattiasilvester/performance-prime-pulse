@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 
 interface PayPalSubscriptionButtonProps {
   onSuccess: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
 }
 
 export function PayPalSubscriptionButton({ onSuccess, onError }: PayPalSubscriptionButtonProps) {
@@ -18,7 +18,7 @@ export function PayPalSubscriptionButton({ onSuccess, onError }: PayPalSubscript
     );
   }
 
-  const handleApprove = async (data: any) => {
+  const handleApprove = async (data: Record<string, unknown> & { subscriptionID?: string }) => {
     try {
       console.log('✅ PayPal subscription approved:', data);
 
@@ -51,14 +51,14 @@ export function PayPalSubscriptionButton({ onSuccess, onError }: PayPalSubscript
 
       toast.success('Abbonamento PayPal attivato con successo!');
       onSuccess();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore PayPal approval:', error);
-      toast.error(error.message || 'Errore nell\'attivazione dell\'abbonamento');
+      toast.error((error as Error)?.message || 'Errore nell\'attivazione dell\'abbonamento');
       onError?.(error);
     }
   };
 
-  const handleError = (err: any) => {
+  const handleError = (err: unknown) => {
     console.error('Errore PayPal:', err);
     toast.error('Errore durante il pagamento PayPal');
     onError?.(err);

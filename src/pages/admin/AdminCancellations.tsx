@@ -79,9 +79,9 @@ export default function AdminCancellations() {
       });
 
       setCancellations(cancellationsWithProfessionals);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore caricamento cancellazioni:', err);
-      setError(err.message || 'Errore nel caricamento delle cancellazioni');
+      setError((err as Error)?.message || 'Errore nel caricamento delle cancellazioni');
     } finally {
       setLoading(false);
     }

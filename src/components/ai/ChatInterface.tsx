@@ -52,9 +52,9 @@ export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void },
       try {
         const parsed = JSON.parse(savedMessages);
         // Converte le date da stringa a oggetto Date
-        return parsed.map((msg: any) => ({
+        return parsed.map((msg: { timestamp?: string; [key: string]: unknown }) => ({
           ...msg,
-          timestamp: new Date(msg.timestamp)
+          timestamp: new Date(msg.timestamp ?? Date.now())
         }));
       } catch (error) {
         console.error('Errore nel parsing dei messaggi salvati:', error);
@@ -111,7 +111,7 @@ export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void },
       try {
         const { data: { user } } = await supabase.auth.getUser();
         const userId = user?.id || 'guest';
-        const userName = (user?.user_metadata as any)?.full_name || user?.email?.split('@')[0] || 'Utente';
+        const userName = (user?.user_metadata as { full_name?: string } | undefined)?.full_name || user?.email?.split('@')[0] || 'Utente';
         
         const userOnboarded = localStorage.getItem(`user_onboarded_${userId}`);
         const isFirstVisit = !sessionStorage.getItem(`first_visit_${userId}`);
@@ -153,6 +153,7 @@ export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void },
     };
     
     checkNewUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally run only on mount; adding messages.length would re-run on every message and alter welcome flow
   }, []);
 
   // Salva i messaggi nel localStorage ogni volta che cambiano

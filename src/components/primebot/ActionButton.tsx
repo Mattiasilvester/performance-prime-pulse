@@ -8,7 +8,7 @@ export type ActionButtonState = 'idle' | 'loading' | 'success' | 'error';
 export interface ActionButtonProps {
   actionType: string;
   label: string;
-  payload: any;
+  payload: Record<string, unknown>;
   onAction: () => Promise<void>;
   disabled?: boolean;
 }

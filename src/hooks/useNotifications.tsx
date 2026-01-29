@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- Notifications context exports hook and provider */
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { useAuth } from './useAuth';
 
@@ -88,18 +89,19 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
   // Calcola notifiche non lette
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Aggiungi notifica
+  // Aggiungi notifica (functional update per evitare dipendenza da notifications)
   const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
     const newNotification: Notification = {
       ...notification,
-      id: Date.now(), // ID unico basato su timestamp
+      id: Date.now(),
       userId: user?.id
     };
-    
-    const updatedNotifications = [...notifications, newNotification];
-    setNotifications(updatedNotifications);
-    saveNotifications(updatedNotifications);
-  }, [notifications, user, saveNotifications]);
+    setNotifications(prev => {
+      const updated = [...prev, newNotification];
+      saveNotifications(updated);
+      return updated;
+    });
+  }, [user, saveNotifications]);
 
   // Segna come letta
   const markAsRead = useCallback((id: number) => {
@@ -151,7 +153,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     } catch (error) {
       // Errore sincronizzazione notifiche
     }
-  }, [user, notifications]);
+  }, [user]);
 
   // Sincronizza quando cambiano le notifiche
   useEffect(() => {

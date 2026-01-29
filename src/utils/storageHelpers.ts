@@ -42,11 +42,11 @@ export const storage = {
   },
   
   // Object helpers
-  getObject: <T extends Record<string, any>>(key: string, defaultValue: T): T => {
+  getObject: <T extends Record<string, unknown>>(key: string, defaultValue: T): T => {
     return storage.getJSON(key, defaultValue)
   },
   
-  setObject: <T extends Record<string, any>>(key: string, value: T): boolean => {
+  setObject: <T extends Record<string, unknown>>(key: string, value: T): boolean => {
     return storage.setJSON(key, value)
   }
 }

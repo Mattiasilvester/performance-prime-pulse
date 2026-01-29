@@ -683,7 +683,7 @@ export async function parseAndSaveLimitationsFromChat(
     // Prepara i dati per l'upsert
     // ⭐ FIX 2: Se hasLimitations = false, forza TUTTI i campi a null/array vuoto
     // Se hasLimitations = true, setta solo limitazioni_fisiche (altri campi non toccati)
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       user_id: userId,
       ha_limitazioni: hasLimitations,
       limitazioni_fisiche: hasLimitations ? parsed : null,
@@ -857,7 +857,7 @@ export async function updateOnboardingPreference(
     }
     
     // Prepara il valore per il database
-    let dbValue: any = value;
+    let dbValue: unknown = value;
     
     // Gestione specifica per tipo di campo
     if (field === 'luoghi_allenamento' || field === 'attrezzi') {
@@ -869,14 +869,15 @@ export async function updateOnboardingPreference(
       }
     } else if (field === 'giorni_settimana') {
       // Deve essere numero 1-7
-      dbValue = typeof value === 'string' ? parseInt(value, 10) : value;
-      if (isNaN(dbValue) || dbValue < 1 || dbValue > 7) {
+      const num = typeof value === 'string' ? parseInt(value, 10) : Number(value);
+      if (isNaN(num) || num < 1 || num > 7) {
         return { success: false, message: 'Giorni deve essere tra 1 e 7' };
       }
+      dbValue = num;
     } else if (field === 'tempo_sessione') {
       // Deve essere uno dei valori validi: 15, 30, 45, 60
       const validTimes = [15, 30, 45, 60];
-      let minutes = typeof value === 'string' ? parseInt(value, 10) : value as number;
+      const minutes = typeof value === 'string' ? parseInt(value, 10) : value as number;
       
       if (isNaN(minutes)) {
         return { success: false, message: 'Durata non valida' };

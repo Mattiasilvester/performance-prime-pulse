@@ -54,7 +54,7 @@ export interface AdminAuditLog {
   admin_id: string
   action: string
   target_user_id?: string
-  details: Record<string, any>
+  details: Record<string, unknown>
   ip_address?: string
   created_at: string
 }

@@ -81,6 +81,15 @@ interface FilterOptions {
   level?: string;
 }
 
+type UserLevel = 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO';
+interface WorkoutRulesEntry {
+  minExercises: Record<UserLevel, number>;
+  maxExercises: Record<UserLevel, number>;
+  exerciseDuration: Record<UserLevel, number>;
+  restBetweenExercises: Record<UserLevel, number>;
+  sets: Record<UserLevel, number>;
+}
+
 // Database dettagliato degli esercizi con filtri
 const detailedExerciseDatabase = {
   strength: [
@@ -288,8 +297,8 @@ const shuffleArray = <T>(array: T[]): T[] => {
 export const generateWorkout = (
   category: 'cardio' | 'strength' | 'hiit' | 'mobility', 
   totalMinutes: number,
-  filters: any = {},
-  userLevel: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO' = 'INTERMEDIO',
+  filters: FilterOptions = {},
+  userLevel: UserLevel = 'INTERMEDIO',
   quickMode: boolean = false
 ): WorkoutPlan => {
   // Mappa corretta delle categorie
@@ -303,18 +312,19 @@ export const generateWorkout = (
   const rules = quickMode ? QUICK_MODE_RULES[categoryUpper] : WORKOUT_RULES[categoryUpper];
   
   // Calcola numero esercizi
-  let numExercises;
+  let numExercises: number;
   if (quickMode) {
     numExercises = QUICK_MODE_RULES[categoryUpper].exercises;
   } else {
-    const min = (rules as any).minExercises[userLevel];
-    const max = (rules as any).maxExercises[userLevel];
+    const levelRules = rules as WorkoutRulesEntry;
+    const min = levelRules.minExercises[userLevel];
+    const max = levelRules.maxExercises[userLevel];
     numExercises = Math.floor(Math.random() * (max - min + 1)) + min;
   }
   
   // Usa valori specifici per livello (scientificamente validati)
-  const duration = quickMode ? QUICK_MODE_RULES[categoryUpper].duration : (rules as any).exerciseDuration[userLevel];
-  const rest = quickMode ? QUICK_MODE_RULES[categoryUpper].rest : (rules as any).restBetweenExercises[userLevel];
+  const duration = quickMode ? QUICK_MODE_RULES[categoryUpper].duration : (rules as WorkoutRulesEntry).exerciseDuration[userLevel];
+  const rest = quickMode ? QUICK_MODE_RULES[categoryUpper].rest : (rules as WorkoutRulesEntry).restBetweenExercises[userLevel];
   
   // Applica filtri esistenti per selezione esercizi
   let availableExercises = exerciseDatabase[category].exercises || [];
@@ -359,7 +369,7 @@ export const generateWorkout = (
       name: exercise,
       duration: `${duration}s`,
       rest: `${rest}s`,
-      sets: quickMode ? 1 : (rules as any).sets[userLevel]
+      sets: quickMode ? 1 : (rules as WorkoutRulesEntry).sets[userLevel]
     });
     
     currentIndex++;

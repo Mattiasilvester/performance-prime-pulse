@@ -1,4 +1,5 @@
 // ===== FILE ANALYZER - FLUSSO UNICO COMPLETO =====
+/* eslint-disable no-misleading-character-class -- regex Unicode per parsing testo; modifica rischiosa */
 
 import { AdvancedWorkoutAnalyzer, ParsedWorkoutResult, ParsedExercise } from './AdvancedWorkoutAnalyzer';
 

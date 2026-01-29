@@ -1,7 +1,8 @@
 // Utility per gestire messaggi errore Stripe in italiano
-export function getStripeErrorMessage(error: any): string {
-  const errorCode = error?.code || error?.type || '';
-  const errorMessage = error?.message || '';
+export function getStripeErrorMessage(error: unknown): string {
+  const err = error as { code?: string; type?: string; message?: string } | null | undefined;
+  const errorCode = err?.code || err?.type || '';
+  const errorMessage = err?.message || '';
 
   // Mappa codici Stripe a messaggi italiani
   const errorMessages: Record<string, string> = {

@@ -182,7 +182,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           title: workoutTitle,
           workout_type: workoutType,
           scheduled_date: selectedDate.toISOString().split('T')[0],
-          exercises: exercisesData as any,
+          exercises: exercisesData as Record<string, unknown>[],
         })
         .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .single();
@@ -272,7 +272,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           title: workoutTitle,
           workout_type: workoutType,
           scheduled_date: todayString, // Sempre oggi per "Inizia Allenamento"
-          exercises: exercisesData as any,
+          exercises: exercisesData as Record<string, unknown>[],
         })
         .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .single();

@@ -13,11 +13,9 @@ import {
   Package
 } from 'lucide-react';
 
-interface OnboardingPreferencesCardProps {
-  // Props rimosse: onGeneratePlan, isGenerating non più necessarie
-}
+type OnboardingPreferencesCardProps = Record<string, never>;
 
-export const OnboardingPreferencesCard = ({}: OnboardingPreferencesCardProps) => {
+export const OnboardingPreferencesCard = (_props: OnboardingPreferencesCardProps) => {
   const { summary, loading } = useOnboardingSummary();
   const navigate = useNavigate();
 

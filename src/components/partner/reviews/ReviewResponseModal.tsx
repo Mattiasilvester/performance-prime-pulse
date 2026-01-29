@@ -40,7 +40,7 @@ export default function ReviewResponseModal({
       } else {
         toast.error('Errore nel salvataggio della risposta');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore risposta recensione:', error);
       toast.error('Errore nel salvataggio della risposta');
     } finally {

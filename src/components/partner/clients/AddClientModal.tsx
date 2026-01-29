@@ -43,6 +43,7 @@ export default function AddClientModal({
     if (initialName && !formData.full_name) {
       setFormData(prev => ({ ...prev, full_name: initialName }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when initialName changes
   }, [initialName]);
 
   const validateForm = () => {
@@ -175,26 +176,26 @@ export default function AddClientModal({
       
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore creazione cliente:', err);
-      
+      const e = err as { code?: string; message?: string; status?: number; details?: string; hint?: string };
       // Errori specifici
-      if (err.code === '23505') {
+      if (e.code === '23505') {
         toast.error('Un cliente con questa email esiste già');
-      } else if (err.code === 'PGRST116' || err.message?.includes('does not exist')) {
+      } else if (e.code === 'PGRST116' || e.message?.includes('does not exist')) {
         toast.error('Tabella clients non disponibile. Esegui la migrazione SQL.');
-      } else if (err.code === '42501' || err.code === 'PGRST301' || (typeof err === 'object' && 'status' in err && err.status === 403)) {
+      } else if (e.code === '42501' || e.code === 'PGRST301' || (typeof err === 'object' && err !== null && 'status' in err && (err as { status: number }).status === 403)) {
         // Errore permessi RLS
         console.error('Dettagli errore RLS:', {
-          code: err.code,
-          message: err.message,
-          details: err.details,
-          hint: err.hint,
+          code: e.code,
+          message: e.message,
+          details: e.details,
+          hint: e.hint,
           professionalId
         });
         toast.error('Errore permessi: verifica che la tabella clients esista e che le RLS policies siano configurate correttamente');
       } else {
-        toast.error(`Errore nella creazione del cliente: ${err.message || 'Errore sconosciuto'}`);
+        toast.error(`Errore nella creazione del cliente: ${e.message || 'Errore sconosciuto'}`);
       }
     } finally {
       setLoading(false);

@@ -9,9 +9,12 @@ import { Lock } from 'lucide-react';
 export const AICoach = () => {
   const [activeTab, setActiveTab] = useState('prime');
   const [isPlanModalOpen, setPlanModal] = useState(false);
-  const chatInterfaceRef = useRef<any>(null);
+  interface ChatInterfaceHandle {
+    sendMessage?: (msg: string) => void;
+  }
+  const chatInterfaceRef = useRef<ChatInterfaceHandle | null>(null);
 
-  const handleSavePlan = (planData: any) => {
+  const handleSavePlan = (planData: { goal?: string; title?: string; details?: string }) => {
     
     // Genera il messaggio per l'AI
     const aiMessage = generateAIPlan(planData);
@@ -24,7 +27,7 @@ export const AICoach = () => {
     setPlanModal(false);
   };
 
-  const generateAIPlan = (planData: any) => {
+  const generateAIPlan = (planData: { goal?: string; title?: string; details?: string }) => {
     const goalMap = {
       'forza': 'aumentare la forza',
       'resistenza': 'migliorare la resistenza cardiovascolare',

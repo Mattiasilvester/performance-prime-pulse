@@ -113,10 +113,44 @@ const workoutData = {
   },
 };
 
+/** Esercizio come usato nei workout (name, duration, rest, instructions, sets) */
+interface WorkoutExerciseShape {
+  name: string;
+  duration?: string | number;
+  rest?: string | number;
+  instructions?: string;
+  sets?: number | string;
+}
+
+/** Workout generato/custom con meta opzionale */
+interface GeneratedWorkoutShape {
+  name?: string;
+  title?: string;
+  exercises?: WorkoutExerciseShape[];
+  meta?: { workoutTitle?: string; workoutType?: string; duration?: number | string; startCustomWorkout?: string };
+  workout_type?: string;
+  tipo?: string;
+  type?: string;
+  duration?: number | string;
+  total_duration?: number;
+}
+
+/** Tipo per lettura display: tutte le proprietà opzionali per compatibilità con workoutData e GeneratedWorkoutShape */
+type CurrentWorkoutDisplay = {
+  name?: string;
+  title?: string;
+  workout_type?: string;
+  tipo?: string;
+  type?: string;
+  duration?: number | string;
+  total_duration?: number;
+  exercises?: WorkoutExerciseShape[];
+};
+
 interface ActiveWorkoutProps {
   workoutId: string;
-  generatedWorkout?: any;
-  customWorkout?: any;
+  generatedWorkout?: GeneratedWorkoutShape | null;
+  customWorkout?: GeneratedWorkoutShape | null;
   onClose: () => void;
 }
 
@@ -148,10 +182,11 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
   
   // Usa l'allenamento custom se disponibile, poi generato, altrimenti quello statico
   const currentWorkout = customWorkout || generatedWorkout || workoutData[workoutId as keyof typeof workoutData];
-  const personalizedMeta = (customWorkout as any)?.meta || (generatedWorkout as any)?.meta || null;
-  const workoutTitle = personalizedMeta?.workoutTitle || currentWorkout?.title || currentWorkout?.name || 'Workout personalizzato';
-  const workoutType = personalizedMeta?.workoutType || currentWorkout?.workout_type || currentWorkout?.tipo || currentWorkout?.type || 'Allenamento personalizzato';
-  const workoutDuration = personalizedMeta?.duration || currentWorkout?.duration || currentWorkout?.total_duration;
+  const personalizedMeta = customWorkout?.meta ?? generatedWorkout?.meta ?? null;
+  const currentDisplay = currentWorkout as CurrentWorkoutDisplay | null | undefined;
+  const workoutTitle = personalizedMeta?.workoutTitle || currentDisplay?.title || currentDisplay?.name || 'Workout personalizzato';
+  const workoutType = personalizedMeta?.workoutType || currentDisplay?.workout_type || currentDisplay?.tipo || (currentDisplay as GeneratedWorkoutShape)?.type || 'Allenamento personalizzato';
+  const workoutDuration = personalizedMeta?.duration || currentDisplay?.duration || (currentDisplay as GeneratedWorkoutShape)?.total_duration;
   const workoutExerciseCount = currentWorkout?.exercises?.length || 0;
 
   // Funzione per suonare beep con gestione errori
@@ -185,7 +220,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
       
       oscillator.start(audioContextRef.current.currentTime);
       oscillator.stop(audioContextRef.current.currentTime + duration / 1000);
-    } catch (error) {
+    } catch (error: unknown) {
       console.log('Errore riproduzione audio:', error);
       // Fallback: flash visivo
       document.body.style.backgroundColor = '#ffd700';
@@ -199,9 +234,9 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
   useEffect(() => {
     const initAudio = () => {
       try {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioContextRef.current = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
         console.log('Audio context inizializzato');
-      } catch (error) {
+      } catch (error: unknown) {
         console.log('Audio non supportato, useremo feedback visivo');
       }
     };
@@ -311,7 +346,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
       
       // Aggiorna statistiche utente
       if (user?.id) {
-        const workoutDuration = currentWorkout.exercises?.reduce((total, exercise) => {
+        const workoutDuration = currentWorkout.exercises?.reduce((total: number, exercise: WorkoutExerciseShape) => {
           return total + parseTimeToSeconds(exercise.duration);
         }, 0) || 0;
         
@@ -439,6 +474,8 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
         timerRef.current = null;
       }
     };
+    // Intentionally omit currentWorkout.exercises, nextExercise, startTimer to avoid re-run loops that would alter workout flow
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workoutState, timeLeft, isRest, currentExerciseIndex]);
 
   useEffect(() => {
@@ -513,7 +550,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
   );
 
   // Funzione per avviare il timer di un esercizio
-  const startExerciseTimer = (index: number, exercise: any) => {
+  const startExerciseTimer = (index: number, exercise: WorkoutExerciseShape) => {
     const workTime = parseTimeToSeconds(exercise.duration);
     const restTime = parseTimeToSeconds(exercise.rest);
     
@@ -542,7 +579,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
   };
 
   // Funzione per resettare il timer
-  const resetTimer = (index: number, exercise: any) => {
+  const resetTimer = (index: number, exercise: WorkoutExerciseShape) => {
     const workTime = parseTimeToSeconds(exercise.duration);
     const restTime = parseTimeToSeconds(exercise.rest);
     
@@ -591,7 +628,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
       // Crea un record in custom_workouts per attivare il trigger
       console.log('🔍 [DEBUG] completeWorkout: Creazione record custom_workouts...');
       // Usa title se disponibile, altrimenti name, altrimenti fallback
-      const workoutTitle = currentWorkout?.title || currentWorkout?.name || 'Allenamento da File';
+      const workoutTitle = (currentWorkout as CurrentWorkoutDisplay)?.title || currentWorkout?.name || 'Allenamento da File';
       
       console.log('📊 [DEBUG] completeWorkout: Dati da inserire:', {
             user_id: user.id,
@@ -643,7 +680,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
       console.log('✅ [DEBUG] completeWorkout: Evento workoutCompleted emesso');
       
       toast.success('Allenamento completato! Statistiche aggiornate.');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Errore durante il completamento:', error);
     }
   };
@@ -716,7 +753,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
         status: 'completed' as const,
         duration_minutes: finalDurationMinutes, // ✅ INTEGER garantito
         exercises_count: currentWorkout.exercises?.length || 0, // ✅ Già integer
-        exercises: currentWorkout.exercises?.map((ex: any, index: number) => ({
+        exercises: currentWorkout.exercises?.map((ex: WorkoutExerciseShape, index: number) => ({
           name: ex.name,
           duration: ex.duration,
           rest: ex.rest,
@@ -750,7 +787,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
         navigate('/diary');
       }, 800);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ Full error object:', error);
       console.error('❌ Error saving to diary:', error);
       
@@ -765,8 +802,9 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
 
   // Se il workout è in esecuzione, mostra la schermata di esecuzione (layout Quick Workout)
   const currentExercise = currentWorkout.exercises?.[currentExerciseIndex];
-  const isTimedExercise = (exercise: any) => {
-    const duration = exercise?.duration?.toLowerCase?.() || '';
+  const isTimedExercise = (exercise: WorkoutExerciseShape | undefined) => {
+    const raw = exercise?.duration;
+    const duration = typeof raw === 'string' ? raw.toLowerCase() : raw !== undefined ? String(raw) : '';
     const hasSeconds = duration.includes('s') || duration.includes('sec');
     console.log(`isTimedExercise("${exercise?.name || 'sconosciuto'}"): duration="${duration}", isTimed=${hasSeconds}`);
     return hasSeconds;
@@ -775,8 +813,9 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
   console.log('Esercizio corrente:', currentExercise?.name);
   console.log('È esercizio a tempo?', isTimed);
 
-  const parseRestTime = (rest: string | undefined): number => {
-    if (!rest) return 60;
+  const parseRestTime = (rest: string | number | undefined): number => {
+    if (rest === undefined || rest === null) return 60;
+    if (typeof rest === 'number') return rest;
     const restLower = rest.toLowerCase().trim();
     if (restLower.includes('s') || restLower.includes('sec')) {
       const match = restLower.match(/(\d+)/);
@@ -859,6 +898,8 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
     }, 1000);
 
     return () => clearInterval(timer);
+    // playRestEndSound/playRestTickSound are stable; adding them would not change behavior
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRestTimerActive, isRestTimerPaused, restTimeLeft]);
 
   useEffect(() => {
@@ -924,7 +965,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
 
           {/* Lista esercizi con stato */}
           <div className="flex flex-wrap gap-1 justify-center max-w-full overflow-x-auto px-2">
-          {currentWorkout.exercises?.map((exercise: any, index: number) => {
+          {currentWorkout.exercises?.map((exercise: WorkoutExerciseShape, index: number) => {
               const isCompleted = index < currentExerciseIndex;
               const isCurrent = index === currentExerciseIndex;
             
@@ -962,7 +1003,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
                 />
               </div>
               <p className="text-lg sm:text-xl md:text-2xl text-pp-gold/80 leading-relaxed">
-                {currentExercise?.instructions || 'Esegui l\'esercizio'}
+                {(currentExercise as WorkoutExerciseShape | undefined)?.instructions || 'Esegui l\'esercizio'}
               </p>
             </div>
 
@@ -981,7 +1022,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
                           Serie
                         </div>
                         <div className="text-pp-gold text-2xl sm:text-3xl font-bold">
-                          {currentExercise?.sets || 4}
+                          {(currentExercise as WorkoutExerciseShape | undefined)?.sets ?? 4}
                         </div>
                       </div>
                       <div className="w-px h-10 sm:h-12 bg-pp-gold/30" />
@@ -1116,7 +1157,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
 
                 {/* Lista Esercizi */}
                 <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-2">
-                  {currentWorkout.exercises?.map((exercise: any, index: number) => {
+                  {currentWorkout.exercises?.map((exercise: WorkoutExerciseShape, index: number) => {
                     const status = getExerciseStatus(index);
                     const statusIcon = getExerciseStatusIcon(status);
                     const isCurrent = index === currentExerciseIndex;
@@ -1242,7 +1283,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
             </div>
           </div>
 
-          {personalizedMeta?.startCustomWorkout === 'personalized' && (
+          {(personalizedMeta as { startCustomWorkout?: string } | null)?.startCustomWorkout === 'personalized' && (
             <div className="flex justify-center">
               <div className="inline-flex items-center gap-2 bg-pp-gold/20 px-4 py-2 rounded-full border border-pp-gold/40">
                 <Sparkles className="w-4 h-4 text-pp-gold" />

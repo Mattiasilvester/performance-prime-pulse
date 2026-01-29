@@ -127,7 +127,7 @@ export default function AddBookingModal({
       const endTime = `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`;
 
       // Prepara dati booking con colonne separate
-      const bookingData: any = {
+      const bookingData: Record<string, unknown> = {
         professional_id: professionalId,
         booking_date: formData.date,
         booking_time: formData.time,
@@ -166,9 +166,9 @@ export default function AddBookingModal({
       toast.success('Prenotazione creata con successo!');
       onSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore creazione prenotazione:', error);
-      if (error.code === '23505') {
+      if ((error as { code?: string })?.code === '23505') {
         toast.error('Slot già occupato. Scegli un altro orario.');
       } else {
         toast.error('Errore nella creazione della prenotazione');

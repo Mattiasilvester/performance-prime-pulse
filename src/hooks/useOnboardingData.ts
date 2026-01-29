@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { onboardingService, type OnboardingResponse } from '@/services/onboardingService';
+import { onboardingService, type OnboardingResponse, type OnboardingInsert } from '@/services/onboardingService';
 
 /**
  * Hook per gestire dati onboarding con caricamento e salvataggio
@@ -11,17 +11,7 @@ export const useOnboardingData = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Carica dati all'avvio
-  useEffect(() => {
-    if (!user?.id) {
-      setLoading(false);
-      return;
-    }
-
-    loadData();
-  }, [user?.id]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!user?.id) return;
 
     setLoading(true);
@@ -30,12 +20,21 @@ export const useOnboardingData = () => {
     try {
       const result = await onboardingService.loadOnboardingData(user.id);
       setData(result);
-    } catch (err) {
-      setError(String(err));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  // Carica dati all'avvio
+  useEffect(() => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+    loadData();
+  }, [user?.id, loadData]);
 
   const saveData = async (
     newData: Partial<Omit<OnboardingResponse, 'user_id' | 'created_at' | 'last_modified_at'>>
@@ -47,7 +46,8 @@ export const useOnboardingData = () => {
 
     setError(null);
 
-    const result = await onboardingService.saveOnboardingData(user.id, newData as any);
+    const payload: Omit<OnboardingInsert, 'user_id' | 'created_at'> = { ...newData };
+    const result = await onboardingService.saveOnboardingData(user.id, payload);
 
     if (result.success) {
       await loadData(); // Ricarica dati aggiornati

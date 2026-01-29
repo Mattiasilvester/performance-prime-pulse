@@ -1,4 +1,4 @@
-
+/* eslint-disable react-refresh/only-export-components -- Auth context exports both hook and provider */
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -60,9 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-    }).catch((error) => {
+    }).catch((error: unknown) => {
       if (mounted) {
-        console.warn('Session check failed (non-critical)');
+        const msg = error instanceof Error ? error.message : 'Session check failed';
+        console.warn('Session check failed (non-critical)', msg);
         setLoading(false);
       }
     });
@@ -130,8 +131,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: data.user.id,
             email: data.user.email,
             user_metadata: data.user.user_metadata
-          }).catch(error => {
-            console.error('Errore invio email benvenuto:', error);
+          }).catch((error: unknown) => {
+            console.error('Errore invio email benvenuto:', error instanceof Error ? error.message : error);
           });
         }
         console.log('7. Success with session');
@@ -145,8 +146,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: data.user.id,
             email: data.user.email,
             user_metadata: data.user.user_metadata
-          }).catch(error => {
-            console.error('Errore invio email benvenuto:', error);
+          }).catch((error: unknown) => {
+            console.error('Errore invio email benvenuto:', error instanceof Error ? error.message : error);
           });
         }
         console.log('7. Success without session (email confirmation needed)');
@@ -157,30 +158,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('=== SIGNUP DEBUG END ===');
         return { success: false, message: 'Errore durante la registrazione' };
       }
-    } catch (error: any) {
-      console.log('8. Catch error:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Errore sconosciuto';
+      console.log('8. Catch error:', message);
       console.log('=== SIGNUP DEBUG END ===');
       
-      // RIMOSSO: Gestione errori password - l'utente può mettere qualsiasi password
-      
-      if (error?.message?.includes('User already registered')) {
+      if (message.includes('User already registered')) {
         return { 
           success: false, 
           message: 'Un account con questa email esiste già. Prova a fare login o usa un\'email diversa.' 
         };
       }
       
-      if (error?.message?.includes('Invalid email')) {
+      if (message.includes('Invalid email')) {
         return { 
           success: false, 
           message: 'Email non valida. Controlla che l\'email sia scritta correttamente.' 
         };
       }
       
-      // Errore generico
       return { 
         success: false, 
-        message: error?.message || 'Errore durante la registrazione. Riprova più tardi.' 
+        message: message || 'Errore durante la registrazione. Riprova più tardi.' 
       };
     }
   };
@@ -196,7 +195,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
+      console.warn('signIn error:', error instanceof Error ? error.message : error);
       return false;
     }
   };
@@ -209,7 +209,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
+      console.warn('signOut error:', error instanceof Error ? error.message : error);
       return false;
     }
   };

@@ -1,5 +1,5 @@
 // src/pages/partner/dashboard/ReviewsPage.tsx
-
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';

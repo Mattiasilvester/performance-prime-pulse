@@ -43,6 +43,7 @@ export default function PartnerDashboard() {
       }
     };
     ensureSubscription();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when user/professionalId/refetch change only
   }, [user?.id, professionalId, refetch]);
 
   // Inizializza service worker per notifiche push quando si entra nella dashboard

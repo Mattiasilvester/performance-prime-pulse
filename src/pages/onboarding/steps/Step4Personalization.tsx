@@ -46,12 +46,13 @@ const Step4Personalization = forwardRef<Step4PersonalizationHandle, Step4Persona
     }
   }, [trackStepStarted, isEditMode]);
 
-  // ✅ FIX CRITICO: Sincronizza nome dallo store se esiste ma il campo è vuoto
+  // ✅ FIX CRITICO: Sincronizza nome dallo store se esiste ma il campo è vuoto (solo data.nome per evitare loop)
   useEffect(() => {
     if (data.nome && data.nome.trim().length > 0 && !nome.trim()) {
       console.log('🔄 Syncing nome from store:', data.nome);
       setNome(data.nome);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nome omesso intenzionalmente per sync one-way store -> campo
   }, [data.nome]);
 
   useEffect(() => {

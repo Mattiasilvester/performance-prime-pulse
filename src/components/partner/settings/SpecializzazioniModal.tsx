@@ -31,6 +31,7 @@ export default function SpecializzazioniModal({ onClose, onSuccess }: Specializz
   // Fetch specializzazioni iniziali
   useEffect(() => {
     fetchSpecializzazioni();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const fetchSpecializzazioni = async () => {
@@ -46,9 +47,9 @@ export default function SpecializzazioniModal({ onClose, onSuccess }: Specializz
       if (error) throw error;
 
       setSpecializzazioni(data?.specializzazioni || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch specializzazioni:', err);
-      if (err.code !== 'PGRST116') { // Ignora se non trovato
+      if ((err as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento delle specializzazioni');
       }
     } finally {
@@ -107,7 +108,7 @@ export default function SpecializzazioniModal({ onClose, onSuccess }: Specializz
       toast.success('Specializzazioni salvate con successo!');
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore salvataggio specializzazioni:', err);
       toast.error('Errore nel salvataggio delle specializzazioni');
     } finally {

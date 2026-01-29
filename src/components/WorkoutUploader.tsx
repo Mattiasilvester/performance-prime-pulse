@@ -10,7 +10,7 @@ import { ErrorFallback } from '@/components/ui/ErrorFallback';
 import './WorkoutUploader.css';
 
 interface WorkoutUploaderProps {
-  onWorkoutLoaded?: (workout: any) => void;
+  onWorkoutLoaded?: (workout: ParsedWorkoutResult) => void;
 }
 
 const WorkoutUploader: React.FC<WorkoutUploaderProps> = ({ onWorkoutLoaded }) => {
@@ -59,7 +59,7 @@ const WorkoutUploader: React.FC<WorkoutUploaderProps> = ({ onWorkoutLoaded }) =>
         onWorkoutLoaded(result);
       }
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorInfo = handleError(err, { action: 'parseWorkoutFile' });
       setError(errorInfo.userMessage);
     } finally {
@@ -83,9 +83,9 @@ const WorkoutUploader: React.FC<WorkoutUploaderProps> = ({ onWorkoutLoaded }) =>
       // DEBUG: "✅ Testo inserito manualmente:", testo);
       // TODO: Implementare parsing del testo
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ Errore:', err);
-      setError(`Errore: ${err.message}`);
+      setError(`Errore: ${(err as Error).message}`);
     } finally {
       setIsLoading(false);
     }

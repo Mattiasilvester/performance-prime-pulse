@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 type Language = 'it' | 'en';
 
 interface Translations {
-  [key: string]: any;
+  [key: string]: string | Record<string, string>;
 }
 
 export const useTranslation = () => {
@@ -55,11 +55,11 @@ export const useTranslation = () => {
 
   const t = (key: string): string => {
     const keys = key.split('.');
-    let value = translations;
+    let value: string | Record<string, string> | Translations = translations;
     
     for (const k of keys) {
-      if (value && typeof value === 'object') {
-        value = value[k];
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        value = (value as Record<string, string | Record<string, string>>)[k] as string | Record<string, string> | Translations;
       } else {
         return key; // fallback to key if translation not found
       }

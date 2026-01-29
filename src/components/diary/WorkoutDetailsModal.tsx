@@ -17,11 +17,12 @@ export function WorkoutDetailsModal({ entry, open, onOpenChange }: WorkoutDetail
       return entry.duration_minutes || 0;
     }
     
-    const totalSeconds = entry.exercises.reduce((total: number, exercise: any) => {
-      const duration = parseInt(exercise.duration) || 0;
-      const rest = parseInt(exercise.rest) || 0;
+    const totalSeconds = entry.exercises.reduce((total: number, exercise: unknown) => {
+      const ex = exercise as { duration?: string; rest?: string };
+      const duration = parseInt(ex.duration ?? '', 10) || 0;
+      const rest = parseInt(ex.rest ?? '', 10) || 0;
       return total + duration + rest;
-    }, 0);
+    }, 0) as number;
     
     // Converti in minuti e arrotonda
     return Math.ceil(totalSeconds / 60);
@@ -67,7 +68,7 @@ export function WorkoutDetailsModal({ entry, open, onOpenChange }: WorkoutDetail
           <div className="space-y-2">
             <h4 className="font-semibold text-sm">📋 Esercizi:</h4>
             <div className="space-y-2">
-              {entry.exercises && entry.exercises.map((exercise: any, index: number) => (
+              {entry.exercises && entry.exercises.map((exercise: { name?: string; duration?: number; rest?: number; completed?: boolean }, index: number) => (
                 <div 
                   key={index}
                   className="flex items-start gap-3 p-3 bg-muted rounded-md border border-[#EEBA2B]/10"
@@ -102,7 +103,7 @@ export function WorkoutDetailsModal({ entry, open, onOpenChange }: WorkoutDetail
               <div>
                 <p className="text-muted-foreground">Esercizi completati</p>
                 <p className="font-medium">
-                  {entry.exercises ? entry.exercises.filter((ex: any) => ex.completed).length : 0}/{entry.exercises_count}
+                  {entry.exercises ? entry.exercises.filter((ex: { completed?: boolean }) => ex.completed).length : 0}/{entry.exercises_count}
                 </p>
               </div>
               {entry.completed_at && (

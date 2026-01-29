@@ -47,8 +47,16 @@ const categories = [
   },
 ];
 
+/** Workout generato (es. da workoutGenerator) con esercizi e meta */
+interface GeneratedWorkoutShape {
+  name?: string;
+  title?: string;
+  exercises?: { name: string; duration?: string | number; rest?: string | number }[];
+  meta?: { workoutTitle?: string; workoutType?: string; duration?: number | string };
+}
+
 interface WorkoutCategoriesProps {
-  onStartWorkout: (workoutId: string, duration?: number, generatedWorkout?: any) => void;
+  onStartWorkout: (workoutId: string, duration?: number, generatedWorkout?: GeneratedWorkoutShape) => void;
 }
 
 export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) => {

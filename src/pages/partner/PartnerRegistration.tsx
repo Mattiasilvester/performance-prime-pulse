@@ -246,7 +246,7 @@ export default function PartnerRegistration() {
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
         phone: formData.phone.trim(),
-        category: formData.category as any,
+        category: (formData.category === 'other' ? 'altro' : formData.category) as 'pt' | 'nutrizionista' | 'fisioterapista' | 'mental_coach' | 'osteopata' | 'altro',
         city: formData.city.trim(),
         bio: bioWithCategory,
         company_name: formData.studio_sede.trim(),
@@ -316,13 +316,14 @@ export default function PartnerRegistration() {
     switch (currentStep) {
       case 1:
         return formData.first_name.trim() && formData.last_name.trim() && formData.email.trim() && formData.phone.trim() && !emailError;
-      case 2:
-        const passwordValid = 
+      case 2: {
+        const passwordValid =
           formData.password.length >= 8 &&
           /[a-z]/.test(formData.password) &&
           /[A-Z]/.test(formData.password) &&
           /[0-9]/.test(formData.password);
         return passwordValid && formData.password === formData.password_confirm;
+      }
       case 3:
         if (!formData.category) return false;
         if (formData.category === 'altro') {

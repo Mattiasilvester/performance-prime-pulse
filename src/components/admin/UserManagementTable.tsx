@@ -99,7 +99,8 @@ export default function UserManagementTable({
         filtered = filtered.filter(user => !user.is_active)
         break
       default:
-        filtered = filtered
+        // Nessun filtro aggiuntivo
+        break
     }
 
     if (searchTerm) {
@@ -123,12 +124,12 @@ export default function UserManagementTable({
     { 
       key: 'full_name', 
       label: 'Nome',
-      render: (user: any) => user.full_name || 'Senza nome'
+      render: (user: AdminUser) => user.full_name || 'Senza nome'
     },
     {
       key: 'status',
       label: 'Stato Online',
-      render: (user: any) => (
+      render: (user: AdminUser) => (
         <div className="flex flex-col gap-1">
           <span className={`px-2 py-1 rounded text-xs font-medium ${
             user.is_active_user
@@ -161,7 +162,7 @@ export default function UserManagementTable({
     {
       key: 'workouts',
       label: 'Allenamenti',
-      render: (user: any) => (
+      render: (user: AdminUser) => (
         <div className="text-center">
           <div className="text-lg font-bold text-white">{user.total_workouts || 0}</div>
           <div className="text-xs text-gray-400">
@@ -176,7 +177,7 @@ export default function UserManagementTable({
     { 
       key: 'created_at', 
       label: 'Iscritto',
-      render: (user: any) => new Date(user.created_at).toLocaleDateString('it-IT')
+      render: (user: AdminUser) => new Date(user.created_at).toLocaleDateString('it-IT')
     },
     {
       key: 'actions',
@@ -255,7 +256,7 @@ export default function UserManagementTable({
                 <tr key={user.id} className="hover:bg-gray-700/50">
                   {columns.map((column) => (
                     <td key={column.key} className="px-6 py-4 whitespace-nowrap">
-                      {column.render ? column.render(user) : (user as any)[column.key]}
+                      {column.render ? column.render(user) : (user as unknown as Record<string, unknown>)[column.key] as React.ReactNode}
                     </td>
                   ))}
                 </tr>

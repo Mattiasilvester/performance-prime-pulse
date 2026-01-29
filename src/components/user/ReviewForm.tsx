@@ -76,11 +76,11 @@ export default function ReviewForm({
       } else {
         toast.error('Errore nel salvataggio della recensione');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore creazione recensione:', error);
-      
+      const err = error as Error;
       // Gestione errori specifici
-      if (error.message?.includes('unique_review_per_booking')) {
+      if (err.message?.includes('unique_review_per_booking')) {
         toast.error('Hai già lasciato una recensione per questo appuntamento');
       } else {
         toast.error('Errore nel salvataggio della recensione');

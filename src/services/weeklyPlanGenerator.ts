@@ -64,8 +64,8 @@ function generateWeeklyWorkouts(
   level: ExperienceLevel,
   frequency: number,
   equipment: Equipment
-): any[] {
-  const workouts: any[] = [];
+): unknown[] {
+  const workouts: unknown[] = [];
 
   // Mapping equipment per generatore
   const equipmentFilter =

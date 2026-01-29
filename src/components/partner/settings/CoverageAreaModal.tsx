@@ -54,6 +54,7 @@ export default function CoverageAreaModal({ onClose, onSuccess }: CoverageAreaMo
   // Carica professional_id
   useEffect(() => {
     loadProfessionalId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Carica impostazioni quando professional_id è disponibile
@@ -61,6 +62,7 @@ export default function CoverageAreaModal({ onClose, onSuccess }: CoverageAreaMo
     if (professionalId) {
       fetchCoverageSettings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [professionalId]);
 
   const loadProfessionalId = async () => {
@@ -78,9 +80,9 @@ export default function CoverageAreaModal({ onClose, onSuccess }: CoverageAreaMo
       if (data) {
         setProfessionalId(data.id);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore caricamento professional_id:', error);
-      if (error.code !== 'PGRST116') {
+      if ((error as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento dei dati');
       }
     }
@@ -110,9 +112,9 @@ export default function CoverageAreaModal({ onClose, onSuccess }: CoverageAreaMo
           coverage_radius_km: data.coverage_radius_km || 10,
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch area copertura:', err);
-      if (err.code !== 'PGRST116') {
+      if ((err as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento delle impostazioni');
       }
     } finally {
@@ -192,7 +194,7 @@ export default function CoverageAreaModal({ onClose, onSuccess }: CoverageAreaMo
       toast.success('Area di copertura salvata con successo!');
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore salvataggio area copertura:', err);
       toast.error('Errore nel salvataggio delle impostazioni');
     } finally {

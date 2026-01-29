@@ -24,9 +24,9 @@ export default function SuperAdminLogin() {
       await login(credentials)
       toast.success('Accesso autorizzato')
       navigate('/nexus-prime-control/dashboard')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Admin login error:', error)
-      toast.error(error.message || 'Accesso negato')
+      toast.error((error as Error)?.message || 'Accesso negato')
     } finally {
       setLoading(false)
     }

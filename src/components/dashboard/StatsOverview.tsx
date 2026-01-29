@@ -66,8 +66,8 @@ export const StatsOverview = () => {
     loadStats();
 
     // Ascolta l'evento di completamento workout per refresh automatico
-    const handleWorkoutCompleted = (event: any) => {
-      console.log('🔄 [DEBUG] StatsOverview: Evento workoutCompleted ricevuto!', event.detail);
+    const handleWorkoutCompleted = (event: Event) => {
+      console.log('🔄 [DEBUG] StatsOverview: Evento workoutCompleted ricevuto!', (event as CustomEvent).detail);
       console.log('🔄 [DEBUG] StatsOverview: Workout completato, ricarico statistiche...');
       loadStats();
     };
@@ -82,7 +82,19 @@ export const StatsOverview = () => {
   // Ottieni dati card medaglie dinamici
   const medalCardData = getMedalCardData();
 
-  const statsCards = [
+  interface StatCardRow {
+    label: string;
+    value: string;
+    change: string;
+    icon: typeof TrendingUp;
+    color: string;
+    bgColor: string;
+    description?: string;
+    isMedalCard?: boolean;
+    medalData?: ReturnType<typeof getMedalCardData>;
+  }
+
+  const statsCards: StatCardRow[] = [
     {
       label: 'Allenamenti completati',
       value: loading ? '...' : stats.totalWorkouts.toString(),
@@ -124,8 +136,8 @@ export const StatsOverview = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statsCards.map((stat) => {
           const Icon = stat.icon;
-          const isMedalCard = (stat as any).isMedalCard;
-          const medalData = (stat as any).medalData;
+          const isMedalCard = stat.isMedalCard;
+          const medalData = stat.medalData;
           
           return (
             <div
@@ -147,8 +159,8 @@ export const StatsOverview = () => {
               <div className="space-y-1">
                 <p className="text-2xl font-bold text-pp-gold">{stat.value}</p>
                 <p className="text-sm text-white">{stat.label}</p>
-                {isMedalCard && (stat as any).description && (
-                  <p className="text-xs text-pp-gold/80">{(stat as any).description}</p>
+                {isMedalCard && stat.description && (
+                  <p className="text-xs text-pp-gold/80">{stat.description}</p>
                 )}
                 {isMedalCard && medalData.state === 'challenge_active' && medalData.progress !== undefined && (
                   <div className="mt-1">

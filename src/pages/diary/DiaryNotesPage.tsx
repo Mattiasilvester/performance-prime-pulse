@@ -93,18 +93,20 @@ export default function DiaryNotesPage() {
     // Date/mode filter
     const now = new Date();
     switch (filterMode) {
-      case "7days":
+      case "7days": {
         const sevenDaysAgo = subDays(now, 7);
         filtered = filtered.filter(
           (note) => new Date(note.createdAt) >= sevenDaysAgo
         );
         break;
-      case "30days":
+      }
+      case "30days": {
         const thirtyDaysAgo = subDays(now, 30);
         filtered = filtered.filter(
           (note) => new Date(note.createdAt) >= thirtyDaysAgo
         );
         break;
+      }
       case "highlighted":
         filtered = filtered.filter((note) => note.isHighlighted);
         break;

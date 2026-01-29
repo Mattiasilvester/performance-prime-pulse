@@ -107,11 +107,11 @@ export default function SuperAdminDashboard() {
       console.log('📊 admin-stats function response:', normalizedStats);
       setStats(normalizedStats);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Error loading dashboard:', error);
       
       // Gestisci errori specifici
-      const errorMessage = error?.message || 'Errore sconosciuto durante il caricamento';
+      const errorMessage = (error as Error)?.message || 'Errore sconosciuto durante il caricamento';
       setError(errorMessage);
       
       // Imposta valori di default in caso di errore

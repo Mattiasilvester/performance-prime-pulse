@@ -11,6 +11,14 @@
 - **NON procedere** senza aver segnalato e risolto il problema
 - Se un prompt richiede modifiche già esistenti, fermati, avvisa l'utente e non duplicare il lavoro
 
+## 🛡️ REGOLA ZERO BREAKING: FIX E FEATURE NON DEVONO ROMPERE NULLA
+**Tutti i fix e le modifiche NON devono rompere nulla. Qualora qualcosa potesse creare problemi a una funzione o a una feature → FERMATI E DIMMELO.**
+
+- Vale per **ogni fix**, **nuove feature**, **refactoring** e **qualsiasi modifica** al codice
+- Prima di applicare un fix: valuta se può impattare funzionalità esistenti o flussi utente
+- Se un fix/feature potrebbe creare problemi (es. regex che cambiano comportamento, tipi che rompono chiamate, logica che altera risultati) → **FERMATI**, segnala il rischio e chiedi conferma
+- **NON** procedere con modifiche che potrebbero rompere funzioni o feature senza averlo segnalato
+
 ## 📚 RIFERIMENTO PROBLEMI COMUNI
 **PRIMA DI RISOLVERE UN PROBLEMA, CONSULTA:** `PROBLEMI_COMUNI_E_SOLUZIONI.md`
 
@@ -1444,6 +1452,36 @@ In ordine di priorità:
 4. ⚪ **Pulizia codice** - Fare solo se richiesto esplicitamente
 
 **MAI sacrificare 1 o 2 per ottenere 3 o 4.**
+
+---
+
+## 🧹 POST-AUDIT RULES (29 Gennaio 2025)
+
+### ESLint Zero-Error Policy
+- **SEMPRE** verificare ESLint prima di committare: `npx eslint src/ --ext .ts,.tsx`
+- **MAI** introdurre nuovi `any` senza giustificazione
+- **SEMPRE** usare `unknown` per error handling: `catch (error: unknown)`
+
+### Types Best Practices
+- **Importa tipi da** `@/integrations/supabase/types` per query DB
+- **JSONB fields**: usa `unknown[]` o `Record<string, unknown>`
+- **Se aggiungi tabelle**: rigenera types.ts con `npx supabase gen types typescript --project-id kfxoyucatvvcgmqalxsg`
+
+### useEffect Dependencies
+- **Aggiungi tutte le deps** o usa `useCallback`/`useRef`
+- **Se ometti deps intenzionalmente**: aggiungi `// eslint-disable-next-line react-hooks/exhaustive-deps` con commento che spiega perché
+
+### File Protetti (non modificare senza revisione)
+- `src/services/AdvancedWorkoutAnalyzer.ts` - Regex OCR complesse
+- `src/services/fileAnalysis.ts` - Regex Unicode
+- `src/components/partner/AgendaView.tsx` - Logica calendario
+
+### Verifica Pre-Commit
+```bash
+npx eslint src/ --ext .ts,.tsx  # Deve essere 0 errori
+npx tsc --noEmit                 # Deve passare
+npm run build                    # Deve completare
+```
 
 ---
 

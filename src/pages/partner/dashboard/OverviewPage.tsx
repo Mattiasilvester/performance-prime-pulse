@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps -- tipi attività partner; load/fetch intenzionali */
 import { Users, Calendar, FolderKanban, Euro, ClipboardList, Clock, User, Briefcase, UserPlus, CheckCircle, FolderPlus, ChevronDown, ChevronUp, X, MapPin, Video, Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';

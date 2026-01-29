@@ -3,16 +3,22 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export default function DatabaseDiagnostic() {
-  const [results, setResults] = useState<any>({});
+  interface DiagnosticResults {
+    profiles?: { success?: boolean; count?: number; error?: string; sample?: unknown };
+    permissions?: { canRead?: boolean; error?: string };
+    [key: string]: unknown;
+  }
+  const [results, setResults] = useState<DiagnosticResults>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     runFullDiagnostic();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   const runFullDiagnostic = async () => {
     console.log('🔍 DIAGNOSTIC: Starting full database check...');
-    const diagnostic: any = {};
+    const diagnostic: DiagnosticResults = {};
 
     try {
       // Test 1: Raw query to profiles
@@ -54,8 +60,8 @@ export default function DatabaseDiagnostic() {
         error: e4?.message
       };
 
-    } catch (error: any) {
-      diagnostic.generalError = error.message;
+    } catch (error: unknown) {
+      diagnostic.generalError = (error as Error)?.message;
     }
 
     setResults(diagnostic);

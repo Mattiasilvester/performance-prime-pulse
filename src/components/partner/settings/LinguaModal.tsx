@@ -67,6 +67,7 @@ export default function LinguaModal({ onClose, onSuccess }: LinguaModalProps) {
   // Carica professional_id
   useEffect(() => {
     loadProfessionalId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   // Fetch lingue quando professional_id è disponibile
@@ -74,6 +75,7 @@ export default function LinguaModal({ onClose, onSuccess }: LinguaModalProps) {
     if (professionalId) {
       fetchLanguages();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [professionalId]);
 
   const loadProfessionalId = async () => {
@@ -91,7 +93,7 @@ export default function LinguaModal({ onClose, onSuccess }: LinguaModalProps) {
       if (data) {
         setProfessionalId(data.id);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore caricamento professional_id:', err);
       toast.error('Errore nel caricamento dei dati');
     }
@@ -110,9 +112,9 @@ export default function LinguaModal({ onClose, onSuccess }: LinguaModalProps) {
       if (error) throw error;
       
       setLanguages(data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch lingue:', err);
-      if (err.code !== 'PGRST116') {
+      if ((err as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento delle lingue');
       }
     } finally {
@@ -215,7 +217,7 @@ export default function LinguaModal({ onClose, onSuccess }: LinguaModalProps) {
       toast.success('Lingue salvate con successo!');
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore salvataggio lingue:', err);
       toast.error('Errore nel salvataggio delle lingue');
     } finally {

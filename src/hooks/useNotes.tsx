@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- Notes context exports hook and provider */
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';

@@ -48,8 +48,8 @@ export default function PartnerResetPassword() {
       toast.success('Email inviata!', {
         description: 'Controlla la tua casella di posta'
       });
-    } catch (err: any) {
-      const errorMessage = err.message || 'Errore durante l\'invio dell\'email';
+    } catch (err: unknown) {
+      const errorMessage = (err as Error)?.message || 'Errore durante l\'invio dell\'email';
       setError(errorMessage);
       toast.error('Errore', {
         description: errorMessage

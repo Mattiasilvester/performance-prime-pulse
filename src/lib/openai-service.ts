@@ -25,6 +25,24 @@ import {
 } from '@/data/bodyPartExclusions';
 import { getUserPains } from '@/services/painTrackingService';
 
+/** Risposta API OpenAI (successo) */
+interface OpenAIResponse {
+  choices?: Array<{ message: { content: string } }>;
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+
+/** Risposta API OpenAI (errore) */
+interface OpenAIErrorResponse {
+  error?: { message?: string; type?: string; code?: string };
+}
+
+/** Tipo unione per risposta fetch /api/ai-chat */
+type OpenAIApiResponse = OpenAIResponse | OpenAIErrorResponse;
+
 // ⚠️ DEPRECATO: Non usare più VITE_OPENAI_API_KEY direttamente
 // Usare /api/ai-chat endpoint invece
 // ⚠️ TEMPORANEO PER TEST: Limite aumentato a 9999
@@ -257,7 +275,7 @@ Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Pri
 
     // Chiama l'API serverless invece di usare chiave diretta
     let response: Response;
-    let data: any;
+    let data: OpenAIApiResponse;
     
     try {
       response = await fetch('/api/ai-chat', {
@@ -271,12 +289,16 @@ Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Pri
         })
       });
       
-      data = await response.json();
-    } catch (fetchError: any) {
+      data = await response.json() as OpenAIApiResponse;
+    } catch (fetchError: unknown) {
+      const msg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+      const causeCode = fetchError && typeof fetchError === 'object' && 'cause' in fetchError
+        ? (fetchError as { cause?: { code?: string } }).cause?.code
+        : undefined;
       // Gestione errore connessione (server proxy non disponibile)
-      if (fetchError.message?.includes('ECONNREFUSED') || 
-          fetchError.message?.includes('Failed to fetch') ||
-          fetchError.cause?.code === 'ECONNREFUSED') {
+      if (msg?.includes('ECONNREFUSED') ||
+          msg?.includes('Failed to fetch') ||
+          causeCode === 'ECONNREFUSED') {
         console.error('❌ ERRORE: Server proxy non disponibile su localhost:3001');
         console.error('💡 SOLUZIONE: Avvia il server proxy con: npm run dev:api');
         console.error('💡 OPPURE: Avvia tutto insieme con: npm run dev:all');
@@ -301,31 +323,32 @@ Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Pri
       throw new Error(`OpenAI API error: ${response.status} - ${response.statusText}`);
     }
     
-    if (!data.choices || !data.choices[0]) {
+    if (!('choices' in data) || !data.choices?.length || !data.choices[0]) {
       console.error('❌ Risposta OpenAI non valida:', data);
       throw new Error('Risposta OpenAI non valida');
     }
     
+    const successData = data as OpenAIResponse;
     // Salva uso
     const cost = calculateCost(
-      data.usage?.prompt_tokens || 0,
-      data.usage?.completion_tokens || 0
+      successData.usage?.prompt_tokens || 0,
+      successData.usage?.completion_tokens || 0
     );
     
     await supabase.from('openai_usage_logs').insert({
       user_id: userId,
-      tokens_prompt: data.usage?.prompt_tokens || 0,
-      tokens_completion: data.usage?.completion_tokens || 0,
-      tokens_total: data.usage?.total_tokens || 0,
+      tokens_prompt: successData.usage?.prompt_tokens || 0,
+      tokens_completion: successData.usage?.completion_tokens || 0,
+      tokens_total: successData.usage?.total_tokens || 0,
       cost_usd: cost,
       model: 'gpt-3.5-turbo',
       message: message.substring(0, 500),
-      response: data.choices[0].message.content.substring(0, 500)
+      response: successData.choices[0].message.content.substring(0, 500)
     });
 
     console.log(`[AI] User: ${userId.substring(0,8)}... | Uso: ${limit.used + 1}/${MONTHLY_LIMIT} | Costo: $${cost.toFixed(5)}`);
     
-    const botResponse = data.choices[0].message.content;
+    const botResponse = successData.choices[0].message.content;
 
     // Salva l'interazione su primebot_interactions (se abbiamo sessionId)
     if (sessionId) {
@@ -549,7 +572,26 @@ REGOLE VARIAZIONE SET/REP (OBBLIGATORIE):
 
 ESEMPIO PIANO CORRETTO (con variazione):
 ${(() => {
-  const examplePlan: any = {
+  interface ExamplePlanExercise {
+    name: string;
+    sets: number;
+    reps: string;
+    rest_seconds: number;
+    notes: string;
+    exercise_type: string;
+  }
+  const examplePlan: {
+    name: string;
+    description: string;
+    workout_type: string;
+    duration_minutes: number;
+    difficulty: string;
+    exercises: ExamplePlanExercise[];
+    warmup?: string;
+    cooldown?: string;
+    therapeuticAdvice?: string[];
+    safetyNotes?: string;
+  } = {
     name: "Piano Forza - Petto e Tricipiti",
     description: "Piano personalizzato per aumentare forza nella parte superiore",
     workout_type: "forza",
@@ -667,7 +709,7 @@ IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli t
     console.log('📤 Invio richiesta piano strutturato a OpenAI');
 
     let response: Response;
-    let data: any;
+    let data: OpenAIApiResponse;
     
     try {
       response = await fetch('/api/ai-chat', {
@@ -681,12 +723,16 @@ IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli t
         }),
       });
       
-      data = await response.json();
-    } catch (fetchError: any) {
+      data = await response.json() as OpenAIApiResponse;
+    } catch (fetchError: unknown) {
+      const msg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+      const causeCode = fetchError && typeof fetchError === 'object' && 'cause' in fetchError
+        ? (fetchError as { cause?: { code?: string } }).cause?.code
+        : undefined;
       // Gestione errore connessione (server proxy non disponibile)
-      if (fetchError.message?.includes('ECONNREFUSED') || 
-          fetchError.message?.includes('Failed to fetch') ||
-          fetchError.cause?.code === 'ECONNREFUSED') {
+      if (msg?.includes('ECONNREFUSED') ||
+          msg?.includes('Failed to fetch') ||
+          causeCode === 'ECONNREFUSED') {
         console.error('❌ ERRORE: Server proxy non disponibile su localhost:3001');
         console.error('💡 SOLUZIONE: Avvia il server proxy con: npm run dev:api');
         
@@ -698,7 +744,6 @@ IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli t
         };
       }
       
-      // Rilancia altri errori
       throw fetchError;
     }
 
@@ -706,11 +751,12 @@ IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli t
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
-    if (!data.choices || !data.choices[0]) {
+    if (!('choices' in data) || !data.choices?.length || !data.choices[0]) {
       throw new Error('Risposta OpenAI non valida');
     }
 
-    let aiResponse = data.choices[0].message.content;
+    const successData = data as OpenAIResponse;
+    let aiResponse = successData.choices[0].message.content;
     console.log('📥 Risposta AI ricevuta:', aiResponse.substring(0, 200) + '...');
 
     // Converti risposta AI in piano strutturato con gestione errori robusta
@@ -747,7 +793,7 @@ ${workoutPlanSystemPrompt}
         ];
 
         let retryResponse: Response;
-        let retryData: any;
+        let retryData: OpenAIApiResponse;
         
         try {
           retryResponse = await fetch('/api/ai-chat', {
@@ -761,21 +807,24 @@ ${workoutPlanSystemPrompt}
             }),
           });
           
-          retryData = await retryResponse.json();
+          retryData = await retryResponse.json() as OpenAIApiResponse;
           
-          if (retryResponse.ok && retryData.choices && retryData.choices[0]) {
-            aiResponse = retryData.choices[0].message.content;
+          if (retryResponse.ok && 'choices' in retryData && retryData.choices?.length && retryData.choices[0]) {
+            aiResponse = (retryData as OpenAIResponse).choices[0].message.content;
             console.log('📥 Risposta retry ricevuta:', aiResponse.substring(0, 200) + '...');
             plan = convertAIResponseToPlan(aiResponse);
             if (plan) {
               console.log('✅ Piano generato dopo retry!');
             }
           }
-        } catch (retryError: any) {
-          // Gestione errore connessione anche nel retry
-          if (retryError.message?.includes('ECONNREFUSED') || 
-              retryError.message?.includes('Failed to fetch') ||
-              retryError.cause?.code === 'ECONNREFUSED') {
+        } catch (retryError: unknown) {
+          const retryMsg = retryError instanceof Error ? retryError.message : String(retryError);
+          const retryCause = retryError && typeof retryError === 'object' && 'cause' in retryError
+            ? (retryError as { cause?: { code?: string } }).cause?.code
+            : undefined;
+          if (retryMsg?.includes('ECONNREFUSED') ||
+              retryMsg?.includes('Failed to fetch') ||
+              retryCause === 'ECONNREFUSED') {
             console.error('❌ ERRORE: Server proxy non disponibile durante retry');
             throw new Error('Server backend non disponibile. Avvia con: npm run dev:api');
           }

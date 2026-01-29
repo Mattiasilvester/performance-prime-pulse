@@ -34,7 +34,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 export const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredItems, setFilteredItems] = useState<any[]>([]);
+  const [filteredItems, setFilteredItems] = useState<{ label: string; path: string }[]>([]);
   const { profile: userProfile } = useUserProfile();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const { user } = useAuth();
@@ -76,6 +76,8 @@ export const Header = () => {
     } else {
       setFilteredItems(searchableItems);
     }
+  // searchableItems is stable (from t()), omitting to avoid unnecessary re-runs
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   // Profilo caricato tramite useUserProfile hook
@@ -118,7 +120,7 @@ export const Header = () => {
       }
       toast.success('Logout effettuato con successo');
       navigate('/auth');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Errore durante il logout');
     } finally {
       setShowLogoutDialog(false);

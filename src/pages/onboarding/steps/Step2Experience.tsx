@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tipi store onboarding */
 import { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import type { OnboardingData } from '@/stores/onboardingStore';

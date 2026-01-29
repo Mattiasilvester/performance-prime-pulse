@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminAuditLogs() {
-  const [logs, setLogs] = useState<any[]>([]);
+  interface AuditLogRow { id: string; created_at: string; admin_id: string | null; action: string; details: unknown }
+  const [logs, setLogs] = useState<AuditLogRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

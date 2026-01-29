@@ -201,7 +201,7 @@ export const trackOnboarding = {
     });
   },
 
-  stepCompleted: (step: number, data: any) => {
+  stepCompleted: (step: number, data: Record<string, unknown>) => {
     analytics.track('onboarding_step_completed', {
       event_category: 'engagement',
       event_label: 'onboarding',
@@ -258,7 +258,7 @@ export const useAnalytics = () => {
 // Tipi per TypeScript
 declare global {
   interface Window {
-    plausible?: (eventName: string, options?: { props?: Record<string, any> }) => void;
+    plausible?: (eventName: string, options?: { props?: Record<string, unknown> }) => void;
   }
 }
 

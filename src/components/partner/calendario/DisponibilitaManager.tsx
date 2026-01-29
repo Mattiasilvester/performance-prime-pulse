@@ -43,6 +43,7 @@ export default function DisponibilitaManager() {
     if (professionalId) {
       loadAvailability();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [professionalId]);
 
   const loadProfessionalId = async () => {
@@ -64,7 +65,7 @@ export default function DisponibilitaManager() {
       if (data) {
         setProfessionalId(data.id);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore caricamento professional_id:', error);
       toast.error('Errore nel caricamento dei dati');
     }
@@ -100,7 +101,7 @@ export default function DisponibilitaManager() {
       });
 
       setAvailability(loadedDays);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore caricamento disponibilità:', error);
       toast.error('Errore nel caricamento della disponibilità');
     } finally {
@@ -194,7 +195,7 @@ export default function DisponibilitaManager() {
           toast.success('Giorno attivato');
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore salvataggio toggle:', error);
       toast.error('Errore nel salvataggio');
       
@@ -374,7 +375,7 @@ export default function DisponibilitaManager() {
       }
 
       // Silenzioso, non mostrare toast per ogni save automatico
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore salvataggio disponibilità:', error);
       toast.error('Errore nel salvataggio della disponibilità');
     } finally {

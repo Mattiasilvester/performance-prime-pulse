@@ -28,7 +28,7 @@ const Professionals: React.FC = () => {
       // Mostra primi 2 servizi in tag orizzontali
       return (
         <div className="flex items-center gap-2 flex-wrap">
-          {professional.services.slice(0, 2).map((service: any, idx: number) => (
+          {professional.services.slice(0, 2).map((service: { id?: string; name?: string; price?: number }, idx: number) => (
             <span 
               key={service.id || idx}
               className="bg-[#EEBA2B]/20 text-[#EEBA2B] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#EEBA2B]/30"

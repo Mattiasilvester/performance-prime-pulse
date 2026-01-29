@@ -90,6 +90,7 @@ export default function NotificationsModal({ onClose, onSuccess }: Notifications
   // Carica professional_id
   useEffect(() => {
     loadProfessionalId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Carica impostazioni quando professional_id è disponibile
@@ -97,6 +98,7 @@ export default function NotificationsModal({ onClose, onSuccess }: Notifications
     if (professionalId) {
       fetchNotifications();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [professionalId]);
 
   const loadProfessionalId = async () => {
@@ -114,9 +116,9 @@ export default function NotificationsModal({ onClose, onSuccess }: Notifications
       if (data) {
         setProfessionalId(data.id);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore caricamento professional_id:', error);
-      if (error.code !== 'PGRST116') { // Ignora se non trovato
+      if ((error as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento dei dati');
       }
     }
@@ -142,9 +144,9 @@ export default function NotificationsModal({ onClose, onSuccess }: Notifications
       });
 
       setFormData(initialData);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch notifiche:', err);
-      if (err.code !== 'PGRST116') { // Ignora se non trovato
+      if ((err as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento delle preferenze');
       }
       // Usa valori default se errore
@@ -225,9 +227,9 @@ export default function NotificationsModal({ onClose, onSuccess }: Notifications
           toast.error('Permessi notifiche negati. Abilita le notifiche nelle impostazioni del browser.');
           return; // Non cambiare il toggle
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Errore attivazione push:', error);
-        toast.error(error.message || 'Errore nell\'attivazione delle notifiche push');
+        toast.error((error as Error)?.message || 'Errore nell\'attivazione delle notifiche push');
         return; // Non cambiare il toggle
       }
     } else if (key === 'notify_push' && !newValue) {
@@ -285,7 +287,7 @@ export default function NotificationsModal({ onClose, onSuccess }: Notifications
       toast.success('Preferenze notifiche salvate con successo!');
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore salvataggio notifiche:', err);
       toast.error('Errore nel salvataggio delle preferenze');
     } finally {

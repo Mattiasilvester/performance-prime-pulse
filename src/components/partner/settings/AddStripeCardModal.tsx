@@ -90,12 +90,12 @@ function PaymentForm({ onSuccess, onClose, professionalId }: { onSuccess: () => 
     try {
       // Con billingDetails: 'auto', Stripe mostra i campi necessari e l'utente può inserirli
       // Possiamo comunque pre-compilare i campi con i dati del professionista se disponibili
-      const confirmParams: any = {
+      const confirmParams: Record<string, unknown> = {
         return_url: window.location.origin + '/partner/dashboard/impostazioni',
       };
 
       // Pre-compila billing details con dati del professionista (opzionale ma migliora UX)
-      const billingDetails: any = {};
+      const billingDetails: Record<string, string> = {};
       if (professionalName) {
         billingDetails.name = professionalName;
       }
@@ -163,11 +163,11 @@ function PaymentForm({ onSuccess, onClose, professionalId }: { onSuccess: () => 
       const setupIntentData = retrievedSetupIntent.setupIntent;
       
       // Il payment_method può essere una stringa (ID) o un oggetto PaymentMethod
-      let pmDetails: any = null;
+      let pmDetails: { card?: { last4?: string; brand?: string; exp_month?: number; exp_year?: number } } | null = null;
       
       if (typeof setupIntentData.payment_method === 'object' && setupIntentData.payment_method !== null) {
-        // Se è un oggetto, abbiamo già i dettagli
-        pmDetails = setupIntentData.payment_method;
+        // Se è un oggetto, abbiamo già i dettagli (cast per compatibilità Stripe SDK)
+        pmDetails = setupIntentData.payment_method as { card?: { last4?: string; brand?: string; exp_month?: number; exp_year?: number } };
         console.log('[STRIPE] Dettagli payment method dal SetupIntent:', {
           last4: pmDetails.card?.last4,
           brand: pmDetails.card?.brand,
@@ -191,7 +191,7 @@ function PaymentForm({ onSuccess, onClose, professionalId }: { onSuccess: () => 
             if (response.ok) {
               const data = await response.json();
               // Trova il payment method con l'ID corrispondente
-              const foundPM = data.payment_methods?.find((pm: any) => pm.id === paymentMethodId);
+              const foundPM = (data.payment_methods as { id: string; card_last4?: string; card_brand?: string; card_exp_month?: number; card_exp_year?: number }[] | undefined)?.find((pm) => pm.id === paymentMethodId);
               if (foundPM) {
                 // I dettagli dalla lista sono già formattati
                 pmDetails = {
@@ -209,7 +209,7 @@ function PaymentForm({ onSuccess, onClose, professionalId }: { onSuccess: () => 
               }
             }
           }
-        } catch (pmError: any) {
+        } catch (pmError: unknown) {
           console.error('[STRIPE] Errore recupero dettagli payment method:', pmError);
           // Continua comunque, salveremo almeno l'ID e i dettagli verranno aggiornati dal webhook
         }
@@ -243,7 +243,7 @@ function PaymentForm({ onSuccess, onClose, professionalId }: { onSuccess: () => 
       // Recupera stripe_customer_id dal SetupIntent se non esiste nel record
       let customerId = existingSubscription?.stripe_customer_id;
       // Type assertion per accedere a customer (presente in SetupIntent ma non nel tipo TypeScript)
-      const setupIntentWithCustomer = setupIntentData as any;
+      const setupIntentWithCustomer = setupIntentData as { customer?: string | { id: string } };
       if (!customerId && setupIntentWithCustomer.customer) {
         customerId = typeof setupIntentWithCustomer.customer === 'string' 
           ? setupIntentWithCustomer.customer 
@@ -252,7 +252,7 @@ function PaymentForm({ onSuccess, onClose, professionalId }: { onSuccess: () => 
       }
 
       // Aggiorna o crea subscription record
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         professional_id: professionalId,
         payment_method_id: paymentMethodId,
         updated_at: new Date().toISOString(),
@@ -345,9 +345,9 @@ function PaymentForm({ onSuccess, onClose, professionalId }: { onSuccess: () => 
             toast.info('Creazione abbonamento in corso...');
             await createSubscription();
             toast.success('Abbonamento attivato con successo!');
-          } catch (err: any) {
+          } catch (err: unknown) {
             console.error('[STRIPE] Errore creazione subscription:', err);
-            const errorMessage = getStripeErrorMessage(err);
+            const errorMessage = getStripeErrorMessage(err as { code?: string; message?: string });
             toast.error(errorMessage);
             // Non bloccare, la carta è stata salvata comunque
           }
@@ -357,9 +357,9 @@ function PaymentForm({ onSuccess, onClose, professionalId }: { onSuccess: () => 
       toast.success('Carta aggiunta con successo!');
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[STRIPE] Errore salvataggio carta:', err);
-      const errorMessage = getStripeErrorMessage(err);
+      const errorMessage = getStripeErrorMessage(err as { code?: string; message?: string });
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -441,6 +441,7 @@ export default function AddStripeCardModal({ isOpen, onClose, onSuccess, profess
     if (isOpen && !setupIntentClientSecret && selectedProvider === 'stripe') {
       createSetupIntent();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- createSetupIntent identity; setupIntentClientSecret intentionally omitted
   }, [isOpen, selectedProvider]);
 
   // Fix mobile: gestisci scroll body quando modal è aperto
@@ -475,10 +476,11 @@ export default function AddStripeCardModal({ isOpen, onClose, onSuccess, profess
       const result = await createCustomerAndSetupIntent();
       setSetupIntentClientSecret(result.setup_intent_client_secret);
       console.log('[STRIPE] SetupIntent creato:', result.setup_intent_client_secret);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[STRIPE] Errore creazione SetupIntent:', err);
-      setError(err.message || 'Errore durante la creazione del form di pagamento');
-      toast.error(err.message || 'Errore durante la creazione del form di pagamento');
+      const msg = (err as Error)?.message || 'Errore durante la creazione del form di pagamento';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

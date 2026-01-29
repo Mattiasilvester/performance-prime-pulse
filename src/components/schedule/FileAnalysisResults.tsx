@@ -72,7 +72,7 @@ export const FileAnalysisResults: React.FC<FileAnalysisResultsProps> = ({
         {exercise.rest && (
           <span className="text-sm text-[#9CA3AF] flex items-center gap-1">
             <RefreshCcw className="h-3 w-3" />
-            Riposo: {exercise.rest.replace(/[🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄]\s*1\s*x\s*/g, '').replace(/^\s*/, '').trim().replace(/^[🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄]+\s*/, '')} tra le serie
+            Riposo: {exercise.rest.replace(/[🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄]\s*1\s*x\s*/gu, '').replace(/^\s*/, '').trim().replace(/^[🔄🔄🔄🔄🔄🔄🔄🔄🔄🔄]+\s*/gu, '')} tra le serie
           </span>
         )}
       </div>

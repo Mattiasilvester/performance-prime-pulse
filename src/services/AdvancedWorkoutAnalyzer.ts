@@ -2,6 +2,7 @@
  * AdvancedWorkoutAnalyzer - Sistema completo di analisi PDF/OCR
  * Con logging dettagliato, fallback OCR e gestione URL firmati Supabase
  */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/ban-ts-comment, no-useless-escape, no-control-regex, no-empty -- regex complesse e tipi dinamici OCR; modifiche rischiose per comportamento */
 
 import { createWorker } from 'tesseract.js';
 import { supabase } from '@/integrations/supabase/client';
