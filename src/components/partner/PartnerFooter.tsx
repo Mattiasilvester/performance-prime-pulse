@@ -29,16 +29,22 @@ export function PartnerFooter() {
                 Accedi
               </Link>
               <Link
-                to="/terms-and-conditions"
+                to="/partner/terms"
                 className="partner-footer-link block transition-colors underline text-sm"
               >
                 Termini e Condizioni
               </Link>
               <Link
-                to="/privacy-policy"
+                to="/partner/privacy"
                 className="partner-footer-link block transition-colors underline text-sm"
               >
                 Privacy Policy
+              </Link>
+              <Link
+                to="/partner/cookies"
+                className="partner-footer-link block transition-colors underline text-sm"
+              >
+                Cookie Policy
               </Link>
             </div>
           </div>

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps -- tipi attività partner; load/fetch intenzionali */
-import { Users, Calendar, FolderKanban, Euro, ClipboardList, Clock, User, Briefcase, UserPlus, CheckCircle, FolderPlus, ChevronDown, ChevronUp, X, MapPin, Video, Bell } from 'lucide-react';
+import { Calendar, FolderKanban, ClipboardList, Clock, User, Briefcase, UserPlus, CheckCircle, FolderPlus, ChevronDown, ChevronUp, X, MapPin, Video, Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ScheduleNotificationModal } from '@/components/partner/notifications/ScheduleNotificationModal';
+import { KPICardsSection, type KPIViewType } from '@/components/partner/dashboard/kpi/KPICardsSection';
 
 interface UpcomingBooking {
   id: string;
@@ -21,6 +22,22 @@ interface UpcomingBooking {
   } | null;
   service_type?: string | null;
   color?: string | null; // Colore salvato nel booking
+}
+
+/** Placeholder per test UI quando non ci sono prossimi appuntamenti */
+function getPlaceholderUpcomingBookings(): UpcomingBooking[] {
+  const today = new Date();
+  const d = (n: number) => {
+    const t = new Date(today);
+    t.setDate(t.getDate() + n);
+    return t.toISOString().split('T')[0];
+  };
+  return [
+    { id: 'placeholder-1', booking_date: d(0), booking_time: '09:00', duration_minutes: 60, status: 'pending', client_name: 'Cliente Demo 1', service: { id: 's1', name: 'Consulenza', color: '#EEBA2B' }, service_type: 'Consulenza' },
+    { id: 'placeholder-2', booking_date: d(0), booking_time: '11:30', duration_minutes: 45, status: 'confirmed', client_name: 'Cliente Demo 2', service: { id: 's2', name: 'Revisione', color: '#22c55e' }, service_type: 'Revisione' },
+    { id: 'placeholder-3', booking_date: d(1), booking_time: '14:00', duration_minutes: 90, status: 'pending', client_name: 'Cliente Demo 3', service: { id: 's3', name: 'Piano personalizzato', color: '#3b82f6' }, service_type: 'Piano personalizzato' },
+    { id: 'placeholder-4', booking_date: d(2), booking_time: '10:00', duration_minutes: 60, status: 'confirmed', client_name: 'Cliente Demo 4', service: { id: 's4', name: 'Follow-up', color: '#EEBA2B' }, service_type: 'Follow-up' },
+  ];
 }
 
 interface RecentActivity {
@@ -54,6 +71,7 @@ export default function OverviewPage() {
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [activityDetails, setActivityDetails] = useState<any>(null);
   const [activityDetailsLoading, setActivityDetailsLoading] = useState(false);
+  const [kpiView, setKpiView] = useState<KPIViewType>('overview');
   const [stats, setStats] = useState({
     clienti: 0,
     prenotazioni: 0,
@@ -602,71 +620,25 @@ export default function OverviewPage() {
     }).format(amount);
   };
 
-  const statCards = [
-    {
-      label: 'Clienti totali',
-      value: loading ? '...' : stats.clienti.toString(),
-      icon: Users,
-      bgColor: 'bg-orange-200',
-      iconColor: 'text-orange-600'
-    },
-    {
-      label: 'Prenotazioni questo mese',
-      value: loading ? '...' : stats.prenotazioni.toString(),
-      icon: Calendar,
-      bgColor: 'bg-blue-200',
-      iconColor: 'text-blue-600'
-    },
-    {
-      label: 'Progetti attivi',
-      value: loading ? '...' : stats.progetti.toString(),
-      icon: FolderKanban,
-      bgColor: 'bg-purple-200',
-      iconColor: 'text-purple-600'
-    },
-    {
-      label: 'Incassi mensili',
-      value: loading ? '...' : formatEarnings(stats.guadagni),
-      icon: Euro,
-      bgColor: 'bg-green-200',
-      iconColor: 'text-green-600'
-    }
-  ];
-
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-          {userName !== 'Professionista' ? `Benvenuto, ${userName}!` : 'Bentornato, Professionista!'}
-        </h1>
-        <p className="text-sm sm:text-base text-gray-500 capitalize">{formattedDate}</p>
-      </div>
+      {kpiView === 'overview' ? (
+        <>
+          {/* Header */}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              {userName !== 'Professionista' ? `Benvenuto, ${userName}!` : 'Bentornato, Professionista!'}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-500 capitalize">{formattedDate}</p>
+          </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {statCards.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={index}
-              className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm text-gray-500 truncate">{stat.label}</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
-                    {stat.value}
-                  </p>
-                </div>
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 ${stat.bgColor} rounded-xl flex items-center justify-center flex-shrink-0 ml-2`}>
-                  <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.iconColor}`} />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+          {/* KPI Cards - PrimePro */}
+          <KPICardsSection
+            professionalId={professionalId}
+            activeView="overview"
+            onNavigateToView={setKpiView}
+            onBack={() => setKpiView('overview')}
+          />
 
       {/* Prossimi Appuntamenti */}
       <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
@@ -686,14 +658,17 @@ export default function OverviewPage() {
               </div>
             ))}
           </div>
-        ) : upcomingBookings.length === 0 ? (
-          <div className="text-center py-12">
-            <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Nessun appuntamento in programma</p>
-          </div>
-        ) : (
+        ) : (() => {
+          const displayBookings = upcomingBookings.length > 0 ? upcomingBookings : getPlaceholderUpcomingBookings();
+          const isPlaceholder = upcomingBookings.length === 0;
+          return (
           <div className="space-y-3">
-            {upcomingBookings.map((booking) => {
+            {isPlaceholder && (
+              <p className="text-sm text-amber-600 bg-amber-50 rounded-lg px-3 py-2 mb-2">
+                Dati di test per verificare layout e interazioni.
+              </p>
+            )}
+            {displayBookings.map((booking) => {
               // Priorità: colore salvato nel booking, poi colore del servizio, poi default
               const serviceColor = booking.color || booking.service?.color || '#EEBA2B';
               const statusColor = booking.status === 'confirmed' 
@@ -755,7 +730,8 @@ export default function OverviewPage() {
               );
             })}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Attività Recenti */}
@@ -837,6 +813,15 @@ export default function OverviewPage() {
           </div>
         )}
       </div>
+        </>
+      ) : (
+        <KPICardsSection
+          professionalId={professionalId}
+          activeView={kpiView}
+          onNavigateToView={setKpiView}
+          onBack={() => setKpiView('overview')}
+        />
+      )}
 
       {/* Modal Dettagli Appuntamento */}
       {showBookingModal && selectedBooking && (
