@@ -9,6 +9,39 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **29 Gennaio 2026 - Sessione: Audit ESLint completo**
+**Ora inizio:** ~06:00  
+**Ora fine:** ~10:35  
+**Durata:** ~4 ore  
+**Branch:** dev  
+
+#### **🎯 Obiettivo:**
+Eliminare tutti gli errori ESLint (505+), allineare types.ts al database, e documentare il lavoro su dev senza toccare main.
+
+#### **✅ Implementato:**
+- **FASE 1-2**: Fix criticità (regex Unicode, Edge Functions fantasma, emailService, types.ts), rigenerazione types 14→41 tabelle.
+- **FASE 3**: Fix ESLint sistematico per area (hooks, services, PrimeBot, workout, partner/admin, UI e resto): 0 errori, 0 warning.
+- **Documentazione**: work.md (sezione Audit), .cursorrules (POST-AUDIT RULES), CHANGELOG.md ([2025-01-29] Audit), commit e push su dev.
+
+#### **🐛 Bug Risolti:**
+- Nessun bug funzionale; solo errori di lint/tipi risolti con approccio conservativo (no modifica logica business).
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato nella logica; solo tipi e eslint-disable dove necessario (AdvancedWorkoutAnalyzer, fileAnalysis, AgendaView, UI components).
+
+#### **📊 Metriche:**
+- Build: ~15.6s  
+- Bundle: ~1.73 MB (index principale)  
+- Errori TS: 0  
+- ESLint: 0 errori, 0 warning  
+
+#### **📋 TODO Prossima Sessione:**
+1. Verificare in produzione che in dashboard partner compaia "Benvenuto, [nome]" dopo login.
+2. Eventuale code-splitting per chunk >1 MB se richiesto.
+3. Altri task dalla roadmap.
+
+---
+
 ### **29 Gennaio 2026 - Sessione Fix Dashboard Partner (406 + Benvenuto nome)**
 **Ora inizio:** ~00:45  
 **Ora fine:** ~01:00  

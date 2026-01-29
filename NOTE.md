@@ -2,6 +2,13 @@
 
 ## Decisioni Architetturali
 
+### 29 Gennaio 2026 - Sessione Audit ESLint
+- **ESLint zero-error policy**: Prima di committare eseguire `npx eslint src/ --ext .ts,.tsx`; non introdurre `any` senza giustificazione; usare sempre `catch (error: unknown)` e type guards.
+- **Tipi da DB**: Importare da `@/integrations/supabase/types` per query Supabase; campi JSONB come `unknown[]` o `Record<string, unknown>`.
+- **useEffect deps**: Aggiungere tutte le deps o usare `// eslint-disable-next-line react-hooks/exhaustive-deps` con commento che spiega perché sono omesse (es. funzioni stabili, evitare loop).
+- **File protetti**: Non modificare senza revisione: `AdvancedWorkoutAnalyzer.ts` (regex OCR), `fileAnalysis.ts` (regex Unicode), `AgendaView.tsx` (logica calendario). Preferire file-level eslint-disable a modifiche rischiose.
+- **Verifica pre-commit**: `npx eslint src/ --ext .ts,.tsx`, `npx tsc --noEmit`, `npm run build` devono passare.
+
 ### 29 Gennaio 2026 - Sessione Fix Dashboard Partner
 - **Pattern query professional by user_id**: Usare sempre `.maybeSingle()` invece di `.single()` quando si carica il professionista per `user_id`, perché il record può non esistere ancora (trigger signup in ritardo) o essere assente. Gestire `data === null` con early return o messaggio utente. Evita 406 e PGRST116.
 - **Fallback nome da user_metadata**: Per il saluto in dashboard partner, usare `user.user_metadata.first_name` / `last_name` come fallback se il record in `professionals` non c’è o ha nome vuoto, così il nome dell’onboarding viene mostrato subito.
