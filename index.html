@@ -141,7 +141,17 @@
           window.addEventListener('resize', setVH);
           
           // Previeni bounce ma permetti scroll
+          // FIX: Non bloccare eventi touch su iframe Stripe
           document.body.addEventListener('touchmove', function(e) {
+            // NON bloccare se l'evento proviene da un iframe Stripe o dal modal Stripe
+            const target = e.target;
+            if (target && target.closest) {
+              const stripeIframe = target.closest('iframe[src*="js.stripe.com"], iframe[src*="hooks.stripe.com"]');
+              const stripeContainer = target.closest('[class*="p-PaymentElement"], [class*="p-Input"], [class*="StripeElement"]');
+              if (stripeIframe || stripeContainer) {
+                return; // Lascia passare l'evento agli iframe Stripe
+              }
+            }
             if (e.target === document.body) {
               e.stopPropagation();
             }

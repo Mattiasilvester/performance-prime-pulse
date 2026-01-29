@@ -1034,5 +1034,7 @@ html.partner-dashboard-loading {
 iframe[src*="js.stripe.com"],
 iframe[src*="hooks.stripe.com"] {
   pointer-events: auto !important;
-  z-index: 1 !important;
+  z-index: 100000 !important; /* Più alto del modal z-[99999] per assicurare che siano sopra */
+  position: relative !important;
+  touch-action: manipulation !important; /* Permette tap senza delay su mobile */
 }

@@ -9,6 +9,38 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **29 Gennaio 2026 - Sessione Fix Dashboard Partner (406 + Benvenuto nome)**
+**Ora inizio:** ~00:45  
+**Ora fine:** ~01:00  
+**Durata:** ~15 min  
+**Branch:** dev  
+
+#### **🎯 Obiettivo:**
+Eliminare errori 406 in console al login partner e mostrare "Benvenuto, [nome]" invece di "Bentornato, Professionista!" usando il nome dell'onboarding.
+
+#### **✅ Implementato:**
+- **OverviewPage.tsx**: Query professional da `.single()` a `.maybeSingle()`; retry 2 tentativi (1.5s, 3s); messaggio "Benvenuto, [Nome]!" quando nome disponibile, altrimenti "Bentornato, Professionista!"; fallback nome da `user.user_metadata` (first_name, last_name) per mostrare subito il nome anche se il record in `professionals` non è ancora pronto o ha nome vuoto.
+- **professionalAuthService.ts**: Login professionista da `.single()` a `.maybeSingle()` per evitare 406.
+- **Tutte le pagine/componenti partner** che caricano professional per `user_id`: sostituito `.single()` con `.maybeSingle()` e gestito `data === null` (return o messaggio utente). File: ProfiloPage, PrenotazioniPage, ClientiPage, ReviewsPage, ProgettiPage, ServiziTariffePage, PaymentsModal, SpecializzazioniModal, SocialLinksModal, PrivacyModal, NotificationsModal, LinguaModal, CoverageAreaModal, CancellationPolicyModal, AcceptPaymentMethodsModal, DisponibilitaManager, AgendaView.
+
+#### **🐛 Bug Risolti:**
+- **406 (Not Acceptable) e PGRST116**: La query su `professionals` con `.single()` falliva quando il record non esisteva ancora (trigger in ritardo) o non c’era esattamente 1 riga. Soluzione: `.maybeSingle()` ovunque per professional by user_id + gestione null.
+- **"Bentornato, Professionista!" al posto del nome**: Il nome veniva letto solo da `professionals`; se il record mancava o aveva first_name/last_name vuoti restava "Professionista". Soluzione: fallback su `user.user_metadata.first_name` / `last_name` (dati onboarding) e messaggio "Benvenuto, [Nome]!" quando il nome è disponibile.
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato
+
+#### **📊 Metriche:**
+- Build: ~19.6s  
+- Bundle: ~1.73 MB (index principale)  
+- Errori TS: 0  
+
+#### **📋 TODO Prossima Sessione:**
+1. Verificare in produzione che in dashboard compaia "Benvenuto, [nome]" dopo login (se ancora "Bentornato, Professionista!" controllare che l’account abbia first_name/last_name in Auth o in tabella professionals).
+2. [Altri task dalla roadmap]
+
+---
+
 ### **27 Gennaio 2025 - Sessione Fix Stripe Payments e Preparazione Abbonamento**
 **Ora inizio:** ~01:00
 **Ora fine:** ~02:30

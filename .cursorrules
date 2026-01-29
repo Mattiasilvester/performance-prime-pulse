@@ -11,6 +11,20 @@
 - **NON procedere** senza aver segnalato e risolto il problema
 - Se un prompt richiede modifiche già esistenti, fermati, avvisa l'utente e non duplicare il lavoro
 
+## 📚 RIFERIMENTO PROBLEMI COMUNI
+**PRIMA DI RISOLVERE UN PROBLEMA, CONSULTA:** `PROBLEMI_COMUNI_E_SOLUZIONI.md`
+
+Questo documento contiene:
+- 23 problemi comuni riscontrati nel progetto con soluzioni testate
+- Pattern riutilizzabili per problemi simili
+- File coinvolti e esempi di codice corretti/errati
+- Regole generali per prevenire problemi futuri
+
+**Quando incontri un problema:**
+1. Cerca nel documento `PROBLEMI_COMUNI_E_SOLUZIONI.md` se esiste già una soluzione
+2. Se esiste, applica la soluzione documentata
+3. Se non esiste, analizza il problema e documenta la soluzione nel documento
+
 ## ⚠️ CRITICAL VITE COMPATIBILITY RULE
 - This project uses Vite and is NOT compatible with styled-jsx
 - NEVER use <style jsx> or styled-jsx syntax
@@ -1282,6 +1296,12 @@ python3 -m http.server 8083
 ### PRINCIPIO FONDAMENTALE
 
 **"Se funziona, non romperlo"** - Ogni modifica deve preservare funzionalità esistenti.
+
+### 📚 RIFERIMENTO PROBLEMI COMUNI
+
+**PRIMA DI RISOLVERE UN PROBLEMA, CONSULTA:** `PROBLEMI_COMUNI_E_SOLUZIONI.md`
+
+Questo documento contiene soluzioni testate per 23 problemi comuni riscontrati nel progetto. Quando incontri un problema simile, applica la soluzione documentata invece di inventare una nuova soluzione.
 
 ### REGOLE OBBLIGATORIE
 

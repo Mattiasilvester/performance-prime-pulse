@@ -41,10 +41,10 @@ export default function SpecializzazioniModal({ onClose, onSuccess }: Specializz
         .from('professionals')
         .select('specializzazioni')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      
+
       setSpecializzazioni(data?.specializzazioni || []);
     } catch (err: any) {
       console.error('Errore fetch specializzazioni:', err);

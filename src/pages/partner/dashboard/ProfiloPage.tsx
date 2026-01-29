@@ -62,9 +62,13 @@ export default function ProfiloPage() {
         .from('professionals')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        toast.error('Profilo professionista non trovato');
+        return;
+      }
 
       setProfile(data as ProfessionalProfile);
     } catch (error: any) {

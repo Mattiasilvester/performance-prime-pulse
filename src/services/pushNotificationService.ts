@@ -156,7 +156,7 @@ class PushNotificationService {
       // Converti VAPID key in Uint8Array
       let applicationServerKey: BufferSource;
       try {
-        applicationServerKey = this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+        applicationServerKey = this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource;
       } catch (keyError) {
         console.error('[Push] Errore conversione VAPID key:', keyError);
         throw new Error('VAPID key non valida. Contatta il supporto tecnico.');

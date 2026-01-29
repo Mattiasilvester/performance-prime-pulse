@@ -92,7 +92,7 @@ export default function SocialLinksModal({ onClose, onSuccess }: SocialLinksModa
         .from('professionals')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       if (data) {

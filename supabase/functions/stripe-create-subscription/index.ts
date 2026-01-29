@@ -196,7 +196,35 @@ Deno.serve(async (req) => {
     }
     console.log('[STRIPE SUBSCRIPTION] Database updated');
 
-    // 12. Se subscription è incomplete, restituisci client_secret per completare pagamento
+    // 12. Crea notifica abbonamento creato (non blocca se fallisce)
+    try {
+      const { error: notifError } = await supabase
+        .from('professional_notifications')
+        .insert({
+          professional_id: professional.id,
+          type: 'custom',
+          title: 'Abbonamento attivato',
+          message: stripeSubscription.status === 'trialing'
+            ? 'Il tuo abbonamento Prime Business è stato attivato! Stai iniziando il periodo di prova gratuito di 3 mesi.'
+            : 'Il tuo abbonamento Prime Business è stato attivato con successo! Benvenuto nella community PrimePro.',
+          data: {
+            notification_type: 'subscription_created',
+            stripe_subscription_id: stripeSubscription.id,
+          },
+          is_read: false,
+        });
+
+      if (notifError) {
+        console.error('[STRIPE SUBSCRIPTION] Errore creazione notifica (non bloccante):', notifError);
+      } else {
+        console.log('[STRIPE SUBSCRIPTION] Notifica creazione abbonamento inviata');
+      }
+    } catch (notifErr) {
+      console.error('[STRIPE SUBSCRIPTION] Errore invio notifica (non bloccante):', notifErr);
+      // Non bloccare il flusso principale
+    }
+
+    // 13. Se subscription è incomplete, restituisci client_secret per completare pagamento
     const latestInvoice = stripeSubscription.latest_invoice as Stripe.Invoice;
     const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent;
 

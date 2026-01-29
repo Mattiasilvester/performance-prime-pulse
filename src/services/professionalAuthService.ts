@@ -19,9 +19,15 @@ export interface ProfessionalRegistrationData {
 }
 
 export const professionalAuthService = {
-  // Registra nuovo professionista
+  // Registra nuovo professionista.
+  // Il record in professionals viene creato dal trigger su auth.users (handle_new_professional_signup),
+  // così funziona anche con "Confirm email" attiva (dopo signUp non c'è sessione → niente 403).
   async register(data: ProfessionalRegistrationData) {
-    // 1. Crea account in Supabase Auth
+    const emailLower = data.email.toLowerCase();
+    const companyName = data.company_name || `${data.first_name} ${data.last_name}`;
+
+    // 1. Crea account in Supabase Auth con TUTTI i dati professional in options.data
+    // (il trigger handle_new_professional_signup li usa per inserire in public.professionals)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
@@ -29,66 +35,47 @@ export const professionalAuthService = {
         data: {
           role: 'professional',
           first_name: data.first_name,
-          last_name: data.last_name
-        }
-      }
+          last_name: data.last_name,
+          email: emailLower,
+          phone: data.phone,
+          category: data.category,
+          city: data.city,
+          bio: data.bio ?? null,
+          company_name: companyName,
+          titolo_studio: data.titolo_studio ?? null,
+          certificazioni: data.certificazioni ?? [],
+          modalita: data.modalita ?? 'entrambi',
+          prezzo_seduta: data.prezzo_seduta ?? null,
+          prezzo_fascia: data.prezzo_fascia ?? '€€',
+          birth_date: '1990-01-01',
+          birth_place: data.city,
+          vat_number: 'PENDING',
+          vat_address: 'Da completare',
+          vat_postal_code: '00000',
+          vat_city: data.city,
+        },
+      },
     });
 
     if (authError) throw authError;
     if (!authData.user) throw new Error('Errore nella creazione account');
 
-    // 2. Crea record in tabella professionals
-    // Nota: alcuni campi sono obbligatori nella tabella ma non nel form
-    // Usiamo valori placeholder che il professionista completerà dopo
-    const { data: professional, error: profError } = await supabase
-      .from('professionals')
-      .insert({
-        user_id: authData.user.id,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        email: data.email.toLowerCase(),
-        phone: data.phone,
-        category: data.category,
-        zona: data.city,
-        bio: data.bio || null,
-        company_name: data.company_name || `${data.first_name} ${data.last_name}`, // Se non fornito, usa nome completo
-        titolo_studio: data.titolo_studio || null,
-        specializzazioni: data.certificazioni || [], // Usa specializzazioni per certificazioni
-        // Se categoria è "altro", aggiungi la categoria custom al bio
-        // (oppure potresti creare un campo dedicato categoria_custom nel database)
-        approval_status: 'approved', // Approvato automaticamente
-        approved_at: new Date().toISOString(),
-        attivo: true,
-        is_partner: false, // Diventa partner dopo pagamento
-        modalita: data.modalita || 'entrambi',
-        prezzo_seduta: data.prezzo_seduta ?? null,
-        prezzo_fascia: data.prezzo_fascia || '€€',
-        rating: 0,
-        reviews_count: 0,
-        // Campi obbligatori che non abbiamo nel form (valori placeholder)
-        // Il professionista completerà questi dati nel profilo
-        birth_date: '1990-01-01', // Placeholder, da aggiornare
-        birth_place: data.city,
-        vat_number: 'PENDING', // Placeholder, da aggiornare
-        vat_address: 'Da completare', // Placeholder, da aggiornare
-        vat_postal_code: '00000', // Placeholder, da aggiornare
-        vat_city: data.city,
-        // Campi password custom (mantenuti per retrocompatibilità, non più usati)
-        password_hash: 'supabase_auth', // Placeholder, non più usato
-        password_salt: 'supabase_auth' // Placeholder, non più usato
-      })
-      .select()
-      .single();
-
-    if (profError) {
-      // Se fallisce, elimina l'utente auth creato
-      console.error('Errore creazione profilo:', profError);
-      // Nota: Non possiamo eliminare l'utente auth direttamente dal client
-      // Dovrebbe essere gestito lato server o con una funzione edge
-      throw profError;
+    // 2. Record professional creato dal trigger; se c'è sessione (conferma email disattiva) lo recuperiamo
+    let professional: Record<string, unknown> | null = null;
+    if (authData.session) {
+      const { data: profRow } = await supabase
+        .from('professionals')
+        .select()
+        .eq('user_id', authData.user.id)
+        .maybeSingle();
+      professional = profRow ?? null;
     }
 
-    return { user: authData.user, professional };
+    return {
+      user: authData.user,
+      professional,
+      requiresEmailConfirmation: !authData.session,
+    };
   },
 
   // Login professionista
@@ -100,13 +87,14 @@ export const professionalAuthService = {
 
     if (error) throw error;
 
-    // Verifica che sia un professionista
-    const { data: professional } = await supabase
+    // Verifica che sia un professionista (.maybeSingle evita 406 se record non ancora creato dal trigger)
+    const { data: professional, error: profError } = await supabase
       .from('professionals')
       .select('*')
       .eq('user_id', data.user.id)
-      .single();
+      .maybeSingle();
 
+    if (profError) throw profError;
     if (!professional) {
       throw new Error('Account non trovato come professionista');
     }

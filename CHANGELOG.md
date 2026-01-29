@@ -5,6 +5,14 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [Unreleased] - 2026-01-29
+
+### Fixed 🐛
+- **Dashboard Partner – Saluto personalizzato**: In dashboard partner viene mostrato "Benvenuto, [Nome]!" quando il nome è disponibile (da tabella `professionals` o da `user_metadata` dell’onboarding); altrimenti "Bentornato, Professionista!".
+- **Errori 406 in console al login partner**: Sostituito `.single()` con `.maybeSingle()` in tutte le query che caricano il professionista per `user_id`, evitando 406 e PGRST116 quando il record non esiste ancora.
+
+---
+
 ## [Unreleased] - 2026-01-23
 
 ### Added ➕

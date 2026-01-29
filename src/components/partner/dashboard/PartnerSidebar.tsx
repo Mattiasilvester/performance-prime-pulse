@@ -15,7 +15,8 @@ import {
   Briefcase,
   Star,
   Bell,
-  Loader2
+  Loader2,
+  CreditCard
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -43,6 +44,7 @@ const menuItems: MenuItem[] = [
   { icon: UserCircle, label: 'Profilo', path: '/partner/dashboard/profilo' },
   { icon: Briefcase, label: 'Servizi e Tariffe', path: '/partner/dashboard/servizi' },
   { icon: Star, label: 'Recensioni', path: '/partner/dashboard/recensioni' },
+  { icon: CreditCard, label: 'Abbonamento', path: '/partner/dashboard/abbonamento' },
 ];
 
 interface PartnerSidebarProps {
@@ -134,12 +136,6 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
             <span className="text-black">Prime</span>
             <span className="text-[#EEBA2B]"> Pro</span>
           </h1>
-          <button
-            onClick={onClose}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
           <div className="flex items-center gap-2">
             {/* Bottone Notifiche */}
             <Popover>
