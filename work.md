@@ -9,6 +9,38 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **29 Gennaio 2026 - Sessione: KPI Dashboard PrimePro + Placeholder per test**
+**Ora inizio:** ~20:00  
+**Ora fine:** ~21:30  
+**Durata:** ~1:30  
+**Branch:** dev  
+
+#### **🎯 Obiettivo:**
+Completare la vista KPI Appuntamenti con lista filtrabile e azioni; aggiungere placeholder per test UI in assenza di dati reali (Overview e vista Appuntamenti).
+
+#### **✅ Implementato:**
+- **AppointmentsView.tsx**: Placeholder appuntamenti (6 item con stati misti) quando fetch restituisce 0 risultati o `professionalId` assente; azioni su placeholder mostrano toast "Dati di test: azione non eseguita" senza chiamate API.
+- **OverviewPage.tsx**: Placeholder "Prossimi appuntamenti" (4 item) quando non ci sono prenotazioni; banner "Dati di test per verificare layout e interazioni."; click apre modal dettaglio come per dati reali.
+- **KPI dashboard**: Vista full-page Appuntamenti con grafici, card filtri (Totale / Completati / Cancellati / In attesa), AppointmentsList, CancelConfirmModal, AppointmentCard; dati reali collegati a `bookings` e `professional_services` (stesso professional_id di Agenda, Prenotazioni, Clienti).
+
+#### **🐛 Bug Risolti:**
+- Nessun bug funzionale; solo estensione UI con placeholder per test.
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato tra quelli in lista locked; toccati OverviewPage e componenti KPI (nuovi o già in uso).
+
+#### **📊 Metriche:**
+- Build: ~22s  
+- Bundle: ~2.2 MB (index principale)  
+- Errori TS: 0  
+
+#### **📋 TODO Prossima Sessione:**
+1. Verificare in produzione KPI e lista appuntamenti con dati reali.
+2. Eventuale code-splitting per chunk >1 MB se richiesto.
+3. Altri task dalla roadmap.
+
+---
+
 ### **29 Gennaio 2026 - Sessione: Audit ESLint completo**
 **Ora inizio:** ~06:00  
 **Ora fine:** ~10:35  

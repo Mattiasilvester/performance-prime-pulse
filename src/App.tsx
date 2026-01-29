@@ -12,6 +12,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { Header } from '@/components/layout/Header'
 import BottomNavigation from '@/components/layout/BottomNavigation'
 import FeedbackWidget from '@/components/feedback/FeedbackWidget'
+import CookieBanner from '@/components/legal/CookieBanner'
 
 // Import componenti core (non lazy)
 import { NewLandingPage } from '@/pages/landing/NewLandingPage'
@@ -21,6 +22,9 @@ import Partner from '@/pages/Partner'
 import PartnerRegistration from '@/pages/partner/PartnerRegistration'
 import PartnerLogin from '@/pages/partner/PartnerLogin'
 import PartnerResetPassword from '@/pages/partner/PartnerResetPassword'
+import TermsConditions from '@/pages/partner/legal/TermsConditions'
+import PartnerPrivacyPolicy from '@/pages/partner/legal/PrivacyPolicy'
+import CookiePolicy from '@/pages/partner/legal/CookiePolicy'
 import PartnerDashboard from '@/pages/partner/PartnerDashboard'
 import OverviewPage from '@/pages/partner/dashboard/OverviewPage'
 import CalendarioPage from '@/pages/partner/dashboard/CalendarioPage'
@@ -34,7 +38,7 @@ import ServiziTariffePage from '@/pages/partner/ServiziTariffePage'
 import AbbonamentoPage from '@/pages/partner/dashboard/AbbonamentoPage'
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const TermsAndConditions = lazy(() => import('@/pages/TermsAndConditions'))
-const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
+const MainPrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
 const SonnerToaster = lazy(() => import('@/components/ui/sonner').then(m => ({ default: m.Toaster })))
 
 // Lazy loading per componenti pesanti
@@ -112,6 +116,26 @@ const ConditionalFeedbackWidget = () => {
   return <FeedbackWidget />;
 };
 
+// Fallback: se path inizia con /partner → PrimePro home, altrimenti → Performance Prime landing
+const FallbackRedirect = () => {
+  const location = useLocation();
+  const pathname = location.pathname ?? '';
+  if (pathname.startsWith('/partner')) {
+    return <Navigate to="/partner" replace />;
+  }
+  return <Navigate to="/" replace />;
+};
+
+// Root "/": se il dominio è PrimePro (es. primepro.performanceprime.it) → vai a /partner
+const LandingOrPartnerRedirect = () => {
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isPrimeProDomain = hostname.includes('primepro');
+  if (isPrimeProDomain) {
+    return <Navigate to="/partner" replace />;
+  }
+  return <NewLandingPage />;
+};
+
 function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
@@ -156,14 +180,18 @@ function App() {
         <NotificationProvider>
           <PrimeBotProvider>
             <Router>
+            <CookieBanner />
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 {/* ROUTE PUBBLICHE */}
-                <Route path="/" element={<NewLandingPage />} />
+                <Route path="/" element={<LandingOrPartnerRedirect />} />
                 <Route path="/partner" element={<Partner />} />
                 <Route path="/partner/registrazione" element={<PartnerRegistration />} />
                 <Route path="/partner/login" element={<PartnerLogin />} />
                 <Route path="/partner/reset-password" element={<PartnerResetPassword />} />
+                <Route path="/partner/terms" element={<TermsConditions />} />
+                <Route path="/partner/privacy" element={<PartnerPrivacyPolicy />} />
+                <Route path="/partner/cookies" element={<CookiePolicy />} />
                 <Route path="/partner/dashboard" element={<PartnerDashboard />}>
                   <Route index element={<OverviewPage />} />
                   <Route path="calendario" element={<CalendarioPage />} />
@@ -195,7 +223,7 @@ function App() {
                 } />
                 <Route path="/privacy-policy" element={
                   <Suspense fallback={<div className="min-h-screen bg-black" />}>
-                    <PrivacyPolicy />
+                    <MainPrivacyPolicy />
                   </Suspense>
                 } />
                 
@@ -478,8 +506,8 @@ function App() {
                   </Suspense>
                 } />
                 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/" />} />
+                {/* Fallback: path /partner* → PrimePro, altrimenti → Performance Prime */}
+                <Route path="*" element={<FallbackRedirect />} />
               </Routes>
             </Suspense>
           </Router>

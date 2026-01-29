@@ -2,6 +2,10 @@
 
 ## Decisioni Architetturali
 
+### 29 Gennaio 2026 - Sessione KPI Dashboard + Placeholder
+- **Placeholder per test UI**: Quando la lista appuntamenti (AppointmentsView) o "Prossimi appuntamenti" (OverviewPage) è vuota, vengono mostrati dati placeholder (id con prefisso `placeholder-`) per testare layout, filtri e click. Le azioni (Conferma, Completa, Cancella) su placeholder mostrano toast informativo e non chiamano le API.
+- **Unica fonte dati**: Overview, Agenda, Prenotazioni, Clienti e KPI Appuntamenti usano le stesse tabelle Supabase (`bookings`, `clients`, `professional_services`) e lo stesso `professional_id`; con dati reali tutto è già collegato.
+
 ### 29 Gennaio 2026 - Sessione Audit ESLint
 - **ESLint zero-error policy**: Prima di committare eseguire `npx eslint src/ --ext .ts,.tsx`; non introdurre `any` senza giustificazione; usare sempre `catch (error: unknown)` e type guards.
 - **Tipi da DB**: Importare da `@/integrations/supabase/types` per query Supabase; campi JSONB come `unknown[]` o `Record<string, unknown>`.

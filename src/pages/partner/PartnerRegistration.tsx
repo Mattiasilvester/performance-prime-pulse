@@ -268,17 +268,25 @@ export default function PartnerRegistration() {
       navigate('/partner/dashboard');
     } catch (err: unknown) {
       console.error('Errore registrazione:', err);
-      
-      const error = err instanceof Error ? err : new Error('Errore durante la registrazione');
-      const errorMessage = error.message.toLowerCase();
-      
+
+      // Estrai messaggio: Supabase può restituire oggetti (AuthApiError) non istanza di Error
+      const rawMessage =
+        err != null &&
+        typeof err === 'object' &&
+        typeof (err as { message?: unknown }).message === 'string'
+          ? (err as { message: string }).message
+          : err instanceof Error
+            ? err.message
+            : 'Errore durante la registrazione. Riprova più tardi.';
+      const errorMessage = rawMessage.toLowerCase();
+
       // Controlla se è errore password debole
       if (errorMessage.includes('password') && 
           (errorMessage.includes('weak') || 
            errorMessage.includes('guess') ||
            errorMessage.includes('common') ||
            errorMessage.includes('compromised'))) {
-        
+
         // Torna allo step 2 per far cambiare la password
         setCurrentStep(2);
         setErrors({ password: 'Questa password è troppo comune. Scegli una password più sicura e unica.' });
@@ -290,7 +298,7 @@ export default function PartnerRegistration() {
       }
 
       // Email già registrata (Auth): torna allo step 1 e mostra errore sotto l'email
-      if (errorMessage.includes('already registered') || errorMessage.includes('già registrat')) {
+      if (errorMessage.includes('already registered') || errorMessage.includes('già registrat') || errorMessage.includes('user already registered')) {
         setEmailError('Questa email è già registrata. Usa un\'altra email o accedi al tuo account.');
         setCurrentStep(1);
         setError(null);
@@ -300,12 +308,11 @@ export default function PartnerRegistration() {
         setLoading(false);
         return;
       }
-      
+
       // Altri errori
-      const message = error.message || 'Errore durante la registrazione. Riprova più tardi.';
-      setError(message);
+      setError(rawMessage);
       toast.error('Errore durante la registrazione', {
-        description: message
+        description: rawMessage
       });
     } finally {
       setLoading(false);
@@ -354,7 +361,7 @@ export default function PartnerRegistration() {
           <h1 className="text-3xl sm:text-4xl font-bold partner-heading mb-2">
             Inizia la tua prova gratuita
           </h1>
-          <p className="text-lg partner-muted-text">6 mesi gratis, nessun vincolo</p>
+          <p className="text-lg partner-muted-text">3 mesi gratis, nessun vincolo</p>
         </div>
 
         {/* Progress Bar */}

@@ -29,16 +29,22 @@ export function Footer() {
                 Accedi
               </Link>
               <Link
-                to="/settings/terms"
+                to="/partner/terms"
                 className="block text-gray-300 hover:text-[#FFD700] transition-colors underline text-sm"
               >
                 Termini e Condizioni
               </Link>
               <Link
-                to="/settings/privacy"
+                to="/partner/privacy"
                 className="block text-gray-300 hover:text-[#FFD700] transition-colors underline text-sm"
               >
                 Privacy Policy
+              </Link>
+              <Link
+                to="/partner/cookies"
+                className="block text-gray-300 hover:text-[#FFD700] transition-colors underline text-sm"
+              >
+                Cookie Policy
               </Link>
             </div>
           </div>

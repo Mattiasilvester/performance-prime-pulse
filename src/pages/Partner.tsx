@@ -49,7 +49,7 @@ export default function Partner() {
               transition={{ duration: 0.6 }}
               className="partner-badge inline-flex items-center gap-2 rounded-full px-6 py-3 mb-6"
             >
-              <span className="text-sm font-semibold">6 mesi di prova gratuita</span>
+              <span className="text-sm font-semibold">3 mesi di prova gratuita</span>
             </motion.div>
 
             <motion.h1
@@ -434,7 +434,7 @@ export default function Partner() {
                 INIZIA GRATIS
               </div>
               <h2 className="partner-heading text-3xl sm:text-4xl font-bold mb-4">
-                6 mesi di prova gratuita
+                3 mesi di prova gratuita
               </h2>
               <p className="text-lg partner-muted-text">
                 Nessun rischio, nessun vincolo. Prova tutto e decidi dopo.
@@ -463,7 +463,7 @@ export default function Partner() {
                         €0
                       </div>
                       <div className="text-base partner-muted-text leading-none ml-2 -mt-5">
-                        /6 mesi
+                        /3 mesi
                       </div>
                     </div>
                     <p className="text-lg partner-foreground-text mb-4">
@@ -551,7 +551,7 @@ export default function Partner() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-xl partner-muted-text mb-8"
             >
-              Registrati come professionista e inizia subito. Decidi dopo 6 mesi se continuare.
+              Registrati come professionista e inizia subito. Decidi dopo 3 mesi se continuare.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}

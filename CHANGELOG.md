@@ -27,6 +27,9 @@ e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Unreleased] - 2026-01-29
 
+### Added
+- **Dashboard PrimePro – Placeholder per test**: Nella vista Appuntamenti (KPI) e nella sezione "Prossimi appuntamenti" (Overview) vengono mostrati dati di test quando non ci sono appuntamenti reali, per permettere test di layout e interazioni senza dati in DB.
+
 ### Fixed 🐛
 - **Dashboard Partner – Saluto personalizzato**: In dashboard partner viene mostrato "Benvenuto, [Nome]!" quando il nome è disponibile (da tabella `professionals` o da `user_metadata` dell’onboarding); altrimenti "Bentornato, Professionista!".
 - **Errori 406 in console al login partner**: Sostituito `.single()` con `.maybeSingle()` in tutte le query che caricano il professionista per `user_id`, evitando 406 e PGRST116 quando il record non esiste ancora.
