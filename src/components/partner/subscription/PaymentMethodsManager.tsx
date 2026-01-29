@@ -46,8 +46,8 @@ export function PaymentMethodsManager({ onAddCard, onUpdate }: PaymentMethodsMan
       toast.success('Carta predefinita aggiornata');
       await loadMethods();
       onUpdate?.();
-    } catch (error: any) {
-      toast.error(error.message || 'Errore nell\'aggiornamento');
+    } catch (error: unknown) {
+      toast.error((error as Error)?.message || 'Errore nell\'aggiornamento');
     } finally {
       setActionLoading(null);
     }
@@ -62,8 +62,8 @@ export function PaymentMethodsManager({ onAddCard, onUpdate }: PaymentMethodsMan
       setShowDeleteConfirm(null);
       await loadMethods();
       onUpdate?.();
-    } catch (error: any) {
-      toast.error(error.message || 'Errore nella rimozione');
+    } catch (error: unknown) {
+      toast.error((error as Error)?.message || 'Errore nella rimozione');
     } finally {
       setActionLoading(null);
     }

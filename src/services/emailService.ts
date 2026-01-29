@@ -8,108 +8,33 @@ interface EmailUser {
   };
 }
 
-// N8N_WEBHOOKS rimosso - ora gestito tramite Edge Function proxy
-// Le URL sono configurate server-side in supabase/functions/n8n-webhook-proxy/index.ts
-// La secret è gestita server-side e non è più esposta nel bundle frontend
+// Edge Function n8n-webhook-proxy rimossa da config. Le email sono gestite da Resend/Supabase Auth altrove.
+// Le funzioni restano per retrocompatibilità (useAuth chiama sendWelcomeEmail) ma non effettuano chiamate esterne.
 
 /**
- * Invia email di benvenuto tramite webhook n8n (via Edge Function proxy)
+ * Invia email di benvenuto (no-op: proxy n8n rimosso; email gestita da Resend/Supabase altrove).
  */
 export async function sendWelcomeEmail(user: EmailUser): Promise<void> {
-  // Estrai nome dall'user o usa email come fallback
-  const name = user.user_metadata?.full_name || 
-               user.user_metadata?.firstName || 
-               user.email?.split('@')[0] || 
-               'Utente';
-  
-  const payload = {
-    user_id: user.id,
-    name: name,
-    email: user.email
-  };
-
-  try {
-    // Usa Edge Function proxy invece di chiamare direttamente N8N (secret server-side)
-    const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-webhook-proxy?type=welcome`;
-    
-    const response = await fetch(proxyUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      throw new Error(`Webhook n8n fallito: ${response.status}`);
-    }
-    
-    return;
-    
-  } catch (error) {
-    // Log errore ma NON bloccare la registrazione
-    console.error('⚠️ Errore invio email benvenuto (non bloccante):', error);
-    // Non rilanciare l'errore - la registrazione deve continuare
+  if (import.meta.env.DEV) {
+    console.info('[emailService] sendWelcomeEmail chiamato (no-op, n8n-webhook-proxy rimosso)', user.email);
   }
 }
 
 /**
- * Invia email reset password tramite webhook n8n (via Edge Function proxy)
+ * Invia email reset password (no-op: proxy n8n rimosso).
  */
-export async function sendPasswordResetEmail(email: string, resetLink: string): Promise<void> {
-  const payload = {
-    email: email,
-    reset_link: resetLink
-  };
-
-  try {
-    // Usa Edge Function proxy invece di chiamare direttamente N8N (secret server-side)
-    const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-webhook-proxy?type=passwordReset`;
-    
-    const response = await fetch(proxyUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      throw new Error(`Webhook n8n fallito: ${response.status}`);
-    }
-    
-  } catch (error) {
-    console.error('⚠️ Errore invio email reset (non bloccante):', error);
+export async function sendPasswordResetEmail(_email: string, _resetLink: string): Promise<void> {
+  if (import.meta.env.DEV) {
+    console.info('[emailService] sendPasswordResetEmail chiamato (no-op, n8n-webhook-proxy rimosso)');
   }
 }
 
 /**
- * Invia email verifica account tramite webhook n8n (via Edge Function proxy)
+ * Invia email verifica account (no-op: proxy n8n rimosso).
  */
-export async function sendVerificationEmail(email: string, verificationLink: string): Promise<void> {
-  const payload = {
-    email: email,
-    verification_link: verificationLink
-  };
-
-  try {
-    // Usa Edge Function proxy invece di chiamare direttamente N8N (secret server-side)
-    const proxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-webhook-proxy?type=verification`;
-    
-    const response = await fetch(proxyUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      throw new Error(`Webhook n8n fallito: ${response.status}`);
-    }
-    
-  } catch (error) {
-    console.error('⚠️ Errore invio email verifica (non bloccante):', error);
+export async function sendVerificationEmail(_email: string, _verificationLink: string): Promise<void> {
+  if (import.meta.env.DEV) {
+    console.info('[emailService] sendVerificationEmail chiamato (no-op, n8n-webhook-proxy rimosso)');
   }
 }
 

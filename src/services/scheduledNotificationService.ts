@@ -8,7 +8,7 @@ export interface ScheduledNotification {
   type: ProfessionalNotification['type'] | 'custom';
   title: string;
   message: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   scheduled_for: Date | string; // Data/ora in cui inviare
   status?: 'pending' | 'sent' | 'cancelled' | 'failed';
   created_at?: string;

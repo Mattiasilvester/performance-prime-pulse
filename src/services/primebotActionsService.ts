@@ -12,7 +12,7 @@ export type ActionType = 'save_workout' | 'add_diary' | 'navigate' | 'start_work
 export interface SaveWorkoutPayload {
   name: string;
   workout_type?: 'cardio' | 'forza' | 'hiit' | 'mobilita' | 'personalizzato';
-  exercises?: any[];
+  exercises?: unknown[];
   duration?: number;
   scheduled_date?: string;
 }
@@ -39,7 +39,7 @@ export interface NavigatePayload {
  */
 export interface StartWorkoutPayload {
   workout_type?: 'quick' | 'custom';
-  exercises?: any[];
+  exercises?: unknown[];
   title?: string;
 }
 
@@ -49,7 +49,7 @@ export interface StartWorkoutPayload {
 export interface ActionResult {
   success: boolean;
   message?: string;
-  data?: any;
+  data?: unknown;
   error?: string;
 }
 
@@ -212,8 +212,8 @@ export function startWorkout(payload: StartWorkoutPayload): ActionResult {
 export async function executeAction(
   userId: string,
   actionType: ActionType,
-  payload: any,
-  navigate?: (path: string, state?: any) => void
+  payload: SaveWorkoutPayload | AddDiaryPayload | NavigatePayload | StartWorkoutPayload,
+  navigate?: (path: string, state?: unknown) => void
 ): Promise<ActionResult> {
   console.log('🎯 executeAction: Esecuzione azione:', { actionType, payload });
 
@@ -224,20 +224,22 @@ export async function executeAction(
     case 'add_diary':
       return await addToDiary(userId, payload as AddDiaryPayload);
 
-    case 'navigate':
+    case 'navigate': {
       if (!navigate) {
         return {
           success: false,
           error: 'Funzione navigate non disponibile',
         };
       }
-      const navResult = navigateToPage((payload as NavigatePayload).path);
+      const navPayload = payload as NavigatePayload;
+      const navResult = navigateToPage(navPayload.path);
       if (navResult.success && navigate) {
-        navigate((payload as NavigatePayload).path);
+        navigate(navPayload.path);
       }
       return navResult;
+    }
 
-    case 'start_workout':
+    case 'start_workout': {
       if (!navigate) {
         return {
           success: false,
@@ -246,9 +248,11 @@ export async function executeAction(
       }
       const workoutResult = startWorkout(payload as StartWorkoutPayload);
       if (workoutResult.success && workoutResult.data && navigate) {
-        navigate(workoutResult.data.path, workoutResult.data.state);
+        const data = workoutResult.data as { path: string; state?: unknown };
+        navigate(data.path, data.state);
       }
       return workoutResult;
+    }
 
     default:
       return {

@@ -5,8 +5,16 @@ import { Button } from '@/components/ui/button';
 import { ExerciseCard } from './ExerciseCard';
 import { supabase } from '@/integrations/supabase/client';
 
+/** Esercizio come usato nei workout (name, duration, rest, sets) */
+interface WorkoutExerciseShape {
+  name: string;
+  duration?: string | number;
+  rest?: string | number;
+  sets?: number | string;
+}
+
 interface CustomWorkoutDisplayProps {
-  workout: any;
+  workout: { id?: string; exercises?: WorkoutExerciseShape[]; name?: string; title?: string; workout_type?: string };
   onClose: () => void;
 }
 
@@ -207,10 +215,15 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
 
       <div className="p-6 space-y-4 bg-black overflow-y-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
         <div className="grid gap-4 pb-8">
-          {exercises.map((exercise: any, index: number) => (
+          {exercises.map((exercise: WorkoutExerciseShape, index: number) => (
             <div key={`${exercise.name}-${index}`} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
               <ExerciseCard
-                exercise={exercise}
+                exercise={{
+                  name: exercise.name,
+                  duration: typeof exercise.duration !== 'undefined' ? String(exercise.duration) : '',
+                  rest: typeof exercise.rest !== 'undefined' ? String(exercise.rest) : '',
+                  sets: exercise.sets !== undefined ? String(exercise.sets) : undefined,
+                }}
                 index={index}
                 isCompleted={isCompleted(index)}
                 onToggleComplete={completeExercise}

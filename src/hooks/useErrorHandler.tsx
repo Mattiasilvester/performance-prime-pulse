@@ -66,7 +66,7 @@ export const useErrorHandler = (options: UseErrorHandlerOptions = {}) => {
     }
 
     return errorInfo;
-  }, [showToast, logError, context]);
+  }, [showToast, context]);
 
   /**
    * Gestisce errori di rete specificamente
@@ -110,7 +110,7 @@ export const useErrorHandler = (options: UseErrorHandlerOptions = {}) => {
   /**
    * Wrapper per async functions con gestione errori automatica
    */
-  const withErrorHandling = useCallback(<T extends any[], R>(
+  const withErrorHandling = useCallback(<T extends unknown[], R>(
     asyncFn: (...args: T) => Promise<R>,
     customContext: Partial<ErrorContext> = {}
   ) => {
@@ -127,7 +127,7 @@ export const useErrorHandler = (options: UseErrorHandlerOptions = {}) => {
   /**
    * Wrapper per sync functions con gestione errori automatica
    */
-  const withSyncErrorHandling = useCallback(<T extends any[], R>(
+  const withSyncErrorHandling = useCallback(<T extends unknown[], R>(
     syncFn: (...args: T) => R,
     customContext: Partial<ErrorContext> = {}
   ) => {

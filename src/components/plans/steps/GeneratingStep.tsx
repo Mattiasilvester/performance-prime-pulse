@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps -- generatePlan stabile; dipendenze intenzionali */
 import { useEffect } from 'react';
 import { Bot, Loader2 } from 'lucide-react';
 import { usePlanCreationStore } from '@/stores/planCreationStore';

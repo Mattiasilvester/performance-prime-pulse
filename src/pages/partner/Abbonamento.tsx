@@ -100,10 +100,10 @@ export default function Abbonamento() {
 
       toast.success('Abbonamento verrà cancellato alla fine del periodo corrente.');
       refetch();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore cancellazione subscription:', err);
-      toast.error(getStripeErrorMessage(err));
-      throw err; // Rilancia l'errore per gestirlo nel componente
+      toast.error(getStripeErrorMessage(err as { code?: string; message?: string }));
+      throw err;
     }
   };
 
@@ -130,7 +130,7 @@ export default function Abbonamento() {
 
       toast.success('Abbonamento riattivato con successo!');
       refetch();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore riattivazione:', err);
       toast.error(err instanceof Error ? err.message : 'Errore durante la riattivazione');
     }

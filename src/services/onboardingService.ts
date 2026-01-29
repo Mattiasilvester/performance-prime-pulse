@@ -72,12 +72,13 @@ export const onboardingService = {
         .maybeSingle();
 
       if (error) {
+        const err = error as { code?: string; details?: string; hint?: string };
         console.error('❌ Error loading onboarding data:', error);
         console.error('Error details:', {
-          code: (error as any)?.code,
+          code: err?.code,
           message: error.message,
-          details: (error as any)?.details,
-          hint: (error as any)?.hint
+          details: err?.details,
+          hint: err?.hint
         });
         return null;
       }

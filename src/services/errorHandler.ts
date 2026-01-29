@@ -265,7 +265,7 @@ class ErrorHandler {
   /**
    * Invia errori critici a servizio di monitoring
    */
-  private sendToMonitoring(logEntry: any): void {
+  private sendToMonitoring(logEntry: Record<string, unknown>): void {
     // Implementa invio a servizio di monitoring (Sentry, LogRocket, etc.)
     // Per ora solo log locale
     try {

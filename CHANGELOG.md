@@ -5,6 +5,26 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [2025-01-29] - Audit ESLint Completo
+
+### Fixed
+- 505 errori ESLint eliminati sistematicamente
+- types.ts rigenerato con 41 tabelle (era 14)
+- config.toml pulito da Edge Functions inesistenti
+- Variabili ambiente mancanti aggiunte a vite-env.d.ts
+
+### Changed
+- Error handling standardizzato: `any` → `unknown` + type guards
+- emailService.ts convertito a no-op (email via Resend)
+- useEffect dependencies corrette o documentate con eslint-disable
+
+### Technical Debt Resolved
+- Schema professionals allineato al database reale
+- Tabella users deprecata rimossa da types
+- 60+ file con tipi corretti e documentati
+
+---
+
 ## [Unreleased] - 2026-01-29
 
 ### Fixed 🐛

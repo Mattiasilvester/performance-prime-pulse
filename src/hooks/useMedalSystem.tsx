@@ -204,7 +204,7 @@ export const useMedalSystem = () => {
         description: 'Completa le sfide'
       };
     }
-  }, [medalSystem]);
+  }, []);
 
   // Controlla se dovrebbe mostrare modal sfida
   const shouldShowChallengeModal = useCallback(() => {

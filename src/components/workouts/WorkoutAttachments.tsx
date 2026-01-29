@@ -317,6 +317,8 @@ export const WorkoutAttachments = ({ workoutId, onAttachmentsChange }: WorkoutAt
   // Carica gli allegati all'avvio
   useEffect(() => {
     loadAttachments();
+    // loadAttachments is stable; adding it could cause unnecessary re-fetches
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workoutId]);
 
   return (

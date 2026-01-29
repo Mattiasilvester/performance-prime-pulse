@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { WorkoutPlan } from '@/types/plan';
+import type { WorkoutPlan, PlanType, PlanSource, ExperienceLevel, Equipment } from '@/types/plan';
 
 /**
  * Service per operazioni CRUD sui piani di allenamento
@@ -9,31 +9,31 @@ import type { WorkoutPlan } from '@/types/plan';
  * Converte un piano dal database al formato app
  * Il database usa nomi italiani: tipo, durata, obiettivo, esercizi, luogo
  */
-function mapDbToWorkoutPlan(dbRecord: any): WorkoutPlan {
-  const metadata = dbRecord.metadata || {};
+function mapDbToWorkoutPlan(dbRecord: Record<string, unknown>): WorkoutPlan {
+  const metadata = (dbRecord.metadata as Record<string, unknown>) || {};
   
   return {
-    id: dbRecord.id,
-    user_id: dbRecord.user_id,
-    name: dbRecord.nome || dbRecord.name || 'Piano senza nome',
-    description: dbRecord.description || undefined,
-    plan_type: dbRecord.tipo || dbRecord.plan_type || 'weekly', // Database usa 'tipo'
-    source: dbRecord.source || 'custom',
-    goal: dbRecord.obiettivo || dbRecord.goal || undefined, // Database usa 'obiettivo'
-    level: metadata.level || dbRecord.level || undefined, // In metadata
-    duration_weeks: dbRecord.durata || dbRecord.duration_weeks || undefined, // Database usa 'durata'
-    frequency_per_week: metadata.frequency_per_week || dbRecord.frequency_per_week || undefined, // In metadata
-    equipment: metadata.equipment || dbRecord.equipment || undefined, // In metadata
-    limitations: metadata.limitations || dbRecord.limitations || undefined, // In metadata
-    workouts: dbRecord.esercizi || dbRecord.workouts || [], // Database usa 'esercizi'
-    status: dbRecord.status || 'pending', // Status del piano: pending, active, completed
-    created_at: dbRecord.created_at,
-    updated_at: dbRecord.updated_at || undefined,
-    is_active: dbRecord.is_active ?? true,
+    id: dbRecord.id as string,
+    user_id: dbRecord.user_id as string,
+    name: (dbRecord.nome ?? dbRecord.name ?? 'Piano senza nome') as string,
+    description: (dbRecord.description as string | undefined) ?? undefined,
+    plan_type: (dbRecord.tipo ?? dbRecord.plan_type ?? 'weekly') as PlanType,
+    source: (dbRecord.source ?? 'custom') as PlanSource,
+    goal: (dbRecord.obiettivo ?? dbRecord.goal) as WorkoutPlan['goal'],
+    level: (metadata.level ?? dbRecord.level) as ExperienceLevel | undefined,
+    duration_weeks: (dbRecord.durata ?? dbRecord.duration_weeks) as WorkoutPlan['duration_weeks'],
+    frequency_per_week: (metadata.frequency_per_week ?? dbRecord.frequency_per_week) as number | undefined,
+    equipment: (metadata.equipment ?? dbRecord.equipment) as Equipment | undefined,
+    limitations: (metadata.limitations ?? dbRecord.limitations) as string | undefined,
+    workouts: (dbRecord.esercizi ?? dbRecord.workouts ?? []) as WorkoutPlan['workouts'],
+    status: (dbRecord.status ?? 'pending') as 'pending' | 'active' | 'completed',
+    created_at: dbRecord.created_at as string,
+    updated_at: (dbRecord.updated_at as string | undefined) ?? undefined,
+    is_active: (dbRecord.is_active as boolean | undefined) ?? true,
     metadata: {
       ...metadata,
-      luogo: dbRecord.luogo, // Salva luogo in metadata per riferimento futuro
-    },
+      luogo: dbRecord.luogo,
+    } as WorkoutPlan['metadata'],
   };
 }
 
@@ -43,7 +43,7 @@ function mapDbToWorkoutPlan(dbRecord: any): WorkoutPlan {
  * frequency_per_week, equipment, level, limitations vanno in metadata (non esistono come colonne)
  * IMPORTANTE: luogo è obbligatorio (NOT NULL) e ha constraint UNIQUE(user_id, luogo)
  */
-function mapWorkoutPlanToDb(plan: Omit<WorkoutPlan, 'id' | 'created_at'>): any {
+function mapWorkoutPlanToDb(plan: Omit<WorkoutPlan, 'id' | 'created_at'>): Record<string, unknown> {
   // Genera un luogo unico per evitare constraint UNIQUE(user_id, luogo)
   // Se non specificato, usa nome piano o timestamp per garantire unicità
   let luogo = plan.metadata?.luogo;
@@ -148,7 +148,7 @@ export async function savePlan(plan: Omit<WorkoutPlan, 'id' | 'created_at'>): Pr
  * Usa nomi colonne italiani: tipo, durata, obiettivo, esercizi
  */
 export async function updatePlan(planId: string, updates: Partial<WorkoutPlan>): Promise<WorkoutPlan> {
-  const dbUpdates: any = {};
+  const dbUpdates: Record<string, unknown> = {};
   
   // Colonne dirette del database (nomi italiani)
   if (updates.name !== undefined) dbUpdates.nome = updates.name;
@@ -169,7 +169,7 @@ export async function updatePlan(planId: string, updates: Partial<WorkoutPlan>):
   }
   
   // Campi che vanno in metadata (non esistono come colonne separate)
-  const metadataUpdates: any = {};
+  const metadataUpdates: Record<string, unknown> = {};
   if (updates.frequency_per_week !== undefined) metadataUpdates.frequency_per_week = updates.frequency_per_week;
   if (updates.equipment !== undefined) metadataUpdates.equipment = updates.equipment;
   if (updates.level !== undefined) metadataUpdates.level = updates.level;

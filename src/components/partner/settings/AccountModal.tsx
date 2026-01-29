@@ -217,9 +217,9 @@ export default function AccountModal({ onClose, onSuccess }: AccountModalProps) 
         onSuccess();
         onClose();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore salvataggio account:', err);
-      toast.error(err.message || 'Errore durante il salvataggio');
+      toast.error((err as Error)?.message || 'Errore durante il salvataggio');
     } finally {
       setSaving(false);
     }
@@ -250,9 +250,9 @@ export default function AccountModal({ onClose, onSuccess }: AccountModalProps) 
         navigate('/');
         window.location.reload();
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore eliminazione account:', err);
-      toast.error(err.message || 'Errore durante l\'eliminazione dell\'account');
+      toast.error((err as Error)?.message || 'Errore durante l\'eliminazione dell\'account');
     } finally {
       setDeleting(false);
     }

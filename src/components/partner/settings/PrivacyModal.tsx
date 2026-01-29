@@ -54,6 +54,7 @@ export default function PrivacyModal({ onClose, onSuccess }: PrivacyModalProps) 
   // Carica professional_id
   useEffect(() => {
     loadProfessionalId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Carica impostazioni quando professional_id è disponibile
@@ -61,6 +62,7 @@ export default function PrivacyModal({ onClose, onSuccess }: PrivacyModalProps) 
     if (professionalId) {
       fetchPrivacySettings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [professionalId]);
 
   const loadProfessionalId = async () => {
@@ -78,9 +80,9 @@ export default function PrivacyModal({ onClose, onSuccess }: PrivacyModalProps) 
       if (data) {
         setProfessionalId(data.id);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore caricamento professional_id:', error);
-      if (error.code !== 'PGRST116') { // Ignora se non trovato
+      if ((error as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento dei dati');
       }
     }
@@ -106,9 +108,9 @@ export default function PrivacyModal({ onClose, onSuccess }: PrivacyModalProps) 
       });
 
       setFormData(initialData);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch privacy:', err);
-      if (err.code !== 'PGRST116') { // Ignora se non trovato
+      if ((err as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento delle preferenze');
       }
       // Usa valori default se errore
@@ -154,7 +156,7 @@ export default function PrivacyModal({ onClose, onSuccess }: PrivacyModalProps) 
       toast.success('Impostazioni privacy salvate con successo!');
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore salvataggio privacy:', err);
       toast.error('Errore nel salvataggio delle preferenze');
     } finally {

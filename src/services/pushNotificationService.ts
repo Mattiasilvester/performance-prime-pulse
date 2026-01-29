@@ -133,7 +133,7 @@ class PushNotificationService {
       const permission = await Notification.requestPermission();
       
       const status: PushPermissionStatus = {
-        status: permission as any,
+        status: permission === 'granted' || permission === 'denied' || permission === 'default' ? permission : 'default',
         timestamp: Date.now(),
         userChoice: permission === 'granted' ? 'accepted' : 'declined'
       };

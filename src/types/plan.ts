@@ -42,6 +42,16 @@ export type Equipment =
   | 'Manubri/Pesi'
   | 'Palestra completa';
 
+/** Singolo workout nel piano (giorno o settimana); usare per cast dove si accede a .exercises */
+export interface PlanWorkoutItem {
+  exercises?: unknown[];
+  name?: string;
+  nome?: string;
+  duration?: number;
+  durata?: number;
+  [key: string]: unknown;
+}
+
 /**
  * Piano di allenamento personalizzato
  */
@@ -62,7 +72,7 @@ export interface WorkoutPlan {
   limitations?: string;
   
   // Workout data (JSONB in database)
-  workouts: any[]; // TODO: tipizzare meglio dopo aver visto struttura
+  workouts: unknown[];
   
   // Status
   status: 'pending' | 'active' | 'completed';
@@ -73,9 +83,9 @@ export interface WorkoutPlan {
   is_active: boolean;
   metadata?: {
     created_via?: string;
-    modification_history?: any[];
+    modification_history?: unknown[];
     primebot_explanation?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -146,7 +156,7 @@ export interface ModificationIntent {
     | 'change_intensity'
     | 'substitute_exercise'
     | 'unknown';
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   confidence: number;
 }
 

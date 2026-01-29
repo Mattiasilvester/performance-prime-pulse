@@ -1,5 +1,6 @@
-
 import { lazy, Suspense, useState } from 'react';
+import type { ScheduleWorkoutItem } from './AppointmentCalendar';
+
 const AppointmentCalendar = lazy(() =>
   import('./AppointmentCalendar').then((module) => ({ default: module.AppointmentCalendar }))
 );
@@ -18,7 +19,7 @@ const WorkoutViewModal = lazy(() =>
 
 export const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedWorkout, setSelectedWorkout] = useState<any>(null);
+  const [selectedWorkout, setSelectedWorkout] = useState<ScheduleWorkoutItem | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleDateSelect = (date: Date) => {
@@ -26,7 +27,7 @@ export const Schedule = () => {
     setSelectedWorkout(null);
   };
 
-  const handleWorkoutSelect = (workout: any) => {
+  const handleWorkoutSelect = (workout: ScheduleWorkoutItem) => {
     setSelectedWorkout(workout);
     setSelectedDate(null);
   };

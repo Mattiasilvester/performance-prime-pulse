@@ -115,18 +115,18 @@ export default function EditClientModal({
       toast.success('Cliente modificato con successo!');
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore modifica cliente:', err);
-      
+      const e = err as { code?: string; message?: string; status?: number };
       // Errori specifici
-      if (err.code === '23505') {
+      if (e.code === '23505') {
         toast.error('Un cliente con questa email esiste già');
-      } else if (err.code === 'PGRST116' || err.message?.includes('does not exist')) {
+      } else if (e.code === 'PGRST116' || e.message?.includes('does not exist')) {
         toast.error('Tabella clients non disponibile. Esegui la migrazione SQL.');
-      } else if (err.code === '42501' || err.code === 'PGRST301' || (typeof err === 'object' && 'status' in err && err.status === 403)) {
+      } else if (e.code === '42501' || e.code === 'PGRST301' || (typeof err === 'object' && err !== null && 'status' in err && (err as { status: number }).status === 403)) {
         toast.error('Permessi insufficienti per modificare il cliente. Controlla le RLS policies.');
       } else {
-        toast.error(`Errore nella modifica del cliente: ${err.message || 'Errore sconosciuto'}`);
+        toast.error(`Errore nella modifica del cliente: ${e.message || 'Errore sconosciuto'}`);
       }
     } finally {
       setLoading(false);

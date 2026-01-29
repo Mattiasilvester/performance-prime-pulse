@@ -114,7 +114,7 @@ export default function ServiziTariffePage() {
 
       if (servicesError) throw servicesError;
       setServices(servicesData || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore caricamento servizi:', error);
       toast.error('Errore nel caricamento dei servizi');
     } finally {
@@ -149,9 +149,9 @@ export default function ServiziTariffePage() {
       toast.success('Servizio creato con successo!');
       setShowFormModal(false);
       fetchProfessionalAndServices();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore creazione servizio:', error);
-      toast.error(error.message || 'Errore durante la creazione del servizio');
+      toast.error((error as Error)?.message || 'Errore durante la creazione del servizio');
       throw error;
     } finally {
       setSaving(false);
@@ -185,9 +185,9 @@ export default function ServiziTariffePage() {
       setEditingService(null);
       setShowFormModal(false);
       fetchProfessionalAndServices();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore aggiornamento servizio:', error);
-      toast.error(error.message || 'Errore durante l\'aggiornamento');
+      toast.error((error as Error)?.message || 'Errore durante l\'aggiornamento');
       throw error;
     } finally {
       setSaving(false);
@@ -205,9 +205,9 @@ export default function ServiziTariffePage() {
       toast.success('Servizio eliminato');
       setShowDeleteConfirm(null);
       fetchProfessionalAndServices();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore eliminazione servizio:', error);
-      toast.error(error.message || 'Errore durante l\'eliminazione');
+      toast.error((error as Error)?.message || 'Errore durante l\'eliminazione');
     }
   };
 
@@ -223,9 +223,9 @@ export default function ServiziTariffePage() {
       
       toast.success(service.is_active ? 'Servizio disattivato' : 'Servizio attivato');
       fetchProfessionalAndServices();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore toggle attivo:', error);
-      toast.error(error.message || 'Errore durante l\'aggiornamento');
+      toast.error((error as Error)?.message || 'Errore durante l\'aggiornamento');
     }
   };
 
@@ -263,7 +263,7 @@ export default function ServiziTariffePage() {
       if (error) throw error;
 
       toast.success('Impostazioni salvate con successo!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore salvataggio impostazioni:', error);
       toast.error('Errore nel salvataggio delle impostazioni');
     } finally {

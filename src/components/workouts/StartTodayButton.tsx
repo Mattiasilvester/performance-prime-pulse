@@ -5,8 +5,20 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Calendar } from 'lucide-react';
 
+interface TodayWorkoutShape {
+  id: string;
+  title?: string;
+  workout_type?: string;
+  scheduled_date?: string;
+  total_duration?: number;
+  completed?: boolean;
+  completed_at?: string | null;
+  created_at?: string;
+  exercises?: unknown[];
+}
+
 export const StartTodayButton = () => {
-  const [todayWorkout, setTodayWorkout] = useState<any>(null);
+  const [todayWorkout, setTodayWorkout] = useState<TodayWorkoutShape | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -30,7 +42,8 @@ export const StartTodayButton = () => {
       if (data && !error) {
         setTodayWorkout(data);
       }
-    } catch (error) {
+    } catch (_error) {
+      // Intentionally empty: user may not be logged in
     }
   };
 

@@ -17,11 +17,12 @@ class NotificationSoundService {
 
       // Crea audio context solo quando necessario (lazy initialization)
       if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const AudioCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        this.audioContext = AudioCtx ? new AudioCtx() : null;
       }
 
       // Resume se sospeso (richiede user interaction)
-      if (this.audioContext.state === 'suspended') {
+      if (this.audioContext?.state === 'suspended') {
         await this.audioContext.resume();
       }
 

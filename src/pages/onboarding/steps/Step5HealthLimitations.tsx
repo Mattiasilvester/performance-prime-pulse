@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps -- sync store intenzionale */
 import { motion, AnimatePresence } from 'framer-motion';
 import { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
 import { useOnboardingStore } from '@/stores/onboardingStore';

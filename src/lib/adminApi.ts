@@ -44,34 +44,34 @@ async function getAuthHeader() {
   }
 }
 
-function mapUserProfile(profile: any): AdminUser {
+function mapUserProfile(profile: Record<string, unknown>): AdminUser {
   const lastLogin = profile.last_sign_in_at ?? profile.last_login ?? null
   let minutesSinceLogin: number | null = null
   let isActiveUser = false
 
   if (lastLogin) {
-    const diffMs = Date.now() - new Date(lastLogin).getTime()
+    const diffMs = Date.now() - new Date(lastLogin as string | number | Date).getTime()
     minutesSinceLogin = Math.floor(diffMs / (1000 * 60))
     isActiveUser = minutesSinceLogin <= 5
   }
 
   return {
-    id: profile.id,
-    email: profile.email ?? '',
-    name: profile.full_name ?? profile.name ?? profile.email ?? 'Utente',
-    full_name: profile.full_name ?? profile.name ?? undefined,
-    role: profile.role ?? 'user',
+    id: String(profile.id ?? ''),
+    email: String(profile.email ?? ''),
+    name: String(profile.full_name ?? profile.name ?? profile.email ?? 'Utente'),
+    full_name: profile.full_name != null ? String(profile.full_name) : (profile.name != null ? String(profile.name) : undefined),
+    role: (profile.role as 'user' | 'premium' | 'super_admin') ?? 'user',
     status: profile.is_active === false ? 'suspended' : 'active',
-    is_active: profile.is_active ?? true,
+    is_active: profile.is_active !== false,
     is_active_user: isActiveUser,
     minutes_since_login: minutesSinceLogin,
-    subscription_status: profile.subscription_status ?? undefined,
-    created_at: profile.created_at,
-    last_login: lastLogin ?? undefined,
-    total_workouts: profile.total_workouts ?? 0,
-    total_minutes: profile.total_minutes ?? 0,
-    user_workouts: profile.user_workouts ?? profile.total_workouts ?? 0,
-    last_workout_date: profile.last_workout_date ?? null,
+    subscription_status: (profile.subscription_status as AdminUser['subscription_status']) ?? undefined,
+    created_at: String(profile.created_at ?? ''),
+    last_login: lastLogin != null ? String(lastLogin) : undefined,
+    total_workouts: Number(profile.total_workouts ?? 0),
+    total_minutes: Number(profile.total_minutes ?? 0),
+    user_workouts: Number(profile.user_workouts ?? profile.total_workouts ?? 0),
+    last_workout_date: (profile.last_workout_date as string | null) ?? null,
   }
 }
 

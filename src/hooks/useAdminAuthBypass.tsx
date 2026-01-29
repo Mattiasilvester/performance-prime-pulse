@@ -187,7 +187,7 @@ export function useAdminAuthBypass() {
       
       return { success: true };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Login fallito:', error);
       
       // Emergency bypass rimosso per sicurezza

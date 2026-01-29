@@ -29,7 +29,7 @@ export function useProfessionalId(): string | null {
         }
 
         setProfessionalId(data?.id || null);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Errore caricamento professional_id:', err);
         setProfessionalId(null);
       }

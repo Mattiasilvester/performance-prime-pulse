@@ -76,7 +76,7 @@ export default function EditProjectModal({
 
     setLoading(true);
     try {
-      const updateData: any = {
+      const updateData: Record<string, string | null> = {
         name: formData.name.trim(),
         objective: formData.objective.trim() || null,
         start_date: formData.start_date,
@@ -94,7 +94,7 @@ export default function EditProjectModal({
       toast.success('Progetto modificato con successo!');
       onSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore modifica progetto:', error);
       toast.error('Errore nella modifica del progetto');
     } finally {

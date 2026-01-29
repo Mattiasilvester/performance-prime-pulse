@@ -1,19 +1,30 @@
-
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
+export interface ScheduleWorkoutItem {
+  id: string;
+  title?: string;
+  workout_type?: string;
+  scheduled_date?: string;
+  total_duration?: number | null;
+  completed?: boolean;
+  completed_at?: string | null;
+  created_at?: string;
+  exercises?: unknown[];
+}
+
 interface AppointmentCalendarProps {
   onDateSelect: (date: Date) => void;
-  onWorkoutSelect?: (workout: any) => void;
+  onWorkoutSelect?: (workout: ScheduleWorkoutItem) => void;
   refreshTrigger?: number;
 }
 
 export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrigger }: AppointmentCalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [workouts, setWorkouts] = useState<any[]>([]);
+  const [workouts, setWorkouts] = useState<ScheduleWorkoutItem[]>([]);
   const navigate = useNavigate();
   
   const monthNames = [
@@ -32,8 +43,10 @@ export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrig
     const timeoutId = setTimeout(() => {
       loadWorkouts();
     }, 100);
-    
+
     return () => clearTimeout(timeoutId);
+    // loadWorkouts is stable; including it would re-run on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate, refreshTrigger]);
 
   const loadWorkouts = async () => {

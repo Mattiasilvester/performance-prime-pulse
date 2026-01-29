@@ -8,22 +8,46 @@ import { supabase } from '@/integrations/supabase/client';
 import { generateWorkout, generateRecommendedWorkout } from '@/services/workoutGenerator';
 import { Sparkles, Clock, Dumbbell } from 'lucide-react';
 
+/** Esercizio come usato nei workout (name, duration, rest) */
+interface WorkoutExerciseShape {
+  name: string;
+  duration?: string | number;
+  rest?: string | number;
+}
+
+/** Workout generato/custom con meta opzionale */
+interface GeneratedWorkoutShape {
+  id?: string;
+  name?: string;
+  title?: string;
+  exercises?: WorkoutExerciseShape[];
+  meta?: { workoutTitle?: string; workoutType?: string; duration?: number };
+  workout_type?: string;
+  total_duration?: number;
+  completed?: boolean;
+  scheduled_date?: string;
+  created_at?: string;
+}
+
+/** Stato location per workout personalizzato */
+interface LocationWorkoutState {
+  startCustomWorkout?: string;
+  customExercises?: WorkoutExerciseShape[];
+  workoutTitle?: string;
+  workoutType?: string;
+  duration?: number;
+}
+
 export const Workouts = () => {
   const [activeWorkout, setActiveWorkout] = useState<string | null>(null);
-  const [customWorkout, setCustomWorkout] = useState<any>(null);
-  const [generatedWorkout, setGeneratedWorkout] = useState<any>(null);
-  const [personalizedWorkout, setPersonalizedWorkout] = useState<{
-    startCustomWorkout?: string;
-    customExercises?: any[];
-    workoutTitle?: string;
-    workoutType?: string;
-    duration?: number;
-  } | null>(null);
+  const [customWorkout, setCustomWorkout] = useState<GeneratedWorkoutShape | null>(null);
+  const [generatedWorkout, setGeneratedWorkout] = useState<GeneratedWorkoutShape | null>(null);
+  const [personalizedWorkout, setPersonalizedWorkout] = useState<LocationWorkoutState | null>(null);
   const location = useLocation();
 
   useEffect(() => {
-    if (location.state) {
-      setPersonalizedWorkout(location.state as any);
+    if (location.state && typeof location.state === 'object') {
+      setPersonalizedWorkout(location.state as LocationWorkoutState);
       console.log('Custom workout data:', location.state);
     } else {
       setPersonalizedWorkout(null);
@@ -73,7 +97,7 @@ export const Workouts = () => {
       }
 
       if (data) {
-        setCustomWorkout(data);
+        setCustomWorkout(data as GeneratedWorkoutShape);
         setActiveWorkout('custom');
       }
     } catch (error) {
@@ -88,7 +112,7 @@ export const Workouts = () => {
     setPersonalizedWorkout(null);
   };
 
-  const handleStartWorkout = (workoutId: string, duration?: number, generatedWorkout?: any, userLevel?: string, quickMode?: boolean) => {
+  const handleStartWorkout = (workoutId: string, duration?: number, generatedWorkout?: GeneratedWorkoutShape | null, userLevel?: string, quickMode?: boolean) => {
     if (generatedWorkout) {
       // Se viene passato un allenamento generato (con filtri), usalo direttamente
       setGeneratedWorkout(generatedWorkout);
@@ -102,7 +126,7 @@ export const Workouts = () => {
       const validUserLevel = ['PRINCIPIANTE', 'INTERMEDIO', 'AVANZATO'].includes(userLevel || '') 
         ? (userLevel as 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZATO')
         : 'INTERMEDIO';
-      const workout = generateWorkout(workoutId as any, duration, {}, validUserLevel, quickMode || false);
+      const workout = generateWorkout(workoutId as 'cardio' | 'strength' | 'hiit' | 'mobility', duration, {}, validUserLevel, quickMode || false);
       setGeneratedWorkout(workout);
       setActiveWorkout('generated');
     } else {

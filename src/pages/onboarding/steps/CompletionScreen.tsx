@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps -- snapshot/metadata dinamici; dipendenze intenzionali (setStep, buildResponsesSnapshot, initializePlans) */
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, MouseEvent, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -883,7 +884,7 @@ export function CompletionScreen() {
 
     initializePlans();
     // ✅ FIX: Solo user?.id nelle dipendenze, altre funzioni sono memoizzate o stabili
-  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const normalizeTimeValue = (value?: string | null, fallback: string = '45s') => {
     if (!value) return fallback;

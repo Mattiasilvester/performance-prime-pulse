@@ -21,7 +21,7 @@ import {
 
 interface CustomPlanModalProps {
   onClose: () => void;
-  onSave: (planData: any) => void;
+  onSave: (planData: { title: string; goal: string; details: string }) => void;
 }
 
 export const CustomPlanModal: React.FC<CustomPlanModalProps> = ({ onClose, onSave }) => {

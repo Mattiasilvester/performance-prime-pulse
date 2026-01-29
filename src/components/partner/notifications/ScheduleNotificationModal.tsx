@@ -55,6 +55,7 @@ export function ScheduleNotificationModal({
       setScheduledDate(date);
       setScheduledTime(time);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- init only when modal opens; scheduledDate/scheduledTime intentionally omitted
   }, [isOpen, defaultTitle, defaultMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -108,9 +109,9 @@ export function ScheduleNotificationModal({
       
       onSuccess?.();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore creazione notifica programmata:', error);
-      toast.error(error.message || 'Errore nella creazione della notifica programmata');
+      toast.error((error as Error)?.message || 'Errore nella creazione della notifica programmata');
     } finally {
       setIsSaving(false);
     }

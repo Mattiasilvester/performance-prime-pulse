@@ -6,7 +6,7 @@ import { Sparkles, Target, X } from 'lucide-react';
 
 interface AICoachPrimeProps {
   onRequestPlan: () => void;
-  chatInterfaceRef?: React.RefObject<any>;
+  chatInterfaceRef?: React.RefObject<{ sendMessage?: (msg: string) => void } | null>;
 }
 
 export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatInterfaceRef }) => {

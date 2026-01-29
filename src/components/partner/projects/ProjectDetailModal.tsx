@@ -96,7 +96,7 @@ export default function ProjectDetailModal({
       toast.success(`Progetto ${getStatusLabel(newStatus).toLowerCase()} con successo!`);
       onUpdate();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore cambio stato progetto:', error);
       toast.error('Errore nel cambio stato del progetto');
     } finally {
@@ -117,7 +117,7 @@ export default function ProjectDetailModal({
       toast.success('Progetto eliminato con successo!');
       onDelete(project.id);
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore eliminazione progetto:', error);
       toast.error('Errore nell\'eliminazione del progetto');
     } finally {

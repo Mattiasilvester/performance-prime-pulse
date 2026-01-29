@@ -29,8 +29,9 @@ async function run() {
 
     const st = await supabase.from('user_workout_stats').select('*').eq('user_id', uid).limit(5);
     if (st.error) throw st.error; write('user_workout_stats', `OK (${st.data?.length ?? 0}) ✅`);
-  } catch (e: any) {
-    console.error(e); write('errors', e?.message || String(e));
+  } catch (e: unknown) {
+    const err = e as Error;
+    console.error(e); write('errors', err?.message || String(e));
   }
 }
 document.addEventListener('DOMContentLoaded', run);

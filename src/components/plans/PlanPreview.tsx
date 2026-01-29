@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tipi dinamici piano/preview */
 import { useState } from 'react';
 import { usePlanCreationStore } from '@/stores/planCreationStore';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import {
   CheckCircle2,
   Loader2,
 } from 'lucide-react';
-import type { WorkoutPlan } from '@/types/plan';
+import type { WorkoutPlan, PlanWorkoutItem } from '@/types/plan';
 
 interface PlanPreviewProps {
   onSave: () => void;
@@ -165,7 +166,7 @@ interface DailyPlanWorkoutsProps {
 }
 
 function DailyPlanWorkouts({ plan }: DailyPlanWorkoutsProps) {
-  const workout = plan.workouts?.[0];
+  const workout = plan.workouts?.[0] as PlanWorkoutItem | undefined;
 
   if (!workout || !workout.exercises) {
     return (
@@ -412,11 +413,11 @@ function RestDayContent({ dayName, dayIndex }: RestDayContentProps) {
  * Contenuto per giorno di allenamento
  */
 interface WorkoutDayContentProps {
-  workout: any;
+  workout: PlanWorkoutItem;
 }
 
 function WorkoutDayContent({ workout }: WorkoutDayContentProps) {
-  const exercises = workout.exercises || workout.esercizi || [];
+  const exercises = (workout.exercises || workout.esercizi || []) as unknown[];
   const workoutName = workout.name || workout.nome || 'Workout';
 
   return (
@@ -425,10 +426,10 @@ function WorkoutDayContent({ workout }: WorkoutDayContentProps) {
 
       {exercises.length > 0 ? (
         <div className="space-y-3">
-          {exercises.map((exercise: any, exIndex: number) => {
-            const name = exercise.nome || exercise.name || 'Esercizio';
-            const sets = exercise.serie || exercise.sets || 3;
-            const reps = exercise.ripetizioni || exercise.reps || 12;
+          {exercises.map((exercise: Record<string, unknown>, exIndex: number) => {
+            const name = String(exercise.nome ?? exercise.name ?? 'Esercizio');
+            const sets = Number(exercise.serie ?? exercise.sets ?? 3);
+            const reps = Number(exercise.ripetizioni ?? exercise.reps ?? 12);
 
             return (
               <div

@@ -39,7 +39,7 @@ export function CategoryCard({ icon, label, value, selected, onClick }: Category
         ${selected ? 'bg-[var(--partner-accent)]' : 'bg-gray-100'}
       `}>
         {isValidElement(icon) 
-          ? cloneElement(icon as React.ReactElement<any>, {
+          ? cloneElement(icon as React.ReactElement<{ className?: string }>, {
               className: `w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${selected ? 'text-white' : 'text-gray-500'}`,
             })
           : <span className={`inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${selected ? 'text-white' : 'text-gray-500'}`}>

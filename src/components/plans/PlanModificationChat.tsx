@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps -- tipi dinamici piano/chat; dipendenze intenzionali */
 import { useState, useRef, useEffect } from 'react';
 import { usePlanCreationStore } from '@/stores/planCreationStore';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import {
   Lightbulb,
   Loader2,
 } from 'lucide-react';
-import type { WorkoutPlan } from '@/types/plan';
+import type { WorkoutPlan, PlanWorkoutItem } from '@/types/plan';
 
 interface ChatMessage {
   id: string;
@@ -475,8 +476,9 @@ function handleReplaceExercise(request: string, plan: WorkoutPlan): Modification
   // Per MVP, sostituiamo il primo esercizio con uno alternativo
   const modifiedPlan = JSON.parse(JSON.stringify(plan)) as WorkoutPlan;
 
-  if (modifiedPlan.workouts?.[0]?.exercises?.length > 0) {
-    const exercises = modifiedPlan.workouts[0].exercises;
+  const w0 = modifiedPlan.workouts?.[0] as PlanWorkoutItem | undefined;
+  if (w0?.exercises?.length) {
+    const exercises = w0.exercises as { nome?: string; name?: string; [key: string]: unknown }[];
     const oldExercise = exercises[0].nome || exercises[0].name;
 
     // Sostituisci con alternativa generica
@@ -541,8 +543,9 @@ function handleAddExercise(request: string, plan: WorkoutPlan): ModificationResp
     rest: '60s',
   };
 
-  if (modifiedPlan.workouts?.[0]?.exercises) {
-    modifiedPlan.workouts[0].exercises.push(newExercise);
+  const w0Add = modifiedPlan.workouts?.[0] as PlanWorkoutItem | undefined;
+  if (w0Add?.exercises) {
+    w0Add.exercises.push(newExercise);
   }
 
   return {
@@ -559,8 +562,9 @@ L'esercizio è stato inserito con 3 serie da 12 ripetizioni. Vuoi modificare qua
 function handleRemoveExercise(request: string, plan: WorkoutPlan): ModificationResponse {
   const modifiedPlan = JSON.parse(JSON.stringify(plan)) as WorkoutPlan;
 
-  if (modifiedPlan.workouts?.[0]?.exercises?.length > 1) {
-    const exercises = modifiedPlan.workouts[0].exercises;
+  const w0Rem = modifiedPlan.workouts?.[0] as PlanWorkoutItem | undefined;
+  if (w0Rem?.exercises && w0Rem.exercises.length > 1) {
+    const exercises = w0Rem.exercises as { nome?: string; name?: string }[];
     const removedExercise = exercises.pop();
     const removedName = removedExercise?.nome || removedExercise?.name || 'ultimo esercizio';
 
@@ -584,8 +588,9 @@ Ora hai ${exercises.length} esercizi. Vuoi modificare qualcos'altro?`,
 function handleReduceIntensity(request: string, plan: WorkoutPlan): ModificationResponse {
   const modifiedPlan = JSON.parse(JSON.stringify(plan)) as WorkoutPlan;
 
-  if (modifiedPlan.workouts?.[0]?.exercises) {
-    modifiedPlan.workouts[0].exercises.forEach((ex: any) => {
+  const w0Red = modifiedPlan.workouts?.[0] as PlanWorkoutItem | undefined;
+  if (w0Red?.exercises) {
+    (w0Red.exercises as { serie?: number; sets?: number }[]).forEach((ex) => {
       // Riduci serie da X a X-1 (minimo 2)
       const currentSets = ex.serie || ex.sets || 3;
       const newSets = Math.max(2, currentSets - 1);
@@ -613,8 +618,9 @@ L'allenamento sarà più breve ma comunque efficace. Vuoi altre modifiche?`,
 function handleIncreaseIntensity(request: string, plan: WorkoutPlan): ModificationResponse {
   const modifiedPlan = JSON.parse(JSON.stringify(plan)) as WorkoutPlan;
 
-  if (modifiedPlan.workouts?.[0]?.exercises) {
-    modifiedPlan.workouts[0].exercises.forEach((ex: any) => {
+  const w0Inc = modifiedPlan.workouts?.[0] as PlanWorkoutItem | undefined;
+  if (w0Inc?.exercises) {
+    (w0Inc.exercises as { serie?: number; sets?: number }[]).forEach((ex) => {
       // Aumenta serie da X a X+1 (massimo 5)
       const currentSets = ex.serie || ex.sets || 3;
       const newSets = Math.min(5, currentSets + 1);
@@ -679,8 +685,9 @@ function handleAddCardio(request: string, plan: WorkoutPlan): ModificationRespon
   const randomCardio =
     cardioExercises[Math.floor(Math.random() * cardioExercises.length)];
 
-  if (modifiedPlan.workouts?.[0]?.exercises) {
-    modifiedPlan.workouts[0].exercises.push(randomCardio);
+  const w0Cardio = modifiedPlan.workouts?.[0] as PlanWorkoutItem | undefined;
+  if (w0Cardio?.exercises) {
+    w0Cardio.exercises.push(randomCardio);
   }
 
   return {
@@ -753,9 +760,10 @@ function handleShowPlanInfo(request: string, plan: WorkoutPlan): ModificationRes
   const pattern = getDistributionPattern(frequency);
   const isDaily = plan.plan_type === 'daily';
 
+  const workoutsTyped = workouts as PlanWorkoutItem[];
   // Se è piano giornaliero, mostra gli esercizi direttamente
   if (isDaily) {
-    const workout = workouts[0];
+    const workout = workoutsTyped[0];
     const exercises = workout?.exercises || [];
 
     if (exercises.length === 0) {
@@ -765,7 +773,7 @@ function handleShowPlanInfo(request: string, plan: WorkoutPlan): ModificationRes
       };
     }
 
-    let exerciseList = exercises
+    const exerciseList = exercises
       .map((ex: any, i: number) => {
         const name = ex.nome || ex.name || 'Esercizio';
         const sets = ex.serie || ex.sets || 3;
@@ -804,7 +812,7 @@ Vuoi modificare la distribuzione settimanale?`,
     }
 
     // Ha un workout
-    const workout = workouts[workoutIndex];
+    const workout = workoutsTyped[workoutIndex];
     const exercises = workout?.exercises || [];
     const workoutName = workout?.nome || workout?.name || `Workout ${workoutIndex + 1}`;
 
@@ -817,7 +825,7 @@ Vuoi che ti mostri la struttura generale del piano?`,
       };
     }
 
-    let exerciseList = exercises
+    const exerciseList = exercises
       .map((ex: any, i: number) => {
         const name = ex.nome || ex.name || 'Esercizio';
         const sets = ex.serie || ex.sets || 3;
@@ -837,7 +845,7 @@ Vuoi modificare qualcosa di questo workout?`,
   }
 
   // Domanda generica sul piano (senza giorno specifico)
-  const totalExercises = workouts.reduce((sum: number, w: any) => {
+  const totalExercises = workoutsTyped.reduce((sum: number, w: PlanWorkoutItem) => {
     return sum + (w.exercises?.length || 0);
   }, 0);
   const dayNames = pattern.map((i) => ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'][i]).join(', ');

@@ -23,7 +23,7 @@ import usePainTracking from '@/hooks/usePainTracking';
 import { ActionButton } from '@/components/primebot/ActionButton';
 import { toast } from 'sonner';
 import { getStructuredWorkoutPlan } from '@/lib/openai-service';
-import { type StructuredWorkoutPlan } from '@/services/workoutPlanGenerator';
+import { type StructuredWorkoutPlan, type StructuredExercise } from '@/services/workoutPlanGenerator';
 import { HealthDisclaimer } from '@/components/primebot/HealthDisclaimer';
 import { ExerciseGifLink } from '@/components/workouts/ExerciseGifLink';
 // ⭐ FIX BUG 3: Import per analisi dolore nel messaggio corrente
@@ -33,7 +33,7 @@ import { addPain } from '@/services/painTrackingService';
 export interface ParsedAction {
   type: ActionType;
   label: string;
-  payload: any;
+  payload: Record<string, unknown>;
 }
 
 type Msg = { 
@@ -149,7 +149,14 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [userEmail, setUserEmail] = useState<string>('');
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [pendingPlan, setPendingPlan] = useState<any>(null);
+  interface PendingPlanResponse {
+    plan: StructuredWorkoutPlan;
+    hasExistingLimitations?: boolean;
+    hasAnsweredBefore?: boolean;
+    hasLimitations?: boolean;
+    actions?: ParsedAction[];
+  }
+  const [pendingPlan, setPendingPlan] = useState<PendingPlanResponse | null>(null);
   const [showPlanDisclaimer, setShowPlanDisclaimer] = useState(false);
   const [awaitingLimitationsResponse, setAwaitingLimitationsResponse] = useState(false);
   const [originalWorkoutRequest, setOriginalWorkoutRequest] = useState<string | null>(null);
@@ -223,7 +230,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   // DEBUG: Esponi funzione reset limitazioni nella console per test
   useEffect(() => {
     if (typeof window !== 'undefined' && userId && !userId.startsWith('guest-')) {
-      (window as any).resetHealthLimitations = async () => {
+      (window as Window & { resetHealthLimitations?: () => Promise<void> }).resetHealthLimitations = async () => {
         const { resetHealthLimitations } = await import('@/services/primebotUserContextService');
         const result = await resetHealthLimitations(userId);
         if (result) {
@@ -295,6 +302,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         // I messaggi vengono gestiti solo dal bottone "Inizia Chat"
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Run only on mount; adding userId would re-run after setUserId and alter init flow
   }, []);
 
   // Ricarica dolori quando userId cambia da guest a reale
@@ -564,7 +572,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
             
             if (planResponse.success && planResponse.plan) {
               // Mostra piano con disclaimer per limitazioni
-              if (planResponse.hasExistingLimitations && (planResponse as any).hasAnsweredBefore) {
+              if (planResponse.hasExistingLimitations && planResponse.hasAnsweredBefore) {
                 // Mostra disclaimer
                 setPendingPlan({
                   plan: planResponse.plan,
@@ -576,7 +584,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                       payload: {
                         name: planResponse.plan.name,
                         workout_type: planResponse.plan.workout_type,
-                        exercises: planResponse.plan.exercises.map((ex: any) => ({
+                        exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
                           name: ex.name,
                           sets: ex.sets,
                           reps: ex.reps,
@@ -603,7 +611,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                       payload: {
                         name: planResponse.plan.name,
                         workout_type: planResponse.plan.workout_type,
-                        exercises: planResponse.plan.exercises.map((ex: any) => ({
+                        exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
                           name: ex.name,
                           sets: ex.sets,
                           reps: ex.reps,
@@ -735,7 +743,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
           
           if (planResponse.success && planResponse.plan) {
             // Mostra piano (con disclaimer se necessario)
-            if (planResponse.hasExistingLimitations && (planResponse as any).hasAnsweredBefore) {
+            if (planResponse.hasExistingLimitations && planResponse.hasAnsweredBefore) {
               // Mostra disclaimer
               setPendingPlan({
                 plan: planResponse.plan,
@@ -747,7 +755,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                     payload: {
                       name: planResponse.plan.name,
                       workout_type: planResponse.plan.workout_type,
-                      exercises: planResponse.plan.exercises.map((ex: any) => ({
+                      exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
                         name: ex.name,
                         sets: ex.sets,
                         reps: ex.reps,
@@ -774,7 +782,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                     payload: {
                       name: planResponse.plan.name,
                       workout_type: planResponse.plan.workout_type,
-                      exercises: planResponse.plan.exercises.map((ex: any) => ({
+                      exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
                         name: ex.name,
                         sets: ex.sets,
                         reps: ex.reps,
@@ -1273,7 +1281,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                   payload: {
                     name: planResponse.plan.name,
                     workout_type: planResponse.plan.workout_type,
-                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                    exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
                       name: ex.name,
                       sets: ex.sets,
                       reps: ex.reps,
@@ -1300,7 +1308,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                   payload: {
                     name: planResponse.plan.name,
                     workout_type: planResponse.plan.workout_type,
-                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                    exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
                       name: ex.name,
                       sets: ex.sets,
                       reps: ex.reps,
@@ -1612,15 +1620,15 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
           // Mostra disclaimer SOLO se l'utente ha limitazioni esistenti E ha già risposto prima (non è la prima volta)
           console.log('🔍 DEBUG - Verifico condizioni per disclaimer:', {
             hasExistingLimitations: planResponse.hasExistingLimitations,
-            hasAnsweredBefore: (planResponse as any).hasAnsweredBefore,
-            conditionResult: planResponse.hasExistingLimitations && (planResponse as any).hasAnsweredBefore,
+            hasAnsweredBefore: planResponse.hasAnsweredBefore,
+            conditionResult: planResponse.hasExistingLimitations && planResponse.hasAnsweredBefore,
           });
           
           // IMPORTANTE: Mostra disclaimer SOLO se:
           // 1. Ha limitazioni esistenti (hasExistingLimitations === true)
           // 2. Ha già risposto prima (hasAnsweredBefore === true)
           // Questo evita di mostrare il disclaimer se l'utente non ha mai risposto alla domanda iniziale
-          if (planResponse.hasExistingLimitations && (planResponse as any).hasAnsweredBefore) {
+          if (planResponse.hasExistingLimitations && planResponse.hasAnsweredBefore) {
             // Ha limitazioni già salvate E ha già risposto prima → mostra messaggio bot + disclaimer
             console.log('✅ DEBUG - ENTRO NEL BLOCCO hasExistingLimitations + hasAnsweredBefore - Mostro messaggio bot + disclaimer');
             console.log('⚠️ Utente ha limitazioni esistenti E ha già risposto prima, mostro messaggio bot + disclaimer');
@@ -1644,7 +1652,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                   payload: {
                     name: planResponse.plan.name,
                     workout_type: planResponse.plan.workout_type,
-                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                    exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
                       name: ex.name,
                       sets: ex.sets,
                       reps: ex.reps,
@@ -1675,7 +1683,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                   payload: {
                     name: planResponse.plan.name,
                     workout_type: planResponse.plan.workout_type,
-                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                    exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
                       name: ex.name,
                       sets: ex.sets,
                       reps: ex.reps,
@@ -1881,11 +1889,11 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                 <div className={`px-4 py-3 rounded-2xl ${
                   m.role === 'user' 
                     ? 'bg-[#EEBA2B] text-black'
-                    : (m as any).isDisclaimer 
+                    : (m as Msg).isDisclaimer 
                       ? 'bg-red-900 text-red-100 border border-red-600 text-sm font-semibold'
                       : 'bg-gray-800 text-white border border-gray-600'
                 }`}>
-                  {(m as any).isDisclaimer && (
+                  {(m as Msg).isDisclaimer && (
                     <div className="flex items-center gap-2 mb-2">
                       <span>⚠️ AVVISO IMPORTANTE</span>
                     </div>
@@ -2130,13 +2138,13 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                 className={`px-4 py-3 rounded-2xl ${
                   m.role === 'user' 
                     ? 'bg-[#EEBA2B] text-black' // Giallo per utente
-                    : (m as any).isDisclaimer 
+                    : (m as Msg).isDisclaimer 
                       ? 'bg-red-900 text-red-100 border border-red-600 text-sm font-semibold' // Rosso per disclaimer
                       : 'bg-gray-800 text-white border border-gray-600' // Grigio scuro per bot
                 }`}
               >
                 <div className="whitespace-pre-wrap">
-                  {(m as any).isDisclaimer && (
+                  {(m as Msg).isDisclaimer && (
                     <div className="flex items-center gap-2 mb-2">
                       <svg className="w-4 h-4 text-red-300" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />

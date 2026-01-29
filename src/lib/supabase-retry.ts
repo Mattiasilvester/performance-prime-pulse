@@ -9,15 +9,16 @@ export async function supabaseRetry<T>(
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn();
-    } catch (error: any) {
-      console.warn(`🔄 Tentativo ${i + 1}/${maxRetries} fallito:`, error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`🔄 Tentativo ${i + 1}/${maxRetries} fallito:`, message);
       
       // Se errore CORS, retry
       if (
-        error.message?.includes('CORS') || 
-        error.message?.includes('Failed to fetch') ||
-        error.message?.includes('NetworkError') ||
-        error.message?.includes('fetch')
+        message?.includes('CORS') ||
+        message?.includes('Failed to fetch') ||
+        message?.includes('NetworkError') ||
+        message?.includes('fetch')
       ) {
         if (i < maxRetries - 1) {
           const waitTime = delay * (i + 1);
@@ -52,7 +53,7 @@ export const supabaseWithRetry = {
     });
   },
 
-  async signUp(email: string, password: string, options?: any) {
+  async signUp(email: string, password: string, options?: Record<string, unknown>) {
     return supabaseRetry(async () => {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -85,7 +86,7 @@ export const supabaseWithRetry = {
   async from(table: string) {
     return {
       select: (columns: string = '*') => ({
-        eq: (column: string, value: any) => ({
+        eq: (column: string, value: string | number | boolean) => ({
           single: async () => {
             return supabaseRetry(async () => {
               const { data, error } = await supabase
@@ -99,7 +100,7 @@ export const supabaseWithRetry = {
           }
         })
       }),
-      insert: (values: any) => ({
+      insert: (values: Record<string, unknown>) => ({
         select: () => ({
           single: async () => {
             return supabaseRetry(async () => {

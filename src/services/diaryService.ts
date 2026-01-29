@@ -12,7 +12,7 @@ export interface WorkoutDiary {
   status: 'saved' | 'completed';
   duration_minutes: number | null;
   exercises_count: number | null;
-  exercises: any; // JSONB
+  exercises: unknown[]; // JSONB array
   completed_at: string | null;
   saved_at: string;
   notes: string | null;
@@ -30,7 +30,7 @@ export interface WorkoutDiaryInsert {
   status?: 'saved' | 'completed';
   duration_minutes?: number | null;
   exercises_count?: number | null;
-  exercises?: any; // JSONB
+  exercises?: unknown[]; // JSONB array
   completed_at?: string | null;
   saved_at?: string;
   notes?: string | null;
@@ -43,7 +43,7 @@ export interface WorkoutDiaryUpdate {
   status?: 'saved' | 'completed';
   duration_minutes?: number | null;
   exercises_count?: number | null;
-  exercises?: any; // JSONB
+  exercises?: unknown[]; // JSONB array
   completed_at?: string | null;
   notes?: string | null;
   photo_urls?: string[];

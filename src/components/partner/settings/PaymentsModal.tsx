@@ -365,14 +365,15 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
   // Carica professional_id
   useEffect(() => {
     loadProfessionalId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Carica impostazioni quando professional_id è disponibile
   useEffect(() => {
     if (professionalId) {
       fetchSettings();
-      // Le fatture vengono caricate automaticamente da useSubscription hook
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [professionalId]);
 
   const loadProfessionalId = async () => {
@@ -390,9 +391,9 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
       if (data) {
         setProfessionalId(data.id);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore caricamento professional_id:', error);
-      if (error.code !== 'PGRST116') {
+      if ((error as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento dei dati');
       }
     }
@@ -474,7 +475,7 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
         subscription_trial_ends_at: subscription?.trial_end || null,
         subscription_current_period_end: subscription?.current_period_end || null,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch settings abbonamento:', err);
       toast.error('Errore nel caricamento delle impostazioni');
     } finally {
@@ -561,9 +562,9 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
       );
       
       fetchSettings(); // Ricarica dati
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore cancellazione subscription:', err);
-      toast.error(getStripeErrorMessage(err));
+      toast.error(getStripeErrorMessage(err as { code?: string; message?: string }));
     } finally {
       setLoading(false);
     }
@@ -634,7 +635,7 @@ export default function PaymentsModal({ onClose, onSuccess }: PaymentsModalProps
       
       toast.success('Metodo di pagamento rimosso con successo');
       fetchSettings();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore rimozione metodo pagamento:', err);
       toast.error('Errore durante la rimozione del metodo di pagamento');
     }

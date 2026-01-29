@@ -10,7 +10,7 @@ interface HealthDisclaimerProps {
   userId: string;
   disclaimerType: 'workout_plan' | 'onboarding' | 'primebot_question';
   onAccept: () => void; // Callback quando utente accetta
-  context?: Record<string, any>; // Info aggiuntive per audit
+  context?: Record<string, unknown>; // Info aggiuntive per audit
   userHasLimitations?: boolean; // Se true, mostra versione più enfatizzata
   compact?: boolean; // Versione compatta per uso inline
 }

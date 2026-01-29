@@ -84,60 +84,52 @@ export const fetchUserProfile = async (): Promise<UserProfile | null> => {
 };
 
 export const updateUserProfile = async (formData: { name: string; surname: string; birthPlace: string; phone?: string; birthDate?: string; avatarUrl?: string }) => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('User not authenticated');
 
-    const updateData: any = {
-      first_name: formData.name,
-      last_name: formData.surname,
-      birth_place: formData.birthPlace,
-      updated_at: new Date().toISOString()
-    };
+  const updateData: Record<string, unknown> = {
+    first_name: formData.name,
+    last_name: formData.surname,
+    birth_place: formData.birthPlace,
+    updated_at: new Date().toISOString()
+  };
 
-    if (formData.phone) {
-      updateData.phone = formData.phone;
-    }
-
-    if (formData.birthDate) {
-      updateData.birth_date = formData.birthDate;
-    }
-
-    if (formData.avatarUrl) {
-      updateData.avatar_url = formData.avatarUrl;
-    }
-
-    const { error } = await supabase
-      .from('profiles')
-      .update(updateData)
-      .eq('id', user.id);
-
-    if (error) throw error;
-  } catch (error) {
-    throw error;
+  if (formData.phone) {
+    updateData.phone = formData.phone;
   }
+
+  if (formData.birthDate) {
+    updateData.birth_date = formData.birthDate;
+  }
+
+  if (formData.avatarUrl) {
+    updateData.avatar_url = formData.avatarUrl;
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update(updateData)
+    .eq('id', user.id);
+
+  if (error) throw error;
 };
 
 export const uploadAvatar = async (file: File): Promise<string> => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('User not authenticated');
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}/avatar.${fileExt}`;
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${user.id}/avatar.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(fileName, file, { upsert: true });
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(fileName, file, { upsert: true });
 
-    if (uploadError) throw uploadError;
+  if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName);
+  const { data } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(fileName);
 
-    return data.publicUrl;
-  } catch (error) {
-    throw error;
-  }
+  return data.publicUrl;
 };

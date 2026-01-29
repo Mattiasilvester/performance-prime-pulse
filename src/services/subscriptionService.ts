@@ -66,11 +66,12 @@ export async function createCustomerAndSetupIntent(): Promise<CreateCustomerResp
     });
 
     if (error) {
+      const err = error as { message?: string; status?: number; context?: unknown };
       console.error('[SUBSCRIPTION] Errore creazione customer:', error);
       console.error('[SUBSCRIPTION] Error details:', {
-        message: error.message,
-        status: (error as any).status,
-        context: (error as any).context
+        message: err.message ?? error.message,
+        status: err.status,
+        context: err.context
       });
       
       // Messaggio più dettagliato per 404

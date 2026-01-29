@@ -132,7 +132,8 @@ export const exportInvoicesToPDF = (
     .filter((inv) => inv.status === 'paid')
     .reduce((sum, inv) => sum + inv.amount_cents, 0);
 
-  const finalY = (doc as any).lastAutoTable.finalY || 100;
+  const docWithAutoTable = doc as { lastAutoTable?: { finalY?: number } };
+  const finalY = docWithAutoTable.lastAutoTable?.finalY ?? 100;
   
   doc.setFontSize(11);
   doc.setTextColor(0);

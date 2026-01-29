@@ -95,6 +95,7 @@ export default function ClientDetailModal({
     } else if (activeTab === 'projects') {
       fetchProjects();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch only when tab/client changes
   }, [activeTab, client.id]);
 
   const fetchBookings = async () => {
@@ -134,8 +135,9 @@ export default function ClientDetailModal({
       
       if (error) throw error;
       
-      // Filtra lato client per match con cliente
-      const filteredBookings = (data || []).filter((booking: any) => {
+      // Filtra lato client per match con cliente (service da join può essere oggetto o array)
+      type BookingRow = { id: string; user_id?: string; client_name?: string; client_email?: string; notes?: string | Record<string, unknown>; booking_date: string; booking_time: string; duration_minutes?: number; status: string; service_id?: string | null; service?: { name?: string } | { id?: string; name?: string }[] | null; service_type?: string | null };
+      const filteredBookings = (data || []).filter((booking: BookingRow) => {
         // Match per user_id se il cliente è registrato
         if (client.user_id && booking.user_id === client.user_id) {
           return true;
@@ -177,22 +179,20 @@ export default function ClientDetailModal({
       }).slice(0, 20); // Limita a 20 risultati
       
       // Mappa i dati al formato Booking
-      const mappedBookings: Booking[] = filteredBookings.map((b: any) => ({
+      const serviceName = (s: BookingRow['service']) => (s && !Array.isArray(s) && 'name' in s ? s.name : null);
+      const mappedBookings: Booking[] = filteredBookings.map((b: BookingRow) => ({
         id: b.id,
         booking_date: b.booking_date,
         booking_time: b.booking_time,
         duration_minutes: b.duration_minutes || 60,
         status: b.status,
-        notes: b.notes,
+        notes: typeof b.notes === 'string' ? b.notes : (b.notes == null ? null : JSON.stringify(b.notes)),
         service_id: b.service_id || null,
-        service: b.service || null,
-        // Priorità 1: Nome servizio da professional_services (nuovo sistema)
-        // Priorità 2: Colonna diretta service_type (retrocompatibilità)
-        // Priorità 3: Notes JSON (retrocompatibilità)
-        service_type: b.service?.name || b.service_type || (b.notes ? (() => {
+        service: (b.service && !Array.isArray(b.service) ? (b.service as Booking['service']) : (Array.isArray(b.service) && b.service[0] ? (b.service[0] as Booking['service']) : null)),
+        service_type: serviceName(b.service) || b.service_type || (b.notes ? (() => {
           try {
             const parsed = typeof b.notes === 'string' ? JSON.parse(b.notes) : b.notes;
-            return parsed.service_type || null;
+            return (parsed as Record<string, unknown>)?.service_type as string || null;
           } catch {
             return null;
           }
@@ -200,10 +200,11 @@ export default function ClientDetailModal({
       }));
       
       setBookings(mappedBookings);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch prenotazioni:', err);
+      const e = err as { code?: string };
       // Se errore 403 o tabella non esiste, ignora silenziosamente
-      if (err.code === 'PGRST116' || err.code === '42501' || err.code === 'PGRST301') {
+      if (e.code === 'PGRST116' || e.code === '42501' || e.code === 'PGRST301') {
         setBookings([]);
         return;
       }
@@ -240,10 +241,11 @@ export default function ClientDetailModal({
         throw error;
       }
       setProjects(data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch progetti:', err);
+      const e = err as { code?: string; status?: number };
       // Non mostrare toast per errori di permessi (tabella potrebbe non essere ancora creata)
-      if (err.code !== '42501' && err.code !== 'PGRST301' && err.status !== 403) {
+      if (e.code !== '42501' && e.code !== 'PGRST301' && e.status !== 403) {
         toast.error('Errore nel caricamento dei progetti');
       }
       setProjects([]);

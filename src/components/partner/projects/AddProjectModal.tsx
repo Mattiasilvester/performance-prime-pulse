@@ -40,6 +40,7 @@ export default function AddProjectModal({
   // Fetch clienti per il dropdown
   useEffect(() => {
     fetchClients();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch once on mount
   }, []);
 
   // Aggiorna formData quando preselectedClientId cambia
@@ -109,11 +110,12 @@ export default function AddProjectModal({
       toast.success('Progetto creato con successo!');
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore creazione progetto:', err);
-      if (err.code === 'PGRST116' || err.message?.includes('does not exist')) {
+      const e = err as { code?: string; message?: string; status?: number };
+      if (e.code === 'PGRST116' || e.message?.includes('does not exist')) {
         toast.error('Tabella projects non disponibile. Esegui la migrazione SQL.');
-      } else if (err.code === '42501' || err.code === 'PGRST301' || err.status === 403) {
+      } else if (e.code === '42501' || e.code === 'PGRST301' || e.status === 403) {
         toast.error('Permessi insufficienti per creare il progetto. Controlla le RLS policies.');
       } else {
         toast.error('Errore nella creazione del progetto');

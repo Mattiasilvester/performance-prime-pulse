@@ -87,7 +87,7 @@ export async function getReviewsByProfessional(
     }
 
     // Fetch profili per ogni recensione
-    const userIds = [...new Set(reviewsData.map((r: any) => r.user_id))];
+    const userIds = [...new Set(reviewsData.map((r: { user_id: string }) => r.user_id))];
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, full_name')
@@ -99,15 +99,15 @@ export async function getReviewsByProfessional(
     }
 
     // Crea mappa profili
-    const profilesMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
+    const profilesMap = new Map((profilesData || []).map((p: { id: string }) => [p.id, p]));
 
     // Combina recensioni con profili
-    const reviewsWithUsers = reviewsData.map((review: any) => ({
+    const reviewsWithUsers = reviewsData.map((review: Review) => ({
       ...review,
       user: profilesMap.get(review.user_id) || null,
     }));
 
-    return reviewsWithUsers;
+    return reviewsWithUsers as unknown as Review[];
   } catch (error) {
     console.error('Errore getReviewsByProfessional:', error);
     return [];
@@ -327,7 +327,7 @@ export async function getAvailableBookingsForReview(
         id: b.id,
         booking_date: b.booking_date,
         booking_time: b.booking_time,
-        service_name: (b.service as any)?.name || null,
+        service_name: (b.service as { name?: string } | null)?.name ?? null,
       }));
 
     return availableBookings;

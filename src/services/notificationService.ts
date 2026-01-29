@@ -8,7 +8,7 @@ interface CreateNotificationParams {
   type: ProfessionalNotification['type'];
   title: string;
   message: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 /**
@@ -65,7 +65,7 @@ export async function createNotification({
         // Non bloccare il flusso se push fallisce
       });
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[CREATE NOTIFICATION] Errore in createNotification:', err);
     console.error('[CREATE NOTIFICATION] Stack trace:', err instanceof Error ? err.stack : 'N/A');
     // Non lanciare errore per non bloccare il flusso principale
@@ -173,8 +173,17 @@ async function shouldCreateNotification(
 /**
  * Mappa tipo notifica a valore preferenza in professional_settings
  */
+interface ProfessionalSettingsNotify {
+  notify_new_booking?: boolean;
+  notify_booking_cancelled?: boolean;
+  notify_booking_reminder?: boolean;
+  notify_new_review?: boolean;
+  notify_review_response?: boolean;
+  notify_reviews?: boolean;
+}
+
 function getPreferenceValue(
-  settings: any,
+  settings: ProfessionalSettingsNotify,
   type: ProfessionalNotification['type']
 ): boolean | undefined {
   switch (type) {
@@ -446,7 +455,7 @@ export async function notifyBookingReminder(
 
     if (error) throw error;
     return data?.id || null;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Errore creazione notifica promemoria:', err);
     return null;
   }

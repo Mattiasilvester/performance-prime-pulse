@@ -1,3 +1,11 @@
+/** Risposta preimpostata PrimeBot */
+export interface PresetResponseItem {
+  text: string;
+  action?: { label: string; link: string };
+  warning?: boolean;
+  askForPlanConfirmation?: boolean;
+}
+
 // Messaggio disclaimer iniziale (SEMPRE mostrato)
 export const disclaimerMessage = {
   id: 'disclaimer',
@@ -7,7 +15,7 @@ export const disclaimerMessage = {
 };
 
 // Risposte preimpostate che NON usano token AI (GRATIS)
-export const presetResponses: Record<string, any> = {
+export const presetResponses: Record<string, PresetResponseItem> = {
   // MOTIVAZIONE
   "non ho tempo": {
     text: "Capisco! Con soli 10 minuti puoi fare un allenamento efficace. Prova il nostro Quick Workout!",
@@ -92,7 +100,7 @@ export const presetResponses: Record<string, any> = {
 };
 
 // Funzione per trovare risposta
-export function findPresetResponse(message: string): any {
+export function findPresetResponse(message: string): PresetResponseItem | null {
   const lowerMessage = message.toLowerCase().trim();
   
   // ⭐ FIX BUG 2: Riconosci quando il dolore è RISOLTO
@@ -170,7 +178,7 @@ export const genericResponses = [
 ];
 
 // Funzione principale per ottenere risposta
-export function getPrimeBotFallbackResponse(message: string): any {
+export function getPrimeBotFallbackResponse(message: string): PresetResponseItem | null {
   const presetResponse = findPresetResponse(message);
   
   if (presetResponse) {

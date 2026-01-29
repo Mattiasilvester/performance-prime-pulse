@@ -50,10 +50,10 @@ export function useUserProfile() {
     }
   }, [user, loading]);
 
-  // Carica profilo solo quando l'utente cambia
+  // Carica profilo quando loadProfile cambia (es. user cambia)
   useEffect(() => {
     loadProfile();
-  }, [user?.id]); // Solo quando l'ID utente cambia
+  }, [loadProfile]);
 
   // Invalida cache quando l'utente si disconnette
   useEffect(() => {

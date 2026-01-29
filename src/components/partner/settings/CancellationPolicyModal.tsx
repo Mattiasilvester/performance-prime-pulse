@@ -116,6 +116,7 @@ export default function CancellationPolicyModal({ onClose, onSuccess }: Cancella
   // Carica professional_id
   useEffect(() => {
     loadProfessionalId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadProfessionalId depends on user, avoid re-run on fn identity
   }, [user]);
 
   // Carica impostazioni quando professional_id è disponibile
@@ -123,6 +124,7 @@ export default function CancellationPolicyModal({ onClose, onSuccess }: Cancella
     if (professionalId) {
       fetchCancellationSettings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch only when professionalId is set
   }, [professionalId]);
 
   const loadProfessionalId = async () => {
@@ -140,9 +142,9 @@ export default function CancellationPolicyModal({ onClose, onSuccess }: Cancella
       if (data) {
         setProfessionalId(data.id);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore caricamento professional_id:', error);
-      if (error.code !== 'PGRST116') {
+      if ((error as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento dei dati');
       }
     }
@@ -169,9 +171,9 @@ export default function CancellationPolicyModal({ onClose, onSuccess }: Cancella
           no_show_penalty_percent: data.no_show_penalty_percent ?? DEFAULT_VALUES.no_show_penalty_percent,
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch politiche cancellazione:', err);
-      if (err.code !== 'PGRST116') {
+      if ((err as { code?: string })?.code !== 'PGRST116') {
         toast.error('Errore nel caricamento delle impostazioni');
       }
     } finally {
@@ -211,7 +213,7 @@ export default function CancellationPolicyModal({ onClose, onSuccess }: Cancella
       toast.success('Politiche di cancellazione salvate con successo!');
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore salvataggio politiche cancellazione:', err);
       toast.error('Errore nel salvataggio delle impostazioni');
     } finally {

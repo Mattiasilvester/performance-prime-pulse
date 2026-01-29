@@ -158,7 +158,8 @@ export function calculateWorkoutParameters(
 
   const baseParams = getBaseParameters(level, goal);
 
-  let { sets, reps, rest } = baseParams;
+  const { sets, reps } = baseParams;
+  let { rest } = baseParams;
 
   if (exerciseType === 'compound') {
     const restSeconds = parseInt(rest, 10);

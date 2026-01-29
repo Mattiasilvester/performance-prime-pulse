@@ -30,11 +30,6 @@ enabled = true
 enabled = false
 
 [functions]
-admin-stats = { verify_jwt = true, import_map = "./functions/admin-stats/deno.json", entrypoint = "./functions/admin-stats/index.ts" }
-admin-users = { verify_jwt = true, import_map = "./functions/admin-users/deno.json", entrypoint = "./functions/admin-users/index.ts" }
-admin-auth-validate = { verify_jwt = false, import_map = "./functions/admin-auth-validate/deno.json", entrypoint = "./functions/admin-auth-validate/index.ts" }
-n8n-webhook-proxy = { verify_jwt = false, import_map = "./functions/n8n-webhook-proxy/deno.json", entrypoint = "./functions/n8n-webhook-proxy/index.ts" }
-send-push-notification = { verify_jwt = true, import_map = "./functions/send-push-notification/deno.json", entrypoint = "./functions/send-push-notification/index.ts" }
 stripe-create-customer = { verify_jwt = true, import_map = "./functions/stripe-create-customer/deno.json", entrypoint = "./functions/stripe-create-customer/index.ts" }
 stripe-create-subscription = { verify_jwt = true, import_map = "./functions/stripe-create-subscription/deno.json", entrypoint = "./functions/stripe-create-subscription/index.ts" }
 stripe-webhook = { verify_jwt = false, import_map = "./functions/stripe-webhook/deno.json", entrypoint = "./functions/stripe-webhook/index.ts" }

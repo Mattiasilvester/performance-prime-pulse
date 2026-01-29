@@ -12,7 +12,7 @@ export interface ProfessionalNotification {
   type: 'new_booking' | 'booking_confirmed' | 'booking_cancelled' | 'booking_reminder' | 'new_client' | 'new_project' | 'new_review' | 'review_response' | 'custom';
   title: string;
   message: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   is_read: boolean;
   read_at: string | null;
   created_at: string;
@@ -65,9 +65,9 @@ export function usePartnerNotifications(): UsePartnerNotificationsReturn {
       if (fetchError) throw fetchError;
 
       setNotifications((data as ProfessionalNotification[]) || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore fetch notifiche:', err);
-      setError(err);
+      setError(err instanceof Error ? err : new Error(String(err)));
       setNotifications([]);
     } finally {
       setIsLoading(false);
@@ -310,7 +310,7 @@ export function usePartnerNotifications(): UsePartnerNotificationsReturn {
             : n
         )
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore marcatura notifica come letta:', err);
       throw err;
     }
@@ -346,7 +346,7 @@ export function usePartnerNotifications(): UsePartnerNotificationsReturn {
           read_at: n.read_at || new Date().toISOString()
         }))
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore marcatura tutte come lette:', err);
       throw err;
     }
@@ -367,7 +367,7 @@ export function usePartnerNotifications(): UsePartnerNotificationsReturn {
 
       // Aggiorna state locale
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Errore rimozione notifica:', err);
       throw err;
     }

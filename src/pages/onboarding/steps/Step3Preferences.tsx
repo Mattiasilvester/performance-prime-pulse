@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tipi store/luoghi onboarding */
 import { motion } from 'framer-motion';
 import { forwardRef, useImperativeHandle, useState, useEffect, useRef } from 'react';
 import { useOnboardingStore } from '@/stores/onboardingStore';

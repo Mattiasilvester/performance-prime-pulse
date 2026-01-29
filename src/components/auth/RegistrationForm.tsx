@@ -72,7 +72,8 @@ const RegistrationForm = () => {
     }
   }, [password]);
   
-  // Debounced validation
+  // Debounced validation (debounce hides deps; inline would break debounce)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const validateEmailDebounced = useCallback(
     debounce(async (emailValue: string) => {
       if (!emailValue) {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function TestConnection() {
-  const [status, setStatus] = useState<any>({});
+  const [status, setStatus] = useState<Record<string, unknown>>({});
   
   useEffect(() => {
     async function test() {
@@ -56,6 +56,7 @@ export default function TestConnection() {
       }
     }
     test();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
   
   return (

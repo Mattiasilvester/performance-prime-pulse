@@ -27,7 +27,7 @@ export function generateDailyWorkout(
   const equipmentFilter = equipmentMap[equipment];
 
   // Mappa goal a category e filtri
-  let workoutData: { name: string; exercises: any[] };
+  let workoutData: { name: string; exercises: unknown[] };
 
   switch (goal) {
     case 'Full Body':

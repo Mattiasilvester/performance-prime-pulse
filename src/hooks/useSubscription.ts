@@ -175,13 +175,14 @@ export function useSubscription() {
           setInvoices(invs || []);
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Errore nel caricamento dei dati';
       console.error('Errore useSubscription:', err);
-      setError(err.message || 'Errore nel caricamento dei dati');
+      setError(message || 'Errore nel caricamento dei dati');
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user]);
 
   useEffect(() => {
     fetchSubscription();

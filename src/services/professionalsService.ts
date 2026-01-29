@@ -112,22 +112,23 @@ export async function getProfessionals(filters?: ProfessionalsFilters): Promise<
 
     // Mappa i dati per normalizzare i servizi (filtra solo quelli attivi e normalizza array)
     if (data) {
-      return data.map((prof: any) => {
-        // Normalizza services: può essere array, oggetto singolo, o null
-        // Nota: RLS policy già filtra is_active = TRUE, ma filtriamo anche lato client per sicurezza
-        let services = [];
+      interface ServiceShape { id: string; name: string; price: number }
+      return data.map((prof: Record<string, unknown> & { services?: unknown }) => {
+        let services: ServiceShape[] = [];
         if (prof.services) {
           if (Array.isArray(prof.services)) {
-            services = prof.services.filter((s: any) => s && s.id && s.name && s.price !== undefined);
-          } else if (prof.services.id && prof.services.name && prof.services.price !== undefined) {
-            services = [prof.services];
+            services = (prof.services as ServiceShape[]).filter((s): s is ServiceShape => !!(s?.id && s?.name && s?.price !== undefined));
+          } else {
+            const single = prof.services as ServiceShape;
+            if (single?.id && single?.name && single?.price !== undefined) {
+              services = [single];
+            }
           }
         }
-        
         return {
           ...prof,
-          services: services
-        };
+          services,
+        } as Professional;
       });
     }
 
@@ -175,13 +176,13 @@ export async function getProfessionalById(id: string): Promise<Professional | nu
     // Normalizza services come in getProfessionals
     if (data) {
       let services: { id: string; name: string; price: number }[] = [];
+      interface ServiceShape { id: string; name: string; price: number }
       if (data.services) {
         if (Array.isArray(data.services)) {
-          services = data.services.filter((s: any) => s && s.id && s.name && s.price !== undefined);
+          services = (data.services as ServiceShape[]).filter((s): s is ServiceShape => !!(s?.id && s?.name && s?.price !== undefined));
         } else {
-          // Type guard per oggetto singolo
-          const serviceObj = data.services as any;
-          if (serviceObj && serviceObj.id && serviceObj.name && serviceObj.price !== undefined) {
+          const serviceObj = data.services as ServiceShape;
+          if (serviceObj?.id && serviceObj?.name && serviceObj?.price !== undefined) {
             services = [serviceObj];
           }
         }

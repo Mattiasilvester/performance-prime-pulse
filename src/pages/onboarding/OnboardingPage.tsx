@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps -- searchParams/setStep intenzionalmente omessi per evitare loop */
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -174,7 +175,7 @@ export function OnboardingPage() {
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [searchParams, setStep, setSearchParams, isEditMode]); // ✅ RIMOSSO currentStep dalle dipendenze!
   
   // Sincronizza URL quando cambia currentStep (ma solo se non c'è già un parametro step nell'URL)

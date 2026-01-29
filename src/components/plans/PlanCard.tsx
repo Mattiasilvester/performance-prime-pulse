@@ -112,21 +112,22 @@ export function PlanCard({ plan, onStart, onDelete, onUpdate }: PlanCardProps) {
           // Gestisci diverse strutture del workout
           // Caso 1: workout ha proprietà 'exercises' o 'esercizi'
           // Caso 2: workout è direttamente un array di esercizi
-          let exercisesArray: any[] = [];
-          
-          if (Array.isArray(todayWorkout)) {
-            // Workout è direttamente un array di esercizi
-            exercisesArray = todayWorkout;
-          } else if (todayWorkout.exercises && Array.isArray(todayWorkout.exercises)) {
-            // Workout ha proprietà 'exercises'
-            exercisesArray = todayWorkout.exercises;
-          } else if (todayWorkout.esercizi && Array.isArray(todayWorkout.esercizi)) {
-            // Workout ha proprietà 'esercizi' (italiano)
-            exercisesArray = todayWorkout.esercizi;
+          type ExerciseLike = { name?: string; nome?: string; duration?: number; durata?: number; rest?: number; riposo?: number; sets?: number; serie?: number; instructions?: string; istruzioni?: string; note?: string; muscleGroup?: string; gruppo_muscolare?: string };
+          type TodayWorkoutShape = { exercises?: unknown[]; esercizi?: unknown[]; name?: string; nome?: string; duration?: number; durata?: number };
+          const tw = todayWorkout as ExerciseLike[] | TodayWorkoutShape;
+          let exercisesArray: ExerciseLike[] = [];
+
+          if (Array.isArray(tw)) {
+            exercisesArray = tw as ExerciseLike[];
+          } else if (tw.exercises && Array.isArray(tw.exercises)) {
+            exercisesArray = tw.exercises as ExerciseLike[];
+          } else if (tw.esercizi && Array.isArray(tw.esercizi)) {
+            exercisesArray = tw.esercizi as ExerciseLike[];
           }
 
+          const workoutMeta = Array.isArray(tw) ? {} : (tw as TodayWorkoutShape);
           // Converti esercizi nel formato aspettato da /workouts
-          const customExercises = exercisesArray.map((ex: any) => ({
+          const customExercises = exercisesArray.map((ex: ExerciseLike) => ({
             name: ex.name || ex.nome || 'Esercizio',
             duration: ex.duration || ex.durata || 30, // Default 30 secondi
             rest: ex.rest || ex.riposo || 0,
@@ -140,9 +141,9 @@ export function PlanCard({ plan, onStart, onDelete, onUpdate }: PlanCardProps) {
             state: {
               startCustomWorkout: 'personalized',
               customExercises: customExercises,
-              workoutTitle: todayWorkout.name || todayWorkout.nome || plan.name,
+              workoutTitle: workoutMeta.name || workoutMeta.nome || plan.name,
               workoutType: plan.plan_type === 'daily' ? 'giornaliero' : 'settimanale',
-              duration: todayWorkout.duration || todayWorkout.durata || undefined,
+              duration: workoutMeta.duration ?? workoutMeta.durata ?? undefined,
               source: 'plan',
               planName: plan.name,
               planId: plan.id,
