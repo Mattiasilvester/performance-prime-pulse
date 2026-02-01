@@ -1,6 +1,6 @@
 import { useState, useLayoutEffect, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, AlertCircle, LogOut, RefreshCw } from 'lucide-react';
 import { PartnerSidebar } from '@/components/partner/dashboard/PartnerSidebar';
 import { pushNotificationService } from '@/services/pushNotificationService';
 import { useProfessionalId } from '@/hooks/useProfessionalId';
@@ -8,14 +8,33 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { TrialExpiredGate } from '@/components/partner/TrialExpiredGate';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 
 export default function PartnerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [showProfessionalNotFound, setShowProfessionalNotFound] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const professionalId = useProfessionalId();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { subscription, loading, refetch } = useSubscription();
+
+  // Se l'utente è loggato ma dopo il caricamento non c'è un professionista associato, mostra schermata dedicata
+  useEffect(() => {
+    if (!user?.id) {
+      setShowProfessionalNotFound(false);
+      return;
+    }
+    const t = setTimeout(() => {
+      setShowProfessionalNotFound(true);
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (professionalId != null) setShowProfessionalNotFound(false);
+  }, [professionalId]);
 
   // Al primo accesso: crea subscription con trial 90 giorni se non esiste (nessuna carta richiesta)
   useEffect(() => {
@@ -96,6 +115,49 @@ export default function PartnerDashboard() {
   // Mostra uno sfondo vuoto mentre si carica per evitare flash
   if (!isMounted) {
     return <div className="min-h-[100dvh] bg-gray-50" />;
+  }
+
+  // Utente loggato ma nessun profilo professionista (registrazione incompleta o trigger fallito)
+  if (user?.id && professionalId == null && showProfessionalNotFound) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-xl border border-gray-200 shadow-sm p-6 text-center">
+          <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Professionista non trovato</h1>
+          <p className="text-gray-600 text-sm mb-6">
+            Il tuo account non è associato a un profilo professionista. Se hai appena completato la registrazione, attendi qualche secondo e ricarica. Altrimenti accedi di nuovo o contatta il supporto.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="flex items-center justify-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Ricarica
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/partner/login')}
+              className="flex items-center justify-center gap-2"
+            >
+              Vai al login
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                await signOut?.();
+                navigate('/partner/login');
+              }}
+              className="flex items-center justify-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Esci
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

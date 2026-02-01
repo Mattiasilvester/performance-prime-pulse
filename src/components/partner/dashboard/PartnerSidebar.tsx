@@ -16,7 +16,9 @@ import {
   Star,
   Bell,
   Loader2,
-  CreditCard
+  CreditCard,
+  Receipt,
+  TrendingUp
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -43,6 +45,8 @@ const menuItems: MenuItem[] = [
   { icon: ClipboardList, label: 'Prenotazioni', path: '/partner/dashboard/prenotazioni' },
   { icon: UserCircle, label: 'Profilo', path: '/partner/dashboard/profilo' },
   { icon: Briefcase, label: 'Servizi e Tariffe', path: '/partner/dashboard/servizi' },
+  { icon: Receipt, label: 'Costi & Spese', path: '/partner/dashboard/costi-spese' },
+  { icon: TrendingUp, label: 'Andamento e analytics', path: '/partner/dashboard/andamento' },
   { icon: Star, label: 'Recensioni', path: '/partner/dashboard/recensioni' },
   { icon: CreditCard, label: 'Abbonamento', path: '/partner/dashboard/abbonamento' },
 ];

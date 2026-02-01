@@ -104,6 +104,7 @@ export function useAdminAuthBypass() {
     console.log('🔐 Tentativo login SuperAdmin:', credentials.email);
     
     try {
+      // TODO: Edge Function da creare con il nuovo SuperAdmin
       // Step 1: Verifica secret key tramite Edge Function (sicuro, senza autenticazione richiesta)
       const validateResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-auth-validate`,

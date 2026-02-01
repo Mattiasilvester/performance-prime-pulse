@@ -340,8 +340,22 @@ export default function ProgettiPage() {
 
       {/* Projects List */}
       {loading ? (
-        <div className="flex items-center justify-center py-12 bg-white rounded-xl">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EEBA2B]"></div>
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-white rounded-xl p-4 border border-gray-100 animate-pulse"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="h-5 bg-gray-200 rounded w-1/3" />
+                  <div className="h-4 bg-gray-100 rounded w-1/4" />
+                  <div className="h-4 bg-gray-100 rounded w-1/2" />
+                </div>
+                <div className="h-8 w-8 bg-gray-100 rounded ml-2 shrink-0" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : filteredProjects.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-2xl">

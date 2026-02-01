@@ -36,6 +36,8 @@ import ImpostazioniPage from '@/pages/partner/dashboard/ImpostazioniPage'
 import ReviewsPage from '@/pages/partner/dashboard/ReviewsPage'
 import ServiziTariffePage from '@/pages/partner/ServiziTariffePage'
 import AbbonamentoPage from '@/pages/partner/dashboard/AbbonamentoPage'
+import CostiSpesePage from '@/pages/partner/dashboard/CostiSpesePage'
+import AndamentoPage from '@/pages/partner/dashboard/AndamentoPage'
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const TermsAndConditions = lazy(() => import('@/pages/TermsAndConditions'))
 const MainPrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
@@ -200,6 +202,8 @@ function App() {
                   <Route path="clienti/progetti" element={<ProgettiPage />} />
                   <Route path="profilo" element={<ProfiloPage />} />
                   <Route path="servizi" element={<ServiziTariffePage />} />
+                  <Route path="costi-spese" element={<CostiSpesePage />} />
+                  <Route path="andamento" element={<AndamentoPage />} />
                   <Route path="recensioni" element={<ReviewsPage />} />
                   <Route path="abbonamento" element={<AbbonamentoPage />} />
                   <Route path="impostazioni" element={<ImpostazioniPage />} />

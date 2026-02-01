@@ -13,6 +13,7 @@ const fetchAdminStats = async (): Promise<AdminStats> => {
     throw new Error('Sessione amministratore non trovata')
   }
 
+  // TODO: Edge Function da creare con il nuovo SuperAdmin
   const response = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-stats?includeWorkouts=true`,
     {

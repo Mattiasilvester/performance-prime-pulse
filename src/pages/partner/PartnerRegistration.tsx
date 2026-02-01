@@ -280,30 +280,35 @@ export default function PartnerRegistration() {
             : 'Errore durante la registrazione. Riprova più tardi.';
       const errorMessage = rawMessage.toLowerCase();
 
-      // Controlla se è errore password debole
-      if (errorMessage.includes('password') && 
-          (errorMessage.includes('weak') || 
-           errorMessage.includes('guess') ||
-           errorMessage.includes('common') ||
-           errorMessage.includes('compromised'))) {
-
-        // Torna allo step 2 per far cambiare la password
+      // Controlla se è errore password debole (Supabase: AuthWeakPasswordError)
+      const isWeakPassword =
+        (err != null && typeof err === 'object' && (err as { name?: string }).name === 'AuthWeakPasswordError') ||
+        (errorMessage.includes('password') &&
+          (errorMessage.includes('weak') ||
+            errorMessage.includes('guess') ||
+            errorMessage.includes('common') ||
+            errorMessage.includes('compromised')));
+      if (isWeakPassword) {
         setCurrentStep(2);
-        setErrors({ password: 'Questa password è troppo comune. Scegli una password più sicura e unica.' });
-        toast.error('Password troppo comune', {
-          description: 'Torna indietro e scegli una password più sicura e unica'
+        setErrors({ password: 'Questa password è troppo comune o facile da indovinare. Scegli una password più sicura e unica (lettere, numeri, simboli).' });
+        toast.error('Password troppo debole', {
+          description: 'Scegli una password più sicura e unica, poi riprova.'
         });
         setLoading(false);
         return;
       }
 
-      // Email già registrata (Auth): torna allo step 1 e mostra errore sotto l'email
+      // Email già registrata (Auth): torna allo step 1 e invita ad accedere
       if (errorMessage.includes('already registered') || errorMessage.includes('già registrat') || errorMessage.includes('user already registered')) {
-        setEmailError('Questa email è già registrata. Usa un\'altra email o accedi al tuo account.');
+        setEmailError('Questa email è già registrata. Accedi al tuo account dalla pagina di login.');
         setCurrentStep(1);
         setError(null);
         toast.error('Email già in uso', {
-          description: 'Questa email è già registrata. Usa un\'altra email o accedi.'
+          description: 'Accedi con questa email dalla pagina di login.',
+          action: {
+            label: 'Vai al login',
+            onClick: () => navigate('/partner/login'),
+          },
         });
         setLoading(false);
         return;

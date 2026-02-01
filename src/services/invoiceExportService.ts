@@ -69,7 +69,8 @@ export const exportInvoicesToCSV = (invoices: ExportableInvoice[]): void => {
 };
 
 /**
- * Esporta fatture in formato PDF
+ * Esporta fatture in formato PDF.
+ * Colori coerenti con app Prime Pro: nero + #EEBA2B (RGB 238, 186, 43).
  */
 export const exportInvoicesToPDF = (
   invoices: ExportableInvoice[],

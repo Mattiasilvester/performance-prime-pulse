@@ -419,9 +419,26 @@ export default function ServiziTariffePage() {
 
       {/* Lista servizi */}
       {loading ? (
-        <div className="flex items-center justify-center py-12 text-gray-500">
-          <Loader2 className="w-6 h-6 animate-spin mr-3" />
-          Caricamento servizi...
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="bg-gray-50 rounded-2xl p-6 border border-gray-100 animate-pulse"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="h-6 bg-gray-200 rounded w-1/3" />
+                  <div className="h-4 bg-gray-100 rounded w-1/2" />
+                  <div className="h-4 bg-gray-100 rounded w-1/4" />
+                </div>
+                <div className="h-8 w-24 bg-gray-100 rounded ml-2" />
+              </div>
+              <div className="flex gap-2 mt-4">
+                <div className="h-9 w-20 bg-gray-100 rounded-xl" />
+                <div className="h-9 w-20 bg-gray-100 rounded-xl" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : services.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-2xl">

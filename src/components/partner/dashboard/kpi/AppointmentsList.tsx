@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { AppointmentCard } from './AppointmentCard';
 
-type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
+export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 type FilterType = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
-interface Booking {
+export interface Booking {
   id: string;
   booking_date: string;
   booking_time: string;

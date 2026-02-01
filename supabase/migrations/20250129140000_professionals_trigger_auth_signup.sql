@@ -70,7 +70,7 @@ BEGIN
     true,
     false,
     COALESCE(meta->>'modalita', 'entrambi'),
-    (meta->>'prezzo_seduta')::numeric,
+    (NULLIF(TRIM(meta->>'prezzo_seduta'), '')::numeric),
     COALESCE(meta->>'prezzo_fascia', '€€'),
     0,
     0,

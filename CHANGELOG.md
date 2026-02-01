@@ -25,6 +25,28 @@ e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
 ---
 
+## [Unreleased] - 2026-02-01
+
+### Added
+- **Gestionale Costi & Spese PrimePro**: Pagina Costi e Spese con CRUD costi (categoria, importo, data, tipo fisso/variabile/una tantum), grafici andamento, integrazione con report commercialista.
+- **Report per Commercialista**: Export PDF con footer "Performance Prime - www.performanceprime.it"; export CSV condizionale (prestazioni se ci sono prenotazioni, costi se ci sono costi, riepilogo sempre); opzione "Solo PDF" / "PDF + CSV".
+- **Dashboard PrimePro – Incassi mese contabile**: Calcolo "Incassi mese" allineato alla logica contabile (solo `bookings.price` completati); alert quando ci sono prenotazioni completate senza prezzo.
+- **Background loading pagine partner**: Andamento, Costi e Spese, Profilo, Progetti, Recensioni, Abbonamento, Servizi e Tariffe mostrano subito il layout con skeleton al posto dello spinner a schermo intero.
+- **Edge Function send-push-notification**: Creata struttura base (auth, validazione body, log); invio push reale da integrare in seguito.
+
+### Fixed
+- **KPI Incasso lordo (Andamento)**: Calcolo revenue da `SUM(bookings.price)` per prenotazioni completate nel mese.
+- **KPI Appuntamenti (Overview)**: Formato card da "completed/cancelled" a "completed/total".
+- **Messaggi errore OpenAI**: Rimossi riferimenti a "localhost:3001" dai messaggi di log in produzione.
+- **Types Supabase**: Aggiunte in types.ts le tabelle `workout_attachments` e `professional_costs` (allineamento codice-DB).
+
+### Changed
+- **Report Commercialista – Micro-copy**: "Totale costi" rinominato in "Totale costi dichiarati"; disclaimer e tooltip su Totale Spese.
+- **Config env**: Commento su `API_URL` (non usata; default dev).
+- **SuperAdmin**: Aggiunti commenti TODO dove si invocano le Edge Functions admin-auth-validate e admin-stats (da creare con la nuova pagina SuperAdmin).
+
+---
+
 ## [Unreleased] - 2026-01-29
 
 ### Added

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { isPlaceholderValue } from '@/utils/placeholders';
 import {
   User,
   Camera,
@@ -27,6 +28,12 @@ interface ProfessionalProfile {
   modalita: string;
   prezzo_seduta: number | null;
   anni_esperienza?: number;
+  vat_number: string | null;
+  vat_address: string | null;
+  vat_city: string | null;
+  vat_postal_code: string | null;
+  pec_email: string | null;
+  sdi_code: string | null;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -91,17 +98,43 @@ export default function ProfiloPage() {
     setEditValue('');
   };
 
+  // Validazioni base (warning) per dati fiscali — non bloccano il salvataggio
+  const validateVatNumber = (value: string): boolean => {
+    const trimmed = value.trim();
+    if (!trimmed) return true;
+    const digits = trimmed.replace(/^IT/i, '').replace(/\D/g, '');
+    if (digits.length !== 11) {
+      toast.warning('P.IVA italiana: 11 cifre (opzionale prefisso IT). Verifica il valore.');
+      return false;
+    }
+    return true;
+  };
+  const validatePostalCode = (value: string): boolean => {
+    const trimmed = value.trim();
+    if (!trimmed) return true;
+    if (!/^\d{5}$/.test(trimmed)) {
+      toast.warning('CAP: 5 cifre. Verifica il valore.');
+      return false;
+    }
+    return true;
+  };
+
   const saveEdit = async (field: string) => {
     if (!profile || !editingField) return;
+
+    const valueToSave = field === 'prezzo_seduta' ? (editValue ? parseInt(editValue) : null) : (editValue.trim() || null);
+    if (field === 'vat_number' && valueToSave != null) {
+      validateVatNumber(String(valueToSave));
+    }
+    if (field === 'vat_postal_code' && valueToSave != null) {
+      validatePostalCode(String(valueToSave));
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Per prezzo_seduta, converti a number
-      const updateData: any = { 
-        [field]: field === 'prezzo_seduta' ? (editValue ? parseInt(editValue) : null) : editValue 
-      };
+      const updateData: any = { [field]: valueToSave };
 
       const { error } = await supabase
         .from('professionals')
@@ -218,18 +251,44 @@ export default function ProfiloPage() {
   };
 
 
-  if (loading) {
+  if (!loading && !profile) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">Caricamento profilo...</div>
+        <div className="text-gray-500">Profilo non trovato</div>
       </div>
     );
   }
 
-  if (!profile) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">Profilo non trovato</div>
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="flex items-center gap-6">
+              <div className="w-28 h-28 rounded-full bg-gray-200 animate-pulse shrink-0" />
+              <div className="flex-1 space-y-2 min-w-0">
+                <div className="h-8 bg-gray-200 rounded w-48 animate-pulse" />
+                <div className="h-4 bg-gray-100 rounded w-32 animate-pulse" />
+              </div>
+            </div>
+            <div className="h-10 w-24 bg-gray-100 rounded-lg animate-pulse" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[1, 2].map((i) => (
+            <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="h-6 bg-gray-200 rounded w-1/3 mb-4 animate-pulse" />
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((j) => (
+                  <div key={j} className="flex justify-between py-2 border-b border-gray-50">
+                    <div className="h-4 bg-gray-100 rounded w-24 animate-pulse" />
+                    <div className="h-4 bg-gray-100 rounded w-32 animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -244,10 +303,10 @@ export default function ProfiloPage() {
             <div className="relative group">
               <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                 {profile.foto_url ? (
-                  <img 
-                    src={profile.foto_url} 
-                    alt="Foto profilo" 
-                    className="w-full h-full object-cover" 
+                  <img
+                    src={profile.foto_url}
+                    alt="Foto profilo"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <User className="w-12 h-12 text-gray-400" />
@@ -442,10 +501,11 @@ export default function ProfiloPage() {
                 )}
               </div>
 
-              {/* Studio/Sede */}
+              {/* Studio / Ragione sociale */}
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm text-gray-500">Studio/Sede</span>
+                  <span className="text-sm text-gray-500">Studio / Ragione sociale</span>
+                  <p className="text-xs text-gray-400 mt-0.5">Es. Studio Rossi, PT Marco Bianchi (non l&apos;indirizzo)</p>
                   {editingField === 'company_name' ? (
                     <div className="mt-1">
                       <input
@@ -521,6 +581,162 @@ export default function ProfiloPage() {
                     onClick={() => startEdit('titolo_studio', profile.titolo_studio)}
                     className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors"
                   >
+                    <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Card Dati fiscali (Report Commercialista) */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">Dati fiscali</h2>
+            <p className="text-sm text-gray-500 mb-4">Per il Report per Commercialista (P.IVA e indirizzo)</p>
+            <div className="space-y-0">
+              {/* P.IVA */}
+              <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-gray-500">P.IVA</span>
+                  {editingField === 'vat_number' ? (
+                    <div className="mt-1">
+                      <input type="text" autoFocus value={editValue} onChange={(e) => setEditValue(e.target.value)} placeholder="11 cifre (opz. prefisso IT)" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent" />
+                      <div className="flex gap-2 mt-2">
+                        <button type="button" onClick={() => saveEdit('vat_number')} className="px-3 py-1.5 bg-[#EEBA2B] text-white rounded-lg text-sm font-medium hover:bg-[#D4A826] transition-colors">Salva</button>
+                        <button type="button" onClick={cancelEdit} className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors">Annulla</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className={`break-words mt-1 ${isPlaceholderValue(profile.vat_number) ? 'text-gray-500 italic' : 'text-gray-900'}`}>{profile.vat_number ?? '—'}</p>
+                      {isPlaceholderValue(profile.vat_number) && <span className="text-xs text-amber-600">Da completare</span>}
+                    </>
+                  )}
+                </div>
+                {editingField !== 'vat_number' && (
+                  <button type="button" onClick={() => startEdit('vat_number', profile.vat_number)} className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors">
+                    <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
+                  </button>
+                )}
+              </div>
+              {/* Indirizzo (sede fiscale) */}
+              <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-gray-500">Indirizzo (sede fiscale)</span>
+                  {editingField === 'vat_address' ? (
+                    <div className="mt-1">
+                      <input type="text" autoFocus value={editValue} onChange={(e) => setEditValue(e.target.value)} placeholder="Via, numero civico" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent" />
+                      <div className="flex gap-2 mt-2">
+                        <button type="button" onClick={() => saveEdit('vat_address')} className="px-3 py-1.5 bg-[#EEBA2B] text-white rounded-lg text-sm font-medium hover:bg-[#D4A826] transition-colors">Salva</button>
+                        <button type="button" onClick={cancelEdit} className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors">Annulla</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className={`break-words mt-1 ${isPlaceholderValue(profile.vat_address) ? 'text-gray-500 italic' : 'text-gray-900'}`}>{profile.vat_address ?? '—'}</p>
+                      {isPlaceholderValue(profile.vat_address) && <span className="text-xs text-amber-600">Da completare</span>}
+                    </>
+                  )}
+                </div>
+                {editingField !== 'vat_address' && (
+                  <button type="button" onClick={() => startEdit('vat_address', profile.vat_address)} className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors">
+                    <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
+                  </button>
+                )}
+              </div>
+              {/* Città */}
+              <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-gray-500">Città</span>
+                  {editingField === 'vat_city' ? (
+                    <div className="mt-1">
+                      <input type="text" autoFocus value={editValue} onChange={(e) => setEditValue(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent" />
+                      <div className="flex gap-2 mt-2">
+                        <button type="button" onClick={() => saveEdit('vat_city')} className="px-3 py-1.5 bg-[#EEBA2B] text-white rounded-lg text-sm font-medium hover:bg-[#D4A826] transition-colors">Salva</button>
+                        <button type="button" onClick={cancelEdit} className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors">Annulla</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className={`break-words mt-1 ${isPlaceholderValue(profile.vat_city) ? 'text-gray-500 italic' : 'text-gray-900'}`}>{profile.vat_city ?? '—'}</p>
+                      {isPlaceholderValue(profile.vat_city) && <span className="text-xs text-amber-600">Da completare</span>}
+                    </>
+                  )}
+                </div>
+                {editingField !== 'vat_city' && (
+                  <button type="button" onClick={() => startEdit('vat_city', profile.vat_city)} className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors">
+                    <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
+                  </button>
+                )}
+              </div>
+              {/* CAP */}
+              <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-gray-500">CAP</span>
+                  {editingField === 'vat_postal_code' ? (
+                    <div className="mt-1">
+                      <input type="text" autoFocus value={editValue} onChange={(e) => setEditValue(e.target.value)} placeholder="5 cifre" maxLength={5} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent" />
+                      <div className="flex gap-2 mt-2">
+                        <button type="button" onClick={() => saveEdit('vat_postal_code')} className="px-3 py-1.5 bg-[#EEBA2B] text-white rounded-lg text-sm font-medium hover:bg-[#D4A826] transition-colors">Salva</button>
+                        <button type="button" onClick={cancelEdit} className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors">Annulla</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className={`break-words mt-1 ${isPlaceholderValue(profile.vat_postal_code) ? 'text-gray-500 italic' : 'text-gray-900'}`}>{profile.vat_postal_code ?? '—'}</p>
+                      {isPlaceholderValue(profile.vat_postal_code) && <span className="text-xs text-amber-600">Da completare</span>}
+                    </>
+                  )}
+                </div>
+                {editingField !== 'vat_postal_code' && (
+                  <button type="button" onClick={() => startEdit('vat_postal_code', profile.vat_postal_code)} className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors">
+                    <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
+                  </button>
+                )}
+              </div>
+              {/* PEC (opzionale) */}
+              <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-gray-500">PEC (opzionale)</span>
+                  {editingField === 'pec_email' ? (
+                    <div className="mt-1">
+                      <input type="email" autoFocus value={editValue} onChange={(e) => setEditValue(e.target.value)} placeholder="email@pec.it" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent" />
+                      <div className="flex gap-2 mt-2">
+                        <button type="button" onClick={() => saveEdit('pec_email')} className="px-3 py-1.5 bg-[#EEBA2B] text-white rounded-lg text-sm font-medium hover:bg-[#D4A826] transition-colors">Salva</button>
+                        <button type="button" onClick={cancelEdit} className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors">Annulla</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className={`break-words mt-1 ${isPlaceholderValue(profile.pec_email) ? 'text-gray-500' : 'text-gray-900'}`}>
+                      {isPlaceholderValue(profile.pec_email) ? '—' : (profile.pec_email ?? '—')}
+                    </p>
+                  )}
+                </div>
+                {editingField !== 'pec_email' && (
+                  <button type="button" onClick={() => startEdit('pec_email', profile.pec_email)} className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors">
+                    <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
+                  </button>
+                )}
+              </div>
+              {/* Codice SDI (opzionale) */}
+              <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-gray-500">Codice SDI (opzionale)</span>
+                  {editingField === 'sdi_code' ? (
+                    <div className="mt-1">
+                      <input type="text" autoFocus value={editValue} onChange={(e) => setEditValue(e.target.value)} placeholder="es. 7 caratteri" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent" />
+                      <div className="flex gap-2 mt-2">
+                        <button type="button" onClick={() => saveEdit('sdi_code')} className="px-3 py-1.5 bg-[#EEBA2B] text-white rounded-lg text-sm font-medium hover:bg-[#D4A826] transition-colors">Salva</button>
+                        <button type="button" onClick={cancelEdit} className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors">Annulla</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className={`break-words mt-1 ${isPlaceholderValue(profile.sdi_code) ? 'text-gray-500' : 'text-gray-900'}`}>
+                      {isPlaceholderValue(profile.sdi_code) ? '—' : (profile.sdi_code ?? '—')}
+                    </p>
+                  )}
+                </div>
+                {editingField !== 'sdi_code' && (
+                  <button type="button" onClick={() => startEdit('sdi_code', profile.sdi_code)} className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors">
                     <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
                   </button>
                 )}
