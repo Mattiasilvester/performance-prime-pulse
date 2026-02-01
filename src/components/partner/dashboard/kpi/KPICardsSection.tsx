@@ -39,6 +39,8 @@ interface KPIData {
     lastMonth: number;
     growthPercent: number;
     monthlyTrend: Array<{ name: string; value: number }>;
+    /** Booking completed nel mese con price NULL (per alert prezzi mancanti). */
+    missingPriceCount: number;
   };
   rating: {
     average: number;
@@ -98,6 +100,7 @@ function getPlaceholderData(): KPIData {
       lastMonth: 1600,
       growthPercent: 31,
       monthlyTrend: monthsRev,
+      missingPriceCount: 0,
     },
     rating: {
       average: 4.5,
@@ -260,31 +263,27 @@ export function KPICardsSection({
       const completedPercent =
         totalBookings > 0 ? Math.round((completed / totalBookings) * 100) : 0;
 
-      const sumBookingRevenue = (
-        rows: Array<{
-          price?: string | null;
-          service?: { price?: string | number | null } | { price?: string | number | null }[];
-        }>
-      ) => {
-        return rows.reduce((sum, b) => {
-          let priceToAdd = 0;
+      /** Somma solo bookings.price (contabile). Nessun fallback su professional_services. */
+      const sumBookingRevenueContabile = (
+        rows: Array<{ price?: string | number | null }>
+      ): { revenue: number; missingPriceCount: number } => {
+        let revenue = 0;
+        let missingPriceCount = 0;
+        for (const b of rows) {
           if (b.price != null && b.price !== '') {
             const n = parseFloat(String(b.price));
-            if (!Number.isNaN(n) && n >= 0) priceToAdd = n;
+            if (!Number.isNaN(n) && n >= 0) revenue += n;
+            else missingPriceCount += 1;
+          } else {
+            missingPriceCount += 1;
           }
-          if (priceToAdd === 0 && b.service) {
-            const svc = Array.isArray(b.service) ? b.service[0] : b.service;
-            if (svc?.price != null) {
-              const n = parseFloat(String(svc.price));
-              if (!Number.isNaN(n) && n >= 0) priceToAdd = n;
-            }
-          }
-          return sum + priceToAdd;
-        }, 0);
+        }
+        return { revenue, missingPriceCount };
       };
 
-      const thisMonthRevenue = sumBookingRevenue(revenueThisMonthRes.data ?? []);
-      const lastMonthRevenue = sumBookingRevenue(revenueLastMonthRes.data ?? []);
+      const thisMonthRows = revenueThisMonthRes.data ?? [];
+      const { revenue: thisMonthRevenue, missingPriceCount } = sumBookingRevenueContabile(thisMonthRows);
+      const { revenue: lastMonthRevenue } = sumBookingRevenueContabile(revenueLastMonthRes.data ?? []);
       const revenueGrowth =
         lastMonthRevenue > 0
           ? Math.round(((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100)
@@ -372,7 +371,8 @@ export function KPICardsSection({
       }));
       const revenueMonthlyTrend = monthsForTrend.map((m, i) => {
         const rows = revenueMonthlyResults[i]?.data ?? [];
-        return { name: m.label, value: sumBookingRevenue(rows) };
+        const { revenue } = sumBookingRevenueContabile(rows);
+        return { name: m.label, value: revenue };
       });
       const ratingMonthlyTrend = monthsForTrend.map((m, i) => {
         const rows = (ratingMonthlyResults[i]?.data ?? []) as Array<{ rating: number }>;
@@ -448,6 +448,7 @@ export function KPICardsSection({
                 lastMonth: lastMonthRevenue,
                 growthPercent: revenueGrowth,
                 monthlyTrend: revenueMonthlyTrend,
+                missingPriceCount,
               },
               rating: {
                 average: avgRating,
@@ -552,7 +553,7 @@ export function KPICardsSection({
 
         <KPICard
           title="Appuntamenti"
-          value={`${data.appointments.completed}/${data.appointments.cancelled}`}
+          value={`${data.appointments.completed}/${data.appointments.total}`}
           subtitle={`${data.appointments.completedPercent}% completati`}
           icon={CalendarCheck}
           isActive={false}
@@ -560,23 +561,30 @@ export function KPICardsSection({
           isLoading={loading}
         />
 
-        <KPICard
-          title="Incassi Mese"
-          value={`€${data.revenue.thisMonth.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-          subtitle="questo mese"
-          trend={
-            data.revenue.growthPercent !== 0
-              ? {
-                  value: Math.abs(data.revenue.growthPercent),
-                  isPositive: data.revenue.growthPercent > 0,
-                }
-              : undefined
-          }
-          icon={TrendingUp}
-          isActive={false}
-          onClick={() => handleCardClick('revenue')}
-          isLoading={loading}
-        />
+        <div>
+          <KPICard
+            title="Incassi Mese"
+            value={`€${data.revenue.thisMonth.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+            subtitle="questo mese"
+            trend={
+              data.revenue.growthPercent !== 0
+                ? {
+                    value: Math.abs(data.revenue.growthPercent),
+                    isPositive: data.revenue.growthPercent > 0,
+                  }
+                : undefined
+            }
+            icon={TrendingUp}
+            isActive={false}
+            onClick={() => handleCardClick('revenue')}
+            isLoading={loading}
+          />
+          {data.revenue.missingPriceCount != null && data.revenue.missingPriceCount > 0 && (
+            <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              Prezzi mancanti: {data.revenue.missingPriceCount} prestazioni escluse dall&apos;incasso.
+            </p>
+          )}
+        </div>
 
         <KPICard
           title="Rating"

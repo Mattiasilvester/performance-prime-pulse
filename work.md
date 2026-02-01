@@ -9,6 +9,44 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **1 Febbraio 2026 - Sessione: Fix Report Verifica (TODO List) + Gestionale Costi + Report Commercialista + Background Loading**
+**Ora inizio:** ~16:00  
+**Ora fine:** ~18:00  
+**Durata:** ~2 ore  
+**Branch:** dev  
+
+#### **🎯 Obiettivo:**
+Completare i 7 step del report di verifica (types, RLS, deno.json, messaggi localhost, API_URL, Edge Function send-push-notification, TODO admin); integrare gestionale Costi & Spese PrimePro; Report per Commercialista (PDF + CSV); fix KPI (Incasso lordo, Appuntamenti, Incassi mese contabile); background loading su tutte le pagine partner.
+
+#### **✅ Implementato:**
+- **Types Supabase**: Aggiunti in types.ts `workout_attachments` e `professional_costs`; utente ha rigenerato types da terminale con `supabase gen types` (allineamento DB).
+- **RLS**: Creato `docs/RLS_VERIFICATION_REPORT.md` (tabelle con/senza RLS nelle migration); RLS confermata su tutte le tabelle in dashboard.
+- **Edge Functions**: Aggiunto `deno.json` a `ensure-partner-subscription`; creata Edge Function `send-push-notification` (struttura base, auth, body, log, 200); commenti TODO per `admin-auth-validate` e `admin-stats` (SuperAdmin da rifare da zero).
+- **Config/Log**: Messaggi localhost rimossi in `openai-service.ts`; commento su `API_URL` in `env.ts`.
+- **Gestionale Costi**: Tabella `professional_costs`, migration RLS, trigger; `CostiSpesePage`, `professionalCostsService`, componenti costi; AndamentoPage con grafici e report.
+- **Report Commercialista**: PDF footer "Performance Prime - www.performanceprime.it"; export CSV condizionale (prestazioni/costi/riepilogo); micro-copy "Totale costi dichiarati" e disclaimer; dropdown PDF / PDF+CSV.
+- **KPI**: Incasso lordo da `SUM(bookings.price)`; card Appuntamenti `completed/total`; Incassi mese contabile + alert prezzi mancanti in Overview.
+- **Background loading**: AndamentoPage, CostiSpesePage, ProfiloPage, ProgettiPage, ReviewList, AbbonamentoPage, ServiziTariffePage con skeleton al posto di spinner full-page.
+
+#### **🐛 Bug Risolti:**
+- **Types professional_costs mancante**: `professionalCostsService.ts` usava `Database['public']['Tables']['professional_costs']` assente in types.ts; aggiunta definizione tabella in types.
+- **Messaggi localhost in produzione**: Sostituiti "localhost:3001" con "Errore di connessione al servizio AI" in openai-service.ts.
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato nella lista locked; toccati env.ts, openai-service, useAdminAuthBypass, SuperAdminDashboard (solo commenti TODO), types.ts.
+
+#### **📊 Metriche:**
+- Build: 20.27s  
+- Bundle: ~2.33 MB (index principale)  
+- Errori TS: 0  
+
+#### **📋 TODO Prossima Sessione:**
+1. Creare pagina SuperAdmin da zero (con Edge Functions admin-auth-validate e admin-stats).
+2. Valutare migration per tabella `workout_attachments` se si abilita feature allegati workout.
+3. Risolvere eventuali warning ESLint react-hooks/exhaustive-deps (4 warning).
+
+---
+
 ### **29 Gennaio 2026 - Sessione: KPI Dashboard PrimePro + Placeholder per test**
 **Ora inizio:** ~20:00  
 **Ora fine:** ~21:30  

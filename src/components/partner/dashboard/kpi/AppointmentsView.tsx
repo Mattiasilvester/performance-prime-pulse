@@ -4,7 +4,7 @@ import { CalendarCheck, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { KPIViewHeader } from './KPIViewHeader';
 import { KPIPieChart, KPIBarChart } from './charts';
-import { AppointmentsList } from './AppointmentsList';
+import { AppointmentsList, type Booking, type BookingStatus } from './AppointmentsList';
 import { CancelConfirmModal } from './CancelConfirmModal';
 
 type FilterType = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | null;
@@ -12,17 +12,7 @@ type FilterType = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 
 const PLACEHOLDER_PREFIX = 'placeholder-';
 
 /** Appuntamenti placeholder per test UI quando non ci sono dati reali */
-function getPlaceholderAppointments(): Array<{
-  id: string;
-  booking_date: string;
-  booking_time: string;
-  duration_minutes: number;
-  status: string;
-  notes?: string;
-  client_name?: string;
-  client_email?: string;
-  service_name?: string;
-}> {
+function getPlaceholderAppointments(): Booking[] {
   const today = new Date();
   const d = (n: number) => {
     const t = new Date(today);
@@ -62,19 +52,7 @@ export function AppointmentsView({
   onDataChange,
 }: AppointmentsViewProps) {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>(null);
-  const [allAppointments, setAllAppointments] = useState<
-    Array<{
-      id: string;
-      booking_date: string;
-      booking_time: string;
-      duration_minutes: number;
-      status: string;
-      notes?: string;
-      client_name?: string;
-      client_email?: string;
-      service_name?: string;
-    }>
-  >([]);
+  const [allAppointments, setAllAppointments] = useState<Booking[]>([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState<{
@@ -136,12 +114,12 @@ export function AppointmentsView({
         }
       }
 
-      const withServiceName = (bookingsData ?? []).map((b) => ({
+      const withServiceName: Booking[] = (bookingsData ?? []).map((b) => ({
         id: b.id,
         booking_date: b.booking_date,
         booking_time: b.booking_time,
         duration_minutes: b.duration_minutes ?? 60,
-        status: b.status,
+        status: b.status as BookingStatus,
         notes: b.notes ?? undefined,
         client_name: b.client_name ?? undefined,
         client_email: b.client_email ?? undefined,

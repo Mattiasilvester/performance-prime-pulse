@@ -2,7 +2,7 @@
 // Pagina Abbonamento - Mostra informazioni abbonamento PrimePro
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { Loader2, CreditCard } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { TrialUrgencyBanner } from '@/components/partner/subscription/TrialUrgencyBanner';
 import { ActivePlanCard } from '@/components/partner/subscription/ActivePlanCard';
@@ -227,11 +227,32 @@ export default function AbbonamentoPage() {
         </p>
       </div>
 
-      {/* Loading State */}
+      {/* Loading: skeleton cards (stesso layout del contenuto) */}
       {loading ? (
-        <div className="bg-white rounded-xl p-12 text-center border border-gray-200 shadow-sm">
-          <Loader2 className="w-8 h-8 text-[#EEBA2B] animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Caricamento informazioni abbonamento...</p>
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
+            <div className="h-4 bg-gray-100 rounded w-full mb-2" />
+            <div className="h-4 bg-gray-100 rounded w-2/3 mb-6" />
+            <div className="flex gap-4 flex-wrap">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-4 bg-gray-100 rounded w-20" />
+              ))}
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-1/4 mb-4" />
+            <div className="h-16 bg-gray-100 rounded mb-4" />
+            <div className="h-10 bg-gray-100 rounded w-40" />
+          </div>
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-12 bg-gray-100 rounded" />
+              ))}
+            </div>
+          </div>
         </div>
       ) : error ? (
         /* Error State */

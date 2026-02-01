@@ -2,6 +2,13 @@
 
 ## Decisioni Architetturali
 
+### 1 Febbraio 2026 - Sessione Fix Report Verifica + Gestionale Costi + Report Commercialista
+- **Types da Supabase**: Rigenerare con `npx supabase login` poi `npx supabase gen types typescript --project-id kfxoyucatvvcgmqalxsg > src/integrations/supabase/types.ts` per allineare types al DB remoto. Se una tabella non compare (es. `workout_attachments`), o non esiste nel DB (servirà migration) o si aggiunge manualmente in types.ts.
+- **RLS solo in migration**: Nel repo risultano RLS esplicite solo per `professionals`, `professional_costs`, `professional_subscriptions`; le altre tabelle possono avere RLS configurata in dashboard. Report in `docs/RLS_VERIFICATION_REPORT.md`.
+- **Edge Function send-push-notification**: Struttura base (CORS, auth Bearer getUser, body professionalId/notificationId, log, 200); invio push reale (FCM, OneSignal) da integrare in seguito.
+- **SuperAdmin**: Edge Functions `admin-auth-validate` e `admin-stats` non create; commenti TODO nel codice; pagina SuperAdmin da creare da zero.
+- **Background loading**: Pagine partner renderizzano subito il layout e mostrano skeleton per sezioni in caricamento invece di spinner full-page; migliora perceived performance.
+
 ### 29 Gennaio 2026 - Sessione KPI Dashboard + Placeholder
 - **Placeholder per test UI**: Quando la lista appuntamenti (AppointmentsView) o "Prossimi appuntamenti" (OverviewPage) è vuota, vengono mostrati dati placeholder (id con prefisso `placeholder-`) per testare layout, filtri e click. Le azioni (Conferma, Completa, Cancella) su placeholder mostrano toast informativo e non chiamano le API.
 - **Unica fonte dati**: Overview, Agenda, Prenotazioni, Clienti e KPI Appuntamenti usano le stesse tabelle Supabase (`bookings`, `clients`, `professional_services`) e lo stesso `professional_id`; con dati reali tutto è già collegato.

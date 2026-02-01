@@ -299,7 +299,7 @@ Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Pri
       if (msg?.includes('ECONNREFUSED') ||
           msg?.includes('Failed to fetch') ||
           causeCode === 'ECONNREFUSED') {
-        console.error('❌ ERRORE: Server proxy non disponibile su localhost:3001');
+        console.error('❌ ERRORE: Errore di connessione al servizio AI');
         console.error('💡 SOLUZIONE: Avvia il server proxy con: npm run dev:api');
         console.error('💡 OPPURE: Avvia tutto insieme con: npm run dev:all');
         
@@ -733,7 +733,7 @@ IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli t
       if (msg?.includes('ECONNREFUSED') ||
           msg?.includes('Failed to fetch') ||
           causeCode === 'ECONNREFUSED') {
-        console.error('❌ ERRORE: Server proxy non disponibile su localhost:3001');
+        console.error('❌ ERRORE: Errore di connessione al servizio AI');
         console.error('💡 SOLUZIONE: Avvia il server proxy con: npm run dev:api');
         
         return {

@@ -6,6 +6,7 @@ export const env = {
   
   // App Config
   APP_MODE: import.meta.env.VITE_APP_MODE || 'development',
+  // API_URL: non usata al momento; default dev. Per produzione impostare VITE_API_URL.
   API_URL: import.meta.env.VITE_API_URL || 'http://localhost:8081',
   
   // Debug

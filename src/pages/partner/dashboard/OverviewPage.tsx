@@ -76,7 +76,9 @@ export default function OverviewPage() {
     clienti: 0,
     prenotazioni: 0,
     progetti: 0,
-    guadagni: 0
+    guadagni: 0,
+    /** Booking completed nel mese con price NULL (per coerenza contabile). */
+    guadagniMancanti: 0,
   });
 
   // Nome da user_metadata (onboarding) come fallback immediato
@@ -181,16 +183,10 @@ export default function OverviewPage() {
           .eq('professional_id', professionalId)
           .eq('status', 'active'),
 
-        // 4. Guadagni mese (solo completed, con JOIN su professional_services)
-        // Include sia prezzo personalizzato (bookings.price) che prezzo servizio (professional_services.price)
+        // 4. Guadagni mese (solo completed, contabile: solo bookings.price, nessun fallback)
         supabase
           .from('bookings')
-          .select(`
-            id,
-            price,
-            service_id,
-            service:professional_services(price)
-          `)
+          .select('id, price')
           .eq('professional_id', professionalId)
           .gte('booking_date', startOfMonthStr)
           .lte('booking_date', endOfMonthStr)
@@ -222,65 +218,29 @@ export default function OverviewPage() {
       const prenotazioni = bookingsResult.count || 0;
       const progetti = projectsResult.count || 0;
 
-      // Calcola guadagni: priorità al prezzo personalizzato (bookings.price), poi prezzo servizio (professional_services.price), poi 0
+      // Incassi mese contabili: solo SUM(bookings.price) per completed, nessun fallback su professional_services (allineato ad Andamento e Report Commercialista)
       let guadagni = 0;
-      
+      let guadagniMancanti = 0;
+
       if (earningsResult.error) {
         console.warn('⚠️ [OVERVIEW] Impossibile calcolare guadagni:', earningsResult.error.message);
       } else if (earningsResult.data) {
-        console.log('💰 [OVERVIEW] Calcolo guadagni:', {
-          bookingsCount: earningsResult.data.length,
-          bookings: earningsResult.data.map((b: any) => ({
-            id: b.id,
-            price_custom: b.price,
-            service_id: b.service_id,
-            has_service: !!b.service
-          }))
-        });
-
         earningsResult.data.forEach((booking: any) => {
-          let priceToAdd = 0;
-          
-          // Priorità 1: Prezzo personalizzato dalla colonna bookings.price
-          if (booking.price !== null && booking.price !== undefined && booking.price !== '') {
-            const customPrice = parseFloat(booking.price);
-            if (!isNaN(customPrice) && customPrice >= 0) {
-              priceToAdd = customPrice;
-              console.log(`💰 [OVERVIEW] Usato prezzo personalizzato: ${priceToAdd}€ per booking ${booking.id}`);
-            }
+          const p = booking.price;
+          if (p != null && p !== '' && !Number.isNaN(parseFloat(String(p))) && parseFloat(String(p)) >= 0) {
+            guadagni += parseFloat(String(p));
+          } else {
+            guadagniMancanti += 1;
           }
-          
-          // Priorità 2: Prezzo dal servizio (professional_services.price) se non c'è prezzo personalizzato
-          if (priceToAdd === 0) {
-            const service = Array.isArray(booking.service) 
-              ? booking.service[0] 
-              : booking.service;
-            
-            if (service?.price) {
-              const servicePrice = parseFloat(service.price);
-              if (!isNaN(servicePrice) && servicePrice >= 0) {
-                priceToAdd = servicePrice;
-                console.log(`💰 [OVERVIEW] Usato prezzo servizio: ${priceToAdd}€ per booking ${booking.id}`);
-              }
-            }
-          }
-          
-          // Priorità 3: Se non c'è né prezzo personalizzato né servizio, aggiunge 0 (non fa nulla)
-          if (priceToAdd === 0) {
-            console.warn(`⚠️ [OVERVIEW] Booking ${booking.id} senza prezzo (né personalizzato né servizio)`);
-          }
-          
-          guadagni += priceToAdd;
         });
       }
-
-      console.log('💰 [OVERVIEW] Guadagni totali calcolati:', guadagni);
 
       setStats({
         clienti,
         prenotazioni,
         progetti,
-        guadagni: Math.round(guadagni * 100) / 100 // Arrotonda a 2 decimali
+        guadagni: Math.round(guadagni * 100) / 100,
+        guadagniMancanti,
       });
     } catch (error: any) {
       console.error('Errore caricamento statistiche:', error);

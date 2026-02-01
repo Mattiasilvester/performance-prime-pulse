@@ -935,6 +935,56 @@ export type Database = {
           },
         ]
       }
+      professional_costs: {
+        Row: {
+          amount: number
+          category: string
+          cost_date: string
+          cost_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_recurring: boolean
+          professional_id: string
+          recurrence: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          cost_date: string
+          cost_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_recurring?: boolean
+          professional_id: string
+          recurrence?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          cost_date?: string
+          cost_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_recurring?: boolean
+          professional_id?: string
+          recurrence?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_costs_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_languages: {
         Row: {
           created_at: string | null
@@ -1478,6 +1528,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string
           avatar_url: string | null
           birth_date: string | null
           birth_place: string | null
@@ -1494,6 +1545,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_type?: string
           avatar_url?: string | null
           birth_date?: string | null
           birth_place?: string | null
@@ -1510,6 +1562,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_type?: string
           avatar_url?: string | null
           birth_date?: string | null
           birth_place?: string | null
