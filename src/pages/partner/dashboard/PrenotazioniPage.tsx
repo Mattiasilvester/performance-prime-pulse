@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { autoCompletePastBookings } from '@/services/bookingsService';
+import { getDisplayStatus, bookingDisplayStatusConfig } from '@/utils/bookingHelpers';
 
 interface Booking {
   id: string;
@@ -61,6 +62,7 @@ export default function PrenotazioniPage() {
     week: 0,
     confirmed: 0,
     pending: 0,
+    incomplete: 0,
   });
 
   // Modal modifica
@@ -396,18 +398,26 @@ export default function PrenotazioniPage() {
         .eq('professional_id', professionalId)
         .eq('status', 'confirmed');
 
-      // Stats pending
+      // Pending = futuro (in attesa); Incomplete = passato mai completato/cancellato
       const { count: pendingCount } = await supabase
         .from('bookings')
         .select('*', { count: 'exact', head: true })
         .eq('professional_id', professionalId)
-        .eq('status', 'pending');
+        .in('status', ['pending', 'confirmed'])
+        .gte('booking_date', todayStr);
+      const { count: incompleteCount } = await supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('professional_id', professionalId)
+        .in('status', ['pending', 'confirmed'])
+        .lt('booking_date', todayStr);
 
       const newStats = {
         today: todayCount || 0,
         week: weekCount || 0,
         confirmed: confirmedCount || 0,
         pending: pendingCount || 0,
+        incomplete: incompleteCount || 0,
       };
       
       console.log('📊 [PRENOTAZIONI] Statistiche calcolate:', newStats);
@@ -429,9 +439,15 @@ export default function PrenotazioniPage() {
       }
     }
 
-    // Status filter
-    if (statusFilter !== 'all' && booking.status !== statusFilter) {
-      return false;
+    // Status filter (incomplete = display status, not raw DB status)
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'incomplete') {
+        if (getDisplayStatus({ status: booking.status, booking_date: booking.booking_date }) !== 'incomplete') return false;
+      } else if (statusFilter === 'pending') {
+        if (getDisplayStatus({ status: booking.status, booking_date: booking.booking_date }) !== 'pending') return false;
+      } else if (booking.status !== statusFilter) {
+        return false;
+      }
     }
 
     // Date filter
@@ -476,41 +492,14 @@ export default function PrenotazioniPage() {
     return true;
   });
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return (
-          <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-500 text-white">
-            Confermato
-          </span>
-        );
-      case 'pending':
-        return (
-          <span className="px-2 py-0.5 rounded text-xs font-medium bg-yellow-600 text-white">
-            In attesa
-          </span>
-        );
-      case 'cancelled':
-        return (
-          <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-500 text-white">
-            Cancellato
-          </span>
-        );
-      case 'completed':
-        return (
-          <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-500 text-white">
-            Completato
-          </span>
-        );
-      case 'no_show':
-        return (
-          <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-500 text-white">
-            No Show
-          </span>
-        );
-      default:
-        return null;
-    }
+  const getStatusBadge = (booking: { status: string; booking_date: string }) => {
+    const displayStatus = getDisplayStatus(booking);
+    const config = bookingDisplayStatusConfig[displayStatus];
+    return (
+      <span className={`px-2 py-0.5 rounded text-xs font-medium ${config.className}`}>
+        {config.label}
+      </span>
+    );
   };
 
   const getEndTime = (startTime: string, durationMinutes: number): string => {
@@ -859,7 +848,31 @@ export default function PrenotazioniPage() {
           </div>
         </div>
 
-        {/* In attesa */}
+        {/* Non completati (passato mai completato/cancellato) */}
+        <div 
+          onClick={() => {
+            setStatusFilter('incomplete');
+            setDateFilter('all');
+            setModalitaFilter('all');
+          }}
+          className={`bg-white rounded-2xl p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-2 ${
+            statusFilter === 'incomplete' 
+              ? 'border-[#EEBA2B] shadow-lg' 
+              : 'border-transparent hover:border-[#EEBA2B]'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Non completati</p>
+              <p className="text-3xl font-bold text-orange-600 mt-1">{stats.incomplete}</p>
+            </div>
+            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6 text-orange-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* In attesa (futuro) */}
         <div 
           onClick={() => {
             setStatusFilter('pending');
@@ -873,12 +886,12 @@ export default function PrenotazioniPage() {
           }`}
         >
           <div className="flex items-center justify-between">
-    <div>
+            <div>
               <p className="text-sm text-gray-500">In attesa</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.pending}</p>
+              <p className="text-3xl font-bold text-amber-600 mt-1">{stats.pending}</p>
             </div>
-            <div className="w-12 h-12 bg-orange-200 rounded-xl flex items-center justify-center">
-              <Clock className="w-6 h-6 text-orange-600" />
+            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+              <Clock className="w-6 h-6 text-amber-600" />
             </div>
           </div>
         </div>
@@ -911,6 +924,7 @@ export default function PrenotazioniPage() {
                 <option value="all">✓ Tutti</option>
                 <option value="confirmed">✓ Confermato</option>
                 <option value="pending">✓ In attesa</option>
+                <option value="incomplete">✓ Non completato</option>
                 <option value="cancelled">✓ Cancellato</option>
                 <option value="completed">✓ Completato</option>
                 <option value="no_show">✓ No show</option>
@@ -987,11 +1001,11 @@ export default function PrenotazioniPage() {
                         </div>
                         {/* Badge - SOLO DESKTOP, sulla stessa riga del nome */}
                         <div className="hidden sm:block">
-                          {getStatusBadge(booking.status)}
+                          {getStatusBadge(booking)}
                         </div>
                         {/* Badge visibile solo su mobile */}
                         <div className="sm:hidden">
-                          {getStatusBadge(booking.status)}
+                          {getStatusBadge(booking)}
                         </div>
                       </div>
                       {/* Riga 2: Email (sotto) */}

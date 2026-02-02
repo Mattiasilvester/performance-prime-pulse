@@ -1,4 +1,3 @@
-import { supabase } from '@/integrations/supabase/client'
 import { AdminUser } from '@/types/admin.types'
 
 interface GetUsersParams {
@@ -29,17 +28,12 @@ function ensureFunctionsUrl(): string {
   return FUNCTIONS_URL.replace(/\/+$/, '')
 }
 
-async function getAuthHeader() {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session?.access_token) {
-    throw new Error('Sessione amministratore non trovata')
-  }
-
+// SuperAdmin usa bypass (localStorage), non sessione Supabase Auth → usiamo anon key per le Edge Function
+function getAuthHeader(): { Authorization: string; 'Content-Type': string } {
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+  if (!anonKey) throw new Error('VITE_SUPABASE_ANON_KEY non configurata')
   return {
-    Authorization: `Bearer ${session.access_token}`,
+    Authorization: `Bearer ${anonKey}`,
     'Content-Type': 'application/json',
   }
 }
@@ -76,7 +70,7 @@ function mapUserProfile(profile: Record<string, unknown>): AdminUser {
 }
 
 export async function getUsers(params: GetUsersParams = {}): Promise<GetUsersResponse> {
-  const headers = await getAuthHeader()
+  const headers = getAuthHeader()
   const baseUrl = ensureFunctionsUrl()
   const queryParams = new URLSearchParams()
 
@@ -110,7 +104,7 @@ export async function getUsers(params: GetUsersParams = {}): Promise<GetUsersRes
 }
 
 export async function updateUser(userId: string, payload: UpdateUserPayload): Promise<AdminUser> {
-  const headers = await getAuthHeader()
+  const headers = getAuthHeader()
   const baseUrl = ensureFunctionsUrl()
   const url = `${baseUrl}/admin-users/${userId}`
 
@@ -130,7 +124,7 @@ export async function updateUser(userId: string, payload: UpdateUserPayload): Pr
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  const headers = await getAuthHeader()
+  const headers = getAuthHeader()
   const baseUrl = ensureFunctionsUrl()
   const url = `${baseUrl}/admin-users/${userId}`
 

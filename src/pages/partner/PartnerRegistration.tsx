@@ -24,7 +24,7 @@ interface FormData {
   category: string;
   customCategory: string;
   city: string;
-  titolo_studio: string;
+  titolo_studio: string[];
   certificazioni: string[];
   studio_sede: string;
   bio: string;
@@ -51,7 +51,7 @@ export default function PartnerRegistration() {
     category: '',
     customCategory: '',
     city: '',
-    titolo_studio: '',
+    titolo_studio: [],
     certificazioni: [],
     studio_sede: '',
     bio: '',
@@ -130,7 +130,7 @@ export default function PartnerRegistration() {
 
       case 4:
         if (!formData.city.trim()) newErrors.city = 'La città è obbligatoria';
-        if (!formData.titolo_studio.trim()) newErrors.titolo_studio = 'Il titolo di studio è obbligatorio';
+        if (formData.titolo_studio.length === 0) newErrors.titolo_studio = 'Aggiungi almeno un titolo di studio';
         if (formData.certificazioni.length === 0) {
           newErrors.certificazioni = 'Aggiungi almeno una certificazione';
         }
@@ -250,7 +250,7 @@ export default function PartnerRegistration() {
         city: formData.city.trim(),
         bio: bioWithCategory,
         company_name: formData.studio_sede.trim(),
-        titolo_studio: formData.titolo_studio.trim(),
+        titolo_studio: formData.titolo_studio,
         certificazioni: formData.certificazioni,
         customCategory: formData.customCategory.trim() || undefined,
         modalita: formData.modalita,
@@ -343,7 +343,7 @@ export default function PartnerRegistration() {
         }
         return true;
       case 4:
-        return formData.city.trim() && formData.titolo_studio.trim() && formData.certificazioni.length > 0 && formData.studio_sede.trim();
+        return formData.city.trim() && formData.titolo_studio.length > 0 && formData.certificazioni.length > 0 && formData.studio_sede.trim();
       case 5:
         return formData.bio.trim().length >= 50;
       case 6:

@@ -18,6 +18,32 @@ export interface AdminUser {
   last_workout_date?: string | null
 }
 
+/** Pulse Check: KPI in header SuperAdmin + KPI aggiuntivi */
+export interface PulseCheck {
+  mrrTotal: number
+  mrrUsers: number
+  mrrProfessionals: number
+  totalUsers: number
+  activeProfessionals: number
+  bookingsThisMonth: number
+  bookingsCompleted: number
+  gmvThisMonth: number
+  trialConversionRate: number
+  avgRating: number
+  /** Professionisti B2B con subscription cancellata (status = canceled) */
+  churnB2BCanceledCount?: number
+  /** Subscription con cancel_at_period_end = true (in scadenza) */
+  cancellationsInScadenza?: number
+  /** % booking completati sul totale del mese */
+  bookingCompletionRate?: number
+  /** Utenti B2C totali (profiles esclusi professionisti) */
+  b2cTotalCount?: number
+  /** Utenti B2C con almeno 1 workout */
+  b2cActiveCount?: number
+  /** % utenti B2C attivi (con almeno 1 workout) */
+  b2cActivePercent?: number
+}
+
 export interface AdminStats {
   totalUsers: number
   payingUsers: number
@@ -25,7 +51,12 @@ export interface AdminStats {
   revenue: number
   churnRate: number
   conversionRate: number
-  // Properties aggiuntive usate nel dashboard
+  // Pulse Check (da admin-stats)
+  pulseCheck?: PulseCheck
+  pendingApplicationsCount?: number
+  pendingApplications?: PendingApplication[]
+  professionalsList?: AdminProfessionalRow[]
+  // Legacy / compat
   activeUsers?: number
   inactiveUsers?: number
   totalWorkouts?: number
@@ -42,11 +73,50 @@ export interface AdminStats {
   activationRate?: number
   retentionD7?: number
   weeklyGrowth?: number
+  churnB2BCanceledCount?: number
+  cancellationsInScadenza?: number
+  bookingCompletionRate?: number
+  b2cTotalCount?: number
+  b2cActiveCount?: number
+  b2cActivePercent?: number
   workoutAnalytics?: {
     totalWorkouts: number
     avgWorkoutsPerUser: number
     mostActiveUsers: number
   }
+}
+
+/** Riga applicazione in attesa (SuperAdmin) */
+export interface PendingApplication {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  phone: string
+  category: string
+  city: string
+  company_name: string | null
+  vat_number: string | null
+  bio: string | null
+  specializations: string[] | null
+  status: string | null
+  submitted_at: string | null
+  hoursWaiting?: number | null
+}
+
+/** Riga professionista in tabella SuperAdmin */
+export interface AdminProfessionalRow {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  category: string
+  zona: string | null
+  approval_status: string | null
+  attivo: boolean | null
+  rating: number | null
+  reviews_count: number | null
+  created_at: string
 }
 
 export interface AdminAuditLog {

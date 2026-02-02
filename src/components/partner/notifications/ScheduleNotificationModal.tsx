@@ -1,9 +1,14 @@
-// Modal per creare notifiche programmate
+// Modal per creare o modificare notifiche programmate (promemoria)
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Clock, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
-import { createScheduledNotification } from '@/services/scheduledNotificationService';
+import {
+  createScheduledNotification,
+  updateScheduledNotification,
+  type ScheduledNotification,
+} from '@/services/scheduledNotificationService';
+import { createNotification } from '@/services/notificationService';
 import { useProfessionalId } from '@/hooks/useProfessionalId';
 
 interface ScheduleNotificationModalProps {
@@ -12,6 +17,8 @@ interface ScheduleNotificationModalProps {
   onSuccess?: () => void;
   defaultTitle?: string;
   defaultMessage?: string;
+  /** Se presente: modal in modalità modifica (precompila e bottone "Aggiorna promemoria") */
+  existingNotification?: ScheduledNotification | null;
 }
 
 export function ScheduleNotificationModal({
@@ -19,7 +26,8 @@ export function ScheduleNotificationModal({
   onClose,
   onSuccess,
   defaultTitle = '',
-  defaultMessage = ''
+  defaultMessage = '',
+  existingNotification = null,
 }: ScheduleNotificationModalProps) {
   const professionalId = useProfessionalId();
   const [title, setTitle] = useState(defaultTitle);
@@ -28,35 +36,44 @@ export function ScheduleNotificationModal({
   const [scheduledTime, setScheduledTime] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const isEdit = !!existingNotification?.id;
+
   // Calcola data/ora di default (domani alle 10:00)
   const getDefaultDateTime = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(10, 0, 0, 0);
-    
     const dateStr = tomorrow.toISOString().split('T')[0];
     const timeStr = tomorrow.toTimeString().split(' ')[0].substring(0, 5);
-    
     return { date: dateStr, time: timeStr };
   };
 
-  // Inizializza con valori di default quando si apre
+  // Inizializza: in modifica precompila da existingNotification, altrimenti default
   useEffect(() => {
-    if (isOpen && !scheduledDate && !scheduledTime) {
-      const { date, time } = getDefaultDateTime();
-      setScheduledDate(date);
-      setScheduledTime(time);
-    }
-    // Reset form quando si chiude
-    if (!isOpen) {
+    if (!isOpen) return;
+    if (existingNotification?.id) {
+      setTitle(existingNotification.title);
+      setMessage(existingNotification.message);
+      const d = new Date(existingNotification.scheduled_for);
+      setScheduledDate(d.toISOString().split('T')[0]);
+      setScheduledTime(d.toTimeString().split(' ')[0].substring(0, 5));
+    } else {
       setTitle(defaultTitle);
       setMessage(defaultMessage);
       const { date, time } = getDefaultDateTime();
       setScheduledDate(date);
       setScheduledTime(time);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- init only when modal opens; scheduledDate/scheduledTime intentionally omitted
-  }, [isOpen, defaultTitle, defaultMessage]);
+  }, [isOpen, existingNotification?.id, existingNotification?.title, existingNotification?.message, existingNotification?.scheduled_for, defaultTitle, defaultMessage]);
+
+  // Reset form quando si chiude
+  useEffect(() => {
+    if (!isOpen) {
+      const { date, time } = getDefaultDateTime();
+      setScheduledDate(date);
+      setScheduledTime(time);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,42 +93,55 @@ export function ScheduleNotificationModal({
       return;
     }
 
+    const scheduledDateTime = new Date(`${scheduledDate}T${scheduledTime}`);
+    if (scheduledDateTime <= new Date()) {
+      toast.error('La data e ora devono essere nel futuro');
+      return;
+    }
+
     setIsSaving(true);
 
     try {
-      // Combina data e ora
-      const scheduledDateTime = new Date(`${scheduledDate}T${scheduledTime}`);
-      
-      // Verifica che sia nel futuro
-      if (scheduledDateTime <= new Date()) {
-        toast.error('La data e ora devono essere nel futuro');
-        setIsSaving(false);
-        return;
+      if (isEdit && existingNotification?.id) {
+        await updateScheduledNotification(existingNotification.id, {
+          title: title.trim(),
+          message: message.trim(),
+          scheduled_for: scheduledDateTime,
+        });
+        await createNotification({
+          professionalId,
+          type: 'custom',
+          title: 'Promemoria aggiornato',
+          message: `Promemoria "${title.trim()}" aggiornato per il ${scheduledDate} alle ${scheduledTime}`,
+        });
+        toast.success('Promemoria aggiornato');
+      } else {
+        await createScheduledNotification({
+          professional_id: professionalId,
+          type: 'custom',
+          title: title.trim(),
+          message: message.trim(),
+          scheduled_for: scheduledDateTime,
+        });
+        await createNotification({
+          professionalId,
+          type: 'custom',
+          title: 'Promemoria creato',
+          message: `Promemoria "${title.trim()}" programmato per il ${scheduledDate} alle ${scheduledTime}`,
+        });
+        toast.success('Promemoria creato con successo');
       }
 
-      // Crea notifica programmata
-      await createScheduledNotification({
-        professional_id: professionalId,
-        type: 'custom',
-        title: title.trim(),
-        message: message.trim(),
-        scheduled_for: scheduledDateTime
-      });
-
-      toast.success('Notifica programmata creata con successo!');
-      
-      // Reset form
       setTitle('');
       setMessage('');
       const { date, time } = getDefaultDateTime();
       setScheduledDate(date);
       setScheduledTime(time);
-      
       onSuccess?.();
       onClose();
     } catch (error: unknown) {
-      console.error('Errore creazione notifica programmata:', error);
-      toast.error((error as Error)?.message || 'Errore nella creazione della notifica programmata');
+      console.error('Errore salvataggio promemoria:', error);
+      toast.error((error as Error)?.message || 'Errore nel salvataggio del promemoria');
     } finally {
       setIsSaving(false);
     }
@@ -152,7 +182,9 @@ export function ScheduleNotificationModal({
             <div className="p-2 bg-[#EEBA2B]/10 rounded-xl">
               <Clock className="w-5 h-5 text-[#EEBA2B]" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">Crea Promemoria</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              {isEdit ? 'Modifica Promemoria' : 'Crea Promemoria'}
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -252,7 +284,7 @@ export function ScheduleNotificationModal({
               disabled={isSaving}
               className="flex-1 px-4 py-2 bg-[#EEBA2B] text-black font-semibold rounded-lg hover:bg-[#EEBA2B]/90 disabled:opacity-50 transition-colors"
             >
-              {isSaving ? 'Salvataggio...' : 'Crea Promemoria'}
+              {isSaving ? 'Salvataggio...' : isEdit ? 'Aggiorna promemoria' : 'Crea Promemoria'}
             </button>
           </div>
         </form>

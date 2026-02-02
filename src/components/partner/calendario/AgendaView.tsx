@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- calendar/booking types from multiple sources; fixing would require large refactor without changing logic */
 /* eslint-disable react-hooks/exhaustive-deps -- calendar effects intentionally omit deps to avoid re-run loops and preserve booking/date behavior */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Clock, User, X, AlertTriangle, Ban, Briefcase, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Clock, User, X, AlertTriangle, Ban, Briefcase, Loader2, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { ManageBlocksModal } from '@/components/partner/calendar/ManageBlocksModal';
 import { useBlockedPeriods } from '@/hooks/useBlockedPeriods';
+import { availabilityOverrideService } from '@/services/availabilityOverrideService';
+import type { AvailabilityOverride } from '@/services/availabilityOverrideService';
 import { ClientAutocomplete } from '@/components/partner/bookings/ClientAutocomplete';
 import AddClientModal from '@/components/partner/clients/AddClientModal';
 import { autoCompletePastBookings } from '@/services/bookingsService';
@@ -77,6 +79,7 @@ const AgendaView = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showManageBlocksModal, setShowManageBlocksModal] = useState(false);
+  const [blockedSlots, setBlockedSlots] = useState<AvailabilityOverride[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
   const [services, setServices] = useState<ProfessionalService[]>([]);
@@ -356,9 +359,53 @@ const AgendaView = () => {
     autoFetch: !!professionalId,
   });
 
+  // Fetch blocchi orari (availability_overrides) per il range visibile
+  const fetchBlockedSlots = useCallback(() => {
+    if (!professionalId) {
+      setBlockedSlots([]);
+      return Promise.resolve();
+    }
+    const startOfWeek = new Date(currentDate);
+    const dayOfWeek = startOfWeek.getDay();
+    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startOfWeek.setDate(startOfWeek.getDate() - diff);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    const startStr =
+      viewType === 'week'
+        ? formatDateToString(startOfWeek)
+        : formatDateToString(currentDate);
+    const endStr =
+      viewType === 'week'
+        ? formatDateToString(endOfWeek)
+        : formatDateToString(currentDate);
+    return availabilityOverrideService
+      .getBlockedSlots(professionalId, startStr, endStr)
+      .then(setBlockedSlots)
+      .catch(() => setBlockedSlots([]));
+  }, [professionalId, currentDate, viewType]);
+
+  useEffect(() => {
+    fetchBlockedSlots();
+  }, [fetchBlockedSlots]);
+
+  // Verifica se uno slot (data, ora) è coperto da un blocco orario
+  const isSlotBlocked = (date: Date, hour: number): boolean => {
+    const dateStr = formatDateToString(date);
+    const slotStart = `${String(hour).padStart(2, '0')}:00`;
+    const slotEnd = `${String(hour + 1).padStart(2, '0')}:00`;
+    return blockedSlots.some(
+      (o) =>
+        o.override_date === dateStr &&
+        o.start_time < slotEnd &&
+        o.end_time > slotStart
+    );
+  };
+
   // Callback quando i blocchi cambiano
   const handleBlocksChanged = () => {
     refetchBlocks();
+    fetchBlockedSlots();
   };
 
   // Genera giorni del mese per la griglia
@@ -623,6 +670,10 @@ const AgendaView = () => {
 
   // Gestisce click su slot per creare appuntamento
   const handleSlotClick = (e: React.MouseEvent<HTMLDivElement>, hour: number, date: Date) => {
+    if (isSlotBlocked(date, hour)) {
+      toast.info('Slot bloccato: non disponibile per prenotazioni');
+      return;
+    }
     const rect = e.currentTarget.getBoundingClientRect();
     const clickY = e.clientY - rect.top;
     const cellHeight = rect.height;
@@ -1888,6 +1939,35 @@ const AgendaView = () => {
                   );
                 });
               })}
+              {/* Layer slot bloccati (availability_overrides) - grigio, icona lucchetto */}
+              {blockedSlots.map((o) => {
+                const dayIndex = weekDays.findIndex(
+                  (d) => formatDateToString(d) === o.override_date
+                );
+                if (dayIndex === -1) return null;
+                const [startH, startM] = o.start_time.split(':').map(Number);
+                const [endH, endM] = o.end_time.split(':').map(Number);
+                const topPosition = (startH - 1) * 40 + (startM / 60) * 40;
+                const endPosition = (endH - 1) * 40 + (endM / 60) * 40;
+                const height = Math.max(endPosition - topPosition, 20);
+                const leftPct = 12.5 + dayIndex * 12.5 + 0.5;
+                const widthPct = 12.5 - 1;
+                return (
+                  <div
+                    key={o.id}
+                    className="absolute left-0.5 right-0.5 rounded shadow-sm overflow-hidden pointer-events-none flex items-center justify-center text-red-600 bg-red-100 border border-red-200"
+                    style={{
+                      top: `${topPosition}px`,
+                      height: `${height}px`,
+                      left: `${leftPct}%`,
+                      width: `${widthPct}%`,
+                      zIndex: 5,
+                    }}
+                  >
+                    <Lock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                  </div>
+                );
+              })}
             </div>
             
           </div>
@@ -2097,6 +2177,28 @@ const AgendaView = () => {
                   </div>
                 );
               })}
+              {/* Layer slot bloccati (availability_overrides) - vista giorno - stile coerente con vista settimana */}
+              {blockedSlots
+                .filter((o) => o.override_date === formatDateToString(currentDate))
+                .map((o) => {
+                  const [startH, startM] = o.start_time.split(':').map(Number);
+                  const [endH, endM] = o.end_time.split(':').map(Number);
+                  const topPosition = (startH - 1) * 60 + (startM / 60) * 60;
+                  const endPosition = (endH - 1) * 60 + (endM / 60) * 60;
+                  const height = Math.max(endPosition - topPosition, 24);
+                  return (
+                    <div
+                      key={o.id}
+                      className="absolute left-1 right-1 rounded-lg shadow-sm overflow-hidden pointer-events-none flex items-center justify-center text-red-600 bg-red-100 border border-red-200 z-[5]"
+                      style={{
+                        top: `${topPosition}px`,
+                        height: `${height}px`,
+                      }}
+                    >
+                      <Lock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                    </div>
+                  );
+                })}
             </div>
             
             {/* Indicatore di drop durante il drag - VISTA GIORNO */}

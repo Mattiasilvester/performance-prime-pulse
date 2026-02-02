@@ -43,7 +43,6 @@ const menuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: 'Overview', path: '/partner/dashboard' },
   { icon: Calendar, label: 'Calendario', path: '/partner/dashboard/calendario' },
   { icon: ClipboardList, label: 'Prenotazioni', path: '/partner/dashboard/prenotazioni' },
-  { icon: UserCircle, label: 'Profilo', path: '/partner/dashboard/profilo' },
   { icon: Briefcase, label: 'Servizi e Tariffe', path: '/partner/dashboard/servizi' },
   { icon: Receipt, label: 'Costi & Spese', path: '/partner/dashboard/costi-spese' },
   { icon: TrendingUp, label: 'Andamento e analytics', path: '/partner/dashboard/andamento' },
@@ -136,10 +135,18 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
       >
         {/* Header Sidebar */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <h1 className="text-2xl font-bold">
+          <button
+            type="button"
+            onClick={() => {
+              navigate('/partner/dashboard');
+              onClose();
+            }}
+            className="p-0 m-0 border-0 bg-transparent text-left min-w-0 cursor-pointer hover:opacity-90 transition-opacity"
+            style={{ fontSize: '1.5rem', lineHeight: '2rem', fontWeight: 700 }}
+          >
             <span className="text-black">Prime</span>
             <span className="text-[#EEBA2B]"> Pro</span>
-          </h1>
+          </button>
           <div className="flex items-center gap-2">
             {/* Bottone Notifiche */}
             <Popover>
@@ -213,13 +220,13 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
                                 }}
                                 onMarkGroupAsRead={async (ids) => {
                                   try {
-                                    // Marca tutte le notifiche del gruppo come lette
                                     await Promise.all(ids.map(id => markAsRead(id)));
                                     toast.success('Notifiche segnate come lette');
                                   } catch (err) {
                                     toast.error('Errore nel segnare le notifiche come lette');
                                   }
                                 }}
+                                onNavigateToUrl={(url) => navigate(url)}
                               />
                             );
                           } else {
@@ -243,6 +250,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
                                     toast.error('Errore nella rimozione della notifica');
                                   }
                                 }}
+                                onNavigateToUrl={(url) => navigate(url)}
                               />
                             );
                           }
@@ -271,7 +279,8 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
 
         {/* Menu Items */}
         <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-          {menuItems.map((item) => {
+          {/* Overview, Calendario, Prenotazioni */}
+          {menuItems.slice(0, 3).map((item) => {
             const Icon = item.icon;
             const isActive = currentPath === item.path || 
               (item.path !== '/partner/dashboard' && currentPath.startsWith(item.path));
@@ -280,10 +289,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
               <Link
                 key={item.path}
                 to={item.path}
-                onClick={() => {
-                  // Chiudi sidebar su mobile quando si clicca un link
-                  onClose();
-                }}
+                onClick={() => onClose()}
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                   ${isActive
@@ -298,7 +304,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
             );
           })}
 
-          {/* Voce Clienti Espandibile */}
+          {/* Voce Clienti Espandibile (4ª posizione, ex Profilo) */}
           <div>
             <button
               onClick={handleClientiClick}
@@ -344,7 +350,48 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
             )}
           </div>
 
-          {/* Impostazioni - Dopo Clienti */}
+          {/* Servizi, Costi, Andamento, Recensioni, Abbonamento */}
+          {menuItems.slice(3).map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPath === item.path || 
+              (item.path !== '/partner/dashboard' && currentPath.startsWith(item.path));
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => onClose()}
+                className={`
+                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                  ${isActive
+                    ? 'bg-[#EEBA2B]/25 text-gray-900 border-l-4 border-[#EEBA2B] font-semibold'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }
+                `}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+
+          {/* Profilo - sopra Impostazioni */}
+          <Link
+            to="/partner/dashboard/profilo"
+            onClick={() => onClose()}
+            className={`
+              flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+              ${currentPath.startsWith('/partner/dashboard/profilo')
+                ? 'bg-[#EEBA2B]/25 text-gray-900 border-l-4 border-[#EEBA2B] font-semibold'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              }
+            `}
+          >
+            <UserCircle className="w-5 h-5" />
+            <span>Profilo</span>
+          </Link>
+
+          {/* Impostazioni */}
           <Link
             to="/partner/dashboard/impostazioni"
             onClick={() => {

@@ -104,14 +104,19 @@ export function useAdminAuthBypass() {
     console.log('🔐 Tentativo login SuperAdmin:', credentials.email);
     
     try {
-      // TODO: Edge Function da creare con il nuovo SuperAdmin
-      // Step 1: Verifica secret key tramite Edge Function (sicuro, senza autenticazione richiesta)
+      // Step 1: Verifica secret key tramite Edge Function
+      // Supabase richiede Authorization con anon key per accettare la chiamata
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (!anonKey) {
+        throw new Error('VITE_SUPABASE_ANON_KEY non configurata');
+      }
       const validateResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-auth-validate`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${anonKey}`,
           },
           body: JSON.stringify({ secretKey: credentials.secretKey }),
         },
@@ -127,36 +132,37 @@ export function useAdminAuthBypass() {
         console.error('❌ Secret key non valida');
         throw new Error('Chiave segreta non valida');
       }
-      
-      // Step 2: Query diretta con logging
-      console.log('📊 Cerco profilo per:', credentials.email);
-      
-      console.log('📊 Cerco profilo per:', credentials.email);
 
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('id, email, role, first_name, last_name, created_at')
-        .eq('email', credentials.email);
-
-      if (error) {
-        console.warn('Query profilo fallita, uso bypass:', error);
-        throw error;
+      // Step 2: Verifica email + password tramite Edge Function (Service Role bypassa RLS su profiles)
+      // La query client su profiles fallisce senza sessione Auth per le policy RLS
+      const loginResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${anonKey}`,
+          },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+          }),
+        },
+      );
+      const loginResult = await loginResponse.json().catch(() => ({}));
+      if (!loginResponse.ok || !loginResult.valid || !loginResult.profile) {
+        const msg = (loginResult as { error?: string }).error || 'Account non autorizzato';
+        throw new Error(msg);
       }
-
-      const profile = profiles?.[0];
-
-      if (!profile || profile.role !== 'super_admin') {
-        console.error('Ruolo non autorizzato o profilo mancante');
-        throw new Error('Account non autorizzato');
-      }
-
-      const ADMIN_PASSWORD = 'SuperAdmin2025!'
-      if (credentials.password !== ADMIN_PASSWORD) {
-        console.error('❌ Password non valida');
-        throw new Error('Password non valida');
-      }
-
-      console.log('✅ SuperAdmin verificato:', profile);
+      const profile = loginResult.profile as {
+        id: string;
+        email: string;
+        role: string;
+        first_name: string | null;
+        last_name: string | null;
+        created_at: string;
+      };
+      console.log('✅ SuperAdmin verificato:', profile.email);
 
       const sessionData = {
         admin_id: profile.id,
@@ -174,18 +180,9 @@ export function useAdminAuthBypass() {
         status: 'active',
         created_at: profile.created_at || new Date().toISOString()
       });
-      
-      try {
-        await supabase.from('admin_audit_logs').insert({
-          admin_id: profile.id,
-          action: 'login',
-          details: { email: profile.email }
-        });
-        console.log('✅ Audit log creato');
-      } catch (auditError) {
-        console.warn('⚠️ Audit log failed:', auditError);
-      }
-      
+
+      // Audit log su login rimosso da client: RLS su admin_audit_logs richiede auth,
+      // il bypass non ha sessione Supabase → 401. Se serve, fare insert da Edge Function.
       return { success: true };
 
     } catch (error: unknown) {

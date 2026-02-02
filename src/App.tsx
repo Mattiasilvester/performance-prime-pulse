@@ -13,6 +13,7 @@ import { Header } from '@/components/layout/Header'
 import BottomNavigation from '@/components/layout/BottomNavigation'
 import FeedbackWidget from '@/components/feedback/FeedbackWidget'
 import CookieBanner from '@/components/legal/CookieBanner'
+import { PageSkeleton } from '@/components/ui/PageSkeleton'
 
 // Import componenti core (non lazy)
 import { NewLandingPage } from '@/pages/landing/NewLandingPage'
@@ -38,6 +39,7 @@ import ServiziTariffePage from '@/pages/partner/ServiziTariffePage'
 import AbbonamentoPage from '@/pages/partner/dashboard/AbbonamentoPage'
 import CostiSpesePage from '@/pages/partner/dashboard/CostiSpesePage'
 import AndamentoPage from '@/pages/partner/dashboard/AndamentoPage'
+import ReportSettimanale from '@/pages/partner/dashboard/ReportSettimanale'
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const TermsAndConditions = lazy(() => import('@/pages/TermsAndConditions'))
 const MainPrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
@@ -81,12 +83,6 @@ const AdminCancellations = lazy(() => import('@/pages/admin/AdminCancellations')
 const AdminGuard = lazy(() => import('@/components/admin/AdminGuard'))
 const AdminLayout = lazy(() => import('@/components/admin/AdminLayout'))
 
-// Loading component per lazy loading
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-[400px]">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#EEBA2B]"></div>
-  </div>
-)
 
 // Componente wrapper per ai-coach che gestisce il footer condizionalmente
 const AICoachWrapper = ({ session }: { session: Session | null }) => {
@@ -96,7 +92,7 @@ const AICoachWrapper = ({ session }: { session: Session | null }) => {
     <ProtectedRoute session={session}>
       <Header />
       <div className="min-h-screen pt-24 pb-20">
-        <Suspense fallback={<LoadingSpinner />}>
+        <Suspense fallback={<PageSkeleton />}>
           <AICoach />
         </Suspense>
       </div>
@@ -183,7 +179,7 @@ function App() {
           <PrimeBotProvider>
             <Router>
             <CookieBanner />
-            <Suspense fallback={<LoadingSpinner />}>
+            <Suspense fallback={<PageSkeleton variant="default" />}>
               <Routes>
                 {/* ROUTE PUBBLICHE */}
                 <Route path="/" element={<LandingOrPartnerRedirect />} />
@@ -204,6 +200,7 @@ function App() {
                   <Route path="servizi" element={<ServiziTariffePage />} />
                   <Route path="costi-spese" element={<CostiSpesePage />} />
                   <Route path="andamento" element={<AndamentoPage />} />
+                  <Route path="report-settimanale" element={<ReportSettimanale />} />
                   <Route path="recensioni" element={<ReviewsPage />} />
                   <Route path="abbonamento" element={<AbbonamentoPage />} />
                   <Route path="impostazioni" element={<ImpostazioniPage />} />
@@ -215,18 +212,18 @@ function App() {
                 <Route path="/auth" element={<LoginPage />} />
                 <Route path="/auth/register" element={
                   session ? <Navigate to="/dashboard" /> : (
-                    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-black text-white">Caricamento...</div>}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <RegisterPage />
                     </Suspense>
                   )
                 } />
                 <Route path="/terms-and-conditions" element={
-                  <Suspense fallback={<div className="min-h-screen bg-black" />}>
+                  <Suspense fallback={<PageSkeleton />}>
                     <TermsAndConditions />
                   </Suspense>
                 } />
                 <Route path="/privacy-policy" element={
-                  <Suspense fallback={<div className="min-h-screen bg-black" />}>
+                  <Suspense fallback={<PageSkeleton />}>
                     <MainPrivacyPolicy />
                   </Suspense>
                 } />
@@ -236,7 +233,7 @@ function App() {
                   <ProtectedRoute session={session}>
                     <Header />
                     <div className="min-h-screen pt-24 pb-20">
-                      <Suspense fallback={<LoadingSpinner />}>
+                      <Suspense fallback={<PageSkeleton variant="dashboard" />}>
                         <Dashboard />
                       </Suspense>
                     </div>
@@ -248,7 +245,7 @@ function App() {
                   <ProtectedRoute session={session}>
                     <Header />
                     <div className="min-h-screen pt-24 pb-20">
-                      <Suspense fallback={<LoadingSpinner />}>
+                      <Suspense fallback={<PageSkeleton variant="dashboard" />}>
                         <Workouts />
                       </Suspense>
                     </div>
@@ -259,7 +256,7 @@ function App() {
                 <Route path="/diary" element={
                   <ProtectedRoute session={session}>
                     <Header />
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton variant="dashboard" />}>
                       <DiaryPage />
                     </Suspense>
                     <BottomNavigation />
@@ -269,7 +266,7 @@ function App() {
                 <Route path="/diary/notes" element={
                   <ProtectedRoute session={session}>
                     <Header />
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <DiaryNotesPage />
                     </Suspense>
                     <BottomNavigation />
@@ -278,7 +275,7 @@ function App() {
                 } />
                 <Route path="/workout/quick" element={
                   <ProtectedRoute session={session}>
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <QuickWorkout />
                     </Suspense>
                   </ProtectedRoute>
@@ -286,7 +283,7 @@ function App() {
                 <Route path="/timer" element={
                   <ProtectedRoute session={session}>
                     <Header />
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <Timer />
                     </Suspense>
                     <BottomNavigation />
@@ -297,7 +294,7 @@ function App() {
                   <ProtectedRoute session={session}>
                     <Header />
                     <div className="min-h-screen pt-24 pb-20">
-                      <Suspense fallback={<LoadingSpinner />}>
+                      <Suspense fallback={<PageSkeleton />}>
                         <Schedule />
                       </Suspense>
                     </div>
@@ -309,7 +306,7 @@ function App() {
                 <Route path="/subscriptions" element={
                   <ProtectedRoute session={session}>
                     <Header />
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <Subscriptions />
                     </Suspense>
                     <BottomNavigation />
@@ -320,7 +317,7 @@ function App() {
                   <ProtectedRoute session={session}>
                     <Header />
                     <div className="min-h-screen pt-24 pb-20">
-                      <Suspense fallback={<LoadingSpinner />}>
+                      <Suspense fallback={<PageSkeleton />}>
                         <Professionals />
                       </Suspense>
                     </div>
@@ -332,7 +329,7 @@ function App() {
                   <ProtectedRoute session={session}>
                     <Header />
                     <div className="min-h-screen pt-24 pb-20">
-                      <Suspense fallback={<LoadingSpinner />}>
+                      <Suspense fallback={<PageSkeleton />}>
                         <ProfessionalDetail />
                       </Suspense>
                     </div>
@@ -344,7 +341,7 @@ function App() {
                   <ProtectedRoute session={session}>
                     <Header />
                     <div className="min-h-screen pt-24 pb-20">
-                      <Suspense fallback={<LoadingSpinner />}>
+                      <Suspense fallback={<PageSkeleton />}>
                         <Profile />
                       </Suspense>
                     </div>
@@ -356,7 +353,7 @@ function App() {
                   <ProtectedRoute session={session}>
                     <Header />
                     <div className="min-h-screen pt-24 pb-20">
-                      <Suspense fallback={<LoadingSpinner />}>
+                      <Suspense fallback={<PageSkeleton variant="dashboard" />}>
                         <PlansPage />
                       </Suspense>
                     </div>
@@ -368,7 +365,7 @@ function App() {
                   <ProtectedRoute session={session}>
                     <Header />
                     <div className="min-h-screen pt-24 pb-20">
-                      <Suspense fallback={<LoadingSpinner />}>
+                      <Suspense fallback={<PageSkeleton />}>
                         <PlanCreationPage />
                       </Suspense>
                     </div>
@@ -380,7 +377,7 @@ function App() {
                   <ProtectedRoute session={session}>
                     <Header />
                     <div className="min-h-screen pt-24 pb-20">
-                      <Suspense fallback={<LoadingSpinner />}>
+                      <Suspense fallback={<PageSkeleton />}>
                         <ActivePlansPage />
                       </Suspense>
                     </div>
@@ -391,7 +388,7 @@ function App() {
                 <Route path="/settings/personal-info" element={
                   <ProtectedRoute session={session}>
                     <Header />
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <PersonalInfo />
                     </Suspense>
                     <BottomNavigation />
@@ -401,7 +398,7 @@ function App() {
                 <Route path="/settings/security" element={
                   <ProtectedRoute session={session}>
                     <Header />
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <Security />
                     </Suspense>
                     <BottomNavigation />
@@ -411,7 +408,7 @@ function App() {
                 <Route path="/settings/notifications" element={
                   <ProtectedRoute session={session}>
                     <Header />
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <Notifications />
                     </Suspense>
                     <BottomNavigation />
@@ -421,7 +418,7 @@ function App() {
                 <Route path="/settings/language" element={
                   <ProtectedRoute session={session}>
                     <Header />
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <Language />
                     </Suspense>
                     <BottomNavigation />
@@ -431,7 +428,7 @@ function App() {
                 <Route path="/settings/privacy" element={
                   <ProtectedRoute session={session}>
                     <Header />
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <Privacy />
                     </Suspense>
                     <BottomNavigation />
@@ -441,7 +438,7 @@ function App() {
                 <Route path="/settings/help" element={
                   <ProtectedRoute session={session}>
                     <Header />
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense fallback={<PageSkeleton />}>
                       <Help />
                     </Suspense>
                     <BottomNavigation />
@@ -450,57 +447,58 @@ function App() {
                 
                 {/* ROUTE SUPERADMIN NASCOSTE - NON LINKATE DA NESSUNA PARTE */}
                 <Route path="/nexus-prime-control" element={
-                  <Suspense fallback={<LoadingSpinner />}>
+                  <Suspense fallback={<PageSkeleton />}>
                     <SuperAdminLogin />
                   </Suspense>
                 } />
                 <Route path="/test-db" element={
-                  <Suspense fallback={<LoadingSpinner />}>
+                  <Suspense fallback={<PageSkeleton />}>
                     <TestConnection />
                   </Suspense>
                 } />
                 <Route path="/diagnostic" element={
-                  <Suspense fallback={<LoadingSpinner />}>
+                  <Suspense fallback={<PageSkeleton />}>
                     <DatabaseDiagnostic />
                   </Suspense>
                 } />
                 <Route path="/nexus-prime-control/*" element={
-                  <Suspense fallback={<LoadingSpinner />}>
+                  <Suspense fallback={<PageSkeleton />}>
                     <AdminGuard>
                       <AdminLayout>
                         <Routes>
+                          <Route index element={<Navigate to="dashboard" replace />} />
                           <Route path="dashboard" element={
-                            <Suspense fallback={<LoadingSpinner />}>
+                            <Suspense fallback={<PageSkeleton />}>
                               <SuperAdminDashboard />
                             </Suspense>
                           } />
                           <Route path="users" element={
-                            <Suspense fallback={<LoadingSpinner />}>
+                            <Suspense fallback={<PageSkeleton />}>
                               <AdminUsers />
                             </Suspense>
                           } />
                           <Route path="analytics" element={
-                            <Suspense fallback={<LoadingSpinner />}>
+                            <Suspense fallback={<PageSkeleton />}>
                               <AdminAnalytics />
                             </Suspense>
                           } />
                           <Route path="system" element={
-                            <Suspense fallback={<LoadingSpinner />}>
+                            <Suspense fallback={<PageSkeleton />}>
                               <AdminSystem />
                             </Suspense>
                           } />
                           <Route path="logs" element={
-                            <Suspense fallback={<LoadingSpinner />}>
+                            <Suspense fallback={<PageSkeleton />}>
                               <AdminAuditLogs />
                             </Suspense>
                           } />
                           <Route path="cancellations" element={
-                            <Suspense fallback={<LoadingSpinner />}>
+                            <Suspense fallback={<PageSkeleton />}>
                               <AdminCancellations />
                             </Suspense>
                           } />
                           <Route path="diagnostic" element={
-                            <Suspense fallback={<LoadingSpinner />}>
+                            <Suspense fallback={<PageSkeleton />}>
                               <DatabaseDiagnostic />
                             </Suspense>
                           } />

@@ -26,36 +26,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   const menuItems = [
-    { 
-      icon: LayoutDashboard, 
-      label: 'Dashboard', 
-      path: '/nexus-prime-control/dashboard' 
-    },
-    { 
-      icon: Users, 
-      label: 'Utenti', 
-      path: '/nexus-prime-control/users'
-    },
-    { 
-      icon: BarChart3, 
-      label: 'Analytics', 
-      path: '/nexus-prime-control/analytics' 
-    },
-    { 
-      icon: Settings, 
-      label: 'Sistema', 
-      path: '/nexus-prime-control/system' 
-    },
-    { 
-      icon: FileText, 
-      label: 'Audit Logs', 
-      path: '/nexus-prime-control/audit-logs' 
-    },
-    { 
-      icon: XCircle, 
-      label: 'Cancellazioni', 
-      path: '/nexus-prime-control/cancellations' 
-    },
+    { icon: LayoutDashboard, label: 'Overview', path: '/nexus-prime-control/dashboard' },
+    { icon: Users, label: 'Utenti (B2C)', path: '/nexus-prime-control/users' },
+    { icon: BarChart3, label: 'Analytics', path: '/nexus-prime-control/analytics' },
+    { icon: Settings, label: 'Sistema', path: '/nexus-prime-control/system' },
+    { icon: FileText, label: 'Audit Logs', path: '/nexus-prime-control/logs' },
+    { icon: XCircle, label: 'Cancellazioni', path: '/nexus-prime-control/cancellations' },
   ];
 
   useEffect(() => {

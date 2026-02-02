@@ -8,6 +8,11 @@ import {
   XCircle,
   Loader2,
 } from 'lucide-react';
+import {
+  getDisplayStatus,
+  bookingDisplayStatusConfig,
+  type BookingDisplayStatus,
+} from '@/utils/bookingHelpers';
 
 type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
@@ -62,25 +67,19 @@ export function AppointmentCard({
     return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
   };
 
-  const getStatusBadge = (status: BookingStatus) => {
-    const styles = {
-      pending: 'bg-amber-100 text-amber-700',
-      confirmed: 'bg-blue-100 text-blue-700',
-      completed: 'bg-green-100 text-green-700',
-      cancelled: 'bg-red-100 text-red-700',
-    };
-    const labels = {
-      pending: 'In attesa',
-      confirmed: 'Confermato',
-      completed: 'Completato',
-      cancelled: 'Cancellato',
-    };
-    return (
-      <span className={`px-3 py-1 rounded-full text-sm font-medium ${styles[status]}`}>
-        {labels[status]}
-      </span>
-    );
-  };
+  const displayStatus: BookingDisplayStatus = getDisplayStatus({
+    status: appointment.status,
+    booking_date: appointment.booking_date,
+  });
+  const statusConfig = bookingDisplayStatusConfig[displayStatus];
+
+  const getStatusBadge = () => (
+    <span
+      className={`px-3 py-1 rounded-full text-sm font-medium ${statusConfig.className}`}
+    >
+      {statusConfig.label}
+    </span>
+  );
 
   const getClientInfo = () => {
     let clientName = appointment.client_name ?? 'Cliente';
@@ -109,7 +108,8 @@ export function AppointmentCard({
   const canConfirm = appointment.status === 'pending' && onConfirm;
   const canComplete = appointment.status === 'confirmed' && onComplete;
   const canCancel =
-    (appointment.status === 'pending' || appointment.status === 'confirmed') && onCancel;
+    (appointment.status === 'pending' || appointment.status === 'confirmed') &&
+    onCancel;
   const isAnyLoading = isConfirming || isCompleting || isCancelling;
 
   return (
@@ -160,7 +160,7 @@ export function AppointmentCard({
 
         {/* Status and Actions */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          {getStatusBadge(appointment.status)}
+          {getStatusBadge()}
 
           {(canConfirm || canComplete || canCancel) && (
             <div className="flex items-center gap-2">

@@ -6,9 +6,11 @@ interface TagsInputProps {
   onChange: (tags: string[]) => void;
   placeholder?: string;
   maxTags?: number;
+  /** Etichetta per il conteggio (es. "certificazioni" o "titoli") */
+  countLabel?: string;
 }
 
-export function TagsInput({ tags, onChange, placeholder = 'Premi Enter per aggiungere', maxTags = 10 }: TagsInputProps) {
+export function TagsInput({ tags, onChange, placeholder = 'Premi Enter per aggiungere', maxTags = 10, countLabel = 'certificazioni' }: TagsInputProps) {
   const [inputValue, setInputValue] = useState('');
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -41,9 +43,10 @@ export function TagsInput({ tags, onChange, placeholder = 'Premi Enter per aggiu
               <button
                 type="button"
                 onClick={() => removeTag(tag)}
-                className="inline-flex items-center justify-center w-4 h-4 text-orange-500 hover:text-orange-700 hover:bg-orange-200 rounded-full transition-colors"
+                className="inline-flex items-center justify-center w-5 h-5 shrink-0 rounded-full text-orange-500 hover:text-orange-700 hover:bg-orange-200 transition-colors"
+                aria-label="Rimuovi"
               >
-                <X className="w-3 h-3" />
+                <X className="w-3 h-3 flex-shrink-0" />
               </button>
             </span>
           ))}
@@ -60,7 +63,7 @@ export function TagsInput({ tags, onChange, placeholder = 'Premi Enter per aggiu
       </div>
       {tags.length > 0 && (
         <p className="text-xs text-gray-500">
-          {tags.length}/{maxTags} certificazioni aggiunte
+          {tags.length}/{maxTags} {countLabel} aggiunt{countLabel === 'certificazioni' ? 'e' : 'i'}
         </p>
       )}
     </div>

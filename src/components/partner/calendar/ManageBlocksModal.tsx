@@ -11,10 +11,13 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
-  AlertTriangle
+  AlertTriangle,
+  Lock,
+  Clock
 } from 'lucide-react';
 import { blockedPeriodsService } from '@/services/blockedPeriodsService';
 import type { BlockedPeriod, BlockType } from '@/types/blocked-periods';
+import { availabilityOverrideService, type AvailabilityOverride } from '@/services/availabilityOverrideService';
 
 // =============================================
 // COSTANTI
@@ -398,6 +401,38 @@ const BlockedPeriodCard = ({
   </div>
 );
 
+/** Card per fascia oraria bloccata (availability_overrides) */
+const HourOverrideCard = ({
+  override,
+  onDelete,
+  deleting,
+}: {
+  override: AvailabilityOverride;
+  onDelete: (id: string) => void;
+  deleting: boolean;
+}) => (
+  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+    <div className="flex items-center gap-3">
+      <Clock className="w-5 h-5 text-gray-600" />
+      <div>
+        <p className="font-medium text-gray-800">{formatDate(override.override_date)}</p>
+        <p className="text-sm text-gray-500">
+          {override.start_time.slice(0, 5)} – {override.end_time.slice(0, 5)}
+          {override.reason && ` • ${getReasonLabel(override.reason)}`}
+        </p>
+      </div>
+    </div>
+    <button
+      onClick={() => onDelete(override.id)}
+      disabled={deleting}
+      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition disabled:opacity-50"
+      title="Rimuovi blocco"
+    >
+      <Trash2 className="w-5 h-5" />
+    </button>
+  </div>
+);
+
 // =============================================
 // COMPONENTE PRINCIPALE
 // =============================================
@@ -419,12 +454,16 @@ export const ManageBlocksModal = ({
 }: ManageBlocksModalProps) => {
   // State
   const [activeTab, setActiveTab] = useState<'block' | 'list'>('block');
+  const [blockKind, setBlockKind] = useState<'day' | 'week' | 'hours'>('day');
   const [blocks, setBlocks] = useState<BlockedPeriod[]>([]);
+  const [hourOverrides, setHourOverrides] = useState<AvailabilityOverride[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingHours, setLoadingHours] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
+  const [overrideToDelete, setOverrideToDelete] = useState<string | null>(null);
 
   // Form state per blocco giorno
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -432,25 +471,40 @@ export const ManageBlocksModal = ({
   // Form state per blocco settimana
   const [selectedWeek, setSelectedWeek] = useState<{ start: string; end: string } | null>(null);
   
+  // Form state per fascia oraria
+  const todayStr = formatDateToString(new Date());
+  const [overrideDate, setOverrideDate] = useState(todayStr);
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('13:00');
+  
   // Motivo comune
   const [reason, setReason] = useState('');
 
-  // Fetch blocchi esistenti
+  // Fetch blocchi esistenti e fasce orarie
   useEffect(() => {
     if (isOpen && professionalId) {
       fetchBlocks();
+      fetchHourOverrides();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchBlocks stable, avoid re-fetch on fn identity
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch stable, avoid re-fetch on fn identity
   }, [isOpen, professionalId]);
+
+  // All'apertura imposta il tipo di blocco in base alla vista calendario
+  useEffect(() => {
+    if (isOpen) setBlockKind(currentView === 'day' ? 'day' : 'week');
+  }, [isOpen, currentView]);
 
   // Reset form quando si cambia tab o si apre modal
   useEffect(() => {
     if (isOpen) {
       setSelectedDate(null);
       setSelectedWeek(null);
+      setOverrideDate(todayStr);
+      setStartTime('09:00');
+      setEndTime('13:00');
       setReason('');
     }
-  }, [isOpen, activeTab]);
+  }, [isOpen, activeTab, todayStr]);
 
   const fetchBlocks = async () => {
     setLoading(true);
@@ -462,6 +516,19 @@ export const ManageBlocksModal = ({
       toast.error('Errore nel caricamento dei blocchi');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHourOverrides = async () => {
+    setLoadingHours(true);
+    try {
+      const data = await availabilityOverrideService.getUpcoming(professionalId, todayStr);
+      setHourOverrides(data);
+    } catch (error) {
+      console.error('Errore fetch fasce orarie:', error);
+      setHourOverrides([]);
+    } finally {
+      setLoadingHours(false);
     }
   };
 
@@ -530,10 +597,34 @@ export const ManageBlocksModal = ({
 
   const handleDeleteClick = (id: string) => {
     setBlockToDelete(id);
+    setOverrideToDelete(null);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteHourClick = (id: string) => {
+    setOverrideToDelete(id);
+    setBlockToDelete(null);
     setShowDeleteConfirm(true);
   };
 
   const handleDeleteConfirm = async () => {
+    if (overrideToDelete) {
+      setDeleting(true);
+      try {
+        await availabilityOverrideService.removeBlock(overrideToDelete);
+        toast.success('Fascia oraria sbloccata');
+        await fetchHourOverrides();
+        onBlocksChanged?.();
+        setShowDeleteConfirm(false);
+        setOverrideToDelete(null);
+      } catch (error) {
+        console.error('Errore rimozione fascia oraria:', error);
+        toast.error('Errore durante la rimozione');
+      } finally {
+        setDeleting(false);
+      }
+      return;
+    }
     if (!blockToDelete) return;
 
     setDeleting(true);
@@ -549,6 +640,34 @@ export const ManageBlocksModal = ({
       toast.error('Errore durante la rimozione del blocco');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleBlockHours = async () => {
+    if (endTime <= startTime) {
+      toast.error('L\'orario di fine deve essere dopo l\'orario di inizio');
+      return;
+    }
+    setSaving(true);
+    try {
+      await availabilityOverrideService.blockSlots(professionalId, {
+        override_date: overrideDate,
+        start_time: startTime,
+        end_time: endTime,
+        reason: reason || undefined,
+      });
+      toast.success('Fascia oraria bloccata');
+      setOverrideDate(todayStr);
+      setStartTime('09:00');
+      setEndTime('13:00');
+      setReason('');
+      await fetchHourOverrides();
+      onBlocksChanged?.();
+    } catch (error) {
+      console.error('Errore blocco fascia oraria:', error);
+      toast.error('Errore durante il salvataggio');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -596,7 +715,7 @@ export const ManageBlocksModal = ({
             onClick={() => setActiveTab('list')}
           >
             <List className="w-4 h-4" />
-            Blocchi Attivi ({blocks.length})
+            Blocchi Attivi ({blocks.length + hourOverrides.length})
           </TabButton>
         </div>
 
@@ -606,9 +725,24 @@ export const ManageBlocksModal = ({
           {/* TAB: BLOCCA */}
           {activeTab === 'block' && (
             <div className="space-y-5">
+              {/* Scelta tipo: Giorno | Settimana | Fascia oraria */}
+              <div className="flex gap-2 flex-wrap">
+                <TabButton active={blockKind === 'day'} onClick={() => setBlockKind('day')}>
+                  <Calendar className="w-4 h-4" />
+                  Giorno
+                </TabButton>
+                <TabButton active={blockKind === 'week'} onClick={() => setBlockKind('week')}>
+                  <Calendar className="w-4 h-4" />
+                  Settimana
+                </TabButton>
+                <TabButton active={blockKind === 'hours'} onClick={() => setBlockKind('hours')}>
+                  <Lock className="w-4 h-4" />
+                  Fascia oraria
+                </TabButton>
+              </div>
               
               {/* Blocco Giorno */}
-              {currentView === 'day' && (
+              {blockKind === 'day' && (
                 <>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-1">
@@ -671,7 +805,7 @@ export const ManageBlocksModal = ({
               )}
 
               {/* Blocco Settimana */}
-              {currentView === 'week' && (
+              {blockKind === 'week' && (
                 <>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-1">
@@ -730,6 +864,80 @@ export const ManageBlocksModal = ({
                   </button>
                 </>
               )}
+
+              {/* Blocco Fascia oraria */}
+              {blockKind === 'hours' && (
+                <>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                      Blocca una fascia oraria
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Indica data e orari da rendere non disponibili per le prenotazioni (anche per i clienti).
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Data</label>
+                    <input
+                      type="date"
+                      value={overrideDate}
+                      min={todayStr}
+                      onChange={(e) => setOverrideDate(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-[#EEBA2B] focus:ring-1 focus:ring-[#EEBA2B] outline-none bg-white text-gray-900"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Ora inizio</label>
+                      <input
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-[#EEBA2B] focus:ring-1 focus:ring-[#EEBA2B] outline-none bg-white text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Ora fine</label>
+                      <input
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-[#EEBA2B] focus:ring-1 focus:ring-[#EEBA2B] outline-none bg-white text-gray-900"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Motivo (opzionale)</label>
+                    <select
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-[#EEBA2B] focus:ring-1 focus:ring-[#EEBA2B] outline-none bg-white text-gray-900"
+                    >
+                      {BLOCK_REASONS.map(r => (
+                        <option key={r.value} value={r.value}>{r.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    onClick={handleBlockHours}
+                    disabled={saving}
+                    className="w-full bg-red-500 text-white font-semibold py-3 rounded-xl hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {saving ? (
+                      <>
+                        <span className="animate-spin">⏳</span>
+                        Salvataggio...
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-5 h-5" />
+                        Blocca fascia oraria
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
             </div>
           )}
 
@@ -741,33 +949,54 @@ export const ManageBlocksModal = ({
                   I tuoi blocchi attivi
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Questi periodi non sono disponibili per le prenotazioni.
+                  Giorni, settimane e fasce orarie non disponibili per le prenotazioni (anche per i clienti).
                 </p>
               </div>
 
-              {loading ? (
+              {loading || loadingHours ? (
                 <div className="text-center py-8 text-gray-500">
                   Caricamento...
                 </div>
-              ) : blocks.length === 0 ? (
+              ) : blocks.length === 0 && hourOverrides.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-xl">
                   <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                   <p className="font-medium text-gray-700">Nessun blocco attivo</p>
                   <p className="text-sm text-gray-500 mt-1">
-                    Non hai ancora bloccato nessun giorno o settimana.<br />
-                    Usa la tab "Blocca" per aggiungere un blocco.
+                    Usa la tab "Blocca" per bloccare un giorno, una settimana o una fascia oraria.
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {blocks.map(block => (
-                    <BlockedPeriodCard
-                      key={block.id}
-                      block={block}
-                      onDelete={handleDeleteClick}
-                      deleting={deleting}
-                    />
-                  ))}
+                <div className="space-y-4">
+                  {blocks.length > 0 && (
+                    <>
+                      <h4 className="text-sm font-medium text-gray-600">Giorni / Settimane</h4>
+                      <div className="space-y-3">
+                        {blocks.map(block => (
+                          <BlockedPeriodCard
+                            key={block.id}
+                            block={block}
+                            onDelete={handleDeleteClick}
+                            deleting={deleting}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {hourOverrides.length > 0 && (
+                    <>
+                      <h4 className="text-sm font-medium text-gray-600">Fasce orarie</h4>
+                      <div className="space-y-3">
+                        {hourOverrides.map(o => (
+                          <HourOverrideCard
+                            key={o.id}
+                            override={o}
+                            onDelete={handleDeleteHourClick}
+                            deleting={deleting}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -789,7 +1018,13 @@ export const ManageBlocksModal = ({
       {showDeleteConfirm && (
         <div 
           className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-          onClick={() => !deleting && setShowDeleteConfirm(false)}
+          onClick={() => {
+            if (!deleting) {
+              setShowDeleteConfirm(false);
+              setBlockToDelete(null);
+              setOverrideToDelete(null);
+            }
+          }}
         >
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/60 animate-fadeIn" />
@@ -822,6 +1057,7 @@ export const ManageBlocksModal = ({
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setBlockToDelete(null);
+                  setOverrideToDelete(null);
                 }}
                 disabled={deleting}
                 className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

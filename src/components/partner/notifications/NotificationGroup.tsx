@@ -11,13 +11,15 @@ interface NotificationGroupProps {
   onMarkAsRead: (id: string) => void;
   onRemove: (id: string) => void;
   onMarkGroupAsRead: (notificationIds: string[]) => void;
+  onNavigateToUrl?: (url: string) => void;
 }
 
 export function NotificationGroup({
   group,
   onMarkAsRead,
   onRemove,
-  onMarkGroupAsRead
+  onMarkGroupAsRead,
+  onNavigateToUrl,
 }: NotificationGroupProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -157,6 +159,7 @@ export function NotificationGroup({
                 notification={notification}
                 onMarkAsRead={onMarkAsRead}
                 onRemove={onRemove}
+                onNavigateToUrl={onNavigateToUrl}
               />
             ))}
           </div>

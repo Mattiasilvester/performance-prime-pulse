@@ -13,6 +13,7 @@ export interface Professional {
   bio: string | null;
   foto_url: string | null;
   specializzazioni: string[] | null;
+  titolo_studio?: string[] | null;
   zona: string | null;
   modalita: 'online' | 'presenza' | 'entrambi';
   prezzo_fascia: '€' | '€€' | '€€€';
@@ -155,6 +156,7 @@ export async function getProfessionalById(id: string): Promise<Professional | nu
         bio, 
         foto_url, 
         specializzazioni, 
+        titolo_studio,
         zona, 
         modalita, 
         prezzo_fascia, 

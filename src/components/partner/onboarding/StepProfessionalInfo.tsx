@@ -2,10 +2,22 @@ import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TagsInput } from './TagsInput';
 
+const TITOLO_STUDIO_SUGGERIMENTI = [
+  'Laurea in Scienze Motorie',
+  'Laurea in Fisioterapia',
+  'Master in Nutrizione Sportiva',
+  'NSCA-CPT',
+  'ACE Personal Trainer',
+  'ISSA',
+  'Certificazione NASM',
+  'Diploma Istituto Superiore Educazione Fisica',
+  'Altro',
+];
+
 interface StepProfessionalInfoProps {
   data: {
     city: string;
-    titolo_studio: string;
+    titolo_studio: string[];
     certificazioni: string[];
     studio_sede: string;
   };
@@ -118,22 +130,23 @@ export function StepProfessionalInfo({ data, onChange, errors }: StepProfessiona
       </div>
 
       <div>
-        <label htmlFor="titolo_studio" className="block text-gray-700 font-medium mb-2">
+        <label className="block text-gray-700 font-medium mb-2">
           Titolo di studio *
+          <span className="text-gray-400 text-sm font-normal ml-1">(premi Enter per aggiungere)</span>
         </label>
-        <input
-          type="text"
-          id="titolo_studio"
-          value={data.titolo_studio}
-          onChange={(e) => onChange('titolo_studio', e.target.value)}
-          className={`w-full px-4 py-3 bg-gray-800 border rounded-xl text-white placeholder:text-gray-400 focus:ring-2 focus:ring-[var(--partner-accent)] focus:border-transparent outline-none transition-all duration-200 ${
-            errors.titolo_studio ? 'border-red-300' : 'border-gray-600'
-          }`}
-          placeholder="Es: Laurea in Scienze Motorie"
+        <TagsInput
+          tags={data.titolo_studio}
+          onChange={(tags) => onChange('titolo_studio', tags)}
+          placeholder="Es: Laurea in Scienze Motorie, Master, NSCA..."
+          maxTags={10}
+          countLabel="titoli"
         />
         {errors.titolo_studio && (
           <p className="mt-1 text-sm text-red-600">{errors.titolo_studio}</p>
         )}
+        <p className="mt-1 text-xs text-gray-500">
+          Suggerimenti: {TITOLO_STUDIO_SUGGERIMENTI.slice(0, 5).join(', ')}...
+        </p>
       </div>
 
       <div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, CalendarCheck, TrendingUp, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { getDisplayStatus } from '@/utils/bookingHelpers';
 import { KPICard } from './KPICard';
 import { ClientGrowthView } from './ClientGrowthView';
 import { AppointmentsView } from './AppointmentsView';
@@ -31,6 +32,7 @@ interface KPIData {
     completed: number;
     cancelled: number;
     pending: number;
+    incomplete: number;
     completedPercent: number;
     monthlyTrend: Array<{ name: string; value: number }>;
   };
@@ -91,7 +93,8 @@ function getPlaceholderData(): KPIData {
       total: 14,
       completed: 10,
       cancelled: 1,
-      pending: 3,
+      pending: 2,
+      incomplete: 1,
       completedPercent: 71,
       monthlyTrend: monthsApp,
     },
@@ -132,7 +135,8 @@ export function KPICardsSection({
       setData(getPlaceholderData());
       setLoading(false);
     }
-  }, [professionalId]);
+  // Esegui fetch quando cambia professionalId; fetchAllKPIData non in deps per evitare loop
+  }, [professionalId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchAllKPIData = async () => {
     if (!professionalId) return;
@@ -199,7 +203,7 @@ export function KPICardsSection({
 
         supabase
           .from('bookings')
-          .select('status')
+          .select('status, booking_date')
           .eq('professional_id', professionalId)
           .gte('booking_date', startThis)
           .lte('booking_date', endThis),
@@ -257,7 +261,10 @@ export function KPICardsSection({
       const completed = bookings.filter((b) => b.status === 'completed').length;
       const cancelled = bookings.filter((b) => b.status === 'cancelled').length;
       const pending = bookings.filter(
-        (b) => b.status === 'pending' || b.status === 'confirmed'
+        (b) => getDisplayStatus({ status: b.status, booking_date: b.booking_date }) === 'pending'
+      ).length;
+      const incomplete = bookings.filter(
+        (b) => getDisplayStatus({ status: b.status, booking_date: b.booking_date }) === 'incomplete'
       ).length;
       const totalBookings = bookings.length;
       const completedPercent =
@@ -440,6 +447,7 @@ export function KPICardsSection({
                 completed,
                 cancelled,
                 pending,
+                incomplete,
                 completedPercent,
                 monthlyTrend: appointmentsMonthlyTrend,
               },

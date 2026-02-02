@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Trash2, Clock } from 'lucide-react';
+import { Plus, Trash2, Clock, Lock } from 'lucide-react';
+import { availabilityOverrideService, type AvailabilityOverride } from '@/services/availabilityOverrideService';
 
 interface TimeSlot {
   id?: string;
@@ -26,12 +27,27 @@ const DAYS: { day_of_week: number; name: string }[] = [
   { day_of_week: 0, name: 'Domenica' },
 ];
 
+function formatDateToString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function formatDateLabel(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 export default function DisponibilitaManager() {
   const [professionalId, setProfessionalId] = useState<string | null>(null);
   const [availability, setAvailability] = useState<DayAvailability[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<{ [key: number]: boolean }>({});
   const [saveTimeout, setSaveTimeout] = useState<{ [key: number]: NodeJS.Timeout }>({});
+  const [upcomingOverrides, setUpcomingOverrides] = useState<AvailabilityOverride[]>([]);
+  const [loadingOverrides, setLoadingOverrides] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Carica professional_id
   useEffect(() => {
@@ -45,6 +61,25 @@ export default function DisponibilitaManager() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [professionalId]);
+
+  const loadUpcomingOverrides = useCallback(async () => {
+    if (!professionalId) return;
+    setLoadingOverrides(true);
+    try {
+      const today = formatDateToString(new Date());
+      const list = await availabilityOverrideService.getUpcoming(professionalId, today);
+      setUpcomingOverrides(list);
+    } catch (err) {
+      console.error('Errore caricamento blocchi orari:', err);
+      setUpcomingOverrides([]);
+    } finally {
+      setLoadingOverrides(false);
+    }
+  }, [professionalId]);
+
+  useEffect(() => {
+    if (professionalId) loadUpcomingOverrides();
+  }, [professionalId, loadUpcomingOverrides]);
 
   const loadProfessionalId = async () => {
     try {
@@ -391,6 +426,20 @@ export default function DisponibilitaManager() {
     );
   }
 
+  const handleRemoveOverride = async (id: string) => {
+    setDeletingId(id);
+    try {
+      await availabilityOverrideService.removeBlock(id);
+      setUpcomingOverrides((prev) => prev.filter((o) => o.id !== id));
+      toast.success('Blocco orario rimosso');
+    } catch (err) {
+      console.error('Errore rimozione blocco:', err);
+      toast.error('Errore durante la rimozione');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
@@ -399,6 +448,62 @@ export default function DisponibilitaManager() {
           Imposta quando sei disponibile per ricevere prenotazioni
         </p>
       </div>
+
+      {/* Blocchi orari prossimi (slot non disponibili) */}
+      {professionalId && (
+        <div className="bg-white rounded-xl border border-gray-200 border-l-4 border-l-[#EEBA2B] p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Lock className="w-5 h-5 text-[#EEBA2B]" />
+            <h2 className="text-xl font-semibold text-gray-900">Blocchi orari prossimi</h2>
+          </div>
+          <p className="text-gray-500 text-sm mb-4">
+            Fasce orarie che hai bloccato in giorni specifici. Puoi rimuoverle qui.
+          </p>
+          {loadingOverrides ? (
+            <div className="flex items-center justify-center py-6">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#EEBA2B] border-t-transparent" />
+            </div>
+          ) : upcomingOverrides.length === 0 ? (
+            <p className="text-sm text-gray-400 py-4">Nessun blocco orario nei prossimi periodi.</p>
+          ) : (
+            <ul className="space-y-3">
+              {upcomingOverrides.map((o) => (
+                <li
+                  key={o.id}
+                  className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <span className="font-medium text-gray-900 block truncate">
+                        {formatDateLabel(o.override_date)}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {o.start_time.slice(0, 5)} – {o.end_time.slice(0, 5)}
+                        {o.reason ? ` · ${o.reason}` : ''}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveOverride(o.id)}
+                    disabled={deletingId === o.id}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 flex-shrink-0"
+                    title="Rimuovi blocco"
+                    aria-label="Rimuovi blocco"
+                  >
+                    {deletingId === o.id ? (
+                      <div className="w-4 h-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {availability.map(day => (
         <div

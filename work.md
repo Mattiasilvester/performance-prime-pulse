@@ -9,6 +9,40 @@
 
 ## 📅 **CRONOLOGIA COMPLETA DEL LAVORO**
 
+### **2 Febbraio 2026 - Sessione: SuperAdmin Analytics + KPI Aggiuntivi + Migrations + Partner (Block Slots, Report, Booking)**
+**Ora inizio:** ~12:00  
+**Ora fine:** ~14:00  
+**Durata:** ~2 ore  
+**Branch:** dev  
+
+#### **🎯 Obiettivo:**
+Completare Analytics SuperAdmin (B2B/B2C, revenue da abbonamenti), KPI aggiuntivi in Overview (Churn B2B, Booking completati %, In scadenza, Utenti B2C attivi), migrations (handle_new_user, availability_overrides, titolo_studio), area partner (blocco slot, report settimanale, booking helpers, notifiche).
+
+#### **✅ Implementato:**
+- **Admin Analytics**: Edge Function `admin-analytics` con crescita utenti B2C (esclusi professionisti), crescita professionisti B2B, revenue mensile e MRR da `subscription_invoices`; pagina Analytics con 4 grafici (LineChart); rimozione BarChart per evitare warning Recharts duplicate key.
+- **Admin KPI Aggiuntivi**: Edge Function `admin-stats` estesa con churn B2B (subscription canceled), cancellazioni in scadenza (cancel_at_period_end), tasso completamento booking, utenti B2C attivi (profiles esclusi professionisti + user_workout_stats ≥1 workout). Componente `AdminKpiAggiuntivi.tsx` con 4 card (Churn B2B, Booking completati %, In scadenza con link a Cancellazioni, Utenti B2C attivi); rimozione card Rating medio (già in Pulse Check); layout grid 4 colonne con min-height e card coerenti.
+- **Migrations**: `handle_new_user` per creazione profilo alla registrazione; `availability_overrides` per blocchi slot; `titolo_studio_array`; documentazione verifica analytics e KPI in docs.
+- **Partner**: BlockSlotsModal, availabilityOverrideService, AgendaView/DisponibilitaManager integrazione blocchi; ReportSettimanale, weeklyReportService/Export; bookingHelpers (getDisplayStatus per incomplete); AppointmentsView/KPICardsSection/OverviewPage/PrenotazioniPage allineati a stati booking; notifiche/promemori e servizi correlati.
+
+#### **🐛 Bug Risolti:**
+- Warning Recharts "duplicate key rectangle" in AdminAnalytics: risolto convertendo BarChart revenue in LineChart (rimozione Bar).
+- Card KPI Aggiuntivi disallineate dopo rimozione 5ª card: grid da 5 a 4 colonne (lg:grid-cols-4), min-h e classi condivise per 4 card coerenti.
+
+#### **🔒 Componenti Locked:**
+- Nessuno modificato nella lista locked; toccati AdminAnalytics, SuperAdminDashboard, PulseCheckCards (esistenti), nuovo AdminKpiAggiuntivi.
+
+#### **📊 Metriche:**
+- Build: 18.72s  
+- Bundle: ~2.33 MB (index principale ~1.07 MB gzip ~247 KB)  
+- Errori TS: 0  
+
+#### **📋 TODO Prossima Sessione:**
+1. Deploy Edge Functions `admin-stats` e `admin-analytics` su Supabase (supabase functions deploy).
+2. Valutare refresh automatico KPI Overview (es. polling ogni 60s) senza click "Aggiorna".
+3. Altri task da docs/TODO_PRIMEPRO_2026.md.
+
+---
+
 ### **1 Febbraio 2026 - Sessione: Fix Report Verifica (TODO List) + Gestionale Costi + Report Commercialista + Background Loading**
 **Ora inizio:** ~16:00  
 **Ora fine:** ~18:00  

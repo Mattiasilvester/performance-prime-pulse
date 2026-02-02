@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { AppointmentCard } from './AppointmentCard';
+import { getDisplayStatus } from '@/utils/bookingHelpers';
 
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
-type FilterType = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled';
+type FilterType = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'incomplete';
 
 export interface Booking {
   id: string;
@@ -32,10 +33,11 @@ const ITEMS_PER_PAGE = 10;
 
 const filterLabels: Record<FilterType, string> = {
   all: 'Tutti',
-  pending: 'In Attesa',
+  pending: 'In attesa',
   confirmed: 'Confermati',
   completed: 'Completati',
   cancelled: 'Cancellati',
+  incomplete: 'Non completati',
 };
 
 export function AppointmentsList({
@@ -53,7 +55,13 @@ export function AppointmentsList({
   const [loadingAction, setLoadingAction] = useState<'confirm' | 'complete' | null>(null);
 
   const filteredAppointments =
-    filter === 'all' ? appointments : appointments.filter((a) => a.status === filter);
+    filter === 'all'
+      ? appointments
+      : filter === 'incomplete'
+        ? appointments.filter((a) => getDisplayStatus({ status: a.status, booking_date: a.booking_date }) === 'incomplete')
+        : filter === 'pending'
+          ? appointments.filter((a) => getDisplayStatus({ status: a.status, booking_date: a.booking_date }) === 'pending')
+          : appointments.filter((a) => a.status === filter);
 
   const sortedAppointments = [...filteredAppointments].sort((a, b) => {
     const dateA = new Date(`${a.booking_date}T${a.booking_time}`);
