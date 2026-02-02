@@ -2,6 +2,12 @@
 
 ## Decisioni Architetturali
 
+### 2 Febbraio 2026 - Sessione SuperAdmin Analytics + KPI Aggiuntivi
+- **Admin KPI da admin-stats**: Churn B2B (count professional_subscriptions status=canceled), cancellazioni in scadenza (cancel_at_period_end=true), bookingCompletionRate (bookingsCompleted/bookingsThisMonth), utenti B2C attivi (profiles esclusi professionals.user_id + user_workout_stats total_workouts≥1). Tutti in pulseCheck e in response per Overview.
+- **KPI Aggiuntivi UI**: 4 card in grid lg:grid-cols-4 con min-h e classi condivise; Rating medio solo in Pulse Check (non duplicato). Card "In scadenza" cliccabile → /nexus-prime-control/cancellations.
+- **Analytics revenue**: Solo abbonamenti B2B (subscription_invoices) + placeholder B2C; niente revenue da bookings in Analytics.
+- **Recharts duplicate key**: Evitare Bar/BarChart quando possibile; usare LineChart per serie numeriche per evitare warning "Encountered two children with the same key".
+
 ### 1 Febbraio 2026 - Sessione Fix Report Verifica + Gestionale Costi + Report Commercialista
 - **Types da Supabase**: Rigenerare con `npx supabase login` poi `npx supabase gen types typescript --project-id kfxoyucatvvcgmqalxsg > src/integrations/supabase/types.ts` per allineare types al DB remoto. Se una tabella non compare (es. `workout_attachments`), o non esiste nel DB (servirà migration) o si aggiunge manualmente in types.ts.
 - **RLS solo in migration**: Nel repo risultano RLS esplicite solo per `professionals`, `professional_costs`, `professional_subscriptions`; le altre tabelle possono avere RLS configurata in dashboard. Report in `docs/RLS_VERIFICATION_REPORT.md`.

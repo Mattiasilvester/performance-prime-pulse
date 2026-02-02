@@ -12,6 +12,18 @@ import {
   X
 } from 'lucide-react';
 
+const TITOLO_STUDIO_SUGGERIMENTI = [
+  'Laurea in Scienze Motorie',
+  'Laurea in Fisioterapia',
+  'Master in Nutrizione Sportiva',
+  'NSCA-CPT',
+  'ACE Personal Trainer',
+  'ISSA',
+  'Certificazione NASM',
+  'Diploma ISEF',
+  'Altro',
+];
+
 interface ProfessionalProfile {
   id: string;
   first_name: string;
@@ -23,7 +35,7 @@ interface ProfessionalProfile {
   foto_url: string | null;
   specializzazioni: string[] | null;
   zona: string | null;
-  titolo_studio: string | null;
+  titolo_studio: string[] | null;
   company_name: string | null;
   modalita: string;
   prezzo_seduta: number | null;
@@ -50,6 +62,7 @@ export default function ProfiloPage() {
   const [loading, setLoading] = useState(true);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [editTitoli, setEditTitoli] = useState<string[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
@@ -90,12 +103,17 @@ export default function ProfiloPage() {
   // Funzioni semplici per gestione modifica
   const startEdit = (field: string, value: any) => {
     setEditingField(field);
-    setEditValue(String(value || ''));
+    if (field === 'titolo_studio') {
+      setEditTitoli(Array.isArray(value) ? [...value] : (value && String(value).trim() ? [String(value).trim()] : []));
+    } else {
+      setEditValue(String(value || ''));
+    }
   };
 
   const cancelEdit = () => {
     setEditingField(null);
     setEditValue('');
+    setEditTitoli([]);
   };
 
   // Validazioni base (warning) per dati fiscali — non bloccano il salvataggio
@@ -122,7 +140,11 @@ export default function ProfiloPage() {
   const saveEdit = async (field: string) => {
     if (!profile || !editingField) return;
 
-    const valueToSave = field === 'prezzo_seduta' ? (editValue ? parseInt(editValue) : null) : (editValue.trim() || null);
+    const valueToSave = field === 'titolo_studio'
+      ? (editTitoli.length > 0 ? editTitoli : null)
+      : field === 'prezzo_seduta'
+        ? (editValue ? parseInt(editValue) : null)
+        : (editValue.trim() || null);
     if (field === 'vat_number' && valueToSave != null) {
       validateVatNumber(String(valueToSave));
     }
@@ -147,6 +169,7 @@ export default function ProfiloPage() {
       toast.success('Modifica salvata con successo');
       setEditingField(null);
       setEditValue('');
+      setEditTitoli([]);
     } catch (error: any) {
       console.error('Errore salvataggio:', error);
       toast.error('Errore nel salvataggio');
@@ -501,6 +524,98 @@ export default function ProfiloPage() {
                 )}
               </div>
 
+              {/* Titolo di studio */}
+              <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-gray-500">Titolo di studio</span>
+                  {editingField === 'titolo_studio' ? (
+                    <div className="mt-1">
+                      <div className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded-lg bg-gray-50 min-h-[42px]">
+                        {editTitoli.map((t, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#EEBA2B]/20 text-gray-800 rounded-full text-sm"
+                          >
+                            {t}
+                            <button
+                              type="button"
+                              onClick={() => setEditTitoli(editTitoli.filter((_, j) => j !== i))}
+                              className="flex items-center justify-center w-5 h-5 shrink-0 rounded-full hover:bg-[#EEBA2B]/30 transition-colors"
+                              aria-label="Rimuovi"
+                            >
+                              <X className="w-3 h-3 flex-shrink-0" />
+                            </button>
+                          </span>
+                        ))}
+                        <input
+                          type="text"
+                          list="titolo-studio-suggest"
+                          placeholder="Aggiungi titolo..."
+                          className="flex-1 min-w-[140px] outline-none bg-transparent text-gray-900 placeholder:text-gray-400 text-sm"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const v = (e.target as HTMLInputElement).value.trim();
+                              if (v && !editTitoli.includes(v) && editTitoli.length < 10) {
+                                setEditTitoli([...editTitoli, v]);
+                                (e.target as HTMLInputElement).value = '';
+                              }
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const v = e.target.value.trim();
+                            if (v && !editTitoli.includes(v) && editTitoli.length < 10) {
+                              setEditTitoli([...editTitoli, v]);
+                              e.target.value = '';
+                            }
+                          }}
+                        />
+                      </div>
+                      <datalist id="titolo-studio-suggest">
+                        {TITOLO_STUDIO_SUGGERIMENTI.map((s) => (
+                          <option key={s} value={s} />
+                        ))}
+                      </datalist>
+                      <div className="flex gap-2 mt-2">
+                        <button 
+                          onClick={() => saveEdit('titolo_studio')}
+                          className="px-3 py-1.5 bg-[#EEBA2B] text-white rounded-lg text-sm font-medium hover:bg-[#D4A826] transition-colors"
+                        >
+                          Salva
+                        </button>
+                        <button 
+                          onClick={cancelEdit}
+                          className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
+                        >
+                          Annulla
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-900 break-words mt-1">
+                      {profile.titolo_studio && profile.titolo_studio.length > 0
+                        ? profile.titolo_studio.join(', ')
+                        : '-'}
+                    </p>
+                  )}
+                </div>
+                {editingField !== 'titolo_studio' && (
+                  <button 
+                    onClick={() => startEdit('titolo_studio', profile.titolo_studio)}
+                    className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Card Dati fiscali (Report Commercialista) */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">Dati fiscali</h2>
+            <p className="text-sm text-gray-500 mb-4">Per il Report per Commercialista (P.IVA e indirizzo)</p>
+            <div className="space-y-0">
               {/* Studio / Ragione sociale */}
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
                 <div className="flex-1 min-w-0">
@@ -543,56 +658,6 @@ export default function ProfiloPage() {
                   </button>
                 )}
               </div>
-
-              {/* Titolo di studio */}
-              <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                <div className="flex-1 min-w-0">
-                  <span className="text-sm text-gray-500">Titolo di studio</span>
-                  {editingField === 'titolo_studio' ? (
-                    <div className="mt-1">
-                      <input
-                        type="text"
-                        autoFocus
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent"
-                      />
-                      <div className="flex gap-2 mt-2">
-                        <button 
-                          onClick={() => saveEdit('titolo_studio')}
-                          className="px-3 py-1.5 bg-[#EEBA2B] text-white rounded-lg text-sm font-medium hover:bg-[#D4A826] transition-colors"
-                        >
-                          Salva
-                        </button>
-                        <button 
-                          onClick={cancelEdit}
-                          className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
-                        >
-                          Annulla
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-gray-900 break-words mt-1">{profile.titolo_studio || '-'}</p>
-                  )}
-                </div>
-                {editingField !== 'titolo_studio' && (
-                  <button 
-                    onClick={() => startEdit('titolo_studio', profile.titolo_studio)}
-                    className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors"
-                  >
-                    <Pencil className="w-4 h-4 text-gray-400 hover:text-[#EEBA2B] transition-colors" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Card Dati fiscali (Report Commercialista) */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">Dati fiscali</h2>
-            <p className="text-sm text-gray-500 mb-4">Per il Report per Commercialista (P.IVA e indirizzo)</p>
-            <div className="space-y-0">
               {/* P.IVA */}
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
                 <div className="flex-1 min-w-0">
@@ -827,10 +892,12 @@ export default function ProfiloPage() {
                         >
                           {spec}
                           <button
+                            type="button"
                             onClick={() => handleRemoveSpecialization(index)}
-                            className="hover:text-[#EEBA2B]"
+                            className="flex items-center justify-center w-5 h-5 shrink-0 rounded-full hover:bg-[#EEBA2B]/30 hover:text-[#EEBA2B] transition-colors"
+                            aria-label="Rimuovi"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-3 h-3 flex-shrink-0" />
                           </button>
                         </span>
                       ))}

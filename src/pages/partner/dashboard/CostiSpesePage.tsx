@@ -80,7 +80,8 @@ export default function CostiSpesePage() {
       setLoading(false);
       setIsFirstLoad(false);
     }
-  }, [professionalId, year, month]);
+  // isFirstLoad usato solo dentro callback, non deve triggerare refetch
+  }, [professionalId, year, month]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     loadCosts();

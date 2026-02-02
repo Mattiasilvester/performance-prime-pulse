@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps -- tipi attività partner; load/fetch intenzionali */
-import { Calendar, FolderKanban, ClipboardList, Clock, User, Briefcase, UserPlus, CheckCircle, FolderPlus, ChevronDown, ChevronUp, X, MapPin, Video, Bell } from 'lucide-react';
+import { Calendar, FolderKanban, ClipboardList, Clock, User, Briefcase, UserPlus, CheckCircle, FolderPlus, ChevronDown, ChevronUp, X, MapPin, Video, Bell, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { getDisplayStatus, bookingDisplayStatusConfig } from '@/utils/bookingHelpers';
 import { ScheduleNotificationModal } from '@/components/partner/notifications/ScheduleNotificationModal';
+import { PromemoriList } from '@/components/partner/notifications/PromemoriList';
 import { KPICardsSection, type KPIViewType } from '@/components/partner/dashboard/kpi/KPICardsSection';
 
 interface UpcomingBooking {
@@ -72,6 +75,7 @@ export default function OverviewPage() {
   const [activityDetails, setActivityDetails] = useState<any>(null);
   const [activityDetailsLoading, setActivityDetailsLoading] = useState(false);
   const [kpiView, setKpiView] = useState<KPIViewType>('overview');
+  const [promemoriRefreshKey, setPromemoriRefreshKey] = useState(0);
   const [stats, setStats] = useState({
     clienti: 0,
     prenotazioni: 0,
@@ -585,11 +589,20 @@ export default function OverviewPage() {
       {kpiView === 'overview' ? (
         <>
           {/* Header */}
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-              {userName !== 'Professionista' ? `Benvenuto, ${userName}!` : 'Bentornato, Professionista!'}
-            </h1>
-            <p className="text-sm sm:text-base text-gray-500 capitalize">{formattedDate}</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                {userName !== 'Professionista' ? `Benvenuto, ${userName}!` : 'Bentornato, Professionista!'}
+              </h1>
+              <p className="text-sm sm:text-base text-gray-500 capitalize">{formattedDate}</p>
+            </div>
+            <Link
+              to="/partner/dashboard/report-settimanale"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 text-sm font-medium text-black bg-[#EEBA2B] hover:bg-[#EEBA2B]/90 rounded-xl transition-colors border border-[#EEBA2B]/50 shrink-0"
+            >
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Report Settimana</span>
+            </Link>
           </div>
 
           {/* KPI Cards - PrimePro */}
@@ -631,10 +644,10 @@ export default function OverviewPage() {
             {displayBookings.map((booking) => {
               // Priorità: colore salvato nel booking, poi colore del servizio, poi default
               const serviceColor = booking.color || booking.service?.color || '#EEBA2B';
-              const statusColor = booking.status === 'confirmed' 
-                ? 'bg-green-100 text-green-700' 
-                : 'bg-yellow-100 text-yellow-700';
-              const statusLabel = booking.status === 'confirmed' ? 'Confermato' : 'In attesa';
+              const displayStatus = getDisplayStatus({ status: booking.status, booking_date: booking.booking_date });
+              const statusConfig = bookingDisplayStatusConfig[displayStatus];
+              const statusColor = statusConfig.className;
+              const statusLabel = statusConfig.label;
 
               return (
                 <div
@@ -693,6 +706,9 @@ export default function OverviewPage() {
           );
         })()}
       </div>
+
+      {/* Promemoria in programma */}
+      <PromemoriList refreshTrigger={promemoriRefreshKey} />
 
       {/* Attività Recenti */}
       <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
@@ -799,8 +815,8 @@ export default function OverviewPage() {
         isOpen={showScheduleModal}
         onClose={() => setShowScheduleModal(false)}
         onSuccess={() => {
-          // Ricarica attività recenti per mostrare la nuova notifica programmata
           fetchRecentActivities();
+          setPromemoriRefreshKey((k) => k + 1);
         }}
       />
 
@@ -830,10 +846,10 @@ interface BookingDetailModalProps {
 function BookingDetailModal({ booking, onClose }: BookingDetailModalProps) {
   // Priorità: colore salvato nel booking, poi colore del servizio, poi default
   const serviceColor = booking.color || booking.service?.color || '#EEBA2B';
-  const statusColor = booking.status === 'confirmed' 
-    ? 'bg-green-100 text-green-700 border-green-200' 
-    : 'bg-yellow-100 text-yellow-700 border-yellow-200';
-  const statusLabel = booking.status === 'confirmed' ? 'Confermato' : 'In attesa';
+  const displayStatus = getDisplayStatus({ status: booking.status, booking_date: booking.booking_date });
+  const statusConfig = bookingDisplayStatusConfig[displayStatus];
+  const statusColor = statusConfig.className + ' border-current';
+  const statusLabel = statusConfig.label;
 
   // Helper per formattare ora (HH:MM)
   const formatBookingTime = (timeStr: string): string => {
@@ -1195,20 +1211,16 @@ function BookingActivityDetails({ booking }: { booking: any }) {
           <span>Stato</span>
         </div>
         <div className="pl-5 sm:pl-6">
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-            booking.status === 'completed' 
-              ? 'bg-green-100 text-green-700' 
-              : booking.status === 'confirmed'
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-yellow-100 text-yellow-700'
-          }`}>
-            {booking.status === 'completed' 
-              ? 'Completato' 
-              : booking.status === 'confirmed'
-              ? 'Confermato'
-              : booking.status === 'cancelled'
-              ? 'Cancellato'
-              : 'In attesa'}
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-medium ${
+              bookingDisplayStatusConfig[
+                getDisplayStatus({ status: booking.status, booking_date: booking.booking_date })
+              ].className
+            }`}
+          >
+            {bookingDisplayStatusConfig[
+              getDisplayStatus({ status: booking.status, booking_date: booking.booking_date })
+            ].label}
           </span>
         </div>
       </div>

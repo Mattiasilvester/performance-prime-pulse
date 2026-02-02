@@ -95,7 +95,83 @@ export async function getScheduledNotifications(
 }
 
 /**
- * Cancella una notifica programmata
+ * Ottieni promemoria in attesa (status pending, scheduled_for nel futuro)
+ */
+export async function getUpcomingScheduledNotifications(
+  professionalId: string
+): Promise<ScheduledNotification[]> {
+  try {
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('scheduled_notifications')
+      .select('*')
+      .eq('professional_id', professionalId)
+      .eq('status', 'pending')
+      .gt('scheduled_for', now)
+      .order('scheduled_for', { ascending: true });
+
+    if (error) {
+      console.error('[ScheduledNotification] Errore getUpcoming:', error);
+      throw error;
+    }
+    return (data || []) as ScheduledNotification[];
+  } catch (error) {
+    console.error('[ScheduledNotification] Errore:', error);
+    throw error;
+  }
+}
+
+/**
+ * Aggiorna una notifica programmata
+ */
+export async function updateScheduledNotification(
+  id: string,
+  payload: { title?: string; message?: string; scheduled_for?: Date | string }
+): Promise<ScheduledNotification> {
+  try {
+    const body: Record<string, unknown> = {};
+    if (payload.title !== undefined) body.title = payload.title;
+    if (payload.message !== undefined) body.message = payload.message;
+    if (payload.scheduled_for !== undefined) {
+      body.scheduled_for = payload.scheduled_for instanceof Date
+        ? payload.scheduled_for.toISOString()
+        : payload.scheduled_for;
+    }
+    const { data, error } = await supabase
+      .from('scheduled_notifications')
+      .update(body)
+      .eq('id', id)
+      .eq('status', 'pending')
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as ScheduledNotification;
+  } catch (error) {
+    console.error('[ScheduledNotification] Errore update:', error);
+    throw error;
+  }
+}
+
+/**
+ * Elimina una notifica programmata (rimozione fisica)
+ */
+export async function removeScheduledNotification(id: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('scheduled_notifications')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('[ScheduledNotification] Errore remove:', error);
+    throw error;
+  }
+}
+
+/**
+ * Cancella una notifica programmata (soft: status → cancelled)
  */
 export async function cancelScheduledNotification(
   scheduledNotificationId: string

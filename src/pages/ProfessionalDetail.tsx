@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, MapPin, Video, Users, Euro, MessageCircle, Calendar, X, ChevronLeft, ChevronRight, Ban, CheckCircle, Plus } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Video, Users, Euro, MessageCircle, Calendar, X, ChevronLeft, ChevronRight, Ban, CheckCircle, Plus, GraduationCap } from 'lucide-react';
 import { getProfessionalById, Professional, getCategoryLabel, getCategoryIcon } from '@/services/professionalsService';
 import { useBlockedPeriods } from '@/hooks/useBlockedPeriods';
+import { availabilityOverrideService, type AvailabilityOverride } from '@/services/availabilityOverrideService';
 import { toast } from 'sonner';
 import { getReviewsByProfessional, Review, getAvailableBookingsForReview, hasUserReviewedProfessional } from '@/services/reviewsService';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,6 +55,7 @@ const ProfessionalDetail: React.FC = () => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [bookingStep, setBookingStep] = useState<'calendar' | 'time' | 'confirm'>('calendar');
+  const [blockedSlotsForDate, setBlockedSlotsForDate] = useState<AvailabilityOverride[]>([]);
 
   // Calcola range date per il mese corrente (per ottimizzare fetch blocchi)
   const monthDateRange = useMemo(() => {
@@ -82,6 +84,19 @@ const ProfessionalDetail: React.FC = () => {
     endDate: monthDateRange.endDate,
     autoFetch: !!professional?.id,
   });
+
+  // Fetch fasce orarie bloccate per la data selezionata (per step orario prenotazione)
+  useEffect(() => {
+    if (!professional?.id || !selectedDate) {
+      setBlockedSlotsForDate([]);
+      return;
+    }
+    const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+    availabilityOverrideService
+      .getBlockedSlots(professional.id, dateStr, dateStr)
+      .then(setBlockedSlotsForDate)
+      .catch(() => setBlockedSlotsForDate([]));
+  }, [professional?.id, selectedDate]);
 
   useEffect(() => {
     const loadProfessional = async () => {
@@ -247,11 +262,14 @@ const ProfessionalDetail: React.FC = () => {
     return date.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
   };
 
-  // Slot orari disponibili (demo)
-  const TIME_SLOTS = [
+  // Slot orari disponibili (demo) - quelli non coperti da blocchi orari del professionista
+  const TIME_SLOTS_BASE = [
     '09:00', '10:00', '11:00', '12:00',
     '14:00', '15:00', '16:00', '17:00', '18:00'
   ];
+  const isTimeSlotBlocked = (slotTime: string, overrides: AvailabilityOverride[]): boolean =>
+    overrides.some((o) => slotTime >= o.start_time && slotTime < o.end_time);
+  const TIME_SLOTS = TIME_SLOTS_BASE.filter((t) => !isTimeSlotBlocked(t, blockedSlotsForDate));
 
   // Naviga al mese precedente
   const prevMonth = () => {
@@ -431,6 +449,32 @@ const ProfessionalDetail: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* FORMAZIONE (titoli di studio) */}
+        {(() => {
+          const titoli = professional.titolo_studio
+            ? (Array.isArray(professional.titolo_studio) ? professional.titolo_studio : [professional.titolo_studio])
+            : [];
+          return titoli.length > 0 ? (
+            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-[#EEBA2B]" />
+                Formazione
+              </h2>
+              <ul className="space-y-2">
+                {titoli.map((titolo, index) => (
+                  <li
+                    key={index}
+                    className="flex items-center gap-2 text-gray-300"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#EEBA2B] flex-shrink-0" />
+                    {titolo}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null;
+        })()}
 
         {/* INFORMAZIONI */}
         <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
@@ -761,24 +805,31 @@ const ProfessionalDetail: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Slot orari */}
+                {/* Slot orari (esclusi quelli in fasce bloccate dal professionista) */}
                 <p className="text-white font-medium mb-3">Seleziona un orario:</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {TIME_SLOTS.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => handleTimeClick(time)}
-                      className={`py-3 px-4 rounded-lg font-medium transition-all
-                        ${selectedTime === time 
-                          ? 'bg-[#EEBA2B] text-black' 
-                          : 'bg-gray-800 text-white hover:bg-gray-700'
-                        }
-                      `}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
+                {TIME_SLOTS.length === 0 ? (
+                  <div className="bg-gray-800 rounded-xl p-4 text-center">
+                    <p className="text-gray-400 text-sm">Nessun orario disponibile in questa data.</p>
+                    <p className="text-gray-500 text-xs mt-1">Il professionista ha bloccato le fasce orarie.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    {TIME_SLOTS.map((time) => (
+                      <button
+                        key={time}
+                        onClick={() => handleTimeClick(time)}
+                        className={`py-3 px-4 rounded-lg font-medium transition-all
+                          ${selectedTime === time 
+                            ? 'bg-[#EEBA2B] text-black' 
+                            : 'bg-gray-800 text-white hover:bg-gray-700'
+                          }
+                        `}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

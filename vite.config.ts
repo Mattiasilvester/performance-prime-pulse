@@ -120,8 +120,14 @@ export default defineConfig(({ command, mode }) => {
     chunkSizeWarningLimit: 1000, // Aumenta limite per evitare warning
     rollupOptions: {
       output: {
-        // DISABILITA CODE-SPLITTING MANUALE PER RISOLVERE REACT ERROR
-        // manualChunks: undefined,
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-ui': ['framer-motion', 'sonner', 'lucide-react'],
+          'vendor-charts': ['recharts'],
+          'vendor-stripe': ['@stripe/stripe-js', '@stripe/react-stripe-js'],
+          'vendor-pdf': ['jspdf', 'jspdf-autotable'],
+        },
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'

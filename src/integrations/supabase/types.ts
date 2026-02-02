@@ -1443,7 +1443,7 @@ export type Database = {
           reviews_count: number | null
           sdi_code: string | null
           specializzazioni: string[] | null
-          titolo_studio: string | null
+          titolo_studio: string[] | null
           updated_at: string
           user_id: string | null
           vat_address: string
@@ -1479,7 +1479,7 @@ export type Database = {
           reviews_count?: number | null
           sdi_code?: string | null
           specializzazioni?: string[] | null
-          titolo_studio?: string | null
+          titolo_studio?: string[] | null
           updated_at?: string
           user_id?: string | null
           vat_address: string
@@ -1515,7 +1515,7 @@ export type Database = {
           reviews_count?: number | null
           sdi_code?: string | null
           specializzazioni?: string[] | null
-          titolo_studio?: string | null
+          titolo_studio?: string[] | null
           updated_at?: string
           user_id?: string | null
           vat_address?: string

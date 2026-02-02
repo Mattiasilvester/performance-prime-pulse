@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { CalendarCheck, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { CalendarCheck, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { getDisplayStatus } from '@/utils/bookingHelpers';
 import { KPIViewHeader } from './KPIViewHeader';
 import { KPIPieChart, KPIBarChart } from './charts';
 import { AppointmentsList, type Booking, type BookingStatus } from './AppointmentsList';
 import { CancelConfirmModal } from './CancelConfirmModal';
 
-type FilterType = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | null;
+type FilterType = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'incomplete' | null;
 
 const PLACEHOLDER_PREFIX = 'placeholder-';
 
@@ -34,6 +35,7 @@ interface AppointmentsData {
   completed: number;
   cancelled: number;
   pending: number;
+  incomplete: number;
   completedPercent: number;
   monthlyTrend: Array<{ name: string; value: number }>;
 }
@@ -67,6 +69,7 @@ export function AppointmentsView({
   const pieData = [
     { name: 'Completati', value: data.completed, color: '#22c55e' },
     { name: 'Cancellati', value: data.cancelled, color: '#ef4444' },
+    { name: 'Non completati', value: data.incomplete ?? 0, color: '#f97316' },
     { name: 'In attesa', value: data.pending, color: '#f59e0b' },
   ].filter((item) => item.value > 0);
 
@@ -147,7 +150,8 @@ export function AppointmentsView({
       setAllAppointments(getPlaceholderAppointments());
       setAppointmentsLoading(false);
     }
-  }, [selectedFilter, professionalId]);
+  // Esegui fetch quando cambiano filtro o professionalId; fetchAllAppointments non in deps per evitare loop
+  }, [selectedFilter, professionalId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleConfirmAppointment = async (id: string) => {
     if (id.startsWith(PLACEHOLDER_PREFIX)) {
@@ -349,6 +353,27 @@ export function AppointmentsView({
               ? Math.round((data.cancelled / data.total) * 100)
               : 0}
             %
+          </p>
+        </div>
+
+        <div
+          onClick={() =>
+            setSelectedFilter(
+              selectedFilter === 'incomplete' ? null : 'incomplete'
+            )
+          }
+          className={`bg-white rounded-xl p-5 border shadow-sm cursor-pointer transition-all ${
+            selectedFilter === 'incomplete'
+              ? 'border-2 border-[#EEBA2B] shadow-md'
+              : 'border-gray-100 hover:border-[#EEBA2B]/50'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-500">Non completati</p>
+            <AlertCircle className="w-5 h-5 text-orange-500" />
+          </div>
+          <p className="text-3xl font-bold text-orange-500 mt-2">
+            {data.incomplete ?? 0}
           </p>
         </div>
 

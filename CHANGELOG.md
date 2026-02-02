@@ -5,6 +5,21 @@ Tutte le modifiche notevoli a questo progetto saranno documentate in questo file
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [Unreleased] - 2026-02-02
+
+### Added
+- **SuperAdmin – KPI Aggiuntivi**: Sezione "KPI Aggiuntivi" in Overview con 4 card: Churn B2B (abbonamenti cancellati), Booking completati %, Cancellazioni in scadenza (con link a pagina Cancellazioni), Utenti B2C attivi (con almeno 1 workout). Dati da Edge Function admin-stats.
+- **SuperAdmin – Analytics B2B/B2C**: Pagina Analytics con 4 grafici (Crescita Utenti B2C, Crescita Professionisti B2B, Revenue mensile, MRR totale); revenue da abbonamenti (subscription_invoices), non da bookings.
+- **Documentazione**: docs/ADMIN_KPI_RACCOMANDAZIONI.md, docs/VERIFICA_ANALYTICS_AGGIORNAMENTO_DATI.md.
+
+### Changed
+- **SuperAdmin Overview**: Layout KPI Aggiuntivi a 4 colonne (lg) con card di altezza uniforme; Rating medio mostrato solo in Pulse Check.
+
+### Fixed
+- Warning Recharts "duplicate key" in pagina Analytics: revenue mostrato con LineChart invece di BarChart.
+
+---
+
 ## [2025-01-29] - Audit ESLint Completo
 
 ### Fixed

@@ -110,6 +110,17 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Header CTA professionisti — alto a destra, stesso stile di "Diventa partner", solo testo */}
+      <div className="absolute top-0 left-0 right-0 z-20 flex justify-end items-center px-4 py-3 sm:px-6 sm:py-4 bg-black/20 backdrop-blur-sm">
+        <Link
+          to="/partner"
+          className="border-2 border-white/40 hover:border-[#FFD700] text-white hover:text-[#FFD700] font-semibold text-sm px-4 py-2 rounded-full backdrop-blur-sm bg-black/40 hover:bg-black/60 transition-all duration-300"
+        >
+          <span className="hidden sm:inline">Sei un professionista? Clicca qui!</span>
+          <span className="sm:hidden">Per Professionisti</span>
+        </Link>
+      </div>
+
       {/* Background Image con Overlay ottimizzato */}
       <div className="absolute inset-0 z-0">
         {/* Immagine di sfondo */}
@@ -311,23 +322,6 @@ export function HeroSection() {
                 <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </motion.span>
             </Button>
-          </motion.div>
-
-          {/* CTA Secondaria: Diventa Partner */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
-          >
-            <Link to="/partner">
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-2 border-white/40 hover:border-[#FFD700] text-white hover:text-[#FFD700] font-semibold text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 rounded-full backdrop-blur-sm bg-black/40 hover:bg-black/60 transition-all duration-300"
-              >
-                Diventa partner
-              </Button>
-            </Link>
           </motion.div>
 
           <motion.p

@@ -19,6 +19,8 @@ interface NotificationItemProps {
   notification: ProfessionalNotification;
   onMarkAsRead: (id: string) => void;
   onRemove: (id: string) => void;
+  /** Se presente e la notifica ha data.action_url, al click si naviga a tale URL */
+  onNavigateToUrl?: (url: string) => void;
 }
 
 // Icone per tipo notifica
@@ -68,7 +70,7 @@ const getNotificationColor = (type: ProfessionalNotification['type']) => {
   }
 };
 
-export function NotificationItem({ notification, onMarkAsRead, onRemove }: NotificationItemProps) {
+export function NotificationItem({ notification, onMarkAsRead, onRemove, onNavigateToUrl }: NotificationItemProps) {
   const Icon = getNotificationIcon(notification.type);
   const colorClass = getNotificationColor(notification.type);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -98,9 +100,18 @@ export function NotificationItem({ notification, onMarkAsRead, onRemove }: Notif
     }
   }, [notification.message]);
 
+  const actionUrl = notification.data && typeof notification.data === 'object' && (notification.data as { action_url?: string }).action_url;
+
   const handleClick = (e: React.MouseEvent) => {
     // Se clicchi sul bottone elimina, non fare toggle
     if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+
+    // Se la notifica ha action_url (es. Report settimanale), naviga e marca come letta
+    if (actionUrl && onNavigateToUrl) {
+      if (!notification.is_read) onMarkAsRead(notification.id);
+      onNavigateToUrl(actionUrl);
       return;
     }
 

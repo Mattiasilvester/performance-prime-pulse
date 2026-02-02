@@ -11,7 +11,7 @@ export interface ProfessionalRegistrationData {
   city: string;
   bio?: string;
   company_name?: string;
-  titolo_studio?: string;
+  titolo_studio?: string | string[] | null;
   certificazioni?: string[];
   customCategory?: string;
   modalita?: 'online' | 'presenza' | 'entrambi';
@@ -37,7 +37,7 @@ function buildProfessionalInsertPayload(
     city: string;
     bio?: string | null;
     company_name?: string | null;
-    titolo_studio?: string | null;
+    titolo_studio?: string | string[] | null;
     certificazioni?: string[] | null;
     modalita?: string | null;
     prezzo_seduta?: number | null;
@@ -56,7 +56,7 @@ function buildProfessionalInsertPayload(
     zona: source.city || '',
     bio: source.bio ?? null,
     company_name: companyName,
-    titolo_studio: source.titolo_studio ?? null,
+    titolo_studio: Array.isArray(source.titolo_studio) ? source.titolo_studio : (source.titolo_studio && String(source.titolo_studio).trim() ? [String(source.titolo_studio).trim()] : null),
     specializzazioni: Array.isArray(source.certificazioni) ? source.certificazioni : [],
     approval_status: 'approved',
     approved_at: new Date().toISOString(),
@@ -100,7 +100,7 @@ export const professionalAuthService = {
           city: data.city,
           bio: data.bio ?? null,
           company_name: companyName,
-          titolo_studio: data.titolo_studio ?? null,
+          titolo_studio: Array.isArray(data.titolo_studio) ? data.titolo_studio : (data.titolo_studio != null ? [String(data.titolo_studio)] : null),
           certificazioni: data.certificazioni ?? [],
           modalita: data.modalita ?? 'entrambi',
           prezzo_seduta: data.prezzo_seduta ?? null,
@@ -137,7 +137,7 @@ export const professionalAuthService = {
           city: data.city,
           bio: data.bio ?? null,
           company_name: companyName,
-          titolo_studio: data.titolo_studio ?? null,
+          titolo_studio: Array.isArray(data.titolo_studio) ? data.titolo_studio : (data.titolo_studio != null ? [String(data.titolo_studio)] : null),
           certificazioni: data.certificazioni ?? [],
           modalita: data.modalita ?? 'entrambi',
           prezzo_seduta: data.prezzo_seduta ?? null,
@@ -185,7 +185,7 @@ export const professionalAuthService = {
             city: (meta.city as string) || '',
             bio: (meta.bio as string) ?? null,
             company_name: (meta.company_name as string) ?? null,
-            titolo_studio: (meta.titolo_studio as string) ?? null,
+            titolo_studio: Array.isArray(meta.titolo_studio) ? (meta.titolo_studio as string[]) : (meta.titolo_studio != null ? [String(meta.titolo_studio)] : null),
             certificazioni: Array.isArray(meta.certificazioni) ? (meta.certificazioni as string[]) : [],
             modalita: (meta.modalita as string) ?? 'entrambi',
             prezzo_seduta: (meta.prezzo_seduta as number) ?? null,
@@ -273,7 +273,7 @@ export const professionalAuthService = {
       city: (meta.city as string) || '',
       bio: (meta.bio as string) ?? null,
       company_name: (meta.company_name as string) ?? null,
-      titolo_studio: (meta.titolo_studio as string) ?? null,
+      titolo_studio: Array.isArray(meta.titolo_studio) ? (meta.titolo_studio as string[]) : (meta.titolo_studio != null ? [String(meta.titolo_studio)] : null),
       certificazioni: Array.isArray(meta.certificazioni) ? (meta.certificazioni as string[]) : [],
       modalita: (meta.modalita as string) ?? 'entrambi',
       prezzo_seduta: (meta.prezzo_seduta as number) ?? null,

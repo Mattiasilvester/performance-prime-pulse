@@ -81,7 +81,8 @@ export function useProfessionalAnalytics(
       setLoading(false);
       setIsFirstLoad(false);
     }
-  }, [professionalId, prezzoSeduta, timeRange]);
+  // isFirstLoad usato solo dentro callback, non deve triggerare refetch
+  }, [professionalId, prezzoSeduta, timeRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchAll();
