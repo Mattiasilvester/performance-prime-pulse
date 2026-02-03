@@ -1,0 +1,26 @@
+# Performance Prime - App Fitness
+# robots.txt
+
+User-agent: *
+Allow: /
+
+# Blocca aree riservate
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /auth/
+
+# Sitemap
+Sitemap: https://www.performanceprime.it/sitemap.xml
+
+# Crawl-delay per preservare risorse server
+Crawl-delay: 1
+
+# Bot specifici
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1

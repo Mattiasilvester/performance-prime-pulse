@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Authentication - Performance Prime</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #EEBA2B;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            color: #EEBA2B;
+            margin-bottom: 20px;
+        }
+        .button {
+            background: #EEBA2B;
+            color: black;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background: #ffd700;
+            transform: translateY(-2px);
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .success { background: rgba(0, 255, 0, 0.2); }
+        .error { background: rgba(255, 0, 0, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Clear Authentication</h1>
+        <p>Questo strumento pulisce completamente tutte le sessioni di autenticazione corrotte.</p>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <button class="button" onclick="clearAuth()">Pulisci Autenticazione</button>
+        <button class="button" onclick="goToApp()">Torna all'App</button>
+        
+        <div style="margin-top: 30px; font-size: 14px; opacity: 0.7;">
+            <p>Se continui ad avere problemi di autenticazione:</p>
+            <ol style="text-align: left; display: inline-block;">
+                <li>Clicca "Pulisci Autenticazione"</li>
+                <li>Riavvia il browser</li>
+                <li>Vai all'app e registrati di nuovo</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        function clearAuth() {
+            try {
+                let clearedCount = 0;
+                
+                // Pulisci localStorage
+                const localStorageKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (
+                        key.includes('supabase') || 
+                        key.includes('sb-') ||
+                        key.includes('auth') ||
+                        key.includes('session')
+                    )) {
+                        localStorageKeys.push(key);
+                    }
+                }
+                
+                localStorageKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    clearedCount++;
+                });
+
+                // Pulisci sessionStorage
+                const sessionStorageKeys = [];
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    if (key && (
+                        key.includes('supabase') || 
+                        key.includes('sb-') ||
+                        key.includes('auth') ||
+                        key.includes('session')
+                    )) {
+                        sessionStorageKeys.push(key);
+                    }
+                }
+                
+                sessionStorageKeys.forEach(key => {
+                    sessionStorage.removeItem(key);
+                    clearedCount++;
+                });
+
+                // Pulisci cookies di autenticazione
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+
+                showStatus(`✅ Pulizia completata! Rimosse ${clearedCount} chiavi di autenticazione.`, 'success');
+                
+                // Auto-redirect dopo 3 secondi
+                setTimeout(() => {
+                    goToApp();
+                }, 3000);
+                
+            } catch (error) {
+                showStatus(`❌ Errore durante la pulizia: ${error.message}`, 'error');
+            }
+        }
+
+        function goToApp() {
+            window.location.href = '/';
+        }
+
+        // Mostra informazioni iniziali
+        window.onload = function() {
+            const authKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('supabase') || key.includes('sb-'))) {
+                    authKeys.push(key);
+                }
+            }
+            
+            if (authKeys.length > 0) {
+                showStatus(`🔍 Trovate ${authKeys.length} chiavi di autenticazione. Clicca "Pulisci" per rimuoverle.`, 'error');
+            } else {
+                showStatus('✅ Nessuna chiave di autenticazione trovata. Il sistema è pulito.', 'success');
+            }
+        };
+    </script>
+</body>
+</html>
