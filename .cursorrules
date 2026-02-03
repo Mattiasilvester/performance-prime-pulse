@@ -1,6 +1,43 @@
 # PERFORMANCE PRIME PULSE - REGOLE DI SVILUPPO
 # 3 Settembre 2025 - PROGETTO IN SVILUPPO ATTIVO
 
+## STRUTTURA MONOREPO (Febbraio 2026)
+
+Questo progetto è un monorepo pnpm con tre packages:
+
+- `packages/shared/` (@pp/shared) - Codice condiviso
+- `packages/app-user/` (@pp/app-user) - Performance Prime (utenti)
+- `packages/app-pro/` (@pp/app-pro) - PrimePro (professionisti)
+
+### Comandi
+
+- `pnpm dev:user` - Avvia app utenti su :5173
+- `pnpm dev:pro` - Avvia app pro su :5174
+- `pnpm build:user` - Build app utenti
+- `pnpm build:pro` - Build app pro
+
+### Import
+
+Per codice condiviso usa:
+```typescript
+import { supabase, useAuth } from '@pp/shared';
+import type { Database } from '@pp/shared/types';
+```
+
+Per codice locale usa:
+```typescript
+import { Component } from '@/components/Component';
+```
+
+### Dove lavorare
+
+- Feature utenti → `packages/app-user/src/`
+- Feature professionisti → `packages/app-pro/src/`
+- Codice condiviso → `packages/shared/src/`
+- Database → `supabase/migrations/`
+
+---
+
 ## ⚠️ REGOLA CRITICA: CONFLITTI E PROBLEMI
 **SE INCONTRI CONFLITTI, PROBLEMI O ALTRO FERMATI E DIMMELO - NON CONTINUARE**
 

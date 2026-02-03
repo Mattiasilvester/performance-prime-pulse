@@ -1,9 +1,0 @@
-export { ProfitSummaryCard } from './ProfitSummaryCard';
-export { RevenueTrendChart } from './RevenueTrendChart';
-export { CostsTrendChart } from './CostsTrendChart';
-export { MarginTrendChart } from './MarginTrendChart';
-export { MonthComparisonChart } from './MonthComparisonChart';
-export { CostsDistributionChart } from './CostsDistributionChart';
-export { SmartAlerts } from './SmartAlerts';
-export { TimeRangeSelector } from './TimeRangeSelector';
-export { AccountantReportCompletezzaModal } from './AccountantReportCompletezzaModal';
