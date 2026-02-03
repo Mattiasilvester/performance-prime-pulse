@@ -1,0 +1,244 @@
+/* FIX HEADER/FOOTER - VISIBILITÀ GARANTITA */
+header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 50 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+.fixed-bottom {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 50 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* Fix specifico per BottomNavigation - AGGIORNATO Z-INDEX */
+/* DISABILITATO: Causava rettangolo nero */
+/* [class*="fixed"][class*="bottom"] {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+} */
+
+/* Fix specifico per classe bottom-navigation - SOLO POSIZIONAMENTO */
+.bottom-navigation {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  /* RIMOSSO: background e altri stili che interferiscono con l'effetto vetro */
+}
+
+/* Rimosso per permettere l'effetto vetro naturale di Tailwind */
+
+/* Rimosso per permettere l'effetto vetro naturale di Tailwind */
+
+/* Fix specifico per FeedbackWidget */
+.feedback-widget {
+  position: fixed !important;
+  bottom: 80px !important;
+  right: 16px !important;
+  left: auto !important;
+  z-index: 1000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fix per popover e dropdown */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+[data-radix-popover-content] {
+  z-index: 50 !important;
+}
+
+[data-radix-dropdown-menu-content] {
+  z-index: 50 !important;
+}
+
+/* Mobile-specific scroll fixes */
+@media only screen and (max-width: 768px) {
+  /* Fix specifico per BottomNavigation su mobile - SOLO POSIZIONAMENTO */
+  .bottom-navigation {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    width: 100% !important;
+    /* RIMOSSO: background e altri stili che interferiscono con l'effetto vetro */
+  }
+  
+  /* Fix specifico per FeedbackWidget su mobile */
+  .feedback-widget {
+    position: fixed !important;
+    bottom: 80px !important;
+    right: 16px !important;
+    left: auto !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  /* Reset tutto per mobile */
+  html, body, #root {
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    height: auto;
+    min-height: 100vh;
+    touch-action: pan-y;
+  }
+  
+  /* Header e footer ereditano le regole globali sopra */
+  
+  /* Fix per container - RIMOSSO override eccessivo che rompeva le foto */
+  
+  /* Fix specifico per foto fondatori */
+  .founder-image {
+    overflow: hidden !important;
+    border-radius: 50% !important;
+  }
+  
+  .founder-image img {
+    object-fit: cover !important;
+  }
+  
+  /* Fix specifico per QuickWorkout */
+  .quick-workout-container {
+    min-height: 100vh !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .quick-workout-container .min-h-screen {
+    min-height: 100vh !important;
+    height: auto !important;
+  }
+  
+  .quick-workout-container .h-full {
+    min-height: calc(100vh - 80px) !important;
+    height: auto !important;
+  }
+  
+  .quick-workout-container .flex-1 {
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+  
+  .quick-workout-container .justify-center {
+    justify-content: center !important;
+  }
+  
+  .quick-workout-container .items-center {
+    align-items: center !important;
+  }
+  
+  /* Fix per contenuto principale */
+  .main-content {
+    padding-top: 0px !important; /* Header height */
+    padding-bottom: 80px !important; /* Bottom nav height */
+    margin-top: 0px !important; /* RIPRISTINATO - header al posto suo */
+  }
+  
+  /* Fix per container delle altre pagine - RIMOSSO per non nascondere l'header */
+  /* .container.mx-auto:not(.dashboard-container) {
+    margin-top: -80px !important;
+  } */
+  
+  /* Fix specifico per Dashboard */
+  .dashboard-container {
+    padding-top: 0px !important; /* Header height mobile */
+    padding-bottom: 0px !important; /* Bottom nav height mobile */
+    margin-top: 0px !important; /* RIPRISTINATO - header al posto suo */
+    margin-bottom: 0px !important;
+  }
+  
+  /* Override più specifico per eliminare spazio grigio */
+  div.dashboard-container {
+    padding: 0px !important;
+    margin-top: 0px !important; /* RIPRISTINATO - header al posto suo */
+    margin-bottom: 0px !important;
+  }
+  
+  /* Fix per FeedbackWidget - RIMOSSO override che causava conflitti */
+  /* .feedback-widget {
+    bottom: 120px !important;
+    right: 16px !important;
+  } */
+  
+  /* Fix specifico iOS */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      min-height: -webkit-fill-available !important;
+    }
+  }
+  
+  /* Fix per Android */
+  @supports not (-webkit-touch-callout: none) {
+    body {
+      overscroll-behavior-y: auto !important;
+    }
+  }
+}
+
+/* Fix per landscape mobile */
+@media only screen and (max-height: 600px) and (orientation: landscape) {
+  body {
+    overflow-y: scroll !important;
+    position: relative !important;
+  }
+}
+
+/* Fix per PWA mobile */
+@media (display-mode: standalone) {
+  html, body, #root {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+  }
+}
+
+/* Fix per iOS Safari specifico */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    body {
+      position: relative;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+      min-height: -webkit-fill-available;
+    }
+  }
+}
