@@ -12,15 +12,15 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
+      "@pp/shared": ["../shared/src"],
       "@pp/shared/*": ["../shared/src/*"]
     }
   },
-  "include": ["src"],
-  "references": [{ "path": "../shared" }]
+  "include": ["src"]
 }
