@@ -154,7 +154,16 @@ importers:
       date-fns:
         specifier: ^3.6.0
         version: 3.6.0
+      lz-string:
+        specifier: ^1.5.0
+        version: 1.5.0
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
     devDependencies:
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.27
       typescript:
         specifier: ^5.4.0
         version: 5.9.3
@@ -1214,6 +1223,10 @@ packages:
     resolution: {integrity: sha512-keqxAx97PlaEN89PXZ6ki1N8nRjGWtDa4021GFYLNj0RgruM5odbpl8GHTExj0hhPq3sF6Up0gnxt6TSHu+ovw==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
+
+  lz-string@1.5.0:
+    resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
+    hasBin: true
 
   merge2@1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
@@ -2657,6 +2670,8 @@ snapshots:
   lucide-react@0.263.1(react@18.3.1):
     dependencies:
       react: 18.3.1
+
+  lz-string@1.5.0: {}
 
   merge2@1.4.1: {}
 
