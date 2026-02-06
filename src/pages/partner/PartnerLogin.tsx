@@ -258,7 +258,7 @@ export default function PartnerLogin() {
         {/* Footer minimale */}
         <div className="mt-8 text-center">
           <Link
-            to="/partner"
+            to="/"
             className="text-sm partner-muted-text hover:partner-accent-text transition-colors"
           >
             ← Torna alla pagina partner
