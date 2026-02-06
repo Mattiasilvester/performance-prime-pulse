@@ -45,12 +45,28 @@
 
 ## STEP 4: COMMIT & PUSH
 - Branch: **dev**
-- Commit: messaggio strutturato con feat(app-pro), elenco implementato, TODO.
-- Push: `git push origin dev`
+- Commit: `d51d85c` — feat(app-pro): landing professionisti rebuild + sezione feedback e modal
+- Push: `git push origin dev` ✅ (ddac287..d51d85c)
 
 ## STEP 5: RIEPILOGO FINALE
-- Branch: **dev**
-- App: **PrimePro**
-- Completato: landing professionisti rebuild, sezione feedback + modal + DB migration, back-to-top, copy e prezzi aggiornati.
-- TODO: features Super Admin, altre task.
-- Main non toccato.
+✅ **SESSIONE COMPLETATA**
+
+- **Branch:** dev
+- **App:** PrimePro (packages/app-pro/)
+- **Commit:** `d51d85c` — feat(app-pro): landing professionisti rebuild + sezione feedback e modal
+
+**Completato:**
+- Landing professionisti rebuild (tema light, palette #EEBA2B, tutte le sezioni)
+- Sezione Feedback professionisti + FeedbackModal + invio Supabase
+- Migrazione `20260205_landing_feedbacks.sql`
+- Back-to-top, footer (Email/P.IVA), CTA e pricing aggiornati
+- Build: `pnpm build:pro` — 0 errori
+
+**TODO prossima sessione:**
+1. Aggiungere features alla pagina Super Admin
+2. Altre task da definire
+3. (Opzionale) Eseguire `supabase db push` se migrazione non ancora applicata
+
+**Main** non toccato.
+
+**Nota:** Se hai usato `git stash` per portare le modifiche da main a dev, puoi rimuovere lo stash con `git stash drop` (dopo aver verificato che tutto sia su dev).
