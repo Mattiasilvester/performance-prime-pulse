@@ -9,7 +9,7 @@ import {
   User,
   Calendar,
   Ruler,
-  Weight,
+  Dumbbell,
   Info,
   Users
 } from 'lucide-react';
@@ -227,7 +227,7 @@ const Step4Personalization = forwardRef<Step4PersonalizationHandle, Step4Persona
         {/* Peso */}
         <div className="space-y-2">
           <Label className="text-white flex items-center gap-2">
-            <Weight className="w-4 h-4 text-[#FFD700]" />
+            <Dumbbell className="w-4 h-4 text-[#FFD700]" />
             Peso: <span className="text-2xl font-bold text-[#FFD700] ml-2">{peso}</span> kg
           </Label>
           <Slider
