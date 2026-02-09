@@ -20,6 +20,7 @@ import { NewLandingPage } from '@/pages/landing/NewLandingPage'
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage'
 import LoginPage from '@/pages/auth/LoginPage'
 import Partner from '@/pages/Partner'
+import PartnerLandingPage from '@/pages/partner/PartnerLandingPage'
 import PartnerRegistration from '@/pages/partner/PartnerRegistration'
 import PartnerLogin from '@/pages/partner/PartnerLogin'
 import PartnerResetPassword from '@/pages/partner/PartnerResetPassword'
@@ -183,7 +184,7 @@ function App() {
             <Suspense fallback={<PageSkeleton variant="default" />}>
               <Routes>
                 {/* ROUTE PUBBLICHE */}
-                <Route path="/" element={<LandingOrPartnerRedirect />} />
+                <Route path="/" element={<PartnerLandingPage />} />
                 <Route path="/partner" element={<Partner />} />
                 <Route path="/partner/registrazione" element={<PartnerRegistration />} />
                 <Route path="/partner/login" element={<PartnerLogin />} />
