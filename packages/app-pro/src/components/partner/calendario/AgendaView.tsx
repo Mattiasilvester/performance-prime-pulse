@@ -1877,6 +1877,21 @@ const AgendaView = () => {
                         }
                       }}
                     >
+                      {/* Blocchetto resize TOP - solo mobile (vista settimana) */}
+                      <div className="block md:hidden absolute -top-2 left-1/2 -translate-x-1/2 z-30">
+                        <div
+                          className="w-16 h-4 bg-gray-300 rounded-full flex items-center justify-center cursor-ns-resize touch-none active:bg-gray-400 select-none"
+                          onTouchStart={(e) => {
+                            e.stopPropagation();
+                            onResizeStart(e, booking, 'top');
+                          }}
+                        >
+                          <div className="flex flex-col gap-0.5">
+                            <span className="w-8 h-0.5 bg-gray-500 rounded block" />
+                            <span className="w-8 h-0.5 bg-gray-500 rounded block" />
+                          </div>
+                        </div>
+                      </div>
                       {/* ========================================
                           HANDLE RESIZE TOP (6px visibile, 12px touch)
                           ======================================== */}
@@ -1934,6 +1949,21 @@ const AgendaView = () => {
                           }}
                         />
                         <div className="h-full hover:bg-white/30 transition-colors pointer-events-none" />
+                      </div>
+                      {/* Blocchetto resize BOTTOM - solo mobile (vista settimana) */}
+                      <div className="block md:hidden absolute -bottom-2 left-1/2 -translate-x-1/2 z-30">
+                        <div
+                          className="w-16 h-4 bg-gray-300 rounded-full flex items-center justify-center cursor-ns-resize touch-none active:bg-gray-400 select-none"
+                          onTouchStart={(e) => {
+                            e.stopPropagation();
+                            onResizeStart(e, booking, 'bottom');
+                          }}
+                        >
+                          <div className="flex flex-col gap-0.5">
+                            <span className="w-8 h-0.5 bg-gray-500 rounded block" />
+                            <span className="w-8 h-0.5 bg-gray-500 rounded block" />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
@@ -2109,6 +2139,21 @@ const AgendaView = () => {
                       }
                     }}
                   >
+                    {/* Blocchetto resize TOP - solo mobile (vista giorno) */}
+                    <div className="block md:hidden absolute -top-2 left-1/2 -translate-x-1/2 z-30">
+                      <div
+                        className="w-16 h-4 bg-gray-300 rounded-full flex items-center justify-center cursor-ns-resize touch-none active:bg-gray-400 select-none"
+                        onTouchStart={(e) => {
+                          e.stopPropagation();
+                          onResizeStart(e, booking, 'top');
+                        }}
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <span className="w-8 h-0.5 bg-gray-500 rounded block" />
+                          <span className="w-8 h-0.5 bg-gray-500 rounded block" />
+                        </div>
+                      </div>
+                    </div>
                     {/* ========================================
                         HANDLE RESIZE TOP (8px visibile, 16px touch)
                         ======================================== */}
@@ -2173,6 +2218,21 @@ const AgendaView = () => {
                       />
                       {/* Handle visibile */}
                       <div className="h-full hover:bg-white/30 transition-colors pointer-events-none" />
+                    </div>
+                    {/* Blocchetto resize BOTTOM - solo mobile (vista giorno) */}
+                    <div className="block md:hidden absolute -bottom-2 left-1/2 -translate-x-1/2 z-30">
+                      <div
+                        className="w-16 h-4 bg-gray-300 rounded-full flex items-center justify-center cursor-ns-resize touch-none active:bg-gray-400 select-none"
+                        onTouchStart={(e) => {
+                          e.stopPropagation();
+                          onResizeStart(e, booking, 'bottom');
+                        }}
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <span className="w-8 h-0.5 bg-gray-500 rounded block" />
+                          <span className="w-8 h-0.5 bg-gray-500 rounded block" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );

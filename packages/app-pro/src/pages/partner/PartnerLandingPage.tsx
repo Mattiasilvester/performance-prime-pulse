@@ -689,7 +689,7 @@ export default function PartnerLandingPage() {
                     <input
                       type="text"
                       placeholder="Il tuo nome (es. Marco R.)"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent outline-none transition-all"
                       value={feedbackName}
                       onChange={(e) => setFeedbackName(e.target.value)}
                     />
@@ -697,17 +697,17 @@ export default function PartnerLandingPage() {
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700 mb-1">La tua professione *</label>
                     <select
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent outline-none bg-white transition-all"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent outline-none transition-all"
                       value={feedbackCategory}
                       onChange={(e) => setFeedbackCategory(e.target.value)}
                     >
                       <option value="">Seleziona...</option>
-                      <option value="Personal Trainer">Personal Trainer</option>
-                      <option value="Nutrizionista">Nutrizionista</option>
-                      <option value="Fisioterapista">Fisioterapista</option>
-                      <option value="Mental Coach">Mental Coach</option>
-                      <option value="Osteopata">Osteopata</option>
-                      <option value="Altro">Altro</option>
+                      <option value="Personal Trainer" className="text-gray-900 bg-white">Personal Trainer</option>
+                      <option value="Nutrizionista" className="text-gray-900 bg-white">Nutrizionista</option>
+                      <option value="Fisioterapista" className="text-gray-900 bg-white">Fisioterapista</option>
+                      <option value="Mental Coach" className="text-gray-900 bg-white">Mental Coach</option>
+                      <option value="Osteopata" className="text-gray-900 bg-white">Osteopata</option>
+                      <option value="Altro" className="text-gray-900 bg-white">Altro</option>
                     </select>
                   </div>
                   <div className="mt-4">
@@ -737,7 +737,7 @@ export default function PartnerLandingPage() {
                       placeholder="Cosa ti piace di PrimePro? Cosa possiamo migliorare?"
                       rows={4}
                       maxLength={500}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent outline-none resize-none transition-all"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent outline-none resize-none transition-all"
                       value={feedbackComment}
                       onChange={(e) => setFeedbackComment(e.target.value)}
                     />

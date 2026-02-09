@@ -198,7 +198,7 @@ export function CostFormModal({ open, onClose, onSave, initial }: CostFormModalP
               type="date"
               value={costDate}
               onChange={(e) => setCostDate(e.target.value)}
-              className="mt-1 border-gray-300"
+              className="mt-1 w-full min-w-0 text-sm sm:text-base border-gray-300"
               required
             />
           </div>
