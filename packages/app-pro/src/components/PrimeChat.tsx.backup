@@ -1,0 +1,1167 @@
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { getAIResponse } from '@/lib/openai-service';
+import { getPrimeBotFallbackResponse } from '@/lib/primebot-fallback';
+import { fetchUserProfile } from '@/services/userService';
+import { usePrimeBot } from '@/contexts/PrimeBotContext';
+import {
+  getOrCreateSessionId,
+  saveInteraction,
+  type PrimeBotInteraction,
+} from '@/services/primebotConversationService';
+import {
+  executeAction,
+  type ActionType,
+} from '@/services/primebotActionsService';
+import { ActionButton } from '@/components/primebot/ActionButton';
+import { toast } from 'sonner';
+import { getStructuredWorkoutPlan } from '@/lib/openai-service';
+import { type StructuredWorkoutPlan } from '@/services/workoutPlanGenerator';
+import { HealthDisclaimer } from '@/components/primebot/HealthDisclaimer';
+
+export interface ParsedAction {
+  type: ActionType;
+  label: string;
+  payload: any;
+}
+
+type Msg = { 
+  id: string; 
+  role: 'user' | 'bot'; 
+  text: string; 
+  navigation?: { 
+    path: string; 
+    label: string; 
+    action: string; 
+  };
+  isDisclaimer?: boolean;
+  actions?: ParsedAction[]; // Azioni estratte dalla risposta AI
+  workoutPlan?: StructuredWorkoutPlan; // Piano allenamento strutturato
+};
+
+interface PrimeChatProps {
+  isModal?: boolean;
+}
+
+/**
+ * Rileva se la richiesta è per un piano di allenamento
+ */
+function isWorkoutPlanRequest(text: string): boolean {
+  const keywords = [
+    'piano',
+    'programma',
+    'scheda',
+    'allenamento per',
+    'creami',
+    'fammi',
+    'genera',
+    'crea un piano',
+    'fammi un piano',
+    'mi serve un piano',
+    'voglio un piano',
+  ];
+  
+  const textLower = text.toLowerCase();
+  return keywords.some(keyword => textLower.includes(keyword));
+}
+
+/**
+ * Parsa pattern [ACTION:tipo:label:payload] dalla risposta AI
+ * Ritorna testo pulito e array di azioni
+ */
+function parseActionsFromText(text: string): { cleanText: string; actions: ParsedAction[] } {
+  const actionPattern = /\[ACTION:([^:]+):([^:]+):([^\]]+)\]/g;
+  const actions: ParsedAction[] = [];
+  let cleanText = text;
+  let match;
+
+  while ((match = actionPattern.exec(text)) !== null) {
+    const [, type, label, payloadStr] = match;
+    
+    try {
+      const payload = JSON.parse(payloadStr);
+      actions.push({
+        type: type as ActionType,
+        label: label.trim(),
+        payload,
+      });
+      
+      // Rimuovi il pattern dal testo visibile
+      cleanText = cleanText.replace(match[0], '');
+    } catch (error) {
+      console.warn('⚠️ Errore parsing payload azione:', error);
+      // Rimuovi comunque il pattern anche se il parsing fallisce
+      cleanText = cleanText.replace(match[0], '');
+    }
+  }
+
+  // Pulisci spazi multipli e newline extra
+  cleanText = cleanText.replace(/\n{3,}/g, '\n\n').trim();
+
+  return { cleanText, actions };
+}
+
+// Funzione per formattare markdown senza librerie
+const renderFormattedMessage = (text: string) => {
+  if (!text) return null;
+  
+  // Splitta per ** e processa
+  const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+  
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      // Grassetto
+      return <strong key={index} className="font-bold text-yellow-400">
+        {part.slice(2, -2)}
+      </strong>;
+    } else if (part.startsWith('*') && part.endsWith('*')) {
+      // Corsivo
+      return <em key={index} className="italic">
+        {part.slice(1, -1)}
+      </em>;
+    }
+    // Testo normale
+    return <span key={index}>{part}</span>;
+  });
+};
+
+export default function PrimeChat({ isModal = false }: PrimeChatProps) {
+  const navigate = useNavigate();
+  const { setIsFullscreen } = usePrimeBot();
+  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const [userId, setUserId] = useState<string>('guest-' + crypto.randomUUID());
+  const [userName, setUserName] = useState<string>('Performance Prime User');
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [hasStartedChat, setHasStartedChat] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<any>(null);
+  const [showPlanDisclaimer, setShowPlanDisclaimer] = useState(false);
+  const [awaitingLimitationsResponse, setAwaitingLimitationsResponse] = useState(false);
+  const [originalWorkoutRequest, setOriginalWorkoutRequest] = useState<string | null>(null);
+
+  // Voiceflow rimosso - ora usa solo OpenAI
+  const [isNewUser, setIsNewUser] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+  }, [msgs, loading]);
+
+  // Focus automatico quando si apre la chat
+  useEffect(() => {
+    if (hasStartedChat && msgs.length > 0) {
+      setTimeout(() => {
+        const inputElement = document.querySelector('input[aria-label="Scrivi la tua domanda"]') as HTMLInputElement;
+        if (inputElement) {
+          inputElement.focus();
+          console.log('🎯 FOCUS AUTOMATICO APPLICATO VIA useEffect');
+        }
+      }, 200);
+    }
+  }, [hasStartedChat, msgs.length]);
+
+  // DEBUG: Esponi funzione reset limitazioni nella console per test
+  useEffect(() => {
+    if (typeof window !== 'undefined' && userId && !userId.startsWith('guest-')) {
+      (window as any).resetHealthLimitations = async () => {
+        const { resetHealthLimitations } = await import('@/services/primebotUserContextService');
+        const result = await resetHealthLimitations(userId);
+        if (result) {
+          console.log('✅ Limitazioni fisiche resettate! Ricarica la pagina e riprova.');
+          alert('✅ Limitazioni fisiche resettate! Ricarica la pagina e riprova.');
+        } else {
+          console.error('❌ Errore nel reset delle limitazioni');
+          alert('❌ Errore nel reset delle limitazioni');
+        }
+      };
+      console.log('🔧 DEBUG: Usa resetHealthLimitations() nella console per resettare i dati di limitazioni');
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    console.log('useEffect PRINCIPALE: INIZIO');
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        const id = user?.id || userId;
+        
+        // Usa il servizio userService per ottenere il nome utente
+        let userProfile;
+        let fullName = 'Utente';
+        let email = '';
+        
+        try {
+          userProfile = await fetchUserProfile();
+          fullName = userProfile?.name || 'Utente';
+          email = user?.email || '';
+        } catch (e) {
+          console.warn('Error fetching user profile:', e);
+          fullName = 'Utente';
+        }
+
+        setUserId(id);
+        setUserName(fullName);
+        setUserEmail(email);
+        
+        console.log('useEffect PRINCIPALE: setUserId, setUserName, setUserEmail');
+
+        // Recupera o crea session ID per la conversazione
+        try {
+          const currentSessionId = await getOrCreateSessionId(id);
+          setSessionId(currentSessionId);
+          console.log('✅ Session ID recuperato/creato:', currentSessionId.substring(0, 8) + '...');
+        } catch (sessionError) {
+          console.warn('⚠️ Errore recupero session ID (continuo comunque):', sessionError);
+          // Continua senza session ID se il recupero fallisce
+        }
+
+        // Controlla se è un nuovo utente
+        const userOnboarded = localStorage.getItem(`user_onboarded_${id}`);
+        const isFirstVisit = !sessionStorage.getItem(`first_visit_${id}`);
+        
+        if (!userOnboarded && isFirstVisit) {
+          setIsNewUser(true);
+          sessionStorage.setItem(`first_visit_${id}`, 'true');
+        }
+        
+        // NON aggiungere messaggi automaticamente - mostra sempre la Landing Page inizialmente
+        // I messaggi vengono gestiti solo dal bottone "Inizia Chat"
+        console.log('useEffect PRINCIPALE: FINE - non aggiungo messaggi automaticamente');
+
+        // Voiceflow rimosso - ora usa solo OpenAI
+      } catch (error) {
+        console.error('Error in PrimeChat useEffect:', error);
+        // NON aggiungere messaggi automaticamente - mantieni la Landing Page
+        // I messaggi vengono gestiti solo dal bottone "Inizia Chat"
+      }
+    })();
+  }, []);
+
+  async function send(text: string) {
+    const trimmed = text.trim();
+    console.log('🚀 SEND FUNZIONE CHIAMATA:', { text: trimmed, loading, awaitingLimitationsResponse });
+    
+    if (!trimmed || loading) {
+      console.log('⚠️ SEND BLOCCATO:', { trimmed: !!trimmed, loading });
+      return;
+    }
+
+    setMsgs(m => [...m, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+    setInput('');
+    setLoading(true);
+    
+    console.log('📝 Messaggio utente aggiunto, loading = true');
+
+    // Marca utente come onboardato dopo la prima interazione
+    if (isNewUser) {
+      localStorage.setItem(`user_onboarded_${userId}`, 'true');
+      setIsNewUser(false);
+    }
+
+    // Assicurati di avere un sessionId (recupera/crea se necessario)
+    let currentSessionId = sessionId;
+    if (!currentSessionId) {
+      try {
+        currentSessionId = await getOrCreateSessionId(userId);
+        setSessionId(currentSessionId);
+        console.log('✅ Session ID creato durante send:', currentSessionId.substring(0, 8) + '...');
+      } catch (sessionError) {
+        console.warn('⚠️ Errore creazione session ID (continuo comunque):', sessionError);
+        // Continua senza session ID se il recupero fallisce
+      }
+    }
+
+    try {
+      // PRIMA: Se siamo in attesa di risposta limitazioni, gestiscila
+      if (awaitingLimitationsResponse) {
+        console.log('💬 Risposta limitazioni ricevuta:', trimmed);
+        setAwaitingLimitationsResponse(false);
+        
+        const { parseAndSaveLimitationsFromChat } = await import('@/services/primebotUserContextService');
+        const result = await parseAndSaveLimitationsFromChat(userId, trimmed);
+        
+        // Risposta empatica basata sul risultato
+        let empathyMessage = '';
+        if (!result.hasLimitations) {
+          empathyMessage = 'Perfetto! Creo subito il tuo piano personalizzato 💪';
+        } else {
+          empathyMessage = `Grazie per avermelo detto! Terrò conto di questo e creerò un piano sicuro per te. Ti consiglio anche di consultare un professionista per una valutazione specifica.`;
+        }
+        
+        // Mostra messaggio empatico
+        setMsgs(m => [
+          ...m,
+          {
+            id: crypto.randomUUID(),
+            role: 'bot' as const,
+            text: empathyMessage,
+          },
+        ]);
+        
+        // Rigenera il piano con i dati aggiornati
+        // IMPORTANTE: Usa la richiesta originale del piano, non "no" o "sì"
+        const workoutRequest = originalWorkoutRequest || trimmed;
+        console.log('🔄 Rigenero piano con richiesta:', {
+          originalRequest: originalWorkoutRequest,
+          currentTrimmed: trimmed,
+          usingRequest: workoutRequest,
+        });
+        const planResponse = await getStructuredWorkoutPlan(workoutRequest, userId, currentSessionId || undefined);
+        // Reset della richiesta originale dopo l'uso
+        setOriginalWorkoutRequest(null);
+        
+        if (planResponse.success && planResponse.plan) {
+          // Mostra disclaimer SOLO se l'utente ha limitazioni
+          if (result.hasLimitations) {
+            setPendingPlan({
+              plan: planResponse.plan,
+              hasLimitations: result.hasLimitations, // Salva info limitazioni per il disclaimer
+              actions: [
+                {
+                  type: 'save_workout',
+                  label: 'Salva questo piano',
+                  payload: {
+                    name: planResponse.plan.name,
+                    workout_type: planResponse.plan.workout_type,
+                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                      name: ex.name,
+                      sets: ex.sets,
+                      reps: ex.reps,
+                      rest_seconds: ex.rest_seconds,
+                      notes: ex.notes,
+                    })),
+                    duration: planResponse.plan.duration_minutes,
+                  },
+                },
+              ],
+            });
+            setShowPlanDisclaimer(true);
+          } else {
+            // Se NON ha limitazioni, mostra il piano direttamente senza disclaimer
+            const botMessage: Msg = {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
+              workoutPlan: planResponse.plan,
+              actions: [
+                {
+                  type: 'save_workout',
+                  label: 'Salva questo piano',
+                  payload: {
+                    name: planResponse.plan.name,
+                    workout_type: planResponse.plan.workout_type,
+                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                      name: ex.name,
+                      sets: ex.sets,
+                      reps: ex.reps,
+                      rest_seconds: ex.rest_seconds,
+                      notes: ex.notes,
+                    })),
+                    duration: planResponse.plan.duration_minutes,
+                  },
+                },
+              ],
+            };
+            setMsgs(m => [...m, botMessage]);
+          }
+        } else if (planResponse.type === 'question') {
+          // Se ritorna ancora una domanda, mostra la domanda
+          setMsgs(m => [
+            ...m,
+            {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.question || 'Errore nella generazione del piano.',
+            },
+          ]);
+          setAwaitingLimitationsResponse(true);
+        } else {
+          setMsgs(m => [
+            ...m,
+            {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.message || 'Errore nella generazione del piano. Riprova!',
+            },
+          ]);
+        }
+        
+        setLoading(false);
+        return;
+      }
+      
+      // SECONDO: Controlla se esiste una risposta preimpostata
+      const presetResponse = getPrimeBotFallbackResponse(trimmed);
+      
+      if (presetResponse) {
+        console.log('🎯 Risposta preimpostata trovata:', presetResponse);
+        
+        // Crea il messaggio con la risposta preimpostata
+        const message: Msg = {
+          id: crypto.randomUUID(),
+          role: 'bot',
+          text: presetResponse.text
+        };
+        
+        // Se c'è un'azione (bottone), aggiungi la navigazione
+        if (presetResponse.action) {
+          message.navigation = {
+            path: presetResponse.action.link,
+            label: presetResponse.action.label,
+            action: 'navigate'
+          };
+        }
+        
+        setMsgs(m => [...m, message]);
+        
+        // Salva anche le risposte preimpostate su database (se abbiamo sessionId)
+        if (currentSessionId && userId && !userId.startsWith('guest-')) {
+          try {
+            const interaction: PrimeBotInteraction = {
+              user_id: userId,
+              session_id: currentSessionId,
+              message_content: trimmed,
+              bot_response: presetResponse.text,
+              interaction_type: 'text',
+              user_context: {
+                page: window.location.pathname,
+                is_preset_response: true,
+              },
+            };
+            await saveInteraction(interaction);
+            console.log('✅ Risposta preimpostata salvata su database');
+          } catch (saveError) {
+            console.warn('⚠️ Errore salvataggio risposta preimpostata (continuo comunque):', saveError);
+            // Non bloccare il flusso se il salvataggio fallisce
+          }
+        }
+        
+        setLoading(false);
+        return;
+      }
+      
+      // TERZO: Controlla se è una richiesta di piano allenamento
+      const isPlanRequest = isWorkoutPlanRequest(trimmed);
+      console.log('🔍 VERIFICA RICHIESTA PIANO:', { 
+        trimmed, 
+        isPlanRequest,
+        awaitingLimitationsResponse 
+      });
+      
+      if (isPlanRequest) {
+        console.log('🏋️ Richiesta piano allenamento rilevata, uso getStructuredWorkoutPlan');
+        console.log('🔍 DEBUG - Prima di chiamare getStructuredWorkoutPlan:', {
+          userId: userId.substring(0, 8) + '...',
+          sessionId: currentSessionId?.substring(0, 8) + '...' || 'null',
+        });
+        
+        let planResponse;
+        try {
+          planResponse = await getStructuredWorkoutPlan(trimmed, userId, currentSessionId || undefined);
+          console.log('✅ getStructuredWorkoutPlan completato:', {
+            success: planResponse.success,
+            type: planResponse.type,
+            hasPlan: !!planResponse.plan,
+            hasQuestion: !!planResponse.question,
+            hasExistingLimitations: planResponse.hasExistingLimitations,
+          });
+          
+          // DEBUG: Stampa tutta la risposta
+          console.log('🔍 DEBUG - planResponse COMPLETO:', {
+            type: planResponse.type,
+            typeValue: planResponse.type,
+            typeIsUndefined: planResponse.type === undefined,
+            typeIsQuestion: planResponse.type === 'question',
+            question: planResponse.question,
+            questionExists: !!planResponse.question,
+            success: planResponse.success,
+            hasPlan: !!planResponse.plan,
+            hasExistingLimitations: planResponse.hasExistingLimitations,
+            fullResponse: JSON.stringify(planResponse, null, 2),
+          });
+        } catch (error) {
+          console.error('❌ ERRORE in getStructuredWorkoutPlan:', error);
+        setMsgs(m => [
+          ...m,
+          { 
+            id: crypto.randomUUID(), 
+            role: 'bot' as const, 
+              text: 'Ops, ho avuto un problema tecnico. Riprova tra qualche secondo.',
+            },
+          ]);
+          setLoading(false);
+          return;
+        }
+        
+        // IMPORTANTE: Se ritorna una domanda, mostra SOLO la domanda (NON generare piano)
+        console.log('🔍 VERIFICA TYPE RESPONSE:', {
+          type: planResponse.type,
+          typeExists: planResponse.type !== undefined,
+          question: planResponse.question?.substring(0, 50) + '...',
+          questionExists: !!planResponse.question,
+          success: planResponse.success,
+          hasPlan: !!planResponse.plan,
+        });
+        
+        // DEBUG: Verifica PRIMA del controllo if
+        console.log('🔍 DEBUG - PRIMA del controllo type === question:', {
+          type: planResponse.type,
+          typeStrictEqual: planResponse.type === 'question',
+          question: planResponse.question,
+          questionExists: !!planResponse.question,
+          conditionResult: planResponse.type === 'question' && planResponse.question,
+        });
+        
+        if (planResponse.type === 'question' && planResponse.question) {
+          console.log('✅ DEBUG - ENTRO NEL BLOCCO QUESTION - Mostro SOLO la domanda');
+          console.log('❓ Ritornata domanda limitazioni, mostro SOLO la domanda');
+          // Salva la richiesta originale per rigenerare il piano dopo la risposta
+          setOriginalWorkoutRequest(trimmed);
+          setMsgs(m => [
+            ...m,
+            {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.question,
+            },
+          ]);
+          setAwaitingLimitationsResponse(true);
+          setLoading(false);
+          console.log('✅ DEBUG - FACCIO RETURN - NON devo generare piano');
+          return; // IMPORTANTE: Esci qui, NON generare piano
+        }
+        
+        console.log('🔍 DEBUG - NON sono entrato nel blocco question, verifico se è un piano');
+        console.log('⚠️ NON è una domanda, verifico se è un piano:', {
+          type: planResponse.type,
+          success: planResponse.success,
+          hasPlan: !!planResponse.plan,
+        });
+        
+        // Se il tipo è 'error', mostra messaggio di errore
+        if (planResponse.type === 'error') {
+          console.error('❌ ERRORE nella generazione piano:', {
+            message: planResponse.message,
+            errorType: planResponse.errorType,
+          });
+        setMsgs(m => [
+          ...m,
+          { 
+            id: crypto.randomUUID(), 
+            role: 'bot' as const, 
+              text: planResponse.message || 'Errore nella generazione del piano. Riprova!',
+            },
+          ]);
+          setLoading(false);
+          return;
+        }
+        
+        // Se abbiamo un piano generato (solo se needsToAsk === false)
+        console.log('🔍 DEBUG - PRIMA del controllo success && plan:', {
+          success: planResponse.success,
+          hasPlan: !!planResponse.plan,
+          type: planResponse.type,
+          conditionResult: planResponse.success && planResponse.plan,
+        });
+        
+        if (planResponse.success && planResponse.plan) {
+          console.log('✅ DEBUG - ENTRO NEL BLOCCO success && plan');
+          // Mostra disclaimer SOLO se l'utente ha limitazioni esistenti E ha già risposto prima (non è la prima volta)
+          console.log('🔍 DEBUG - Verifico condizioni per disclaimer:', {
+            hasExistingLimitations: planResponse.hasExistingLimitations,
+            hasAnsweredBefore: (planResponse as any).hasAnsweredBefore,
+            conditionResult: planResponse.hasExistingLimitations && (planResponse as any).hasAnsweredBefore,
+          });
+          
+          // IMPORTANTE: Mostra disclaimer SOLO se:
+          // 1. Ha limitazioni esistenti (hasExistingLimitations === true)
+          // 2. Ha già risposto prima (hasAnsweredBefore === true)
+          // Questo evita di mostrare il disclaimer se l'utente non ha mai risposto alla domanda iniziale
+          if (planResponse.hasExistingLimitations && (planResponse as any).hasAnsweredBefore) {
+            // Ha limitazioni già salvate E ha già risposto prima → mostra messaggio bot + disclaimer
+            console.log('✅ DEBUG - ENTRO NEL BLOCCO hasExistingLimitations + hasAnsweredBefore - Mostro messaggio bot + disclaimer');
+            console.log('⚠️ Utente ha limitazioni esistenti E ha già risposto prima, mostro messaggio bot + disclaimer');
+            
+            // PRIMA: Aggiungi messaggio del bot che spiega il piano
+            const botMessage: Msg = {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: `Ecco il tuo piano di allenamento personalizzato! Ho tenuto conto delle tue limitazioni per creare un programma sicuro per te. 💪`,
+            };
+            setMsgs(m => [...m, botMessage]);
+            
+            // POI: Imposta il piano in pending per mostrare il disclaimer DOPO il messaggio
+            setPendingPlan({
+              plan: planResponse.plan,
+              hasLimitations: planResponse.hasExistingLimitations ?? false,
+              actions: [
+                {
+                  type: 'save_workout',
+                  label: 'Salva questo piano',
+                  payload: {
+                    name: planResponse.plan.name,
+                    workout_type: planResponse.plan.workout_type,
+                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                      name: ex.name,
+                      sets: ex.sets,
+                      reps: ex.reps,
+                      rest_seconds: ex.rest_seconds,
+                      notes: ex.notes,
+                    })),
+                    duration: planResponse.plan.duration_minutes,
+                  },
+                },
+              ],
+            });
+            setShowPlanDisclaimer(true);
+            console.log('✅ DEBUG - Ho aggiunto messaggio bot e impostato showPlanDisclaimer = true');
+          } else {
+            // NON ha limitazioni O non ha mai risposto prima → mostra piano direttamente senza disclaimer
+            console.log('✅ DEBUG - NON ha limitazioni O non ha mai risposto - Mostro piano direttamente');
+            console.log('✅ Utente NON ha limitazioni O non ha mai risposto, mostro piano direttamente');
+            const botMessage: Msg = {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
+              workoutPlan: planResponse.plan,
+              actions: [
+                {
+                  type: 'save_workout',
+                  label: 'Salva questo piano',
+                  payload: {
+                    name: planResponse.plan.name,
+                    workout_type: planResponse.plan.workout_type,
+                    exercises: planResponse.plan.exercises.map((ex: any) => ({
+                      name: ex.name,
+                      sets: ex.sets,
+                      reps: ex.reps,
+                      rest_seconds: ex.rest_seconds,
+                      notes: ex.notes,
+                    })),
+                    duration: planResponse.plan.duration_minutes,
+                  },
+                },
+              ],
+            };
+            setMsgs(m => [...m, botMessage]);
+          }
+        } else {
+          // Errore o caso non gestito
+          console.warn('⚠️ Caso non gestito in planResponse:', {
+            type: planResponse.type,
+            success: planResponse.success,
+            hasPlan: !!planResponse.plan,
+            hasQuestion: !!planResponse.question,
+            message: planResponse.message,
+          });
+          setMsgs(m => [
+            ...m,
+            {
+              id: crypto.randomUUID(),
+              role: 'bot' as const,
+              text: planResponse.message || 'Errore nella generazione del piano. Riprova!',
+            },
+          ]);
+          setLoading(false);
+        }
+      } else {
+        // SECONDO: Se non c'è risposta preimpostata, usa l'AI normale
+        console.log('🤖 Nessuna risposta preimpostata, uso AI');
+        const aiResponse = await getAIResponse(trimmed, userId, currentSessionId || undefined);
+        
+        // Parsa azioni dalla risposta AI
+        const { cleanText, actions } = parseActionsFromText(aiResponse.message);
+        
+        const botMessage: Msg = {
+          id: crypto.randomUUID(),
+          role: 'bot' as const,
+          text: cleanText,
+          actions: actions.length > 0 ? actions : undefined,
+        };
+        
+        setMsgs(m => [...m, botMessage]);
+      }
+    } catch (e) {
+      console.error('Errore chiamata OpenAI:', e);
+      setMsgs(m => [
+        ...m,
+        { id: crypto.randomUUID(), role: 'bot', text: 'Ops, connessione instabile. Riprova tra qualche secondo.' }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Quick replies per onboarding
+  const onboardingQuestions = [
+    'Mostrami la Dashboard',
+    'Come creare un allenamento?',
+    'Spiegami le funzionalità premium',
+    'Come tracciare i progressi?',
+    'Quali sono i prossimi passi?'
+  ];
+
+  // Quick replies normali
+  const normalQuestions = [
+    'Come posso migliorare la mia resistenza?',
+    'Quale workout è meglio per oggi?',
+    'Consigli per la nutrizione pre-allenamento',
+    'Come posso raggiungere i miei obiettivi?'
+  ];
+
+  const questionsToShow = isNewUser ? onboardingQuestions : normalQuestions;
+
+  // DEBUG: Console.log per verificare lo stato
+  console.log('RENDER: hasStartedChat =', hasStartedChat);
+  console.log('RENDER: msgs.length =', msgs.length);
+  console.log('RENDER: msgs =', msgs);
+
+  // FIX NAVIGAZIONE: Mostra Landing Page solo se non ha iniziato la chat
+  if (!hasStartedChat) {
+    console.log('MOSTRO LANDING PAGE');
+    return (
+      <div className={`w-full h-full flex flex-col rounded-2xl border border-[#DAA520] bg-black text-white ${hasStartedChat ? 'min-h-[700px]' : 'min-h-[600px] mb-4 pb-2'}`}>
+        {/* Landing Page */}
+        <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-8">
+          {/* Icona fulmine gialla in cerchio */}
+          <div className="w-24 h-24 bg-[#EEBA2B] rounded-full flex items-center justify-center">
+            <svg className="w-12 h-12 text-black" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          
+          {/* Titolo e sottotitolo */}
+          <div className="text-center space-y-2">
+            <h2 className="text-3xl font-bold text-[#EEBA2B]">PrimeBot</h2>
+            <p className="text-lg text-gray-300">Il tuo coach fitness AI personalizzato</p>
+          </div>
+          
+          {/* Bottone Inizia Chat - FIX NAVIGAZIONE */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🚀 BOTTONE CLICCATO!');
+              console.log('PRIMA CLICK: hasStartedChat =', hasStartedChat);
+              console.log('PRIMA CLICK: msgs =', msgs);
+              
+              setHasStartedChat(true);
+              setIsFullscreen(true); // Imposta fullscreen quando inizia la chat
+              setMsgs([
+                {
+                  id: 'disclaimer',
+                  role: 'bot' as const,
+                  text: 'PrimeBot è un assistente AI per supporto informativo e NON sostituisce professionisti qualificati. Per programmi personalizzati o se hai dolori/patologie, consulta un personal trainer, fisioterapista o medico. Trova un professionista su Performance Prime!',
+                  isDisclaimer: true
+                },
+                {
+                  id: 'welcome',
+                  role: 'bot' as const,
+                  text: `Ciao ${userName} 👋! Sono PrimeBot, il tuo AI Coach personale. Come posso aiutarti oggi con il tuo allenamento?`
+                }
+              ]);
+              
+              // Focus automatico al campo di input dopo un breve delay
+              setTimeout(() => {
+                const inputElement = document.querySelector('input[aria-label="Scrivi la tua domanda"]') as HTMLInputElement;
+                if (inputElement) {
+                  inputElement.focus();
+                  console.log('🎯 FOCUS AUTOMATICO APPLICATO AL CAMPO INPUT');
+                }
+              }, 100);
+              
+              console.log('DOPO CLICK: hasStartedChat dovrebbe essere true');
+              console.log('DOPO CLICK: msgs dovrebbe avere 2 messaggi');
+            }}
+            onMouseDown={(e) => e.stopPropagation()} // BLOCCA ANCHE MOUSEDOWN
+            onMouseUp={(e) => e.stopPropagation()}   // BLOCCA ANCHE MOUSEUP
+            className="px-8 py-4 bg-[#EEBA2B] hover:bg-[#d4a527] text-black font-bold rounded-xl transition-colors text-lg"
+            type="button"
+          >
+            Inizia Chat con PrimeBot
+          </button>
+          
+          {/* 3 Card Features */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl">
+            <div className="bg-gray-800 border border-gray-600 rounded-xl p-4 text-center">
+              <div className="text-2xl mb-2">💪</div>
+              <h3 className="font-semibold text-[#EEBA2B] mb-1">Allenamenti</h3>
+              <p className="text-sm text-gray-400">Workout personalizzati</p>
+            </div>
+            <div className="bg-gray-800 border border-gray-600 rounded-xl p-4 text-center">
+              <div className="text-2xl mb-2">🎯</div>
+              <h3 className="font-semibold text-[#EEBA2B] mb-1">Obiettivi</h3>
+              <p className="text-sm text-gray-400">Raggiungi i tuoi goal</p>
+            </div>
+            <div className="bg-gray-800 border border-gray-600 rounded-xl p-4 text-center">
+              <div className="text-2xl mb-2">📊</div>
+              <h3 className="font-semibold text-[#EEBA2B] mb-1">Progressi</h3>
+              <p className="text-sm text-gray-400">Monitora i risultati</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Chat Interface - FIX FULLSCREEN E EVENT BUBBLING
+  console.log('MOSTRO CHAT INTERFACE');
+  
+  // Chat Interface - quando hasStartedChat = true
+  if (hasStartedChat) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-black flex flex-col">
+        {/* Header */}
+        <header className="flex-shrink-0 flex items-center px-4 py-3 bg-gradient-to-r from-[#DAA520] to-[#B8860B] text-black font-semibold">
+          <button
+            onClick={() => {
+              setHasStartedChat(false);
+              setMsgs([]);
+              setIsFullscreen(false); // Reset fullscreen quando si chiude la chat
+            }}
+            className="text-xl hover:opacity-70"
+            title="Torna a PrimeBot"
+          >
+            ←
+          </button>
+          <span className="font-bold ml-4">PrimeBot</span>
+          <span className="text-sm ml-2">• Online • Sempre disponibile</span>
+        </header>
+
+        {/* Area Messaggi - con spazio sopra */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto">
+          <div className="px-4 py-16 space-y-4">
+            {msgs.map(m => (
+              <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
+                <div className={`px-4 py-3 rounded-2xl ${
+                  m.role === 'user' 
+                    ? 'bg-[#EEBA2B] text-black'
+                    : (m as any).isDisclaimer 
+                      ? 'bg-red-900 text-red-100 border border-red-600 text-sm font-semibold'
+                      : 'bg-gray-800 text-white border border-gray-600'
+                }`}>
+                  {(m as any).isDisclaimer && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <span>⚠️ AVVISO IMPORTANTE</span>
+                    </div>
+                  )}
+                  <div className="whitespace-pre-wrap">
+                    {renderFormattedMessage(m.text)}
+                  </div>
+                  
+                  {/* Bottone di navigazione per messaggi bot */}
+                  {m.role === 'bot' && m.navigation && (
+                    <button
+                      onClick={() => navigate(m.navigation!.path)}
+                      className="mt-3 w-full px-4 py-2 bg-[#EEBA2B] hover:bg-[#d4a527] text-black font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      {m.navigation.label}
+                      <span>→</span>
+                    </button>
+                  )}
+                  
+                  {/* Card Piano Allenamento */}
+                  {m.role === 'bot' && m.workoutPlan && (
+                    <div className="mt-4 bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-[#EEBA2B] rounded-xl p-4">
+                      <h3 className="text-xl font-bold text-[#EEBA2B] mb-2">
+                        {m.workoutPlan.name}
+                      </h3>
+                      {m.workoutPlan.description && (
+                        <p className="text-gray-300 text-sm mb-3">{m.workoutPlan.description}</p>
+                      )}
+                      
+                      {/* Consigli Terapeutici - Mostra PRIMA degli esercizi se presenti */}
+                      {m.workoutPlan.therapeuticAdvice && m.workoutPlan.therapeuticAdvice.length > 0 && (
+                        <div className="bg-amber-900/30 border border-amber-500/50 rounded-lg p-4 mb-4">
+                          <h4 className="text-amber-400 font-semibold mb-2 flex items-center gap-2">
+                            💡 Consigli per il tuo dolore
+                          </h4>
+                          <ul className="space-y-2 text-sm text-gray-300">
+                            {m.workoutPlan.therapeuticAdvice.map((advice: string, index: number) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-amber-400 mt-0.5">•</span>
+                                <span>{advice}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {/* Note di Sicurezza */}
+                      {m.workoutPlan.safetyNotes && (
+                        <div className="bg-blue-900/30 border border-blue-500/50 rounded-lg p-3 mb-4">
+                          <p className="text-blue-300 text-sm">
+                            <span className="font-semibold">ℹ️ Nota di sicurezza:</span> {m.workoutPlan.safetyNotes}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Info Piano */}
+                      <div className="flex gap-4 mb-4 text-sm text-gray-400">
+                        <span>⏱️ {m.workoutPlan.duration_minutes} min</span>
+                        <span>💪 {m.workoutPlan.exercises.length} esercizi</span>
+                        <span>📊 {m.workoutPlan.difficulty}</span>
+                      </div>
+                      
+                      {/* Lista Esercizi */}
+                      <div className="space-y-2 mb-4">
+                        {m.workoutPlan.exercises.map((ex, idx) => (
+                          <div key={idx} className="bg-gray-700/50 rounded-lg p-3 flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[#EEBA2B] font-semibold">
+                                  {ex.exercise_type === 'compound' ? '🏋️' : 
+                                   ex.exercise_type === 'compound_secondary' ? '💪' :
+                                   ex.exercise_type === 'isolation' ? '🎯' :
+                                   ex.exercise_type === 'isolation_light' ? '✨' : '⏱️'}
+                                </span>
+                                <span className="text-white font-medium">{ex.name}</span>
+                              </div>
+                              <div className="text-gray-300 text-sm">
+                                <span className="font-semibold text-[#EEBA2B]">{ex.sets}x{ex.reps}</span>
+                                {' • '}
+                                <span>Recupero: {ex.rest_seconds}s</span>
+                              </div>
+                              {ex.notes && (
+                                <p className="text-gray-400 text-xs mt-1 italic">{ex.notes}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Warmup e Cooldown */}
+                      {(m.workoutPlan.warmup || m.workoutPlan.cooldown) && (
+                        <div className="space-y-2 mb-4 text-sm">
+                          {m.workoutPlan.warmup && (
+                            <div className="bg-blue-900/30 rounded-lg p-2">
+                              <span className="text-blue-300 font-semibold">🔥 Warmup:</span>
+                              <p className="text-gray-300 mt-1">{m.workoutPlan.warmup}</p>
+                            </div>
+                          )}
+                          {m.workoutPlan.cooldown && (
+                            <div className="bg-green-900/30 rounded-lg p-2">
+                              <span className="text-green-300 font-semibold">🧘 Cooldown:</span>
+                              <p className="text-gray-300 mt-1">{m.workoutPlan.cooldown}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Bottoni azioni PrimeBot */}
+                  {m.role === 'bot' && m.actions && m.actions.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {m.actions.map((action, idx) => (
+                        <ActionButton
+                          key={idx}
+                          actionType={action.type}
+                          label={action.label}
+                          payload={action.payload}
+                          onAction={async () => {
+                            const result = await executeAction(
+                              userId,
+                              action.type,
+                              action.payload,
+                              navigate
+                            );
+                            
+                            if (result.success) {
+                              toast.success(result.message || 'Azione completata con successo!');
+                            } else {
+                              throw new Error(result.error || 'Errore durante l\'esecuzione');
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div className={`text-xs mt-2 ${m.role === 'user' ? 'text-black/70' : 'text-white'}`}>
+                    {new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            {/* Health Disclaimer DOPO i messaggi (quando necessario) */}
+            {showPlanDisclaimer && pendingPlan && (
+              <div className="max-w-[85%] mr-auto mb-4">
+                <HealthDisclaimer
+                  userId={userId}
+                  disclaimerType="workout_plan"
+                  onAccept={() => {
+                    // Quando accetta, mostra il piano
+                    setShowPlanDisclaimer(false);
+                    const botMessage: Msg = {
+                      id: crypto.randomUUID(),
+                      role: 'bot' as const,
+                      text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
+                      workoutPlan: pendingPlan.plan,
+                      actions: pendingPlan.actions,
+                    };
+                    setMsgs(m => [...m, botMessage]);
+                    setPendingPlan(null);
+                  }}
+                  context={{
+                    plan_name: pendingPlan.plan.name,
+                    workout_type: pendingPlan.plan.workout_type,
+                  }}
+                  userHasLimitations={pendingPlan?.hasLimitations ?? false}
+                />
+              </div>
+            )}
+            
+            {loading && (
+              <div className="mr-auto px-4 py-3 rounded-2xl bg-gray-800 text-white border border-gray-600">
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span>PrimeBot sta scrivendo…</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Area Bottom - Quick Replies + Input */}
+        <div className="flex-shrink-0 border-t border-[#DAA520]/30 bg-black">
+          {/* Quick Replies */}
+          <div className="p-4">
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {questionsToShow.map(q => (
+                <button
+                  key={q}
+                  onClick={() => { setInput(q); send(q); }}
+                  className="border border-[#DAA520] hover:bg-[#EEBA2B]/10 bg-gray-800 text-white text-sm px-3 py-2 rounded-xl transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+            
+            {/* Input */}
+            <div className="flex gap-2">
+              <input
+                aria-label="Scrivi la tua domanda"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') send(input); }}
+                placeholder="Scrivi la tua domanda…"
+                className="flex-1 px-4 py-3 rounded-2xl border border-[#DAA520] focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] bg-gray-800 text-white placeholder-gray-400"
+              />
+              <button
+                onClick={() => send(input)}
+                className="px-6 py-3 rounded-2xl bg-[#EEBA2B] hover:bg-[#d4a527] text-black font-semibold disabled:opacity-50 transition-colors"
+                disabled={loading}
+              >
+                ➤
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // LAYOUT NORMALE (non fullscreen)
+  return (
+    <div className="w-full max-w-4xl mx-auto rounded-2xl border border-[#DAA520] bg-black text-white min-h-[600px] mb-4 pb-2 md:max-w-4xl sm:max-w-full sm:mx-2">
+      <header className="px-6 py-4 bg-gradient-to-r from-[#DAA520] to-[#B8860B] rounded-t-2xl text-black font-semibold">
+        PrimeBot <span className="text-sm">• Online • Sempre disponibile</span>
+      </header>
+
+      <div 
+        ref={scrollRef} 
+        className="flex-1 overflow-y-auto p-6 space-y-4 bg-black min-h-[400px] max-h-[400px]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="space-y-4">
+          {msgs.map(m => (
+            <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
+              <div
+                className={`px-4 py-3 rounded-2xl ${
+                  m.role === 'user' 
+                    ? 'bg-[#EEBA2B] text-black' // Giallo per utente
+                    : (m as any).isDisclaimer 
+                      ? 'bg-red-900 text-red-100 border border-red-600 text-sm font-semibold' // Rosso per disclaimer
+                      : 'bg-gray-800 text-white border border-gray-600' // Grigio scuro per bot
+                }`}
+              >
+                <div className="whitespace-pre-wrap">
+                  {(m as any).isDisclaimer && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-red-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-red-200 font-bold">⚠️ AVVISO IMPORTANTE</span>
+                    </div>
+                  )}
+                  {renderFormattedMessage(m.text)}
+                </div>
+                
+                {/* Timestamp sotto ogni messaggio */}
+                <div className={`text-xs mt-2 ${
+                  m.role === 'user' 
+                    ? 'text-black/70' 
+                    : 'text-white'
+                }`}>
+                  {new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+              
+              {/* Pulsante di navigazione per messaggi bot */}
+              {m.role === 'bot' && m.navigation && (
+                <button
+                  onClick={() => navigate(m.navigation!.path)}
+                  className="mt-3 px-4 py-2 bg-[#EEBA2B] text-black font-semibold rounded-lg hover:bg-[#d4a527] transition-colors"
+                >
+                  {m.navigation.label}
+                </button>
+              )}
+            </div>
+          ))}
+          {loading && (
+            <div className="mr-auto px-4 py-3 rounded-2xl animate-pulse bg-gray-800 text-white border border-gray-600">
+              <div className="flex items-center space-x-2">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+                <span>PrimeBot sta scrivendo…</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="p-6 border-t border-[#DAA520]">
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {questionsToShow.map(q => (
+            <button
+              key={q}
+              onClick={() => {
+                setInput(q);
+                send(q);
+              }}
+              className="border border-[#DAA520] hover:bg-[#EEBA2B]/10 bg-gray-800 text-white text-sm px-4 py-3 rounded-2xl transition-colors"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  );
+}

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:pro": "pnpm -C packages/app-pro dev",
+    "build:pro": "pnpm -C packages/app-pro build",
     "dev:vercel": "vercel dev",
     "build": "vite build",
     "build:public": "NODE_ENV=production vite build",

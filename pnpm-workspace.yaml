@@ -1,0 +1,4 @@
+packages:
+  - 'packages/app-pro'
+  - 'packages/app-user'
+  - 'packages/shared'
