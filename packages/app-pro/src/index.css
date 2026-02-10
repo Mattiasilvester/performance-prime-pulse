@@ -1043,13 +1043,27 @@ iframe[src*="hooks.stripe.com"] {
    FIX SAFARI iOS — Input e Select
    ============================================ */
 
-input,
+input:not([type="checkbox"]):not([type="radio"]),
 select,
 textarea {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   font-size: 16px !important;
+}
+
+/* Escludi checkbox e radio dal reset appearance (Costo ricorrente, Nuovo cliente, ecc.) */
+input[type="checkbox"],
+input[type="radio"] {
+  -webkit-appearance: checkbox !important;
+  appearance: checkbox !important;
+  width: auto !important;
+  min-height: auto !important;
+}
+
+input[type="radio"] {
+  -webkit-appearance: radio !important;
+  appearance: radio !important;
 }
 
 input[type="date"],
@@ -1080,10 +1094,10 @@ select {
   padding-right: 2.5rem;
 }
 
-.modal-content input,
+.modal-content input:not([type="checkbox"]):not([type="radio"]),
 .modal-content select,
 .modal-content textarea,
-[role="dialog"] input,
+[role="dialog"] input:not([type="checkbox"]):not([type="radio"]),
 [role="dialog"] select,
 [role="dialog"] textarea {
   max-width: 100%;
