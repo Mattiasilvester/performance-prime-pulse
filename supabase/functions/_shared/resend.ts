@@ -10,6 +10,8 @@ export interface SendTransactionalOptions {
   text: string;
   fromEmail?: string;
   fromName?: string;
+  /** Indirizzo a cui inoltrare le risposte (default: primeassistenza@gmail.com) */
+  replyTo?: string;
 }
 
 /**
@@ -41,6 +43,7 @@ export async function sendTransactional(
         to: [options.to],
         subject: options.subject,
         text: options.text,
+        reply_to: options.replyTo ?? 'primeassistenza@gmail.com',
       }),
     });
 
