@@ -1,8 +1,9 @@
-import { useState, useLayoutEffect, useEffect } from 'react';
+import { useState, useLayoutEffect, useEffect, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, AlertCircle, LogOut, RefreshCw } from 'lucide-react';
 import { PartnerSidebar } from '@/components/partner/dashboard/PartnerSidebar';
 import { pushNotificationService } from '@/services/pushNotificationService';
+import { notificationSoundService } from '@/services/notificationSoundService';
 import { useProfessionalId } from '@/hooks/useProfessionalId';
 import { useSubscription } from '@/hooks/useSubscription';
 import { TrialExpiredGate } from '@/components/partner/TrialExpiredGate';
@@ -81,6 +82,25 @@ export default function PartnerDashboard() {
     };
 
     initPushNotifications();
+  }, [professionalId]);
+
+  // BUG 2 fix: sblocca AudioContext al primo tap/click in dashboard (notifiche con suono su iOS)
+  const audioUnlockedRef = useRef(false);
+  useEffect(() => {
+    if (!professionalId) return;
+    const unlock = () => {
+      if (audioUnlockedRef.current) return;
+      audioUnlockedRef.current = true;
+      notificationSoundService.initialize().catch(() => {});
+      document.removeEventListener('click', unlock);
+      document.removeEventListener('touchstart', unlock, { capture: true });
+    };
+    document.addEventListener('click', unlock, { once: true });
+    document.addEventListener('touchstart', unlock, { once: true, capture: true });
+    return () => {
+      document.removeEventListener('click', unlock);
+      document.removeEventListener('touchstart', unlock, { capture: true });
+    };
   }, [professionalId]);
 
   // Listener per tour onboarding su mobile: apri/chiudi sidebar

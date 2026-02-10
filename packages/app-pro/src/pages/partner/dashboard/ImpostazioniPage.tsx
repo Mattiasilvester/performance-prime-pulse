@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Tag, Bell, CreditCard, Lock, User, MapPin, FileText, Link as LinkIcon, Globe, ChevronRight, Wallet, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfessionalId } from '@/hooks/useProfessionalId';
+import { notificationSoundService } from '@/services/notificationSoundService';
 import SpecializzazioniModal from '@/components/partner/settings/SpecializzazioniModal';
 import LinguaModal from '@/components/partner/settings/LinguaModal';
 import SocialLinksModal from '@/components/partner/settings/SocialLinksModal';
@@ -106,6 +107,8 @@ export default function ImpostazioniPage() {
     } else if (section.id === 'link-social') {
       setShowSocialLinksModal(true);
     } else if (section.id === 'notifiche') {
+      // BUG 2 fix: sblocca AudioContext al primo tap su Notifiche (suono notifiche su iOS)
+      notificationSoundService.initialize().catch(() => {});
       setShowNotificationsModal(true);
     } else if (section.id === 'privacy') {
       setShowPrivacyModal(true);

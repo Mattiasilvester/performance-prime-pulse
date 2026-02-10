@@ -16,12 +16,16 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       const data = event.data.json();
+      const payloadData = data.data || {};
+      // BUG 2 fix: notifiche/promemoria non silenziosi — explicit silent: false e vibrate
       const options = {
         body: data.body || 'Nuova notifica da PrimePro',
         icon: '/images/logo-pp-no-bg.jpg',
         badge: '/images/logo-pp-no-bg.jpg',
         vibrate: [100, 50, 100],
-        data: data.data || {},
+        silent: false,
+        requireInteraction: payloadData.requireInteraction === true,
+        data: payloadData,
         tag: data.tag || 'primepro-notification',
       };
 
