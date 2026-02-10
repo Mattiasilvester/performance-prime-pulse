@@ -25,7 +25,7 @@ export async function sendTransactional(
     return { ok: false, skipped: true };
   }
 
-  const fromEmail = options.fromEmail ?? Deno.env.get('RESEND_FROM_EMAIL') ?? 'noreply@primepro.it';
+  const fromEmail = options.fromEmail ?? Deno.env.get('RESEND_FROM_EMAIL') ?? 'noreply@performanceprime.it';
   const fromName = options.fromName ?? Deno.env.get('RESEND_FROM_NAME') ?? 'PrimePro';
   const from = `${fromName} <${fromEmail}>`;
 
@@ -52,6 +52,8 @@ export async function sendTransactional(
       return { ok: false, error: errMsg };
     }
 
+    const resendId = typeof data === 'object' && data !== null && 'id' in data ? (data as { id?: string }).id : undefined;
+    console.log(`[resend] ✅ Email inviata con successo a ${options.to} - ID: ${resendId ?? 'N/A'} - Subject: ${options.subject}`);
     return { ok: true };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

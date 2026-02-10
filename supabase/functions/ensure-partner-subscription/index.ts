@@ -103,6 +103,7 @@ Deno.serve(async (req) => {
         subject: 'Benvenuto su PrimePro',
         text: `Ciao,\n\nBenvenuto su PrimePro! Il tuo periodo di prova di 90 giorni è attivo. Esplora la dashboard per gestire clienti, appuntamenti e progetti.\n\nSe hai domande, rispondi a questa email.\n\nA presto,\nIl team PrimePro`,
       });
+      console.log('[ensure-partner-subscription] Email benvenuto result:', welcomeResult);
       if (welcomeResult.ok) {
         console.log('✅ [ensure-partner-subscription] Email benvenuto inviata a', toEmail);
       } else if (!welcomeResult.skipped) {

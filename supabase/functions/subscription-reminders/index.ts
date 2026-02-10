@@ -77,6 +77,14 @@ Deno.serve(async (req) => {
             message: 'Aggiungi un metodo di pagamento per continuare a usare PrimePro senza interruzioni.',
             reminder_key: `trial_3d_${trialEndDateStr}`,
           });
+        } else if (daysRemaining === 1) {
+          notifications.push({
+            professional_id: sub.professional_id,
+            type: 'custom',
+            title: 'Il tuo periodo di prova scade domani',
+            message: 'Aggiungi un metodo di pagamento per continuare a usare PrimePro senza interruzioni.',
+            reminder_key: `trial_1d_${trialEndDateStr}`,
+          });
         } else if (daysRemaining === 0) {
           notifications.push({
             professional_id: sub.professional_id,
@@ -177,7 +185,7 @@ Deno.serve(async (req) => {
     // 4. EMAIL TRIAL: recupera email professionisti (solo per reminder trial)
     // ========================================
     const trialNotifs = notifications.filter((n) =>
-      n.reminder_key.startsWith('trial_3d_') || n.reminder_key.startsWith('trial_today_')
+      n.reminder_key.startsWith('trial_3d_') || n.reminder_key.startsWith('trial_1d_') || n.reminder_key.startsWith('trial_today_')
     );
     const trialProfIds = [...new Set(trialNotifs.map((n) => n.professional_id))];
     let emailByProfId: Record<string, string> = {};
@@ -243,9 +251,9 @@ Deno.serve(async (req) => {
           console.log(`✅ Notifica creata: ${notif.title} per professional ${notif.professional_id}`);
           created++;
 
-          // Email reminder trial (3 giorni prima + giorno stesso) via Resend
+          // Email reminder trial (3 giorni, 1 giorno, giorno stesso) via Resend
           const isTrialReminder =
-            notif.reminder_key.startsWith('trial_3d_') || notif.reminder_key.startsWith('trial_today_');
+            notif.reminder_key.startsWith('trial_3d_') || notif.reminder_key.startsWith('trial_1d_') || notif.reminder_key.startsWith('trial_today_');
           const toEmail = emailByProfId[notif.professional_id];
           if (isTrialReminder && toEmail) {
             const emailResult = await sendTransactional({
