@@ -42,8 +42,11 @@ export function SubscriptionStatusBadge({ status, trialDaysRemaining }: Subscrip
 
   const { label, icon: Icon, className } = config[status] || config.incomplete;
 
+  // BUG 5: nascondi badge "Periodo di prova" solo su mobile
+  const mobileHide = status === 'trialing' ? 'hidden md:inline-flex' : 'inline-flex';
+
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${className}`}>
+    <span className={`${mobileHide} items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${className}`}>
       <Icon className="w-4 h-4" />
       {label}
     </span>

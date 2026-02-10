@@ -150,33 +150,18 @@ export function ScheduleNotificationModal({
   if (!isOpen) return null;
 
   const modalContent = (
-    <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       onClick={onClose}
     >
-      <div 
-        style={{ 
-          width: '100%',
-          maxWidth: '32rem',
-          backgroundColor: 'white',
-          borderRadius: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}
+      <div
+        className="w-full max-w-[32rem] max-h-[90dvh] flex flex-col overflow-hidden rounded-2xl bg-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div 
-          style={{ 
-            padding: '24px',
-            borderBottom: '1px solid #f3f4f6',
-            flexShrink: 0,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}
+        <div
+          className="flex flex-shrink-0 items-center justify-between border-b border-gray-200 p-4 sm:p-6"
         >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-[#EEBA2B]/10 rounded-xl">
@@ -196,9 +181,9 @@ export function ScheduleNotificationModal({
         </div>
 
         {/* Content */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6 space-y-4">
           {/* Titolo */}
-          <div>
+          <div className="min-w-0">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Titolo *
             </label>
@@ -207,14 +192,14 @@ export function ScheduleNotificationModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Es. Ricorda di chiamare il cliente"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-[#EEBA2B] outline-none"
+              className="w-full min-w-0 px-4 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-[#EEBA2B] outline-none"
               required
               disabled={isSaving}
             />
           </div>
 
           {/* Messaggio */}
-          <div>
+          <div className="min-w-0">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Messaggio *
             </label>
@@ -223,17 +208,17 @@ export function ScheduleNotificationModal({
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Es. Chiama Mario Rossi per follow-up"
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-[#EEBA2B] outline-none resize-none"
+              className="w-full min-w-0 px-4 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-[#EEBA2B] outline-none resize-none"
               required
               disabled={isSaving}
             />
           </div>
 
-          {/* Data e Ora */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
+          {/* Data e Ora — stack su mobile, affiancati da sm */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="min-w-0">
               <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4 flex-shrink-0" />
                 Data *
               </label>
               <input
@@ -241,21 +226,21 @@ export function ScheduleNotificationModal({
                 value={scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-[#EEBA2B] outline-none"
+                className="w-full min-w-0 px-4 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-[#EEBA2B] outline-none"
                 required
                 disabled={isSaving}
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <Clock className="w-4 h-4" />
+                <Clock className="w-4 h-4 flex-shrink-0" />
                 Ora *
               </label>
               <input
                 type="time"
                 value={scheduledTime}
                 onChange={(e) => setScheduledTime(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-[#EEBA2B] outline-none"
+                className="w-full min-w-0 px-4 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-[#EEBA2B] outline-none"
                 required
                 disabled={isSaving}
               />
@@ -263,26 +248,26 @@ export function ScheduleNotificationModal({
           </div>
 
           {/* Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 min-w-0">
             <p className="text-sm text-blue-800">
               💡 La notifica verrà inviata automaticamente alla data e ora specificata.
             </p>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-wrap gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              className="min-w-[100px] flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
             >
               Annulla
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 px-4 py-2 bg-[#EEBA2B] text-black font-semibold rounded-lg hover:bg-[#EEBA2B]/90 disabled:opacity-50 transition-colors"
+              className="min-w-[100px] flex-1 px-4 py-2.5 bg-[#EEBA2B] text-black font-semibold rounded-lg hover:bg-[#EEBA2B]/90 disabled:opacity-50 transition-colors"
             >
               {isSaving ? 'Salvataggio...' : isEdit ? 'Aggiorna promemoria' : 'Crea Promemoria'}
             </button>

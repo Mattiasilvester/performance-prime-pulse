@@ -120,7 +120,14 @@ export function CostFormModal({ open, onClose, onSave, initial }: CostFormModalP
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md bg-white border border-gray-200">
+      <DialogContent
+        className="
+          w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-md
+          max-h-[90dvh] overflow-y-auto
+          bg-white border border-gray-200
+          p-4 sm:p-6
+        "
+      >
         <DialogHeader>
           <DialogTitle className="text-gray-900">
             {initial ? 'Modifica costo' : 'Aggiungi costo'}
@@ -236,13 +243,13 @@ export function CostFormModal({ open, onClose, onSave, initial }: CostFormModalP
               )}
             </>
           )}
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex flex-wrap justify-end gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
               size="default"
               onClick={onClose}
-              className="!w-[120px] !min-w-[120px] !h-10 !min-h-10 !py-2 !px-4"
+              className="min-w-[100px] sm:!w-[120px] sm:!min-w-[120px] !h-10 !min-h-10 !py-2 !px-4"
             >
               Annulla
             </Button>
@@ -250,7 +257,7 @@ export function CostFormModal({ open, onClose, onSave, initial }: CostFormModalP
               type="submit"
               size="default"
               disabled={saving || !amount.trim()}
-              className="!w-[120px] !min-w-[120px] !h-10 !min-h-10 !py-2 !px-4 bg-[#EEBA2B] hover:bg-[#d4a61f] text-black font-semibold"
+              className="min-w-[100px] sm:!w-[120px] sm:!min-w-[120px] !h-10 !min-h-10 !py-2 !px-4 bg-[#EEBA2B] hover:bg-[#d4a61f] text-black font-semibold"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
