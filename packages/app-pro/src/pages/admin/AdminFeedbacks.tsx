@@ -9,43 +9,25 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
-
-interface LandingFeedback {
-  id: string;
-  name: string;
-  category: string;
-  rating: number;
-  comment: string;
-  is_approved: boolean;
-  created_at: string;
-}
-
-type FilterType = 'all' | 'pending' | 'approved';
+import {
+  listFeedbacks,
+  approveFeedback,
+  unapproveFeedback,
+  deleteFeedback,
+  type LandingFeedback,
+  type FeedbackFilter,
+} from '@/services/adminFeedbacksService';
 
 export default function AdminFeedbacks() {
   const [feedbacks, setFeedbacks] = useState<LandingFeedback[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<FeedbackFilter>('all');
 
   const fetchFeedbacks = useCallback(async () => {
     setLoading(true);
     try {
-      const adminClient = (await import('@/lib/supabaseAdmin')).default;
-      if (!adminClient) {
-        setFeedbacks([]);
-        return;
-      }
-      let query = adminClient
-        .from('landing_feedbacks')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter === 'pending') query = query.eq('is_approved', false);
-      if (filter === 'approved') query = query.eq('is_approved', true);
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setFeedbacks((data as LandingFeedback[]) || []);
+      const data = await listFeedbacks(filter);
+      setFeedbacks(data);
     } catch (err) {
       console.error('Fetch feedbacks error:', err);
       setFeedbacks([]);
@@ -60,13 +42,7 @@ export default function AdminFeedbacks() {
 
   const handleApprove = async (id: string) => {
     try {
-      const adminClient = (await import('@/lib/supabaseAdmin')).default;
-      if (!adminClient) return;
-      const { error } = await adminClient
-        .from('landing_feedbacks')
-        .update({ is_approved: true })
-        .eq('id', id);
-      if (error) throw error;
+      await approveFeedback(id);
       fetchFeedbacks();
     } catch (err) {
       console.error('Approve error:', err);
@@ -76,13 +52,7 @@ export default function AdminFeedbacks() {
 
   const handleUnapprove = async (id: string) => {
     try {
-      const adminClient = (await import('@/lib/supabaseAdmin')).default;
-      if (!adminClient) return;
-      const { error } = await adminClient
-        .from('landing_feedbacks')
-        .update({ is_approved: false })
-        .eq('id', id);
-      if (error) throw error;
+      await unapproveFeedback(id);
       fetchFeedbacks();
     } catch (err) {
       console.error('Unapprove error:', err);
@@ -97,13 +67,7 @@ export default function AdminFeedbacks() {
     )
       return;
     try {
-      const adminClient = (await import('@/lib/supabaseAdmin')).default;
-      if (!adminClient) return;
-      const { error } = await adminClient
-        .from('landing_feedbacks')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
+      await deleteFeedback(id);
       fetchFeedbacks();
     } catch (err) {
       console.error('Delete error:', err);
@@ -165,7 +129,7 @@ export default function AdminFeedbacks() {
 
         {/* Filters */}
         <div className="mt-6 flex flex-wrap gap-2">
-          {(['all', 'pending', 'approved'] as const).map((f) => (
+          {(['all', 'pending', 'approved'] as FeedbackFilter[]).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}

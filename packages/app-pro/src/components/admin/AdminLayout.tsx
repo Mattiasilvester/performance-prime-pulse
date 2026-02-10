@@ -25,13 +25,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   useEffect(() => {
     const fetchPending = async () => {
       try {
-        const adminClient = (await import('@/lib/supabaseAdmin')).default;
-        if (!adminClient) return;
-        const { count } = await adminClient
-          .from('landing_feedbacks')
-          .select('*', { count: 'exact', head: true })
-          .eq('is_approved', false);
-        setPendingFeedbackCount(count ?? 0);
+        const { getPendingFeedbackCount } = await import('@/services/adminFeedbacksService');
+        const count = await getPendingFeedbackCount();
+        setPendingFeedbackCount(count);
       } catch {
         // ignore
       }
