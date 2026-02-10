@@ -122,6 +122,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
       <aside
         data-sidebar-open={isOpen ? 'true' : 'false'}
         data-partner-sidebar="true"
+        data-tour="sidebar-container"
         className={`
           fixed top-0 left-0 h-full w-72 md:w-64
           bg-white border-r border-gray-200 z-50
@@ -279,17 +280,19 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
 
         {/* Menu Items */}
         <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-          {/* Overview, Calendario, Prenotazioni */}
+{/* Overview, Calendario, Prenotazioni */}
           {menuItems.slice(0, 3).map((item) => {
             const Icon = item.icon;
-            const isActive = currentPath === item.path || 
+            const isActive = currentPath === item.path ||
               (item.path !== '/partner/dashboard' && currentPath.startsWith(item.path));
+            const dataTour = item.path === '/partner/dashboard' ? 'sidebar-overview' : item.path === '/partner/dashboard/calendario' ? 'sidebar-calendario' : item.path === '/partner/dashboard/prenotazioni' ? 'sidebar-prenotazioni' : undefined;
 
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => onClose()}
+                {...(dataTour ? { 'data-tour': dataTour } : {})}
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                   ${isActive
@@ -305,7 +308,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
           })}
 
           {/* Voce Clienti Espandibile (4ª posizione, ex Profilo) */}
-          <div>
+          <div data-tour="sidebar-clienti">
             <button
               onClick={handleClientiClick}
               className={`
@@ -331,6 +334,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
             {clientiExpanded && (
               <div className="ml-4 mt-1 space-y-1">
                 <button
+                  data-tour="sidebar-progetti"
                   onClick={() => {
                     navigate('/partner/dashboard/clienti/progetti');
                     onClose();
@@ -350,17 +354,26 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
             )}
           </div>
 
-          {/* Servizi, Costi, Andamento, Recensioni, Abbonamento */}
+{/* Servizi, Costi, Andamento, Recensioni, Abbonamento */}
           {menuItems.slice(3).map((item) => {
             const Icon = item.icon;
-            const isActive = currentPath === item.path || 
+            const isActive = currentPath === item.path ||
               (item.path !== '/partner/dashboard' && currentPath.startsWith(item.path));
+            const pathToTour: Record<string, string> = {
+              '/partner/dashboard/servizi': 'sidebar-servizi',
+              '/partner/dashboard/costi-spese': 'sidebar-costi-spese',
+              '/partner/dashboard/andamento': 'sidebar-andamento',
+              '/partner/dashboard/recensioni': 'sidebar-recensioni',
+              '/partner/dashboard/abbonamento': 'sidebar-abbonamento',
+            };
+            const dataTour = pathToTour[item.path];
 
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => onClose()}
+                {...(dataTour ? { 'data-tour': dataTour } : {})}
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                   ${isActive
@@ -379,6 +392,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
           <Link
             to="/partner/dashboard/profilo"
             onClick={() => onClose()}
+            data-tour="sidebar-profilo"
             className={`
               flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
               ${currentPath.startsWith('/partner/dashboard/profilo')
@@ -397,6 +411,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
             onClick={() => {
               onClose();
             }}
+            data-tour="sidebar-impostazioni"
             className={`
               flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
               ${currentPath.startsWith('/partner/dashboard/impostazioni')

@@ -9,6 +9,7 @@ import { getDisplayStatus, bookingDisplayStatusConfig } from '@/utils/bookingHel
 import { ScheduleNotificationModal } from '@/components/partner/notifications/ScheduleNotificationModal';
 import { PromemoriList } from '@/components/partner/notifications/PromemoriList';
 import { KPICardsSection, type KPIViewType } from '@/components/partner/dashboard/kpi/KPICardsSection';
+import { OnboardingTour } from '@/components/partner/onboarding/OnboardingTour';
 
 interface UpcomingBooking {
   id: string;
@@ -76,6 +77,7 @@ export default function OverviewPage() {
   const [activityDetailsLoading, setActivityDetailsLoading] = useState(false);
   const [kpiView, setKpiView] = useState<KPIViewType>('overview');
   const [promemoriRefreshKey, setPromemoriRefreshKey] = useState(0);
+  const [showTour, setShowTour] = useState(false);
   const [stats, setStats] = useState({
     clienti: 0,
     prenotazioni: 0,
@@ -108,6 +110,34 @@ export default function OverviewPage() {
       fetchRecentActivities();
     }
   }, [professionalId]);
+
+  // Mostra tour onboarding: chiave per-professional, con fallback se 0 prenotazioni
+  useEffect(() => {
+    if (professionalId == null) return;
+
+    const tourDoneKey = `pp_dashboard_tour_done_${professionalId}`;
+    const forceShowKey = `pp_dashboard_tour_force_show_${professionalId}`;
+    const tourDone = localStorage.getItem(tourDoneKey) === 'true';
+    const forceShow = localStorage.getItem(forceShowKey) === 'true';
+
+    if (forceShow) {
+      localStorage.removeItem(forceShowKey);
+      const t = setTimeout(() => setShowTour(true), 800);
+      return () => clearTimeout(t);
+    }
+
+    if (tourDone) return;
+
+    // Tour non completato: mostra se userName disponibile (non fallback "Professionista") oppure fallback nuovo professionista (0 prenotazioni e 0 clienti)
+    const shouldShow =
+      (userName && userName !== 'Professionista') ||
+      (stats.prenotazioni === 0 && stats.clienti === 0);
+
+    if (shouldShow) {
+      const t = setTimeout(() => setShowTour(true), 800);
+      return () => clearTimeout(t);
+    }
+  }, [userName, professionalId, stats.prenotazioni, stats.clienti]);
 
   const loadProfessionalId = async (retryCount = 0) => {
     if (!user?.id) return;
@@ -586,6 +616,11 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
+      {showTour && professionalId &&
+        createPortal(
+          <OnboardingTour userName={userName} professionalId={professionalId} onComplete={() => setShowTour(false)} />,
+          document.body
+        )}
       {kpiView === 'overview' ? (
         <>
           {/* Header */}

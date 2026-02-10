@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Tag, Bell, CreditCard, Lock, User, MapPin, FileText, Link as LinkIcon, Globe, ChevronRight, Wallet } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Tag, Bell, CreditCard, Lock, User, MapPin, FileText, Link as LinkIcon, Globe, ChevronRight, Wallet, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useProfessionalId } from '@/hooks/useProfessionalId';
 import SpecializzazioniModal from '@/components/partner/settings/SpecializzazioniModal';
 import LinguaModal from '@/components/partner/settings/LinguaModal';
 import SocialLinksModal from '@/components/partner/settings/SocialLinksModal';
@@ -83,6 +85,8 @@ const settingsSections: SettingSection[] = [
 ];
 
 export default function ImpostazioniPage() {
+  const navigate = useNavigate();
+  const professionalId = useProfessionalId();
   const [showSpecializzazioniModal, setShowSpecializzazioniModal] = useState(false);
   const [showLinguaModal, setShowLinguaModal] = useState(false);
   const [showSocialLinksModal, setShowSocialLinksModal] = useState(false);
@@ -130,6 +134,36 @@ export default function ImpostazioniPage() {
 
       {/* Grid Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Rivedi guida - tour onboarding */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => {
+            if (professionalId) {
+              localStorage.setItem(`pp_dashboard_tour_force_show_${professionalId}`, 'true');
+              navigate('/partner/dashboard');
+            } else {
+              toast.error('Caricamento in corso. Riprova tra un attimo.');
+            }
+          }}
+          onKeyDown={(e) => {
+            if ((e.key === 'Enter' || e.key === ' ') && professionalId) {
+              e.preventDefault();
+              localStorage.setItem(`pp_dashboard_tour_force_show_${professionalId}`, 'true');
+              navigate('/partner/dashboard');
+            }
+          }}
+          className="bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:border-[#EEBA2B] hover:shadow-sm transition-all duration-200 text-left"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-[#EEBA2B]/10 flex items-center justify-center">
+              <HelpCircle className="w-5 h-5 text-[#EEBA2B]" />
+            </div>
+            <h3 className="font-semibold text-gray-900">Rivedi guida</h3>
+          </div>
+          <p className="text-sm text-gray-500">Rivedi il tour guidato per scoprire tutte le funzionalità di PrimePro.</p>
+        </div>
+
         {settingsSections.map((section) => {
           const Icon = section.icon;
           return (

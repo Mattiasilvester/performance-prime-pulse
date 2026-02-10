@@ -265,6 +265,15 @@ export default function PartnerRegistration() {
         navigate('/partner/login');
         return;
       }
+      // Rimuovi flag tour residui così la guida parte al primo accesso in dashboard
+      try {
+        const doneKeys = Object.keys(localStorage).filter((k) => k.startsWith('pp_dashboard_tour_done'));
+        doneKeys.forEach((k) => localStorage.removeItem(k));
+        const forceKeys = Object.keys(localStorage).filter((k) => k.startsWith('pp_dashboard_tour_force_show'));
+        forceKeys.forEach((k) => localStorage.removeItem(k));
+      } catch {
+        // ignore
+      }
       navigate('/partner/dashboard');
     } catch (err: unknown) {
       console.error('Errore registrazione:', err);

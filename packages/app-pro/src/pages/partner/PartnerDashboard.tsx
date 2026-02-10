@@ -83,6 +83,18 @@ export default function PartnerDashboard() {
     initPushNotifications();
   }, [professionalId]);
 
+  // Listener per tour onboarding su mobile: apri/chiudi sidebar
+  useEffect(() => {
+    const handleOpen = () => setSidebarOpen(true);
+    const handleClose = () => setSidebarOpen(false);
+    window.addEventListener('open-partner-sidebar', handleOpen);
+    window.addEventListener('close-partner-sidebar', handleClose);
+    return () => {
+      window.removeEventListener('open-partner-sidebar', handleOpen);
+      window.removeEventListener('close-partner-sidebar', handleClose);
+    };
+  }, []);
+
   // useLayoutEffect viene eseguito prima del paint, evitando flash visivi
   useLayoutEffect(() => {
     // Salva il background originale del body e html
