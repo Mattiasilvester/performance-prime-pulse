@@ -38,6 +38,12 @@ export default function AddClientModal({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Blocca scroll body quando il modal è aperto (fix Safari iOS modal "ballano")
+  useEffect(() => {
+    document.body.classList.add('modal-open');
+    return () => document.body.classList.remove('modal-open');
+  }, []);
+
   // Pre-compila il nome se initialName cambia
   useEffect(() => {
     if (initialName && !formData.full_name) {
@@ -255,11 +261,11 @@ export default function AddClientModal({
         onClick={handleClose}
       />
       
-      {/* Modal */}
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideUp flex flex-col max-h-[90vh]">
+      {/* Modal — mobile: larghezza con margini safe; desktop: max-w-md */}
+      <div className="relative w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideUp flex flex-col max-h-[90dvh]">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-100 flex-shrink-0">
           <h2 className="text-xl font-semibold text-gray-900">Nuovo Cliente</h2>
           <button
             onClick={handleClose}
@@ -270,8 +276,8 @@ export default function AddClientModal({
           </button>
         </div>
 
-        {/* Form Container - scrollabile */}
-        <div className="flex-1 overflow-y-auto min-h-0 p-6">
+        {/* Form Container - scrollabile (modal-content per fix Safari iOS input overflow) */}
+        <div className="modal-content flex-1 overflow-y-auto min-h-0 p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-5">
           
           {/* Nome completo */}
@@ -286,7 +292,7 @@ export default function AddClientModal({
                 value={formData.full_name}
                 onChange={(e) => handleChange('full_name', e.target.value)}
                 placeholder="Mario Rossi"
-                className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all ${
+                className={`w-full min-w-0 text-base pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all ${
                   errors.full_name ? 'border-red-300 bg-red-50' : 'border-gray-200'
                 }`}
                 disabled={loading}
@@ -309,7 +315,7 @@ export default function AddClientModal({
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
                 placeholder="mario.rossi@email.com"
-                className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all ${
+                className={`w-full min-w-0 text-base pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all ${
                   errors.email ? 'border-red-300 bg-red-50' : 'border-gray-200'
                 }`}
                 disabled={loading}
@@ -332,7 +338,7 @@ export default function AddClientModal({
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
                 placeholder="+39 333 1234567"
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
+                className="w-full min-w-0 text-base pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
                 disabled={loading}
               />
             </div>
@@ -357,7 +363,7 @@ export default function AddClientModal({
                   }
                 }}
                 placeholder="0.00"
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
+                className="w-full min-w-0 text-base pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
                 disabled={loading}
               />
             </div>
@@ -375,7 +381,7 @@ export default function AddClientModal({
                 onChange={(e) => handleChange('notes', e.target.value)}
                 placeholder="Obiettivi, preferenze, note importanti..."
                 rows={3}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
+                className="w-full min-w-0 text-base pl-10 pr-4 py-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
                 disabled={loading}
               />
             </div>
@@ -434,7 +440,7 @@ export default function AddClientModal({
                     value={projectData.name}
                     onChange={(e) => handleProjectChange('name', e.target.value)}
                     placeholder="Es: Dimagrimento Estate 2026"
-                    className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all ${
+                    className={`w-full min-w-0 text-base pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all ${
                       errors.project_name ? 'border-red-300 bg-red-50' : 'border-gray-200'
                     }`}
                     disabled={loading}
@@ -457,7 +463,7 @@ export default function AddClientModal({
                     value={projectData.objective}
                     onChange={(e) => handleProjectChange('objective', e.target.value)}
                     placeholder="Es: Perdere 5kg entro giugno"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
+                    className="w-full min-w-0 text-base pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
                     disabled={loading}
                   />
                 </div>
@@ -474,7 +480,7 @@ export default function AddClientModal({
                     type="date"
                     value={projectData.start_date}
                     onChange={(e) => handleProjectChange('start_date', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
+                    className="w-full min-w-0 text-base pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
                     disabled={loading}
                   />
                 </div>
@@ -492,7 +498,7 @@ export default function AddClientModal({
                     onChange={(e) => handleProjectChange('notes', e.target.value)}
                     placeholder="Dettagli aggiuntivi sul progetto..."
                     rows={3}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
+                    className="w-full min-w-0 text-base pl-10 pr-4 py-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
                     disabled={loading}
                   />
                 </div>
@@ -504,7 +510,7 @@ export default function AddClientModal({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 px-6 py-4 bg-gray-50 border-t border-gray-100 flex-shrink-0">
+        <div className="flex gap-3 p-4 sm:p-6 bg-gray-50 border-t border-gray-100 flex-shrink-0">
           <button
             type="button"
             onClick={handleClose}
