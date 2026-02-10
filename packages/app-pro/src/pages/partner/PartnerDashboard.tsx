@@ -5,6 +5,7 @@ import { PartnerSidebar } from '@/components/partner/dashboard/PartnerSidebar';
 import { pushNotificationService } from '@/services/pushNotificationService';
 import { notificationSoundService } from '@/services/notificationSoundService';
 import { useProfessionalId } from '@/hooks/useProfessionalId';
+import { useScheduledNotificationsPolling } from '@/hooks/useScheduledNotificationsPolling';
 import { useSubscription } from '@/hooks/useSubscription';
 import { TrialExpiredGate } from '@/components/partner/TrialExpiredGate';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,6 +21,8 @@ export default function PartnerDashboard() {
   const professionalId = useProfessionalId();
   const { user, signOut } = useAuth();
   const { subscription, loading, refetch } = useSubscription();
+
+  useScheduledNotificationsPolling(professionalId);
 
   // Se l'utente è loggato ma dopo il caricamento non c'è un professionista associato, mostra schermata dedicata
   useEffect(() => {

@@ -2,8 +2,8 @@ name: Scheduled Notifications Cron
 
 on:
   schedule:
-    # Esegui ogni 5 minuti (più frequente dei booking reminders per maggiore precisione)
-    - cron: '*/5 * * * *'
+    # Esegui ogni 1 minuto
+    - cron: '* * * * *'
   workflow_dispatch: # Permette esecuzione manuale
 
 jobs:
