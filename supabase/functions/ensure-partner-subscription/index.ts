@@ -52,12 +52,51 @@ Deno.serve(async (req) => {
 
     const { data: existing } = await supabase
       .from('professional_subscriptions')
-      .select('id, status, trial_end')
+      .select('id, status, trial_end, created_at')
       .eq('professional_id', professional.id)
       .maybeSingle();
 
     if (existing) {
       console.log('✅ [ensure-partner-subscription] Subscription già presente:', existing.id);
+
+      // Se la subscription è stata creata negli ultimi 5 minuti, potrebbe essere appena stata creata dal trigger DB:
+      // in quel caso invia l'email di benvenuto se non già inviata (marcatore in professional_notifications)
+      const createdAt = existing.created_at ? new Date(existing.created_at) : null;
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      if (createdAt && createdAt > fiveMinutesAgo && user.email) {
+        const { data: welcomeSent } = await supabase
+          .from('professional_notifications')
+          .select('id')
+          .eq('professional_id', professional.id)
+          .eq('type', 'custom')
+          .contains('data', { notification_type: 'welcome_email_sent' })
+          .limit(1)
+          .maybeSingle();
+
+        if (!welcomeSent) {
+          const welcomeResult = await sendTransactional({
+            to: user.email,
+            subject: 'Benvenuto su PrimePro',
+            text: `Ciao,\n\nBenvenuto su PrimePro! Il tuo periodo di prova di 90 giorni è attivo. Esplora la dashboard per gestire clienti, appuntamenti e progetti.\n\nSe hai domande, rispondi a questa email.\n\nA presto,\nIl team PrimePro`,
+          });
+          console.log('[ensure-partner-subscription] Email benvenuto result (existing < 5min):', welcomeResult);
+          if (welcomeResult.ok) {
+            console.log('✅ [ensure-partner-subscription] Email benvenuto inviata a', user.email, '(subscription già presente)');
+          } else if (!welcomeResult.skipped) {
+            console.warn('⚠️ [ensure-partner-subscription] Email benvenuto non inviata:', welcomeResult.error);
+          }
+          // Marca come inviata (evita doppio invio se la function viene richiamata di nuovo)
+          await supabase.from('professional_notifications').insert({
+            professional_id: professional.id,
+            type: 'custom',
+            title: 'Benvenuto su PrimePro',
+            message: 'Il tuo periodo di prova è attivo.',
+            data: { notification_type: 'welcome_email_sent' },
+            is_read: false,
+          });
+        }
+      }
+
       return new Response(
         JSON.stringify({ success: true, already_exists: true, subscription_id: existing.id }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
