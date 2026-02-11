@@ -18,10 +18,13 @@ import {
   type FeedbackFilter,
 } from '@/services/adminFeedbacksService';
 
+export type SourceFilter = 'all' | 'landing' | 'dashboard';
+
 export default function AdminFeedbacks() {
   const [feedbacks, setFeedbacks] = useState<LandingFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FeedbackFilter>('all');
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
 
   const fetchFeedbacks = useCallback(async () => {
     setLoading(true);
@@ -75,12 +78,18 @@ export default function AdminFeedbacks() {
     }
   };
 
-  const total = feedbacks.length;
-  const pending = feedbacks.filter((f) => !f.is_approved).length;
-  const approved = feedbacks.filter((f) => f.is_approved).length;
+  const filteredBySource =
+    sourceFilter === 'all'
+      ? feedbacks
+      : sourceFilter === 'dashboard'
+        ? feedbacks.filter((f) => (f.source ?? 'landing_page') === 'dashboard')
+        : feedbacks.filter((f) => (f.source ?? 'landing_page') !== 'dashboard');
+  const total = filteredBySource.length;
+  const pending = filteredBySource.filter((f) => !f.is_approved).length;
+  const approved = filteredBySource.filter((f) => f.is_approved).length;
   const avgRating =
-    feedbacks.length > 0
-      ? feedbacks.reduce((s, f) => s + f.rating, 0) / feedbacks.length
+    filteredBySource.length > 0
+      ? filteredBySource.reduce((s, f) => s + f.rating, 0) / filteredBySource.length
       : 0;
 
   return (
@@ -143,6 +152,23 @@ export default function AdminFeedbacks() {
             </button>
           ))}
         </div>
+        {/* Filtro per provenienza */}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className="text-sm text-gray-500 self-center">Provenienza:</span>
+          {(['all', 'landing', 'dashboard'] as SourceFilter[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setSourceFilter(s)}
+              className={
+                sourceFilter === s
+                  ? 'rounded-lg bg-gray-600 px-3 py-1.5 text-sm font-medium text-white'
+                  : 'rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-400 hover:text-white'
+              }
+            >
+              {s === 'all' ? 'Tutti' : s === 'landing' ? 'Landing' : 'Dashboard'}
+            </button>
+          ))}
+        </div>
 
         {/* List */}
         <div className="mt-6 space-y-3">
@@ -155,17 +181,17 @@ export default function AdminFeedbacks() {
                 />
               ))}
             </>
-          ) : feedbacks.length === 0 ? (
+          ) : filteredBySource.length === 0 ? (
             <div className="py-16 text-center">
               <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-600" />
               <p className="text-gray-400">Nessun feedback ricevuto</p>
               <p className="mt-1 text-sm text-gray-500">
                 I feedback appariranno qui quando i professionisti li inviano
-                dalla landing page
+                dalla landing page o dalla dashboard
               </p>
             </div>
           ) : (
-            feedbacks.map((feedback) => (
+            filteredBySource.map((feedback) => (
               <div
                 key={feedback.id}
                 className={`rounded-xl border border-gray-700 bg-gray-800 p-5 ${
@@ -176,9 +202,20 @@ export default function AdminFeedbacks() {
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-white">
-                      {feedback.name}
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-white">
+                        {feedback.name}
+                      </p>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          (feedback.source ?? 'landing_page') === 'dashboard'
+                            ? 'bg-blue-900/50 text-blue-300'
+                            : 'bg-gray-700 text-gray-300'
+                        }`}
+                      >
+                        {(feedback.source ?? 'landing_page') === 'dashboard' ? 'Dashboard' : 'Landing'}
+                      </span>
+                    </div>
                     <p className="mt-0.5 text-xs text-gray-400">
                       {feedback.category}
                     </p>

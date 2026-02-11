@@ -113,7 +113,7 @@ export function HeroSection() {
       {/* Header CTA professionisti — alto a destra, stesso stile di "Diventa partner", solo testo */}
       <div className="absolute top-0 left-0 right-0 z-20 flex justify-end items-center px-4 py-3 sm:px-6 sm:py-4 bg-black/20 backdrop-blur-sm">
         <Link
-          to="/partner"
+          to="/partner/login"
           className="border-2 border-white/40 hover:border-[#FFD700] text-white hover:text-[#FFD700] font-semibold text-sm px-4 py-2 rounded-full backdrop-blur-sm bg-black/40 hover:bg-black/60 transition-all duration-300"
         >
           <span className="hidden sm:inline">Sei un professionista? Clicca qui!</span>

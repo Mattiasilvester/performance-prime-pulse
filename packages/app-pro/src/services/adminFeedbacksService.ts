@@ -12,6 +12,8 @@ export interface LandingFeedback {
   comment: string;
   is_approved: boolean;
   created_at: string;
+  /** 'landing_page' | 'dashboard' per distinguere provenienza */
+  source?: string | null;
 }
 
 const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
