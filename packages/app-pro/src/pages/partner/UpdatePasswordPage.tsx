@@ -180,12 +180,12 @@ export default function UpdatePasswordPage() {
         </div>
 
         <div className="mt-8 text-center">
-          <Link
-            to="/partner"
+          <a
+            href="https://performanceprime.it"
             className="text-sm partner-muted-text hover:partner-accent-text transition-colors"
           >
             ← Torna alla pagina partner
-          </Link>
+          </a>
         </div>
       </div>
     </div>
