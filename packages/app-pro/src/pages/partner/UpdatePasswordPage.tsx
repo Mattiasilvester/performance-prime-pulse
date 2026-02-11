@@ -60,21 +60,14 @@ export default function UpdatePasswordPage() {
   return (
     <div className="min-h-screen partner-theme partner-bg py-12 px-4">
       <div className="max-w-md mx-auto">
-        {/* Logo in alto */}
+        {/* Logo in alto — solo testo come login */}
         <div className="flex justify-center mb-8">
-          <Link to="/partner" className="flex items-center gap-3">
-            <img
-              src="/images/logo-pp-transparent.png"
-              alt="Prime Pro"
-              className="w-12 h-12 object-contain"
-            />
-            <div className="flex flex-col">
-              <span className="partner-accent-text text-xl font-bold">
-                <span style={{ color: 'var(--partner-primary-foreground)' }}>Prime </span>
-                <span style={{ color: '#EEBA2B' }}>Pro</span>
-              </span>
-              <span className="text-xs partner-muted-text">Per Professionisti</span>
-            </div>
+          <Link to="/partner" className="flex flex-col items-center">
+            <span className="text-xl font-bold">
+              <span style={{ color: '#000000' }}>Prime </span>
+              <span style={{ color: '#EEBA2B' }}>Pro</span>
+            </span>
+            <span className="text-xs text-gray-500">Per Professionisti</span>
           </Link>
         </div>
 
