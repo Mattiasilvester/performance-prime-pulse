@@ -10,26 +10,6 @@ import { CancelConfirmModal } from './CancelConfirmModal';
 
 type FilterType = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'incomplete' | null;
 
-const PLACEHOLDER_PREFIX = 'placeholder-';
-
-/** Appuntamenti placeholder per test UI quando non ci sono dati reali */
-function getPlaceholderAppointments(): Booking[] {
-  const today = new Date();
-  const d = (n: number) => {
-    const t = new Date(today);
-    t.setDate(t.getDate() + n);
-    return t.toISOString().split('T')[0];
-  };
-  return [
-    { id: `${PLACEHOLDER_PREFIX}1`, booking_date: d(0), booking_time: '09:00', duration_minutes: 60, status: 'pending', client_name: 'Cliente Demo 1', service_name: 'Consulenza' },
-    { id: `${PLACEHOLDER_PREFIX}2`, booking_date: d(0), booking_time: '11:00', duration_minutes: 45, status: 'confirmed', client_name: 'Cliente Demo 2', service_name: 'Revisione' },
-    { id: `${PLACEHOLDER_PREFIX}3`, booking_date: d(1), booking_time: '14:00', duration_minutes: 90, status: 'pending', client_name: 'Cliente Demo 3', service_name: 'Piano personalizzato' },
-    { id: `${PLACEHOLDER_PREFIX}4`, booking_date: d(-1), booking_time: '10:00', duration_minutes: 60, status: 'completed', client_name: 'Cliente Demo 4', service_name: 'Consulenza' },
-    { id: `${PLACEHOLDER_PREFIX}5`, booking_date: d(-2), booking_time: '16:00', duration_minutes: 45, status: 'cancelled', client_name: 'Cliente Demo 5', service_name: 'Revisione' },
-    { id: `${PLACEHOLDER_PREFIX}6`, booking_date: d(2), booking_time: '09:30', duration_minutes: 60, status: 'confirmed', client_name: 'Cliente Demo 6', service_name: 'Follow-up' },
-  ];
-}
-
 interface AppointmentsData {
   total: number;
   completed: number;
@@ -129,14 +109,11 @@ export function AppointmentsView({
         service_name: b.service_id ? servicesMap[b.service_id] : undefined,
       }));
 
-      if (withServiceName.length === 0) {
-        setAllAppointments(getPlaceholderAppointments());
-      } else {
-        setAllAppointments(withServiceName);
-      }
+      setAllAppointments(withServiceName);
     } catch (error) {
       console.error('Error fetching appointments:', error);
       toast.error('Errore nel caricamento degli appuntamenti');
+      setAllAppointments([]);
     } finally {
       setAppointmentsLoading(false);
     }
@@ -147,17 +124,13 @@ export function AppointmentsView({
     if (professionalId) {
       fetchAllAppointments();
     } else {
-      setAllAppointments(getPlaceholderAppointments());
+      setAllAppointments([]);
       setAppointmentsLoading(false);
     }
   // Esegui fetch quando cambiano filtro o professionalId; fetchAllAppointments non in deps per evitare loop
   }, [selectedFilter, professionalId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleConfirmAppointment = async (id: string) => {
-    if (id.startsWith(PLACEHOLDER_PREFIX)) {
-      toast.info('Dati di test: azione non eseguita');
-      return;
-    }
     try {
       const { error } = await supabase
         .from('bookings')
@@ -179,10 +152,6 @@ export function AppointmentsView({
   };
 
   const handleCompleteAppointment = async (id: string) => {
-    if (id.startsWith(PLACEHOLDER_PREFIX)) {
-      toast.info('Dati di test: azione non eseguita');
-      return;
-    }
     try {
       const { error } = await supabase
         .from('bookings')
@@ -215,12 +184,6 @@ export function AppointmentsView({
 
   const handleCancelConfirm = async (reason?: string) => {
     if (!appointmentToCancel) return;
-    if (appointmentToCancel.id.startsWith(PLACEHOLDER_PREFIX)) {
-      toast.info('Dati di test: azione non eseguita');
-      setCancelModalOpen(false);
-      setAppointmentToCancel(null);
-      return;
-    }
 
     setIsCancelling(true);
     try {

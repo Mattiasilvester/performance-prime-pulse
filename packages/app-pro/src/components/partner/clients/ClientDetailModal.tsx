@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import EditClientModal from './EditClientModal';
 import AddProjectModal from '@/components/partner/projects/AddProjectModal';
+import ProjectDetailModal from '@/components/partner/projects/ProjectDetailModal';
 import AddBookingModal from '@/components/partner/bookings/AddBookingModal';
 
 interface Client {
@@ -45,12 +46,16 @@ interface Booking {
 
 interface Project {
   id: string;
+  client_id?: string;
   name: string;
   objective: string | null;
   status: 'active' | 'paused' | 'completed';
   start_date: string;
   end_date: string | null;
   notes?: string | null;
+  created_at?: string;
+  professional_id?: string;
+  client?: { full_name: string; is_pp_subscriber: boolean };
 }
 
 interface ClientDetailModalProps {
@@ -86,6 +91,7 @@ export default function ClientDetailModal({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
 
   // Fetch bookings e projects quando cambia tab
@@ -584,7 +590,11 @@ export default function ClientDetailModal({
                   {projects.map(project => (
                     <div 
                       key={project.id}
-                      className="p-3 bg-gray-50 rounded-xl"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setSelectedProject({ ...project, client: { full_name: client.full_name, is_pp_subscriber: client.is_pp_subscriber } })}
+                      onKeyDown={(e) => e.key === 'Enter' && setSelectedProject({ ...project, client: { full_name: client.full_name, is_pp_subscriber: client.is_pp_subscriber } })}
+                      className="p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <p className="font-medium text-gray-900">{project.name}</p>
@@ -764,6 +774,22 @@ export default function ClientDetailModal({
             onSuccess={() => {
               onUpdate();
               setShowEditModal(false);
+            }}
+          />
+        )}
+
+        {/* Modal Dettaglio Progetto (stesso di ProgettiPage: include File allegati) */}
+        {selectedProject && (
+          <ProjectDetailModal
+            project={{ ...selectedProject, client: selectedProject.client ?? { full_name: client.full_name, is_pp_subscriber: client.is_pp_subscriber } }}
+            onClose={() => setSelectedProject(null)}
+            onUpdate={() => {
+              fetchProjects();
+              setSelectedProject(null);
+            }}
+            onDelete={(projectId) => {
+              setProjects(prev => prev.filter(p => p.id !== projectId));
+              setSelectedProject(null);
             }}
           />
         )}

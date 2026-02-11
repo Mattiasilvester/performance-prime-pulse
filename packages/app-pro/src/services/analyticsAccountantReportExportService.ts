@@ -4,7 +4,7 @@
  * Nessuna modifica a analyticsService / exportAnalyticsReportToPDF.
  */
 import jsPDF from 'jspdf';
-import { autoTable } from 'jspdf-autotable';
+import 'jspdf-autotable';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
@@ -150,7 +150,7 @@ export async function getAccountantReportData(
       .from('bookings')
       .select('id, booking_date, booking_time, service_type, price')
       .eq('professional_id', professionalId)
-      .eq('status', 'completed')
+      .in('status', ['completed', 'confirmed'])
       .gte('booking_date', dateFrom)
       .lte('booking_date', dateTo)
       .order('booking_date', { ascending: true }),
@@ -163,7 +163,7 @@ export async function getAccountantReportData(
       .order('cost_date', { ascending: true }),
   ]);
 
-  const professional = profRes.data as AccountantProfessional | null;
+  const professional = (profRes.data ?? null) as AccountantProfessional | null;
   const bookings = (bookRes.data ?? []) as AccountantBookingRow[];
   const costs = (costRes.data ?? []) as AccountantCostRow[];
 
@@ -208,6 +208,7 @@ const getFinalY = (doc: DocWithAutoTable, defaultY: number): number =>
  * NO client_name, NO notes. Prezzo null = "— (mancante)" ed escluso dal totale.
  */
 export function exportAccountantReportToPDF(data: AccountantReportData): void {
+  console.log('[Export] exportAccountantReportToPDF chiamata con:', { bookings: data.bookings?.length ?? 0, costs: data.costs?.length ?? 0 });
   const doc = new jsPDF() as DocWithAutoTable;
   const margin = 14;
   let y = 20;
@@ -227,7 +228,15 @@ export function exportAccountantReportToPDF(data: AccountantReportData): void {
   doc.text(`Generato il: ${formatDateIt(new Date())}`, margin, y);
   y += 5;
   doc.text(`Periodo: ${data.periodLabel}`, margin, y);
-  y += 8;
+  y += 5;
+  const hasNoData = data.bookings.length === 0 && data.costs.length === 0;
+  if (hasNoData) {
+    doc.setFontSize(10);
+    doc.setTextColor(120, 80, 0);
+    doc.text('Nessun dato disponibile per il periodo selezionato.', margin, y);
+    y += 8;
+  }
+  y += 4;
 
   const pro = data.professional;
   if (pro) {
@@ -264,7 +273,7 @@ export function exportAccountantReportToPDF(data: AccountantReportData): void {
 
   // Riepilogo periodo
   const s = data.summary;
-  autoTable(doc, {
+  (doc as any).autoTable({
     startY: y,
     head: [['Riepilogo periodo', 'Valore']],
     body: [
@@ -301,7 +310,7 @@ export function exportAccountantReportToPDF(data: AccountantReportData): void {
     maskBookingId(b.id),
   ]);
   if (bookingBody.length > 0) {
-    autoTable(doc, {
+    (doc as any).autoTable({
       startY: y,
       head: [['Data', 'Ora', 'Tipo servizio', 'Prezzo', 'ID']],
       body: bookingBody,
@@ -339,7 +348,7 @@ export function exportAccountantReportToPDF(data: AccountantReportData): void {
     c.recurrence ?? '—',
   ]);
   if (costBody.length > 0) {
-    autoTable(doc, {
+    (doc as any).autoTable({
       startY: y,
       head: [['Data', 'Categoria', 'Descrizione', 'Importo', 'Ricorrente', 'Ricorrenza']],
       body: costBody,
@@ -369,6 +378,7 @@ export function exportAccountantReportToPDF(data: AccountantReportData): void {
   doc.text('Performance Prime - www.performanceprime.it', margin, doc.internal.pageSize.height - 10);
 
   doc.save(`report_commercialista_${getDateStamp()}.pdf`);
+  console.log('[Export] PDF Report Commercialista generato con successo');
 }
 
 export interface RunAccountantReportExportOptions {
@@ -382,6 +392,7 @@ export interface RunAccountantReportExportOptions {
  */
 export function runAccountantReportExport(data: AccountantReportData, options?: RunAccountantReportExportOptions): void {
   const includeCSV = options?.includeCSV !== false;
+  console.log('[Export] runAccountantReportExport avviato');
   exportAccountantReportToPDF(data);
   if (includeCSV) {
     if (data.bookings.length > 0) exportBookingsToCSV(data.bookings, data.periodLabel);

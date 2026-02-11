@@ -13,8 +13,8 @@ const categories = [
 ] as const;
 
 interface StepCategoryProps {
-  selectedCategory: string;
-  onSelect: (category: string) => void;
+  selectedCategories: string[];
+  onToggle: (category: string) => void;
   customCategory?: string;
   onCustomCategoryChange?: (value: string) => void;
   error?: string;
@@ -22,8 +22,8 @@ interface StepCategoryProps {
 }
 
 export function StepCategory({ 
-  selectedCategory, 
-  onSelect, 
+  selectedCategories, 
+  onToggle, 
   customCategory = '',
   onCustomCategoryChange,
   error,
@@ -36,14 +36,23 @@ export function StepCategory({
     setLocalCustomCategory(customCategory);
   }, [customCategory]);
 
-  // Reset customCategory quando si cambia categoria (non più "altro")
+  // Reset customCategory quando "altro" non è più selezionato
   useEffect(() => {
-    if (selectedCategory !== 'altro') {
+    if (!selectedCategories.includes('altro')) {
       setLocalCustomCategory('');
       onCustomCategoryChange?.('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory]);
+  }, [selectedCategories]);
+
+  const handleCardClick = (value: string) => {
+    if (selectedCategories.includes(value)) {
+      if (selectedCategories.length <= 1) return;
+      onToggle(value);
+    } else {
+      onToggle(value);
+    }
+  };
 
   return (
     <motion.div
@@ -54,7 +63,7 @@ export function StepCategory({
     >
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">La tua professione</h2>
-        <p className="text-gray-600">Seleziona la categoria che meglio ti rappresenta</p>
+        <p className="text-gray-600">Seleziona una o più professioni</p>
       </div>
 
       {error && (
@@ -70,14 +79,14 @@ export function StepCategory({
             icon={category.icon}
             label={category.label}
             value={category.value}
-            selected={selectedCategory === category.value}
-            onClick={() => onSelect(category.value)}
+            selected={selectedCategories.includes(category.value)}
+            onClick={() => handleCardClick(category.value)}
           />
         ))}
       </div>
 
       <AnimatePresence>
-        {selectedCategory === 'altro' && (
+        {selectedCategories.includes('altro') && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}

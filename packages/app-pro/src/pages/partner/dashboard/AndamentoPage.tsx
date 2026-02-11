@@ -62,16 +62,16 @@ export default function AndamentoPage() {
   }, [professionalId]);
 
   const handleExport = () => {
-    if (!data) {
-      toast.warning('Nessun dato da esportare. Attendi il caricamento.');
-      return;
-    }
+    console.log('[Export] Export Analytics richiesto, data:', data ? 'presente' : 'null/undefined');
     exportAnalyticsReportToPDF(data, timeRange as TimeRange, { professionalName: undefined });
+    console.log('[Export] PDF Report Analytics generato con successo');
     toast.success('Report scaricato');
   };
 
   const runAccountantExport = (reportData: AccountantReportData, includeCSV: boolean = true) => {
+    console.log('[Export] Funzione export Report Commercialista chiamata con:', { bookings: reportData.bookings?.length ?? 0, costs: reportData.costs?.length ?? 0 });
     runAccountantReportExport(reportData, { includeCSV });
+    console.log('[Export] PDF Report Commercialista generato con successo');
     toast.success(includeCSV ? 'Report Commercialista scaricato (PDF + CSV)' : 'Report Commercialista scaricato (PDF)');
   };
 
@@ -98,10 +98,15 @@ export default function AndamentoPage() {
     const reportData = accountantDataRef.current;
     const includeCSV = accountantExportIncludeCSVRef.current ?? true;
     accountantDataRef.current = null;
+    setShowCompletezzaModal(false);
+    setExportingAccountant(false);
+    console.log('[Export] Dialog confermato, chiamo export Report Commercialista...', { hasData: !!reportData });
     if (reportData) {
       runAccountantExport(reportData, includeCSV);
+      console.log('[Export] Report Commercialista: export avviato con successo');
+    } else {
+      console.warn('[Export] Report Commercialista: reportData era null, impossibile esportare');
     }
-    setExportingAccountant(false);
   };
 
   const handleCompleteData = () => {
@@ -142,10 +147,17 @@ export default function AndamentoPage() {
         <div className="text-center py-12 bg-gray-900 border border-gray-800 rounded-xl">
           <BarChart3 className="w-12 h-12 text-gray-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-white mb-2">Nessun dato disponibile</h3>
-          <p className="text-gray-400 max-w-md mx-auto">
+          <p className="text-gray-400 max-w-md mx-auto mb-6">
             Completa appuntamenti e registra i tuoi costi nella sezione &quot;Costi & Spese&quot;
             per vedere le analisi del tuo business.
           </p>
+          <button
+            type="button"
+            onClick={handleExport}
+            className="px-4 py-2 rounded-lg bg-[#EEBA2B] text-black font-medium hover:bg-[#d4a826] transition-colors"
+          >
+            Esporta report Analytics (PDF)
+          </button>
         </div>
       ) : (
         <>

@@ -4,7 +4,7 @@
  * Colori coerenti con app PrimePro: nero + #EEBA2B (RGB 238, 186, 43).
  */
 import jsPDF from 'jspdf';
-import { autoTable } from 'jspdf-autotable';
+import 'jspdf-autotable';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import type { AnalyticsData, TimeRange } from '@/hooks/useProfessionalAnalytics';
@@ -33,16 +33,49 @@ type DocWithAutoTable = jsPDF & { lastAutoTable?: { finalY?: number } };
 const getFinalY = (doc: DocWithAutoTable, defaultY: number): number =>
   doc.lastAutoTable?.finalY ?? defaultY;
 
+/** Dati vuoti per generare PDF senza crash quando non ci sono dati. */
+function getEmptyAnalyticsData(): AnalyticsData {
+  return {
+    profitSummary: {
+      revenue: 0,
+      costs: 0,
+      margin: 0,
+      revenueChangePercent: 0,
+      costsChangePercent: 0,
+      marginChangePercent: 0,
+      bookingsCount: 0,
+    },
+    revenueTrend: [],
+    costsTrend: [],
+    marginTrend: [],
+    monthComparison: {
+      current: { revenue: 0, costs: 0, margin: 0 },
+      previous: { revenue: 0, costs: 0, margin: 0 },
+    },
+    costsDistribution: [],
+    alerts: [],
+  };
+}
+
 /**
  * Esporta il report Andamento & Analytics in PDF.
- * Gestisce data null/undefined (non esporta) e liste vuote (scrive "Nessun dato disponibile").
+ * Con dati vuoti o null: genera comunque il PDF con valori a 0 e messaggio "Nessun dato disponibile per il periodo selezionato".
  */
 export function exportAnalyticsReportToPDF(
   data: AnalyticsData | null | undefined,
   timeRange: TimeRange,
   options?: { professionalName?: string }
 ): void {
-  if (!data) return;
+  console.log('[Export] exportAnalyticsReportToPDF chiamata con:', data ? 'data presente' : 'data null/undefined');
+  const safeData: AnalyticsData = data ?? getEmptyAnalyticsData();
+  const showNoDataMessage = !data || (
+    safeData.profitSummary.bookingsCount === 0 &&
+    safeData.profitSummary.revenue === 0 &&
+    safeData.profitSummary.costs === 0 &&
+    (safeData.revenueTrend?.length ?? 0) === 0 &&
+    (safeData.costsTrend?.length ?? 0) === 0 &&
+    (safeData.costsDistribution?.length ?? 0) === 0
+  );
 
   const doc = new jsPDF() as DocWithAutoTable;
   const margin = 14;
@@ -64,18 +97,25 @@ export function exportAnalyticsReportToPDF(
   doc.text(`Generato il: ${formatDateIt(new Date())}`, margin, y);
   y += 5;
   doc.text(`Periodo: ${periodLabel(timeRange)}`, margin, y);
-  y += 6;
+  y += 5;
+  if (showNoDataMessage) {
+    doc.setTextColor(120, 80, 0);
+    doc.text('Nessun dato disponibile per il periodo selezionato.', margin, y);
+    y += 8;
+  }
+  y += 4;
 
   if (options?.professionalName) {
+    doc.setTextColor(BLACK[0], BLACK[1], BLACK[2]);
     doc.text(`Professionista: ${options.professionalName}`, margin, y);
     y += 6;
   }
 
   y += 4;
 
-  // 1. Riepilogo
-  const ps = data.profitSummary;
-  autoTable(doc, {
+  // 1. Riepilogo (valori a 0 se dati assenti)
+  const ps = safeData.profitSummary ?? getEmptyAnalyticsData().profitSummary;
+  (doc as any).autoTable({
     startY: y,
     head: [['Riepilogo', 'Valore']],
     body: [
@@ -93,8 +133,8 @@ export function exportAnalyticsReportToPDF(
   y = getFinalY(doc, y) + 10;
 
   // 2. Confronto mese corrente vs precedente
-  const mc = data.monthComparison;
-  autoTable(doc, {
+  const mc = safeData.monthComparison ?? getEmptyAnalyticsData().monthComparison;
+  (doc as any).autoTable({
     startY: y,
     head: [['', 'Mese corrente', 'Mese precedente']],
     body: [
@@ -115,9 +155,9 @@ export function exportAnalyticsReportToPDF(
   y = getFinalY(doc, y) + 10;
 
   // 3. Trend mensile (ricavi, costi, margine per mese)
-  const rev = data.revenueTrend;
-  const cos = data.costsTrend;
-  const mar = data.marginTrend;
+  const rev = safeData.revenueTrend ?? [];
+  const cos = safeData.costsTrend ?? [];
+  const mar = safeData.marginTrend ?? [];
   const hasTrend = rev.length > 0 || cos.length > 0 || mar.length > 0;
   const n = Math.max(rev.length, cos.length, mar.length);
 
@@ -130,7 +170,7 @@ export function exportAnalyticsReportToPDF(
       const m = mar[i]?.margin ?? 0;
       trendBody.push([month, formatEuro(r), formatEuro(c), formatEuro(m)]);
     }
-    autoTable(doc, {
+    (doc as any).autoTable({
       startY: y,
       head: [['Mese', 'Ricavi', 'Costi', 'Margine']],
       body: trendBody,
@@ -154,10 +194,10 @@ export function exportAnalyticsReportToPDF(
   }
 
   // 4. Distribuzione costi
-  const dist = data.costsDistribution;
+  const dist = safeData.costsDistribution ?? [];
   if (dist.length > 0) {
     const distBody = dist.map((row) => [row.name, formatEuro(row.value)]);
-    autoTable(doc, {
+    (doc as any).autoTable({
       startY: y,
       head: [['Categoria', 'Importo']],
       body: distBody,
@@ -176,10 +216,10 @@ export function exportAnalyticsReportToPDF(
   }
 
   // 5. Alert (opzionale)
-  const alerts = data.alerts;
+  const alerts = safeData.alerts ?? [];
   if (alerts.length > 0) {
     const alertBody = alerts.map((a) => [a.type, a.icon, a.message]);
-    autoTable(doc, {
+    (doc as any).autoTable({
       startY: y,
       head: [['Tipo', '', 'Messaggio']],
       body: alertBody,
@@ -202,4 +242,5 @@ export function exportAnalyticsReportToPDF(
   );
 
   doc.save(`report_andamento_${getDateStamp()}.pdf`);
+  console.log('[Export] PDF Report Analytics generato con successo');
 }

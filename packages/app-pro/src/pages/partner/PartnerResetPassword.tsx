@@ -39,7 +39,7 @@ export default function PartnerResetPassword() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-        redirectTo: 'https://primepro.performanceprime.it/partner/update-password',
+        redirectTo: 'https://pro.performanceprime.it/partner/update-password',
       });
       
       if (error) throw error;

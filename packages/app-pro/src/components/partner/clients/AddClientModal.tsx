@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { X, User, Mail, Phone, FileText, Star, Loader2, FolderOpen, Target, Calendar, Euro } from 'lucide-react';
+import ProjectAttachmentsUpload from '@/components/partner/projects/ProjectAttachmentsUpload';
+import { uploadAttachment } from '@/services/projectAttachmentsService';
 
 interface AddClientModalProps {
   professionalId: string;
@@ -35,6 +37,7 @@ export default function AddClientModal({
     start_date: new Date().toISOString().split('T')[0],
     notes: ''
   });
+  const [pendingProjectAttachmentFiles, setPendingProjectAttachmentFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -132,6 +135,22 @@ export default function AddClientModal({
           console.error('Errore creazione progetto:', projectError);
           toast.warning(`Cliente creato. Errore nella creazione del progetto: ${projectError.message || 'Errore sconosciuto'}`);
         } else {
+          // Upload allegati progetto (se presenti)
+          if (newProject && pendingProjectAttachmentFiles.length > 0) {
+            for (const file of pendingProjectAttachmentFiles) {
+              try {
+                await uploadAttachment({
+                  projectId: newProject.id,
+                  clientId: newClient.id,
+                  professionalId,
+                  file
+                });
+              } catch (uploadErr) {
+                console.error('Upload allegato:', uploadErr);
+                toast.error(`Impossibile allegare "${file.name}". Progetto creato.`);
+              }
+            }
+          }
           // Entrambi creati con successo
           toast.success('Cliente e progetto creati con successo!');
           
@@ -503,6 +522,17 @@ export default function AddClientModal({
                   />
                 </div>
               </div>
+
+              {/* Allegati progetto (stesso componente di AddProjectModal) */}
+              <ProjectAttachmentsUpload
+                professionalId={professionalId}
+                clientId=""
+                projectId={null}
+                existingAttachments={[]}
+                pendingFiles={pendingProjectAttachmentFiles}
+                onPendingFilesChange={setPendingProjectAttachmentFiles}
+                disabled={loading}
+              />
             </div>
           )}
 

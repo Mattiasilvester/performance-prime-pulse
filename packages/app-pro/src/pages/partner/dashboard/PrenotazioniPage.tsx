@@ -367,28 +367,6 @@ export default function PrenotazioniPage() {
           bookings: weekBookings?.map(b => ({ date: b.booking_date, status: b.status })) || [],
           dateRange: `Dal ${startOfWeekStr} al ${endOfWeekStr}`
         });
-        
-        // Log dettagliato per debugging
-        console.log('🔍 [PRENOTAZIONI] Dettaglio appuntamenti nella settimana:');
-        weekBookings?.forEach((b, index) => {
-          console.log(`  ${index + 1}. ${b.booking_date} - Status: ${b.status} - ID: ${b.id}`);
-        });
-        
-        // Verifica se ci sono appuntamenti fuori dal range
-        const { data: allBookings } = await supabase
-          .from('bookings')
-          .select('booking_date, status')
-          .eq('professional_id', professionalId)
-          .order('booking_date', { ascending: true })
-          .limit(20);
-        
-        console.log('📋 [PRENOTAZIONI] Ultimi 20 appuntamenti (per debug):', 
-          allBookings?.map(b => `${b.booking_date} (${b.status})`).join(', ') || 'nessuno'
-        );
-        allBookings?.forEach(b => {
-          const isInRange = b.booking_date >= startOfWeekStr && b.booking_date <= endOfWeekStr;
-          console.log(`  - ${b.booking_date} (${b.status}) ${isInRange ? '✅ IN RANGE' : '❌ FUORI'}`);
-        });
       }
 
       // Stats confirmed
@@ -419,8 +397,6 @@ export default function PrenotazioniPage() {
         pending: pendingCount || 0,
         incomplete: incompleteCount || 0,
       };
-      
-      console.log('📊 [PRENOTAZIONI] Statistiche calcolate:', newStats);
       setStats(newStats);
     } catch (error: any) {
       console.error('❌ [PRENOTAZIONI] Errore caricamento stats:', error);

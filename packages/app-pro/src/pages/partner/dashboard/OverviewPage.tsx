@@ -28,22 +28,6 @@ interface UpcomingBooking {
   color?: string | null; // Colore salvato nel booking
 }
 
-/** Placeholder per test UI quando non ci sono prossimi appuntamenti */
-function getPlaceholderUpcomingBookings(): UpcomingBooking[] {
-  const today = new Date();
-  const d = (n: number) => {
-    const t = new Date(today);
-    t.setDate(t.getDate() + n);
-    return t.toISOString().split('T')[0];
-  };
-  return [
-    { id: 'placeholder-1', booking_date: d(0), booking_time: '09:00', duration_minutes: 60, status: 'pending', client_name: 'Cliente Demo 1', service: { id: 's1', name: 'Consulenza', color: '#EEBA2B' }, service_type: 'Consulenza' },
-    { id: 'placeholder-2', booking_date: d(0), booking_time: '11:30', duration_minutes: 45, status: 'confirmed', client_name: 'Cliente Demo 2', service: { id: 's2', name: 'Revisione', color: '#22c55e' }, service_type: 'Revisione' },
-    { id: 'placeholder-3', booking_date: d(1), booking_time: '14:00', duration_minutes: 90, status: 'pending', client_name: 'Cliente Demo 3', service: { id: 's3', name: 'Piano personalizzato', color: '#3b82f6' }, service_type: 'Piano personalizzato' },
-    { id: 'placeholder-4', booking_date: d(2), booking_time: '10:00', duration_minutes: 60, status: 'confirmed', client_name: 'Cliente Demo 4', service: { id: 's4', name: 'Follow-up', color: '#EEBA2B' }, service_type: 'Follow-up' },
-  ];
-}
-
 interface RecentActivity {
   id: string;
   type: 'client_added' | 'booking_created' | 'booking_completed' | 'project_created';
@@ -666,17 +650,15 @@ export default function OverviewPage() {
               </div>
             ))}
           </div>
-        ) : (() => {
-          const displayBookings = upcomingBookings.length > 0 ? upcomingBookings : getPlaceholderUpcomingBookings();
-          const isPlaceholder = upcomingBookings.length === 0;
-          return (
+        ) : upcomingBookings.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+            <Calendar className="w-12 h-12 text-gray-300 mb-3" aria-hidden="true" />
+            <p className="text-gray-500 font-medium">Nessun appuntamento in programma</p>
+            <p className="text-sm text-gray-400 mt-1">I prossimi appuntamenti appariranno qui</p>
+          </div>
+        ) : (
           <div className="space-y-3">
-            {isPlaceholder && (
-              <p className="text-sm text-amber-600 bg-amber-50 rounded-lg px-3 py-2 mb-2">
-                Dati di test per verificare layout e interazioni.
-              </p>
-            )}
-            {displayBookings.map((booking) => {
+            {upcomingBookings.map((booking) => {
               // Priorità: colore salvato nel booking, poi colore del servizio, poi default
               const serviceColor = booking.color || booking.service?.color || '#EEBA2B';
               const displayStatus = getDisplayStatus({ status: booking.status, booking_date: booking.booking_date });
@@ -738,8 +720,7 @@ export default function OverviewPage() {
               );
             })}
           </div>
-          );
-        })()}
+        )}
       </div>
 
       {/* Promemoria in programma */}

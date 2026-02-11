@@ -1,13 +1,16 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
+export type ProfessionalCategory = 'pt' | 'nutrizionista' | 'fisioterapista' | 'mental_coach' | 'osteopata' | 'altro';
+
 export interface ProfessionalRegistrationData {
   first_name: string;
   last_name: string;
   email: string;
   password: string;
   phone: string;
-  category: 'pt' | 'nutrizionista' | 'fisioterapista' | 'mental_coach' | 'osteopata' | 'altro';
+  /** Una o più professioni (obbligatorio almeno una). */
+  categories: string[];
   city: string;
   bio?: string;
   company_name?: string;
@@ -19,10 +22,16 @@ export interface ProfessionalRegistrationData {
   prezzo_fascia?: '€' | '€€' | '€€€';
 }
 
-/** Normalizza category per DB: 'altro' e 'other' → 'pt'. */
-function toCategoryDb(category: string): 'pt' | 'nutrizionista' | 'fisioterapista' | 'mental_coach' | 'osteopata' {
+/** Normalizza singola category per DB enum: 'altro' e 'other' → 'pt'. */
+function toCategoryDb(category: string): ProfessionalCategory {
   if (category === 'altro' || category === 'other') return 'pt';
-  return category as 'pt' | 'nutrizionista' | 'fisioterapista' | 'mental_coach' | 'osteopata';
+  return category as ProfessionalCategory;
+}
+
+/** Da array professioni estrae la prima per colonna category (retrocompat). */
+function firstCategoryDb(categories: string[]): ProfessionalCategory {
+  if (categories.length === 0) return 'pt';
+  return toCategoryDb(categories[0]);
 }
 
 /** Payload per INSERT in professionals (stessi campi usati da trigger/fallback). */
@@ -33,7 +42,7 @@ function buildProfessionalInsertPayload(
     last_name: string;
     email: string;
     phone: string;
-    category: string;
+    categories: string[];
     city: string;
     bio?: string | null;
     company_name?: string | null;
@@ -45,7 +54,8 @@ function buildProfessionalInsertPayload(
   }
 ) {
   const companyName = source.company_name || `${source.first_name || ''} ${source.last_name || ''}`.trim() || 'Professionista';
-  const categoryDb = toCategoryDb(source.category || 'pt');
+  const categories = Array.isArray(source.categories) && source.categories.length > 0 ? source.categories : ['pt'];
+  const categoryDb = firstCategoryDb(categories);
   return {
     user_id: userId,
     first_name: source.first_name || '',
@@ -53,6 +63,7 @@ function buildProfessionalInsertPayload(
     email: (source.email || '').toLowerCase(),
     phone: source.phone || '',
     category: categoryDb,
+    professions: categories,
     zona: source.city || '',
     bio: source.bio ?? null,
     company_name: companyName,
@@ -86,6 +97,7 @@ export const professionalAuthService = {
 
     // 1. Crea account in Supabase Auth con TUTTI i dati professional in options.data
     // (il trigger handle_new_professional_signup li usa per inserire in public.professionals)
+    const categories = Array.isArray(data.categories) && data.categories.length > 0 ? data.categories : ['pt'];
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
@@ -96,7 +108,8 @@ export const professionalAuthService = {
           last_name: data.last_name,
           email: emailLower,
           phone: data.phone,
-          category: data.category,
+          category: categories[0],
+          categories,
           city: data.city,
           bio: data.bio ?? null,
           company_name: companyName,
@@ -133,7 +146,7 @@ export const professionalAuthService = {
           last_name: data.last_name,
           email: emailLower,
           phone: data.phone,
-          category: data.category,
+          categories,
           city: data.city,
           bio: data.bio ?? null,
           company_name: companyName,
@@ -176,12 +189,15 @@ export const professionalAuthService = {
         }
         if (!profRow && authData.user.user_metadata) {
           const meta = authData.user.user_metadata as Record<string, unknown>;
+          const metaCategories = Array.isArray(meta.categories) && (meta.categories as string[]).length > 0
+            ? (meta.categories as string[])
+            : (meta.category != null ? [String(meta.category)] : ['pt']);
           const metaPayload = buildProfessionalInsertPayload(authData.user.id, {
             first_name: (meta.first_name as string) || '',
             last_name: (meta.last_name as string) || '',
             email: ((meta.email as string) || authData.user.email || '').toLowerCase(),
             phone: (meta.phone as string) || '',
-            category: (meta.category as string) || 'pt',
+            categories: metaCategories,
             city: (meta.city as string) || '',
             bio: (meta.bio as string) ?? null,
             company_name: (meta.company_name as string) ?? null,
@@ -264,12 +280,15 @@ export const professionalAuthService = {
     const meta = user.user_metadata as Record<string, unknown> | undefined;
     if (!meta || (meta.role as string) !== 'professional') return null;
 
+    const metaCategories = Array.isArray(meta.categories) && (meta.categories as string[]).length > 0
+      ? (meta.categories as string[])
+      : (meta.category != null ? [String(meta.category)] : ['pt']);
     const payload = buildProfessionalInsertPayload(user.id, {
       first_name: (meta.first_name as string) || '',
       last_name: (meta.last_name as string) || '',
       email: ((meta.email as string) || user.email || '').toLowerCase(),
       phone: (meta.phone as string) || '',
-      category: (meta.category as string) || 'pt',
+      categories: metaCategories,
       city: (meta.city as string) || '',
       bio: (meta.bio as string) ?? null,
       company_name: (meta.company_name as string) ?? null,

@@ -24,8 +24,8 @@ export function CategoryCard({ icon, label, value, selected, onClick }: Category
         rounded-xl border-2
         transition-all duration-200
         ${selected
-          ? 'border-[var(--partner-accent)] bg-orange-50 shadow-md'
-          : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+          ? 'border-[#EEBA2B] bg-gray-800 shadow-md'
+          : 'border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm'
         }
       `}
     >
@@ -36,7 +36,7 @@ export function CategoryCard({ icon, label, value, selected, onClick }: Category
         flex items-center justify-center
         mb-1.5 sm:mb-2
         shrink-0
-        ${selected ? 'bg-[var(--partner-accent)]' : 'bg-gray-100'}
+        ${selected ? 'bg-[#EEBA2B]' : 'bg-gray-100'}
       `}>
         {isValidElement(icon) 
           ? cloneElement(icon as React.ReactElement<{ className?: string }>, {
@@ -51,7 +51,7 @@ export function CategoryCard({ icon, label, value, selected, onClick }: Category
       {/* Label */}
       <span className={`
         text-xs sm:text-sm font-medium text-center leading-tight
-        ${selected ? 'text-[var(--partner-accent)]' : 'text-gray-700'}
+        ${selected ? 'text-[#EEBA2B]' : 'text-gray-700'}
       `}>
         {label}
       </span>

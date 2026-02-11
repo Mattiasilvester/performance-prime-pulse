@@ -1425,6 +1425,7 @@ export type Database = {
           birth_place: string
           category: Database["public"]["Enums"]["professional_category"]
           company_name: string
+          professions: string[] | null
           created_at: string
           email: string
           first_name: string
@@ -1475,6 +1476,7 @@ export type Database = {
           phone: string
           prezzo_fascia?: string | null
           prezzo_seduta?: number | null
+          professions?: string[] | null
           rating?: number | null
           reviews_count?: number | null
           sdi_code?: string | null
@@ -1497,6 +1499,7 @@ export type Database = {
           birth_place?: string
           category?: Database["public"]["Enums"]["professional_category"]
           company_name?: string
+          professions?: string[] | null
           created_at?: string
           email?: string
           first_name?: string
@@ -1630,6 +1633,54 @@ export type Database = {
           },
           {
             foreignKeyName: "projects_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_attachments: {
+        Row: {
+          id: string
+          project_id: string
+          professional_id: string
+          file_name: string
+          file_path: string
+          file_type: string
+          file_size: number
+          uploaded_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          professional_id: string
+          file_name: string
+          file_path: string
+          file_type: string
+          file_size: number
+          uploaded_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          professional_id?: string
+          file_name?: string
+          file_path?: string
+          file_type?: string
+          file_size?: number
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_attachments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_attachments_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"

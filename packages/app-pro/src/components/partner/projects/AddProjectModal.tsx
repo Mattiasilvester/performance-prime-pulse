@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { X, FolderOpen, User, Target, Calendar, FileText, Loader2, ChevronDown } from 'lucide-react';
+import ProjectAttachmentsUpload from './ProjectAttachmentsUpload';
+import { uploadAttachment } from '@/services/projectAttachmentsService';
 
 interface Client {
   id: string;
@@ -36,6 +38,7 @@ export default function AddProjectModal({
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pendingAttachmentFiles, setPendingAttachmentFiles] = useState<File[]>([]);
 
   // Fetch clienti per il dropdown
   useEffect(() => {
@@ -93,7 +96,7 @@ export default function AddProjectModal({
     setLoading(true);
     
     try {
-      const { error } = await supabase
+      const { data: newProject, error } = await supabase
         .from('projects')
         .insert({
           professional_id: professionalId,
@@ -103,9 +106,26 @@ export default function AddProjectModal({
           start_date: formData.start_date,
           notes: formData.notes.trim() || null,
           status: 'active'
-        });
+        })
+        .select('id')
+        .single();
       
       if (error) throw error;
+      if (!newProject?.id) throw new Error('Progetto non creato');
+
+      for (const file of pendingAttachmentFiles) {
+        try {
+          await uploadAttachment({
+            projectId: newProject.id,
+            clientId: formData.client_id,
+            professionalId,
+            file
+          });
+        } catch (uploadErr) {
+          console.error('Upload allegato:', uploadErr);
+          toast.error(`Impossibile allegare "${file.name}". Progetto creato.`);
+        }
+      }
       
       toast.success('Progetto creato con successo!');
       onSuccess();
@@ -319,6 +339,19 @@ export default function AddProjectModal({
               />
             </div>
           </div>
+
+          {/* Allegati (solo se cliente selezionato) */}
+          {formData.client_id && (
+            <ProjectAttachmentsUpload
+              professionalId={professionalId}
+              clientId={formData.client_id}
+              projectId={null}
+              existingAttachments={[]}
+              pendingFiles={pendingAttachmentFiles}
+              onPendingFilesChange={setPendingAttachmentFiles}
+              disabled={loading}
+            />
+          )}
 
           </form>
         </div>

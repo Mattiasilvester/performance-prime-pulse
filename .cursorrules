@@ -19,6 +19,15 @@
 - Se un fix/feature potrebbe creare problemi (es. regex che cambiano comportamento, tipi che rompono chiamate, logica che altera risultati) → **FERMATI**, segnala il rischio e chiedi conferma
 - **NON** procedere con modifiche che potrebbero rompere funzioni o feature senza averlo segnalato
 
+## 🔒 BLOCCO FUNZIONALITÀ — NON TOCCARE (11 Febbraio 2026)
+**Prima di implementare qualsiasi nuova feature: queste funzionalità sono TESTATE E FUNZIONANTI. Se una modifica rischia di impattare anche solo UNA, FERMATI e chiedi prima.**
+
+Riferimento completo e aggiornabile: **docs/BLOCCO_FUNZIONALITA.md** (aggiornare a fine sessione se serve).
+
+**Funzionalità bloccate (non modificare):** Autenticazione (login, logout, reset password). Dashboard (OverviewPage KPI reali, prossimi appuntamenti, stato vuoto). Agenda/Calendario (vista giorno/settimana, drag&drop, blocco slot). Prenotazioni (lista filtrabile, conferma/cancella/completa, conteggio card). Clienti (lista, aggiungi, dettaglio). Servizi e Tariffe (CRUD). Profilo (visualizzazione e modifica). Costi e Spese (gestionale). Report e Analytics (Andamento, export PDF Analytics/Commercialista con e senza dati, Report Settimanale; import jspdf-autotable DEVE restare: `import 'jspdf-autotable'` + `(doc as any).autoTable({...})`). Recensioni. Abbonamento (trial, badge). Notifiche e Promemoria (push, promemoria programmati). Onboarding (tour 13 step, "Rivedi guida"). SuperAdmin (dashboard, CORS). Landing. Email (benvenuto, reminder trial). Safari iOS (input, select, modal). Vercel Analytics (inject in main).
+
+**Regole:** (1) Nuove feature ADDITIVE. (2) Modifiche solo alle righe necessarie. (3) Dopo ogni modifica: pnpm build:pro → 0 errori. (4) Non cambiare import 'jspdf-autotable'. (5) I test manuali che passavano devono continuare a passare.
+
 ## 📚 RIFERIMENTO PROBLEMI COMUNI
 **PRIMA DI RISOLVERE UN PROBLEMA, CONSULTA:** `PROBLEMI_COMUNI_E_SOLUZIONI.md`
 

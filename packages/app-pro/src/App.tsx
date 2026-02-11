@@ -24,6 +24,7 @@ import PartnerLandingPage from '@/pages/partner/PartnerLandingPage'
 import PartnerRegistration from '@/pages/partner/PartnerRegistration'
 import PartnerLogin from '@/pages/partner/PartnerLogin'
 import PartnerResetPassword from '@/pages/partner/PartnerResetPassword'
+import UpdatePasswordPage from '@/pages/partner/UpdatePasswordPage'
 import TermsConditions from '@/pages/partner/legal/TermsConditions'
 import PartnerPrivacyPolicy from '@/pages/partner/legal/PrivacyPolicy'
 import CookiePolicy from '@/pages/partner/legal/CookiePolicy'
@@ -159,11 +160,14 @@ function App() {
       setLoading(false)
     })
 
-    // Listen per cambi auth
+    // Listen per cambi auth (incluso PASSWORD_RECOVERY → redirect a pagina nuova password)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
+      if (event === 'PASSWORD_RECOVERY') {
+        window.location.href = '/partner/update-password'
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -189,6 +193,7 @@ function App() {
                 <Route path="/partner/registrazione" element={<PartnerRegistration />} />
                 <Route path="/partner/login" element={<PartnerLogin />} />
                 <Route path="/partner/reset-password" element={<PartnerResetPassword />} />
+                <Route path="/partner/update-password" element={<UpdatePasswordPage />} />
                 <Route path="/partner/terms" element={<TermsConditions />} />
                 <Route path="/partner/privacy" element={<PartnerPrivacyPolicy />} />
                 <Route path="/partner/cookies" element={<CookiePolicy />} />

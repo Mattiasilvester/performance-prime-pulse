@@ -71,50 +71,44 @@ function getMonthLabel(date: Date): string {
   return date.toLocaleDateString('it-IT', { month: 'short', year: '2-digit' });
 }
 
-/** Dati placeholder per anteprima card e viste quando non ci sono dati reali */
-function getPlaceholderData(): KPIData {
+/** Dati vuoti per card e viste quando non ci sono dati reali (nessun placeholder/demo). */
+function getEmptyKPIData(): KPIData {
   const now = new Date();
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-    return { name: getMonthLabel(d), value: [2, 3, 1, 4, 2, 3][i] ?? 0 };
+    return { name: getMonthLabel(d), value: 0 };
   });
-  const monthsApp = months.map((m, i) => ({ ...m, value: [8, 12, 6, 15, 10, 14][i] ?? 0 }));
-  const monthsRev = months.map((m, i) => ({ ...m, value: [1200, 1800, 950, 2200, 1600, 2100][i] ?? 0 }));
-  const monthsRating = months.map((m, i) => ({ ...m, value: [4.2, 4.5, 4.0, 4.6, 4.3, 4.5][i] ?? 0 }));
   return {
     clients: {
-      total: 24,
-      newThisMonth: 3,
-      lastMonth: 2,
-      growthPercent: 50,
+      total: 0,
+      newThisMonth: 0,
+      lastMonth: 0,
+      growthPercent: 0,
       monthlyTrend: months,
     },
     appointments: {
-      total: 14,
-      completed: 10,
-      cancelled: 1,
-      pending: 2,
-      incomplete: 1,
-      completedPercent: 71,
-      monthlyTrend: monthsApp,
+      total: 0,
+      completed: 0,
+      cancelled: 0,
+      pending: 0,
+      incomplete: 0,
+      completedPercent: 0,
+      monthlyTrend: months,
     },
     revenue: {
-      thisMonth: 2100,
-      lastMonth: 1600,
-      growthPercent: 31,
-      monthlyTrend: monthsRev,
+      thisMonth: 0,
+      lastMonth: 0,
+      growthPercent: 0,
+      monthlyTrend: months,
       missingPriceCount: 0,
     },
     rating: {
-      average: 4.5,
-      total: 12,
-      verified: 8,
-      distribution: { 5: 6, 4: 3, 3: 2, 2: 1, 1: 0 },
-      monthlyTrend: monthsRating,
-      recentReviews: [
-        { id: 'pl-1', rating: 5, text: 'Ottimo professionista, molto competente.', date: '15 gen 2025', author: 'Mario R.' },
-        { id: 'pl-2', rating: 4, text: 'Consigliato, esperienza positiva.', date: '10 gen 2025', author: 'Laura B.' },
-      ],
+      average: 0,
+      total: 0,
+      verified: 0,
+      distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+      monthlyTrend: months,
+      recentReviews: [],
     },
   };
 }
@@ -126,13 +120,13 @@ export function KPICardsSection({
   onBack,
 }: KPICardsSectionProps) {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<KPIData>(getPlaceholderData());
+  const [data, setData] = useState<KPIData>(getEmptyKPIData());
 
   useEffect(() => {
     if (professionalId) {
       fetchAllKPIData();
     } else {
-      setData(getPlaceholderData());
+      setData(getEmptyKPIData());
       setLoading(false);
     }
   // Esegui fetch quando cambia professionalId; fetchAllKPIData non in deps per evitare loop
@@ -433,7 +427,7 @@ export function KPICardsSection({
 
       setData(
         hasNoData
-          ? getPlaceholderData()
+          ? getEmptyKPIData()
           : {
               clients: {
                 total: totalClients,

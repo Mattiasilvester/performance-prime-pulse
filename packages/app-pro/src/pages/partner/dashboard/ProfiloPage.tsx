@@ -31,6 +31,8 @@ interface ProfessionalProfile {
   email: string;
   phone: string;
   category: string;
+  /** Una o più professioni (se presente, preferire a category per la visualizzazione). */
+  professions?: string[] | null;
   bio: string | null;
   foto_url: string | null;
   specializzazioni: string[] | null;
@@ -56,6 +58,12 @@ const categoryLabels: Record<string, string> = {
   osteopata: 'Osteopata',
   altro: 'Altro'
 };
+
+/** Restituisce le etichette delle professioni da mostrare (professions se presenti, altrimenti category). */
+function getDisplayProfessionLabels(profile: ProfessionalProfile): string[] {
+  const list = profile.professions?.length ? profile.professions : [profile.category];
+  return list.map((c) => categoryLabels[c] || c);
+}
 
 export default function ProfiloPage() {
   const [profile, setProfile] = useState<ProfessionalProfile | null>(null);
@@ -157,6 +165,9 @@ export default function ProfiloPage() {
       if (!user) return;
 
       const updateData: any = { [field]: valueToSave };
+      if (field === 'category' && valueToSave != null) {
+        updateData.professions = [String(valueToSave)];
+      }
 
       const { error } = await supabase
         .from('professionals')
@@ -360,7 +371,7 @@ export default function ProfiloPage() {
               <div className="flex flex-wrap items-center gap-4 text-gray-600">
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 text-[#EEBA2B]" />
-                  <span>{categoryLabels[profile.category] || profile.category}</span>
+                  <span>{getDisplayProfessionLabels(profile).join(', ')}</span>
                 </div>
                 {profile.zona && (
                   <div className="flex items-center gap-1">
@@ -852,7 +863,7 @@ export default function ProfiloPage() {
                     </div>
                   ) : (
                     <p className="text-gray-900 break-words mt-1">
-                      {categoryLabels[profile.category] || profile.category}
+                      {getDisplayProfessionLabels(profile).join(', ')}
                     </p>
                   )}
                 </div>
@@ -1036,7 +1047,7 @@ export default function ProfiloPage() {
                     {profile.first_name} {profile.last_name}
                   </h3>
                   <p className="text-[#EEBA2B] font-medium">
-                    {categoryLabels[profile.category] || profile.category}
+                    {getDisplayProfessionLabels(profile).join(', ')}
                   </p>
                   {profile.zona && (
                     <p className="text-gray-500 text-sm flex items-center gap-1 mt-1">

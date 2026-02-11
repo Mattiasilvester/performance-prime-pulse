@@ -31,8 +31,8 @@ export function AccountantReportCompletezzaModal({
   };
 
   const handleExportAnyway = () => {
-    onClose();
     onExportAnyway();
+    onClose();
   };
 
   return (

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Tag, Bell, CreditCard, Lock, User, MapPin, FileText, Link as LinkIcon, Globe, ChevronRight, Wallet, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfessionalId } from '@/hooks/useProfessionalId';
@@ -86,7 +85,6 @@ const settingsSections: SettingSection[] = [
 ];
 
 export default function ImpostazioniPage() {
-  const navigate = useNavigate();
   const professionalId = useProfessionalId();
   const [showSpecializzazioniModal, setShowSpecializzazioniModal] = useState(false);
   const [showLinguaModal, setShowLinguaModal] = useState(false);
@@ -137,23 +135,29 @@ export default function ImpostazioniPage() {
 
       {/* Grid Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Rivedi guida - tour onboarding */}
+        {/* Rivedi guida - tour onboarding: rimuove "tour done" e ricarica overview per far ripartire il tour */}
         <div
           role="button"
           tabIndex={0}
           onClick={() => {
             if (professionalId) {
-              localStorage.setItem(`pp_dashboard_tour_force_show_${professionalId}`, 'true');
-              navigate('/partner/dashboard');
+              localStorage.removeItem(`pp_dashboard_tour_done_${professionalId}`);
             } else {
-              toast.error('Caricamento in corso. Riprova tra un attimo.');
+              const keys = Object.keys(localStorage).filter((k) => k.startsWith('pp_dashboard_tour_done'));
+              keys.forEach((k) => localStorage.removeItem(k));
             }
+            window.location.href = '/partner/dashboard';
           }}
           onKeyDown={(e) => {
-            if ((e.key === 'Enter' || e.key === ' ') && professionalId) {
+            if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              localStorage.setItem(`pp_dashboard_tour_force_show_${professionalId}`, 'true');
-              navigate('/partner/dashboard');
+              if (professionalId) {
+                localStorage.removeItem(`pp_dashboard_tour_done_${professionalId}`);
+              } else {
+                const keys = Object.keys(localStorage).filter((k) => k.startsWith('pp_dashboard_tour_done'));
+                keys.forEach((k) => localStorage.removeItem(k));
+              }
+              window.location.href = '/partner/dashboard';
             }
           }}
           className="bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:border-[#EEBA2B] hover:shadow-sm transition-all duration-200 text-left"

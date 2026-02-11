@@ -1,14 +1,22 @@
 // src/components/partner/projects/EditProjectModal.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { X, FolderOpen, Target, Calendar, FileText, Loader2 } from 'lucide-react';
+import ProjectAttachmentsUpload from './ProjectAttachmentsUpload';
+import {
+  listByProject,
+  uploadAttachment,
+  deleteAttachment,
+  type ProjectAttachmentRow
+} from '@/services/projectAttachmentsService';
 
 interface Project {
   id: string;
   client_id: string;
+  professional_id?: string;
   name: string;
   objective: string | null;
   status: 'active' | 'paused' | 'completed';
@@ -42,11 +50,33 @@ export default function EditProjectModal({
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [existingAttachments, setExistingAttachments] = useState<ProjectAttachmentRow[]>([]);
+  const [pendingAttachmentFiles, setPendingAttachmentFiles] = useState<File[]>([]);
+
+  const professionalId = project.professional_id ?? '';
+
+  useEffect(() => {
+    if (!project.id) return;
+    listByProject(project.id)
+      .then(setExistingAttachments)
+      .catch(() => setExistingAttachments([]));
+  }, [project.id]);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handleDeleteExistingAttachment = async (att: ProjectAttachmentRow) => {
+    if (!window.confirm(`Rimuovere "${att.file_name}"?`)) return;
+    try {
+      await deleteAttachment(att);
+      setExistingAttachments(prev => prev.filter(a => a.id !== att.id));
+      toast.success('Allegato rimosso');
+    } catch {
+      toast.error('Errore nella rimozione dell\'allegato');
     }
   };
 
@@ -90,6 +120,20 @@ export default function EditProjectModal({
         .eq('id', project.id);
 
       if (error) throw error;
+
+      for (const file of pendingAttachmentFiles) {
+        try {
+          await uploadAttachment({
+            projectId: project.id,
+            clientId: project.client_id,
+            professionalId,
+            file
+          });
+        } catch (uploadErr) {
+          console.error('Upload allegato:', uploadErr);
+          toast.error(`Impossibile allegare "${file.name}".`);
+        }
+      }
 
       toast.success('Progetto modificato con successo!');
       onSuccess();
@@ -264,6 +308,20 @@ export default function EditProjectModal({
               />
             </div>
           </div>
+
+          {/* Allegati */}
+          {professionalId && (
+            <ProjectAttachmentsUpload
+              professionalId={professionalId}
+              clientId={project.client_id}
+              projectId={project.id}
+              existingAttachments={existingAttachments}
+              pendingFiles={pendingAttachmentFiles}
+              onPendingFilesChange={setPendingAttachmentFiles}
+              onDeleteExisting={handleDeleteExistingAttachment}
+              disabled={loading}
+            />
+          )}
 
           </form>
         </div>

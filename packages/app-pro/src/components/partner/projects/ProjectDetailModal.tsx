@@ -1,15 +1,21 @@
 // src/components/partner/projects/ProjectDetailModal.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { 
   X, FolderOpen, User, Target, Calendar, 
   FileText, Edit, Trash2, CheckCircle, 
-  PauseCircle, PlayCircle, Star
+  PauseCircle, PlayCircle, Star, Download
 } from 'lucide-react';
 import EditProjectModal from './EditProjectModal';
+import {
+  listByProject,
+  getSignedUrl,
+  deleteAttachment,
+  type ProjectAttachmentRow
+} from '@/services/projectAttachmentsService';
 
 interface Project {
   id: string;
@@ -43,6 +49,46 @@ export default function ProjectDetailModal({
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [attachments, setAttachments] = useState<ProjectAttachmentRow[]>([]);
+  const [attachmentImageUrls, setAttachmentImageUrls] = useState<Record<string, string>>({});
+  const [deletingAttachmentId, setDeletingAttachmentId] = useState<string | null>(null);
+  const [showAttachmentDeleteConfirm, setShowAttachmentDeleteConfirm] = useState<ProjectAttachmentRow | null>(null);
+
+  useEffect(() => {
+    listByProject(project.id)
+      .then(setAttachments)
+      .catch(() => setAttachments([]));
+  }, [project.id]);
+
+  // Signed URLs per miniature immagini (solo per file_type image/*)
+  useEffect(() => {
+    let cancelled = false;
+    const imageAttachments = attachments.filter((a) => (a.file_type || '').startsWith('image/'));
+    if (imageAttachments.length === 0) {
+      setAttachmentImageUrls({});
+      return;
+    }
+    Promise.all(
+      imageAttachments.map(async (att) => {
+        try {
+          const url = await getSignedUrl(att.file_path);
+          return { id: att.id, url };
+        } catch {
+          return { id: att.id, url: '' };
+        }
+      })
+    ).then((results) => {
+      if (cancelled) return;
+      const map: Record<string, string> = {};
+      results.forEach(({ id, url }) => {
+        if (url) map[id] = url;
+      });
+      setAttachmentImageUrls(map);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [attachments]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
@@ -101,6 +147,31 @@ export default function ProjectDetailModal({
       toast.error('Errore nel cambio stato del progetto');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAttachmentDownload = async (att: ProjectAttachmentRow) => {
+    try {
+      const url = await getSignedUrl(att.file_path);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch {
+      toast.error('Impossibile aprire il file');
+    }
+  };
+
+  const handleAttachmentDeleteConfirm = async () => {
+    if (!showAttachmentDeleteConfirm) return;
+    const att = showAttachmentDeleteConfirm;
+    setShowAttachmentDeleteConfirm(null);
+    setDeletingAttachmentId(att.id);
+    try {
+      await deleteAttachment(att);
+      setAttachments(prev => prev.filter(a => a.id !== att.id));
+      toast.success('Allegato eliminato');
+    } catch {
+      toast.error('Errore nell\'eliminazione dell\'allegato');
+    } finally {
+      setDeletingAttachmentId(null);
     }
   };
 
@@ -324,6 +395,70 @@ export default function ProjectDetailModal({
               </div>
             )}
 
+            {/* Allegati */}
+            {attachments.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-gray-400" />
+                  File allegati
+                </label>
+                <div className="space-y-2">
+                  {attachments.map((att) => (
+                    <div
+                      key={att.id}
+                      className="flex flex-row items-center gap-3 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#EEBA2B]/50 transition-colors"
+                    >
+                      {/* SX: miniatura 60x60 o icona */}
+                      <div className="w-[60px] h-[60px] flex-shrink-0 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center">
+                        {(att.file_type || '').startsWith('image/') && attachmentImageUrls[att.id] ? (
+                          <img
+                            src={attachmentImageUrls[att.id]}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <FileText className="w-6 h-6 text-gray-500" />
+                        )}
+                      </div>
+                      {/* Centro: nome + dimensione */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate" title={att.file_name}>
+                          {att.file_name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {(att.file_size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                      {/* DX: icone download (oro) + elimina */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleAttachmentDownload(att)}
+                          className="p-2 rounded-lg hover:bg-gray-100 text-[#EEBA2B] transition-colors"
+                          aria-label="Scarica"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowAttachmentDeleteConfirm(att)}
+                          disabled={deletingAttachmentId === att.id}
+                          className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                          aria-label="Elimina allegato"
+                        >
+                          {deletingAttachmentId === att.id ? (
+                            <span className="text-xs">...</span>
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Cambio Stato */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -431,6 +566,66 @@ export default function ProjectDetailModal({
     </div>
   );
 
+  // Modal conferma eliminazione allegato
+  const attachmentDeleteConfirmModal = showAttachmentDeleteConfirm && (
+    <div 
+      className="fixed inset-0 z-[10000] flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+      onClick={() => setShowAttachmentDeleteConfirm(null)}
+    >
+      <div 
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '16px',
+          padding: '24px',
+          maxWidth: '400px',
+          width: '100%'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '12px' }}>
+          Elimina allegato
+        </h3>
+        <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+          Eliminare &quot;{showAttachmentDeleteConfirm.file_name}&quot;? L&apos;azione è irreversibile.
+        </p>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => setShowAttachmentDeleteConfirm(null)}
+            disabled={deletingAttachmentId !== null}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'white',
+              border: '1px solid #e5e7eb',
+              color: '#374151',
+              borderRadius: '8px',
+              fontWeight: '500',
+              cursor: 'pointer'
+            }}
+          >
+            Annulla
+          </button>
+          <button
+            onClick={handleAttachmentDeleteConfirm}
+            disabled={deletingAttachmentId !== null}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#ef4444',
+              border: 'none',
+              color: 'white',
+              borderRadius: '8px',
+              fontWeight: '500',
+              cursor: deletingAttachmentId ? 'not-allowed' : 'pointer',
+              opacity: deletingAttachmentId ? 0.5 : 1
+            }}
+          >
+            {deletingAttachmentId ? 'Eliminazione...' : 'Elimina'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   // Renderizza usando Portal direttamente nel body
   return (
     <>
@@ -440,6 +635,9 @@ export default function ProjectDetailModal({
       {typeof document !== 'undefined' && showDeleteConfirm
         ? createPortal(deleteConfirmModal, document.body)
         : showDeleteConfirm && deleteConfirmModal}
+      {typeof document !== 'undefined' && showAttachmentDeleteConfirm
+        ? createPortal(attachmentDeleteConfirmModal, document.body)
+        : showAttachmentDeleteConfirm && attachmentDeleteConfirmModal}
       
       {/* Modal Modifica Progetto */}
       {showEditModal && (

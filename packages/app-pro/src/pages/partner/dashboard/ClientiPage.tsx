@@ -76,113 +76,22 @@ export default function ClientiPage() {
   const fetchClients = async () => {
     if (!professionalId) return;
     setLoading(true);
-    
-    // Dati mock per test
-    const mockClients: Client[] = [
-      {
-        id: 'mock-1',
-        full_name: 'Andrea Rossi',
-        email: 'andrea.rossi@email.com',
-        phone: '+39 333 1234567',
-        notes: 'Preferisce allenamenti mattutini. Obiettivo: perdere 5kg.',
-        is_pp_subscriber: true,
-        created_at: '2025-06-15T10:00:00Z',
-        total_sessions: 24,
-        last_session_date: '2026-01-15T11:00:00Z',
-        user_id: null
-      },
-      {
-        id: 'mock-2',
-        full_name: 'Marco Bianchi',
-        email: 'marco.bianchi@gmail.com',
-        phone: '+39 347 9876543',
-        notes: 'Problema alla spalla destra, evitare esercizi overhead.',
-        is_pp_subscriber: false,
-        created_at: '2025-09-20T14:30:00Z',
-        total_sessions: 12,
-        last_session_date: '2026-01-10T09:00:00Z',
-        user_id: null
-      },
-      {
-        id: 'mock-3',
-        full_name: 'Giulia Verdi',
-        email: 'giulia.verdi@outlook.com',
-        phone: '+39 320 5551234',
-        notes: '',
-        is_pp_subscriber: true,
-        created_at: '2025-11-01T08:00:00Z',
-        total_sessions: 8,
-        last_session_date: '2026-01-18T16:00:00Z',
-        user_id: null
-      },
-      {
-        id: 'mock-4',
-        full_name: 'Luca Ferrari',
-        email: 'luca.ferrari@email.it',
-        phone: '+39 339 4445566',
-        notes: 'Atleta agonista, preparazione maratona primavera 2026.',
-        is_pp_subscriber: false,
-        created_at: '2025-12-10T12:00:00Z',
-        total_sessions: 6,
-        last_session_date: '2026-01-12T07:30:00Z',
-        user_id: null
-      },
-      {
-        id: 'mock-5',
-        full_name: 'Sara Esposito',
-        email: 'sara.esposito@gmail.com',
-        phone: '+39 328 7778899',
-        notes: 'Post gravidanza, focus su core e postura.',
-        is_pp_subscriber: true,
-        created_at: '2026-01-05T10:00:00Z',
-        total_sessions: 3,
-        last_session_date: '2026-01-17T10:00:00Z',
-        user_id: null
-      },
-      {
-        id: 'mock-6',
-        full_name: 'Francesco Conti',
-        email: 'f.conti@email.com',
-        phone: '+39 345 1112233',
-        notes: '',
-        is_pp_subscriber: false,
-        created_at: '2025-08-22T09:00:00Z',
-        total_sessions: 18,
-        last_session_date: '2025-12-20T14:00:00Z',
-        user_id: null
-      },
-      {
-        id: 'mock-7',
-        full_name: 'Chiara Ricci',
-        email: 'chiara.ricci@yahoo.it',
-        phone: '+39 366 9990000',
-        notes: 'Lavora su turni, disponibilità variabile.',
-        is_pp_subscriber: true,
-        created_at: '2025-07-01T11:00:00Z',
-        total_sessions: 30,
-        last_session_date: '2026-01-19T08:00:00Z',
-        user_id: null
-      }
-    ];
-    
+
     try {
-      // Fetch clients del professionista
       const { data, error } = await supabase
         .from('clients')
         .select('*')
         .eq('professional_id', professionalId)
         .order('full_name', { ascending: true });
-      
+
       if (error) {
-        // Se la tabella non esiste o errore, usa dati mock
-        console.log('Tabella clients non disponibile o errore, uso dati mock:', error.message);
-        setClients(mockClients);
-        calculateStats(mockClients);
+        console.error('Errore fetch clienti:', error.message);
+        setClients([]);
+        calculateStats([]);
         setLoading(false);
         return;
       }
-      
-      // Se ci sono dati reali, usali (calcolando sessioni)
+
       if (data && data.length > 0) {
         // OTTIMIZZAZIONE CRITICA: carica tutte le prenotazioni in UNA singola query invece di N query separate
         const { data: allBookings, error: bookingsError } = await supabase
@@ -256,16 +165,13 @@ export default function ClientiPage() {
         setClients(clientsWithStats);
         calculateStats(clientsWithStats);
       } else {
-        // Tabella esiste ma vuota, usa dati mock
-        console.log('Tabella clients vuota, uso dati mock per test');
-        setClients(mockClients);
-        calculateStats(mockClients);
+        setClients([]);
+        calculateStats([]);
       }
-    } catch (err: any) {
-      console.error('Errore fetch clienti, uso dati mock:', err);
-      // In caso di errore generico, usa dati mock
-      setClients(mockClients);
-      calculateStats(mockClients);
+    } catch (err: unknown) {
+      console.error('Errore fetch clienti:', err);
+      setClients([]);
+      calculateStats([]);
     } finally {
       setLoading(false);
     }

@@ -21,7 +21,7 @@ interface FormData {
   phone: string;
   password: string;
   password_confirm: string;
-  category: string;
+  categories: string[];
   customCategory: string;
   city: string;
   titolo_studio: string[];
@@ -48,7 +48,7 @@ export default function PartnerRegistration() {
     phone: '',
     password: '',
     password_confirm: '',
-    category: '',
+    categories: [],
     customCategory: '',
     city: '',
     titolo_studio: [],
@@ -116,10 +116,10 @@ export default function PartnerRegistration() {
         break;
 
       case 3:
-        if (!formData.category) {
-          newErrors.category = 'Seleziona una categoria';
+        if (formData.categories.length === 0) {
+          newErrors.category = 'Seleziona almeno una professione';
         }
-        if (formData.category === 'altro') {
+        if (formData.categories.includes('altro')) {
           if (!formData.customCategory.trim()) {
             newErrors.customCategory = 'Specifica la tua professione';
           } else if (formData.customCategory.trim().length < 3) {
@@ -234,9 +234,9 @@ export default function PartnerRegistration() {
     setError(null);
 
     try {
-      // Se categoria è "altro", aggiungi la categoria custom al bio
+      // Se "altro" è tra le professioni, aggiungi la categoria custom al bio
       let bioWithCategory = formData.bio.trim();
-      if (formData.category === 'altro' && formData.customCategory.trim()) {
+      if (formData.categories.includes('altro') && formData.customCategory.trim()) {
         bioWithCategory = `Categoria: ${formData.customCategory.trim()}\n\n${bioWithCategory}`;
       }
 
@@ -246,7 +246,7 @@ export default function PartnerRegistration() {
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
         phone: formData.phone.trim(),
-        category: (formData.category === 'other' ? 'altro' : formData.category) as 'pt' | 'nutrizionista' | 'fisioterapista' | 'mental_coach' | 'osteopata' | 'altro',
+        categories: formData.categories,
         city: formData.city.trim(),
         bio: bioWithCategory,
         company_name: formData.studio_sede.trim(),
@@ -346,8 +346,8 @@ export default function PartnerRegistration() {
         return passwordValid && formData.password === formData.password_confirm;
       }
       case 3:
-        if (!formData.category) return false;
-        if (formData.category === 'altro') {
+        if (formData.categories.length === 0) return false;
+        if (formData.categories.includes('altro')) {
           return formData.customCategory.trim().length >= 3;
         }
         return true;
@@ -423,12 +423,21 @@ export default function PartnerRegistration() {
             {currentStep === 3 && (
               <StepCategory
                 key="step3"
-                selectedCategory={formData.category}
-                onSelect={(category) => {
-                  updateFormData('category', category);
-                  // Reset customCategory se si cambia categoria
-                  if (category !== 'altro') {
-                    updateFormData('customCategory', '');
+                selectedCategories={formData.categories}
+                onToggle={(category) => {
+                  setFormData(prev => {
+                    const has = prev.categories.includes(category);
+                    const next = has
+                      ? (prev.categories.length > 1 ? prev.categories.filter(c => c !== category) : prev.categories)
+                      : [...prev.categories, category];
+                    return { ...prev, categories: next };
+                  });
+                  if (errors.category) {
+                    setErrors(prev => {
+                      const nextErr = { ...prev };
+                      delete nextErr.category;
+                      return nextErr;
+                    });
                   }
                 }}
                 customCategory={formData.customCategory}
