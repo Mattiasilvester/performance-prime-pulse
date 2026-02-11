@@ -14,6 +14,7 @@ import BottomNavigation from '@/components/layout/BottomNavigation'
 import FeedbackWidget from '@/components/feedback/FeedbackWidget'
 import CookieBanner from '@/components/legal/CookieBanner'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { Analytics } from '@vercel/analytics/react'
 
 // Import componenti core (non lazy)
 import { NewLandingPage } from '@/pages/landing/NewLandingPage'
@@ -531,6 +532,7 @@ function App() {
           </Suspense>
         </PrimeBotProvider>
       </NotificationProvider>
+      <Analytics />
     </AuthProvider>
   </ErrorBoundary>
   )
