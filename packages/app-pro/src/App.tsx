@@ -35,6 +35,7 @@ import ClientiPage from '@/pages/partner/dashboard/ClientiPage'
 import ProgettiPage from '@/pages/partner/dashboard/ProgettiPage'
 import ProfiloPage from '@/pages/partner/dashboard/ProfiloPage'
 import ImpostazioniPage from '@/pages/partner/dashboard/ImpostazioniPage'
+import FeedbackPage from '@/pages/partner/dashboard/FeedbackPage'
 import ReviewsPage from '@/pages/partner/dashboard/ReviewsPage'
 import ServiziTariffePage from '@/pages/partner/ServiziTariffePage'
 import AbbonamentoPage from '@/pages/partner/dashboard/AbbonamentoPage'
@@ -121,7 +122,7 @@ const FallbackRedirect = () => {
   const location = useLocation();
   const pathname = location.pathname ?? '';
   if (pathname.startsWith('/partner')) {
-    return <Navigate to="/partner" replace />;
+    return <Navigate to="/" replace />;
   }
   return <Navigate to="/" replace />;
 };
@@ -131,7 +132,7 @@ const LandingOrPartnerRedirect = () => {
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   const isPrimeProDomain = hostname.includes('primepro');
   if (isPrimeProDomain) {
-    return <Navigate to="/partner" replace />;
+    return <Navigate to="/" replace />;
   }
   return <NewLandingPage />;
 };
@@ -185,7 +186,7 @@ function App() {
               <Routes>
                 {/* ROUTE PUBBLICHE */}
                 <Route path="/" element={<PartnerLandingPage />} />
-                <Route path="/partner" element={<Partner />} />
+                {/* Route /partner/* specifiche PRIMA del redirect, così /partner/login e /partner/dashboard non vengono intercettate */}
                 <Route path="/partner/registrazione" element={<PartnerRegistration />} />
                 <Route path="/partner/login" element={<PartnerLogin />} />
                 <Route path="/partner/reset-password" element={<PartnerResetPassword />} />
@@ -206,7 +207,10 @@ function App() {
                   <Route path="recensioni" element={<ReviewsPage />} />
                   <Route path="abbonamento" element={<AbbonamentoPage />} />
                   <Route path="impostazioni" element={<ImpostazioniPage />} />
+                  <Route path="feedback" element={<FeedbackPage />} />
                 </Route>
+                {/* Redirect solo per path esatto /partner (dopo tutte le /partner/*) */}
+                <Route path="/partner" element={<Navigate to="/" replace />} />
                 <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route path="/auth/login" element={
                   session ? <Navigate to="/dashboard" /> : <LoginPage />

@@ -18,7 +18,8 @@ import {
   Loader2,
   CreditCard,
   Receipt,
-  TrendingUp
+  TrendingUp,
+  MessageSquare
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -407,6 +408,22 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
           >
             <Settings className="w-5 h-5" />
             <span>Impostazioni</span>
+          </Link>
+
+          {/* Feedback */}
+          <Link
+            to="/partner/dashboard/feedback"
+            onClick={() => onClose()}
+            className={`
+              flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+              ${currentPath.startsWith('/partner/dashboard/feedback')
+                ? 'bg-[#EEBA2B]/25 text-gray-900 border-l-4 border-[#EEBA2B] font-semibold'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              }
+            `}
+          >
+            <MessageSquare className="w-5 h-5" />
+            <span>Feedback</span>
           </Link>
         </nav>
 

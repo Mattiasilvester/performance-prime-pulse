@@ -62,7 +62,7 @@ export default function UpdatePasswordPage() {
       <div className="max-w-md mx-auto">
         {/* Logo in alto — solo testo come login */}
         <div className="flex justify-center mb-8">
-          <Link to="/partner" className="flex flex-col items-center">
+          <Link to="/" className="flex flex-col items-center">
             <span className="text-xl font-bold">
               <span style={{ color: '#000000' }}>Prime </span>
               <span style={{ color: '#EEBA2B' }}>Pro</span>

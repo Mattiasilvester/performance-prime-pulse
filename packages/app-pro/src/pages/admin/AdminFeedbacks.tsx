@@ -9,43 +9,28 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
+import {
+  listFeedbacks,
+  approveFeedback,
+  unapproveFeedback,
+  deleteFeedback,
+  type LandingFeedback,
+  type FeedbackFilter,
+} from '@/services/adminFeedbacksService';
 
-interface LandingFeedback {
-  id: string;
-  name: string;
-  category: string;
-  rating: number;
-  comment: string;
-  is_approved: boolean;
-  created_at: string;
-}
-
-type FilterType = 'all' | 'pending' | 'approved';
+export type SourceFilter = 'all' | 'landing' | 'dashboard';
 
 export default function AdminFeedbacks() {
   const [feedbacks, setFeedbacks] = useState<LandingFeedback[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<FeedbackFilter>('all');
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
 
   const fetchFeedbacks = useCallback(async () => {
     setLoading(true);
     try {
-      const adminClient = (await import('@/lib/supabaseAdmin')).default;
-      if (!adminClient) {
-        setFeedbacks([]);
-        return;
-      }
-      let query = adminClient
-        .from('landing_feedbacks')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter === 'pending') query = query.eq('is_approved', false);
-      if (filter === 'approved') query = query.eq('is_approved', true);
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setFeedbacks((data as LandingFeedback[]) || []);
+      const data = await listFeedbacks(filter);
+      setFeedbacks(data);
     } catch (err) {
       console.error('Fetch feedbacks error:', err);
       setFeedbacks([]);
@@ -60,13 +45,7 @@ export default function AdminFeedbacks() {
 
   const handleApprove = async (id: string) => {
     try {
-      const adminClient = (await import('@/lib/supabaseAdmin')).default;
-      if (!adminClient) return;
-      const { error } = await adminClient
-        .from('landing_feedbacks')
-        .update({ is_approved: true })
-        .eq('id', id);
-      if (error) throw error;
+      await approveFeedback(id);
       fetchFeedbacks();
     } catch (err) {
       console.error('Approve error:', err);
@@ -76,13 +55,7 @@ export default function AdminFeedbacks() {
 
   const handleUnapprove = async (id: string) => {
     try {
-      const adminClient = (await import('@/lib/supabaseAdmin')).default;
-      if (!adminClient) return;
-      const { error } = await adminClient
-        .from('landing_feedbacks')
-        .update({ is_approved: false })
-        .eq('id', id);
-      if (error) throw error;
+      await unapproveFeedback(id);
       fetchFeedbacks();
     } catch (err) {
       console.error('Unapprove error:', err);
@@ -97,13 +70,7 @@ export default function AdminFeedbacks() {
     )
       return;
     try {
-      const adminClient = (await import('@/lib/supabaseAdmin')).default;
-      if (!adminClient) return;
-      const { error } = await adminClient
-        .from('landing_feedbacks')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
+      await deleteFeedback(id);
       fetchFeedbacks();
     } catch (err) {
       console.error('Delete error:', err);
@@ -111,12 +78,18 @@ export default function AdminFeedbacks() {
     }
   };
 
-  const total = feedbacks.length;
-  const pending = feedbacks.filter((f) => !f.is_approved).length;
-  const approved = feedbacks.filter((f) => f.is_approved).length;
+  const filteredBySource =
+    sourceFilter === 'all'
+      ? feedbacks
+      : sourceFilter === 'dashboard'
+        ? feedbacks.filter((f) => (f.source ?? 'landing_page') === 'dashboard')
+        : feedbacks.filter((f) => (f.source ?? 'landing_page') !== 'dashboard');
+  const total = filteredBySource.length;
+  const pending = filteredBySource.filter((f) => !f.is_approved).length;
+  const approved = filteredBySource.filter((f) => f.is_approved).length;
   const avgRating =
-    feedbacks.length > 0
-      ? feedbacks.reduce((s, f) => s + f.rating, 0) / feedbacks.length
+    filteredBySource.length > 0
+      ? filteredBySource.reduce((s, f) => s + f.rating, 0) / filteredBySource.length
       : 0;
 
   return (
@@ -165,7 +138,7 @@ export default function AdminFeedbacks() {
 
         {/* Filters */}
         <div className="mt-6 flex flex-wrap gap-2">
-          {(['all', 'pending', 'approved'] as const).map((f) => (
+          {(['all', 'pending', 'approved'] as FeedbackFilter[]).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -176,6 +149,23 @@ export default function AdminFeedbacks() {
               }
             >
               {f === 'all' ? 'Tutti' : f === 'pending' ? 'In attesa' : 'Approvati'}
+            </button>
+          ))}
+        </div>
+        {/* Filtro per provenienza */}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className="text-sm text-gray-500 self-center">Provenienza:</span>
+          {(['all', 'landing', 'dashboard'] as SourceFilter[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setSourceFilter(s)}
+              className={
+                sourceFilter === s
+                  ? 'rounded-lg bg-gray-600 px-3 py-1.5 text-sm font-medium text-white'
+                  : 'rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-400 hover:text-white'
+              }
+            >
+              {s === 'all' ? 'Tutti' : s === 'landing' ? 'Landing' : 'Dashboard'}
             </button>
           ))}
         </div>
@@ -191,17 +181,17 @@ export default function AdminFeedbacks() {
                 />
               ))}
             </>
-          ) : feedbacks.length === 0 ? (
+          ) : filteredBySource.length === 0 ? (
             <div className="py-16 text-center">
               <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-600" />
               <p className="text-gray-400">Nessun feedback ricevuto</p>
               <p className="mt-1 text-sm text-gray-500">
                 I feedback appariranno qui quando i professionisti li inviano
-                dalla landing page
+                dalla landing page o dalla dashboard
               </p>
             </div>
           ) : (
-            feedbacks.map((feedback) => (
+            filteredBySource.map((feedback) => (
               <div
                 key={feedback.id}
                 className={`rounded-xl border border-gray-700 bg-gray-800 p-5 ${
@@ -212,9 +202,20 @@ export default function AdminFeedbacks() {
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-white">
-                      {feedback.name}
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-white">
+                        {feedback.name}
+                      </p>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          (feedback.source ?? 'landing_page') === 'dashboard'
+                            ? 'bg-blue-900/50 text-blue-300'
+                            : 'bg-gray-700 text-gray-300'
+                        }`}
+                      >
+                        {(feedback.source ?? 'landing_page') === 'dashboard' ? 'Dashboard' : 'Landing'}
+                      </span>
+                    </div>
                     <p className="mt-0.5 text-xs text-gray-400">
                       {feedback.category}
                     </p>
