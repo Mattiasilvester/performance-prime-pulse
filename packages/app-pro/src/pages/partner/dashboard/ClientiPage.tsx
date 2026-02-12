@@ -308,6 +308,12 @@ export default function ClientiPage() {
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as 'all' | 'pp')}
                 className="appearance-none w-full px-3 sm:pl-4 sm:pr-10 py-2.5 pr-8 sm:pr-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent cursor-pointer text-sm sm:text-base"
+                style={{
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'none',
+                  appearance: 'none',
+                  backgroundImage: 'none'
+                }}
               >
                 <option value="all">👥 Tutti</option>
                 <option value="pp">⭐ Abbonati PP</option>

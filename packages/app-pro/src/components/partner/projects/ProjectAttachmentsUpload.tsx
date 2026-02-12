@@ -4,7 +4,8 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Paperclip, FileText, X } from 'lucide-react';
+import { Paperclip, FileText, X, Eye, ExternalLink, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   getMaxFilesPerProject,
   isFileAccepted,
@@ -34,6 +35,10 @@ export default function ProjectAttachmentsUpload({
 }: ProjectAttachmentsUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [existingImageUrls, setExistingImageUrls] = useState<Record<string, string>>({});
+  const [openingAttachmentId, setOpeningAttachmentId] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFileName, setPreviewFileName] = useState('');
+  const [previewFileType, setPreviewFileType] = useState('');
   const totalCount = existingAttachments.length + pendingFiles.length;
   const canAdd = totalCount < MAX;
 
@@ -115,6 +120,26 @@ export default function ProjectAttachmentsUpload({
   const isImageRow = (row: ProjectAttachmentRow) =>
     (row.file_type || '').startsWith('image/');
 
+  const handleOpenExisting = useCallback(async (att: ProjectAttachmentRow) => {
+    setOpeningAttachmentId(att.id);
+    try {
+      const url = await getSignedUrl(att.file_path);
+      setPreviewUrl(url);
+      setPreviewFileName(att.file_name);
+      setPreviewFileType(att.file_type || 'application/octet-stream');
+    } catch {
+      toast.error('Impossibile aprire il file');
+    } finally {
+      setOpeningAttachmentId(null);
+    }
+  }, []);
+
+  const closePreview = useCallback(() => {
+    setPreviewUrl(null);
+    setPreviewFileName('');
+    setPreviewFileType('');
+  }, []);
+
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-gray-700">
@@ -178,18 +203,30 @@ export default function ProjectAttachmentsUpload({
                 {(att.file_size / 1024).toFixed(1)} KB
               </p>
             </div>
-            {/* DX: icona elimina */}
-            {onDeleteExisting && (
+            {/* DX: azioni Apri + Elimina */}
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 type="button"
-                onClick={() => onDeleteExisting(att)}
-                disabled={disabled}
-                className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors flex-shrink-0"
-                aria-label="Rimuovi allegato"
+                onClick={() => void handleOpenExisting(att)}
+                disabled={openingAttachmentId === att.id}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-gray-100 text-[#EEBA2B] transition-colors disabled:opacity-50"
+                aria-label="Apri allegato"
               >
-                <X className="w-4 h-4" />
+                <Eye className="w-4 h-4" />
+                <span className="text-xs font-medium">Apri</span>
               </button>
-            )}
+              {onDeleteExisting && (
+                <button
+                  type="button"
+                  onClick={() => onDeleteExisting(att)}
+                  disabled={disabled}
+                  className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
+                  aria-label="Rimuovi allegato"
+                >
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </button>
+              )}
+            </div>
           </div>
         ))}
 
@@ -232,6 +269,56 @@ export default function ProjectAttachmentsUpload({
           </div>
         ))}
       </div>
+
+      {previewUrl && (
+        <div className="fixed inset-0 z-[10001] bg-black/90 flex flex-col">
+          <div className="flex items-center justify-between p-4 bg-black/50 border-b border-white/10">
+            <span className="text-white text-sm truncate max-w-[70%]" title={previewFileName}>
+              {previewFileName}
+            </span>
+            <button
+              onClick={closePreview}
+              className="text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Chiudi anteprima allegato"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center overflow-auto p-4">
+            {previewFileType.startsWith('image/') ? (
+              <img
+                src={previewUrl}
+                alt={previewFileName}
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            ) : previewFileType === 'application/pdf' || previewFileName.toLowerCase().endsWith('.pdf') ? (
+              <iframe
+                src={previewUrl}
+                className="w-full h-full rounded-lg bg-white"
+                title={previewFileName}
+              />
+            ) : (
+              <div className="text-center text-white max-w-md">
+                <FileText className="w-16 h-16 mx-auto mb-4 opacity-60" />
+                <p className="mb-2 break-words">{previewFileName}</p>
+                <p className="text-sm text-gray-300 mb-5">
+                  Anteprima non disponibile per questo tipo di file
+                </p>
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#EEBA2B] text-black rounded-lg font-medium"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Apri nel browser
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

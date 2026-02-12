@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { 
   X, FolderOpen, User, Target, Calendar, 
   FileText, Edit, Trash2, CheckCircle, 
-  PauseCircle, PlayCircle, Star, Download
+  PauseCircle, PlayCircle, Star, Eye, ExternalLink
 } from 'lucide-react';
 import EditProjectModal from './EditProjectModal';
 import {
@@ -53,6 +53,10 @@ export default function ProjectDetailModal({
   const [attachmentImageUrls, setAttachmentImageUrls] = useState<Record<string, string>>({});
   const [deletingAttachmentId, setDeletingAttachmentId] = useState<string | null>(null);
   const [showAttachmentDeleteConfirm, setShowAttachmentDeleteConfirm] = useState<ProjectAttachmentRow | null>(null);
+  const [openingAttachmentId, setOpeningAttachmentId] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFileName, setPreviewFileName] = useState('');
+  const [previewFileType, setPreviewFileType] = useState('');
 
   useEffect(() => {
     listByProject(project.id)
@@ -150,13 +154,24 @@ export default function ProjectDetailModal({
     }
   };
 
-  const handleAttachmentDownload = async (att: ProjectAttachmentRow) => {
+  const handleAttachmentOpen = async (att: ProjectAttachmentRow) => {
+    setOpeningAttachmentId(att.id);
     try {
       const url = await getSignedUrl(att.file_path);
-      window.open(url, '_blank', 'noopener,noreferrer');
+      setPreviewUrl(url);
+      setPreviewFileName(att.file_name);
+      setPreviewFileType(att.file_type || 'application/octet-stream');
     } catch {
       toast.error('Impossibile aprire il file');
+    } finally {
+      setOpeningAttachmentId(null);
     }
+  };
+
+  const closeAttachmentPreview = () => {
+    setPreviewUrl(null);
+    setPreviewFileName('');
+    setPreviewFileType('');
   };
 
   const handleAttachmentDeleteConfirm = async () => {
@@ -429,27 +444,29 @@ export default function ProjectDetailModal({
                           {(att.file_size / 1024).toFixed(1)} KB
                         </p>
                       </div>
-                      {/* DX: icone download (oro) + elimina */}
+                      {/* DX: azioni Apri + Elimina */}
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <button
                           type="button"
-                          onClick={() => handleAttachmentDownload(att)}
-                          className="p-2 rounded-lg hover:bg-gray-100 text-[#EEBA2B] transition-colors"
-                          aria-label="Scarica"
+                          onClick={() => handleAttachmentOpen(att)}
+                          disabled={openingAttachmentId === att.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-gray-100 text-[#EEBA2B] transition-colors disabled:opacity-50"
+                          aria-label="Apri allegato"
                         >
-                          <Download className="w-4 h-4" />
+                          <Eye className="w-4 h-4" />
+                          <span className="text-xs font-medium">Apri</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setShowAttachmentDeleteConfirm(att)}
                           disabled={deletingAttachmentId === att.id}
-                          className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                          className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
                           aria-label="Elimina allegato"
                         >
                           {deletingAttachmentId === att.id ? (
                             <span className="text-xs">...</span>
                           ) : (
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4 text-red-500" />
                           )}
                         </button>
                       </div>
@@ -626,6 +643,56 @@ export default function ProjectDetailModal({
     </div>
   );
 
+  const attachmentPreviewModal = previewUrl && (
+    <div className="fixed inset-0 z-[10001] bg-black/90 flex flex-col">
+      <div className="flex items-center justify-between p-4 bg-black/50 border-b border-white/10">
+        <span className="text-white text-sm truncate max-w-[70%]" title={previewFileName}>
+          {previewFileName}
+        </span>
+        <button
+          onClick={closeAttachmentPreview}
+          className="text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+          aria-label="Chiudi anteprima allegato"
+        >
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center overflow-auto p-4">
+        {previewFileType.startsWith('image/') ? (
+          <img
+            src={previewUrl}
+            alt={previewFileName}
+            className="max-w-full max-h-full object-contain rounded-lg"
+          />
+        ) : previewFileType === 'application/pdf' || previewFileName.toLowerCase().endsWith('.pdf') ? (
+          <iframe
+            src={previewUrl}
+            className="w-full h-full rounded-lg bg-white"
+            title={previewFileName}
+          />
+        ) : (
+          <div className="text-center text-white max-w-md">
+            <FileText className="w-16 h-16 mx-auto mb-4 opacity-60" />
+            <p className="mb-2 break-words">{previewFileName}</p>
+            <p className="text-sm text-gray-300 mb-5">
+              Anteprima non disponibile per questo tipo di file
+            </p>
+            <a
+              href={previewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#EEBA2B] text-black rounded-lg font-medium"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Apri nel browser
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   // Renderizza usando Portal direttamente nel body
   return (
     <>
@@ -638,6 +705,9 @@ export default function ProjectDetailModal({
       {typeof document !== 'undefined' && showAttachmentDeleteConfirm
         ? createPortal(attachmentDeleteConfirmModal, document.body)
         : showAttachmentDeleteConfirm && attachmentDeleteConfirmModal}
+      {typeof document !== 'undefined' && previewUrl
+        ? createPortal(attachmentPreviewModal, document.body)
+        : previewUrl && attachmentPreviewModal}
       
       {/* Modal Modifica Progetto */}
       {showEditModal && (
