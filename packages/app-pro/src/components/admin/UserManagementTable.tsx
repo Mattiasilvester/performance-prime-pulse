@@ -1,16 +1,23 @@
 import React, { useMemo, useState } from 'react'
 import { AdminUser } from '@/types/admin.types'
+import { Eye } from 'lucide-react'
 
 interface UserActionsProps {
   user: AdminUser
+  onViewDetails: (user: AdminUser) => void
   onToggleActive: (user: AdminUser) => Promise<void> | void
   onDeleteUser: (user: AdminUser) => Promise<void> | void
   disabled?: boolean
 }
 
-const UserActions = ({ user, onToggleActive, onDeleteUser, disabled }: UserActionsProps) => {
+const UserActions = ({ user, onViewDetails, onToggleActive, onDeleteUser, disabled }: UserActionsProps) => {
   const [loading, setLoading] = useState(false)
   const isBusy = loading || disabled
+
+  const openDetails = () => {
+    if (isBusy) return
+    onViewDetails(user)
+  }
 
   const toggleUserStatus = async () => {
     if (isBusy) return
@@ -34,6 +41,16 @@ const UserActions = ({ user, onToggleActive, onDeleteUser, disabled }: UserActio
 
   return (
     <div className="flex gap-2">
+      <button
+        onClick={openDetails}
+        disabled={isBusy}
+        className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-sky-600 hover:bg-sky-700 text-white disabled:opacity-60"
+        title="Dettagli professionista"
+      >
+        <Eye className="w-3.5 h-3.5" />
+        Dettagli
+      </button>
+
       <button
         onClick={toggleUserStatus}
         disabled={isBusy}
@@ -62,6 +79,7 @@ interface UserManagementTableProps {
   loading?: boolean
   isMutating?: boolean
   totalCount?: number
+  onViewDetails: (user: AdminUser) => void
   onToggleActive: (user: AdminUser) => Promise<void> | void
   onDeleteUser: (user: AdminUser) => Promise<void> | void
 }
@@ -71,6 +89,7 @@ export default function UserManagementTable({
   loading = false,
   isMutating = false,
   totalCount,
+  onViewDetails,
   onToggleActive,
   onDeleteUser,
 }: UserManagementTableProps) {
@@ -185,6 +204,7 @@ export default function UserManagementTable({
       render: (user: AdminUser) => (
         <UserActions
           user={user}
+          onViewDetails={onViewDetails}
           onToggleActive={onToggleActive}
           onDeleteUser={onDeleteUser}
           disabled={isMutating}
