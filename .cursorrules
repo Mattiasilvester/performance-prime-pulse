@@ -1498,3 +1498,155 @@ npm run build                    # Deve completare
 *Stato: APP COMPLETA CON ONBOARDING GAMIFICATO E NUOVA LANDING PAGE 🚀*
 *Versione: 9.0 - Sistema Onboarding Completo e Nuova Landing Page*
 *Autore: Mattia Silvestrelli + AI Assistant* 
+
+---
+
+# 🔒 BLOCCO FUNZIONALITÀ — PRIMEPRO (12 Febbraio 2026)
+
+## REGOLA ASSOLUTA
+**NON modificare, rimuovere, rinominare o refactorare NESSUNA delle funzionalità elencate sotto.**
+Qualsiasi modifica a questi file/componenti richiede approvazione esplicita.
+Se un task richiede di toccare uno di questi file, FERMATI e chiedi prima.
+
+---
+
+## FUNZIONALITÀ LOCKED (FUNZIONANTI IN PRODUZIONE)
+
+### 1. AUTENTICAZIONE & ONBOARDING
+- ✅ Login/Registrazione professionista (`PartnerLoginPage`, `PartnerRegistration`)
+- ✅ Onboarding 5 step con multi-selezione professione (`StepCategory`, `CategoryCard`)
+- ✅ Reset password (`PartnerResetPassword`, `UpdatePasswordPage`)
+- ✅ PASSWORD_RECOVERY intercettazione in `onAuthStateChange`
+- ✅ Protezione route (`ProtectedRoute`)
+- ✅ Logout con redirect a `/partner/login`
+
+### 2. DASHBOARD & OVERVIEW
+- ✅ Overview con KPI cards (`OverviewPage`, `KPICardsSection`)
+- ✅ Messaggio "Benvenuto/Bentornato [nome]"
+- ✅ Quick Actions
+- ✅ Appuntamenti prossimi (dati reali, NO placeholder)
+- ✅ Grafico donut appuntamenti
+
+### 3. AGENDA & PRENOTAZIONI
+- ✅ Agenda/Calendario (`AgendaView`)
+- ✅ Prenotazioni con filtri (`PrenotazioniPage`)
+- ✅ Conferma/rifiuto prenotazioni
+- ✅ Conteggio corretto pending vs confermati (`bookingHelpers`)
+- ✅ Blocchetti agenda resize su mobile
+
+### 4. CLIENTI & PROGETTI
+- ✅ Lista clienti (`ClientiPage`) — NO mock data
+- ✅ Dettaglio cliente modal (`ClientDetailModal`)
+- ✅ Progetti cliente con tab
+- ✅ Allegati file progetto — upload, preview in-app, elimina (`ProjectAttachmentsUpload`, `ProjectDetailModal`)
+- ✅ Preview modal full-screen (immagini + PDF + fallback)
+- ✅ AddProjectModal, EditProjectModal, AddClientModal
+- ✅ Filtro "Tutti" clienti/progetti (chevron singolo su mobile)
+
+### 5. SERVIZI, TARIFFE & COSTI
+- ✅ Servizi e Tariffe (`ServiziTariffePage`)
+- ✅ Costi e Spese con modal aggiungi costo
+- ✅ Modal responsive su mobile
+
+### 6. PROFILO PROFESSIONISTA
+- ✅ ProfiloPage con professioni multiple (virgola-separated)
+- ✅ Tutti i modal impostazioni (Specializzazioni, Social, Privacy, Notifiche, Lingua, CoverageArea, CancellationPolicy, AcceptPaymentMethods)
+
+### 7. REPORT & ANALYTICS
+- ✅ Report Analytics con export PDF (`analyticsReportExportService`)
+- ✅ Report Commercialista con export PDF (`analyticsAccountantReportExportService`)
+- ✅ Gestione dati vuoti con messaggio "Nessun dato disponibile"
+- ✅ autoTable import side-effect: `import 'jspdf-autotable'`
+- ✅ Filtro bookings: `.in('status', ['completed', 'confirmed'])`
+
+### 8. ABBONAMENTO & PAGAMENTI
+- ✅ Stripe integration (TEST mode)
+- ✅ PaymentElement funzionante
+- ✅ Piano "Prime Business" EUR50/mese
+- ✅ Badge trial (nascosto su mobile)
+
+### 9. NOTIFICHE & PROMEMORIA
+- ✅ Sistema notifiche push (`sw.js`, `silent:false`)
+- ✅ AudioContext unlock per iOS
+- ✅ Promemoria: Edge Function `send-scheduled-notifications`
+- ✅ Polling client-side 30s + cron 1min
+- ✅ `useScheduledNotificationsPolling` in PartnerDashboard
+
+### 10. EMAIL
+- ✅ Email benvenuto via Resend
+- ✅ Reminder trial 1 giorno prima
+- ✅ SPF/DKIM configurati su Aruba
+- ✅ SMTP Supabase con Resend
+- ✅ Reply-to: `primeassistenza@gmail.com`
+
+### 11. FEEDBACK
+- ✅ Feedback landing page (modal)
+- ✅ Feedback dashboard (FeedbackPage, sidebar)
+- ✅ SuperAdmin gestione feedback (AdminFeedbacks, badge, filtro Landing/Dashboard)
+- ✅ Tabella `landing_feedbacks` con colonna `source`
+
+### 12. SUPERADMIN
+- ✅ Edge Function `admin-users` (GET, PATCH, DELETE)
+- ✅ CORS configurato
+- ✅ Constraint `profiles_role_check` con `suspended`
+- ✅ Whitelist ruoli: `user`, `premium`, `super_admin`, `professional`, `suspended`
+
+### 13. ONBOARDING TOUR
+- ✅ Tour 13 step (desktop + mobile)
+- ✅ Chiave localStorage per-professional
+- ✅ "Rivedi guida" in Impostazioni (reset + redirect)
+- ✅ Listener sidebar mobile per tour
+
+### 14. LANDING PAGE
+- ✅ Landing bianca professionisti (`PartnerLandingPage`)
+- ✅ Route `/partner` → redirect a `/`
+- ✅ HeroSection CTA → `/partner/login`
+- ✅ Screenshot tab switch (Dashboard/Clienti)
+- ✅ Sezione feedback landing
+
+### 15. ROUTING & INFRASTRUTTURA
+- ✅ `vercel.json` SPA rewrites per app-pro
+- ✅ Dominio `pro.performanceprime.it` → Vercel
+- ✅ Vercel Web Analytics attivo
+- ✅ Supabase Storage bucket `project-attachments` + RLS
+- ✅ 3 cron attivi: `scheduled-notifications`, `subscription-reminders`, `booking-reminders`
+
+### 16. SAFARI iOS FIXES
+- ✅ Input: appearance:none, font-size 16px, min-height 44px
+- ✅ Modal: calc(100vw - 2rem), body.modal-open scroll lock
+- ✅ Checkbox/radio: appearance restored
+- ✅ Badge trial nascosto su mobile
+
+---
+
+## DATABASE — MIGRAZIONI APPLICATE (NON TOCCARE)
+- `20260204120000_profiles_role_allow_suspended.sql`
+- `20260211120000_professionals_professions_array.sql`
+- `20260211140000_project_attachments.sql`
+- `20260211160000_landing_feedbacks_source_if_not_exists.sql`
+
+## EDGE FUNCTIONS DEPLOYED (NON TOCCARE)
+- `admin-feedbacks`
+- `admin-users`
+- `ensure-partner-subscription`
+- `send-scheduled-notifications`
+- `subscription-reminders`
+- `booking-reminders`
+
+---
+
+## COME LAVORARE IN SICUREZZA
+
+1. **Prima di modificare un file**, verifica che NON sia nella lista sopra
+2. **Se devi toccare un file locked**, chiedi conferma esplicita
+3. **Dopo ogni modifica**, esegui `pnpm build:pro` e verifica 0 errori
+4. **Testa su viewport mobile** (375px) per ogni modifica UI
+5. **Non rimuovere import** senza verificare che non siano usati altrove
+6. **Non cambiare nomi di funzioni/componenti** che sono importati da altri file
+
+---
+
+*Ultimo aggiornamento: 12 Febbraio 2026*
+*PrimePro LIVE su https://pro.performanceprime.it*
+*Build: 0 errori TypeScript*
+*Beta Testing: FASE 3 IN CORSO*

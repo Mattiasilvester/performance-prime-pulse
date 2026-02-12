@@ -3,6 +3,7 @@ import UserManagementTable from '@/components/admin/UserManagementTable'
 import { AdminUser } from '@/types/admin.types'
 import { deleteUser, getUsers, updateUser } from '@/lib/adminApi'
 import { toast } from 'sonner'
+import ProfessionalDetailPanel from '@/components/admin/ProfessionalDetailPanel'
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<AdminUser[]>([])
@@ -10,6 +11,7 @@ export default function AdminUsers() {
   const [isMutating, setIsMutating] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState<number>(0)
+  const [selectedDetailUser, setSelectedDetailUser] = useState<AdminUser | null>(null)
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)
@@ -101,9 +103,17 @@ export default function AdminUsers() {
         loading={loading}
         isMutating={isMutating}
         totalCount={totalCount}
+        onViewDetails={setSelectedDetailUser}
         onToggleActive={handleToggleActive}
         onDeleteUser={handleDeleteUser}
       />
+
+      {selectedDetailUser && (
+        <ProfessionalDetailPanel
+          user={selectedDetailUser}
+          onClose={() => setSelectedDetailUser(null)}
+        />
+      )}
     </div>
   )
 }
