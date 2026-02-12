@@ -164,7 +164,8 @@ Deno.serve(async (req) => {
         : Promise.resolve({ data: null, error: null }),
       supabase
         .from('professional_subscriptions')
-        .select('status,trial_ends_at,current_period_end,cancel_at_period_end,created_at')
+        // Query minimale con colonne sicure per evitare mismatch schema
+        .select('id,professional_id,status,created_at')
         .eq('professional_id', resolvedProfessionalId)
         .order('created_at', { ascending: false })
         .limit(1)
