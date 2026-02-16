@@ -4,11 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { 
-  Search, Users, UserCheck, Star, Plus, 
+  Search, Users, UserCheck, Star, Plus, Upload,
   ChevronRight, Mail, Phone, ChevronDown 
 } from 'lucide-react';
 import ClientDetailModal from '@/components/partner/clients/ClientDetailModal';
 import AddClientModal from '@/components/partner/clients/AddClientModal';
+import ImportClientsModal from '@/components/partner/clients/ImportClientsModal';
 
 // Tipi
 interface Client {
@@ -33,6 +34,7 @@ export default function ClientiPage() {
   const [filter, setFilter] = useState<'all' | 'pp'>('all');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({
@@ -321,13 +323,21 @@ export default function ClientiPage() {
               <ChevronDown className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
             </div>
 
-            {/* Bottone Nuovo Cliente - Mobile: testo completo - Desktop: invariato */}
+            {/* Bottone Nuovo Cliente */}
             <button
               onClick={() => setShowAddModal(true)}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-[#EEBA2B] text-white rounded-xl hover:bg-[#d4a826] transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
             >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Nuovo Cliente</span>
+            </button>
+            {/* Bottone Importa da file - outline; su mobile solo icona */}
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
+            >
+              <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Importa da file</span>
             </button>
           </div>
         </div>
@@ -423,6 +433,17 @@ export default function ClientiPage() {
         <AddClientModal
           professionalId={professionalId}
           onClose={() => setShowAddModal(false)}
+          onSuccess={() => {
+            fetchClients();
+          }}
+        />
+      )}
+
+      {/* Modal Importa Clienti */}
+      {showImportModal && professionalId && (
+        <ImportClientsModal
+          professionalId={professionalId}
+          onClose={() => setShowImportModal(false)}
           onSuccess={() => {
             fetchClients();
           }}
