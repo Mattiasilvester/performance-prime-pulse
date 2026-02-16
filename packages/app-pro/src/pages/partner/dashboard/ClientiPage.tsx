@@ -334,7 +334,7 @@ export default function ClientiPage() {
             {/* Bottone Importa da file - outline; su mobile solo icona */}
             <button
               onClick={() => setShowImportModal(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-black dark:text-black rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
             >
               <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">Importa da file</span>
