@@ -218,17 +218,25 @@ export default function SpecializzazioniModal({ onClose, onSuccess }: Specializz
                     handleAddFromInput();
                   }
                 }}
+                onBlur={() => {
+                  if (newSpecializzazione.trim()) handleAddFromInput();
+                }}
                 placeholder="Es: Preparazione atletica..."
                 className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent transition-all"
               />
               <button
+                type="button"
                 onClick={handleAddFromInput}
-                className="px-6 py-2.5 bg-[#EEBA2B] text-black rounded-xl font-medium hover:bg-[#d4a826] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 sm:px-6 py-2.5 bg-[#EEBA2B] text-black rounded-xl font-medium hover:bg-[#d4a826] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 whitespace-nowrap shrink-0"
                 disabled={!newSpecializzazione.trim() || saving}
               >
+                <Plus className="w-4 h-4" />
                 Aggiungi
               </button>
             </div>
+            <p className="text-xs text-gray-400 mt-1">
+              Scrivi e premi &quot;Aggiungi&quot; o Enter per inserire
+            </p>
           </div>
 
           {/* Suggerimenti */}

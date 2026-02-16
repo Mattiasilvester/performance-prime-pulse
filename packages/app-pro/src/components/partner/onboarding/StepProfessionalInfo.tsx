@@ -132,7 +132,6 @@ export function StepProfessionalInfo({ data, onChange, errors }: StepProfessiona
       <div>
         <label className="block text-gray-700 font-medium mb-2">
           Titolo di studio *
-          <span className="text-gray-400 text-sm font-normal ml-1">(premi Enter per aggiungere)</span>
         </label>
         <TagsInput
           tags={data.titolo_studio}
@@ -152,7 +151,6 @@ export function StepProfessionalInfo({ data, onChange, errors }: StepProfessiona
       <div>
         <label className="block text-gray-700 font-medium mb-2">
           Certificazioni *
-          <span className="text-gray-400 text-sm font-normal ml-1">(premi Enter per aggiungere)</span>
         </label>
         <TagsInput
           tags={data.certificazioni}

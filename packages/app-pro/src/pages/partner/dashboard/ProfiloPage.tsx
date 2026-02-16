@@ -9,7 +9,8 @@ import {
   Pencil,
   MapPin,
   Star,
-  X
+  X,
+  Plus
 } from 'lucide-react';
 
 const TITOLO_STUDIO_SUGGERIMENTI = [
@@ -63,6 +64,7 @@ export default function ProfiloPage() {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [editTitoli, setEditTitoli] = useState<string[]>([]);
+  const [newTitoloInput, setNewTitoloInput] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
@@ -105,6 +107,9 @@ export default function ProfiloPage() {
     setEditingField(field);
     if (field === 'titolo_studio') {
       setEditTitoli(Array.isArray(value) ? [...value] : (value && String(value).trim() ? [String(value).trim()] : []));
+      setNewTitoloInput('');
+    } else if (field === 'specializzazioni') {
+      setNewSpecInput('');
     } else {
       setEditValue(String(value || ''));
     }
@@ -114,6 +119,8 @@ export default function ProfiloPage() {
     setEditingField(null);
     setEditValue('');
     setEditTitoli([]);
+    setNewTitoloInput('');
+    setNewSpecInput('');
   };
 
   // Validazioni base (warning) per dati fiscali — non bloccano il salvataggio
@@ -238,6 +245,7 @@ export default function ProfiloPage() {
 
   // Gestione specializzazioni
   const [specializations, setSpecializations] = useState<string[]>([]);
+  const [newSpecInput, setNewSpecInput] = useState('');
 
   const handleAddSpecialization = (value: string) => {
     if (value.trim()) {
@@ -530,7 +538,7 @@ export default function ProfiloPage() {
                   <span className="text-sm text-gray-500">Titolo di studio</span>
                   {editingField === 'titolo_studio' ? (
                     <div className="mt-1">
-                      <div className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded-lg bg-gray-50 min-h-[42px]">
+                      <div className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded-lg bg-gray-50 min-h-[42px] items-center">
                         {editTitoli.map((t, i) => (
                           <span
                             key={i}
@@ -547,30 +555,52 @@ export default function ProfiloPage() {
                             </button>
                           </span>
                         ))}
-                        <input
-                          type="text"
-                          list="titolo-studio-suggest"
-                          placeholder="Aggiungi titolo..."
-                          className="flex-1 min-w-[140px] outline-none bg-transparent text-gray-900 placeholder:text-gray-400 text-sm"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              const v = (e.target as HTMLInputElement).value.trim();
+                        <div className="flex gap-2 flex-1 min-w-[200px]">
+                          <input
+                            type="text"
+                            list="titolo-studio-suggest"
+                            value={newTitoloInput}
+                            onChange={(e) => setNewTitoloInput(e.target.value)}
+                            placeholder="Aggiungi titolo..."
+                            className="flex-1 min-w-[120px] outline-none bg-transparent text-gray-900 placeholder:text-gray-400 text-sm"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const v = newTitoloInput.trim();
+                                if (v && !editTitoli.includes(v) && editTitoli.length < 10) {
+                                  setEditTitoli([...editTitoli, v]);
+                                  setNewTitoloInput('');
+                                }
+                              }
+                            }}
+                            onBlur={() => {
+                              const v = newTitoloInput.trim();
                               if (v && !editTitoli.includes(v) && editTitoli.length < 10) {
                                 setEditTitoli([...editTitoli, v]);
-                                (e.target as HTMLInputElement).value = '';
+                                setNewTitoloInput('');
                               }
-                            }
-                          }}
-                          onBlur={(e) => {
-                            const v = e.target.value.trim();
-                            if (v && !editTitoli.includes(v) && editTitoli.length < 10) {
-                              setEditTitoli([...editTitoli, v]);
-                              e.target.value = '';
-                            }
-                          }}
-                        />
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const v = newTitoloInput.trim();
+                              if (v && !editTitoli.includes(v) && editTitoli.length < 10) {
+                                setEditTitoli([...editTitoli, v]);
+                                setNewTitoloInput('');
+                              }
+                            }}
+                            disabled={!newTitoloInput.trim() || editTitoli.length >= 10}
+                            className="px-3 py-1.5 bg-[#EEBA2B] text-black rounded-lg text-sm font-medium hover:bg-[#D4A826] disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 whitespace-nowrap shrink-0"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Aggiungi
+                          </button>
+                        </div>
                       </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Scrivi e premi &quot;Aggiungi&quot; o Enter per inserire
+                      </p>
                       <datalist id="titolo-studio-suggest">
                         {TITOLO_STUDIO_SUGGERIMENTI.map((s) => (
                           <option key={s} value={s} />
@@ -875,6 +905,7 @@ export default function ProfiloPage() {
                       onClick={() => {
                         setEditingField('specializzazioni');
                         setSpecializations(profile.specializzazioni || []);
+                        setNewSpecInput('');
                       }}
                       className="p-1 hover:bg-gray-100 rounded transition-colors"
                     >
@@ -902,18 +933,47 @@ export default function ProfiloPage() {
                         </span>
                       ))}
                     </div>
-                    <input
-                      type="text"
-                      placeholder="Aggiungi specializzazione (premi Enter)"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                          e.preventDefault();
-                          handleAddSpecialization(e.currentTarget.value);
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newSpecInput}
+                        onChange={(e) => setNewSpecInput(e.target.value)}
+                        placeholder="Aggiungi specializzazione..."
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (newSpecInput.trim()) {
+                              handleAddSpecialization(newSpecInput);
+                              setNewSpecInput('');
+                            }
+                          }
+                        }}
+                        onBlur={() => {
+                          if (newSpecInput.trim()) {
+                            handleAddSpecialization(newSpecInput);
+                            setNewSpecInput('');
+                          }
+                        }}
+                        className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (newSpecInput.trim()) {
+                            handleAddSpecialization(newSpecInput);
+                            setNewSpecInput('');
+                          }
+                        }}
+                        disabled={!newSpecInput.trim()}
+                        className="px-3 py-2 bg-[#EEBA2B] text-black rounded-lg font-medium hover:bg-[#D4A826] disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 whitespace-nowrap shrink-0"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Aggiungi
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Scrivi e premi &quot;Aggiungi&quot; o Enter per inserire
+                    </p>
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={saveSpecializations}
