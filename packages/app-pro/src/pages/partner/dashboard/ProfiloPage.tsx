@@ -119,7 +119,8 @@ export default function ProfiloPage() {
     } else if (field === 'specializzazioni') {
       setNewSpecInput('');
     } else {
-      setEditValue(String(value || ''));
+      const initialValue = field === 'category' ? (value || 'pt') : String(value || '');
+      setEditValue(initialValue);
     }
   };
 
@@ -155,11 +156,20 @@ export default function ProfiloPage() {
   const saveEdit = async (field: string) => {
     if (!profile || !editingField) return;
 
-    const valueToSave = field === 'titolo_studio'
-      ? (editTitoli.length > 0 ? editTitoli : null)
-      : field === 'prezzo_seduta'
-        ? (editValue ? parseInt(editValue) : null)
-        : (editValue.trim() || null);
+    let valueToSave: string | string[] | number | null;
+    if (field === 'titolo_studio') {
+      valueToSave = editTitoli.length > 0 ? editTitoli : null;
+    } else if (field === 'prezzo_seduta') {
+      const parsed = parseInt(editValue, 10);
+      if (editValue.trim() && isNaN(parsed)) {
+        toast.error('Inserisci un prezzo valido (solo numeri)');
+        return;
+      }
+      valueToSave = editValue.trim() ? parsed : null;
+    } else {
+      valueToSave = editValue.trim() || null;
+    }
+
     if (field === 'vat_number' && valueToSave != null) {
       validateVatNumber(String(valueToSave));
     }
@@ -169,26 +179,38 @@ export default function ProfiloPage() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        toast.error('Sessione scaduta. Effettua di nuovo l\'accesso.');
+        return;
+      }
 
-      const updateData: any = { [field]: valueToSave };
+      const updateData: Record<string, unknown> = { [field]: valueToSave };
       if (field === 'category' && valueToSave != null) {
         updateData.professions = [String(valueToSave)];
       }
 
-      const { error } = await supabase
+      const { error, data: updatedData } = await supabase
         .from('professionals')
         .update(updateData)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        toast.error('Errore nel salvataggio: ' + (error.message || 'Errore sconosciuto'));
+        return;
+      }
+      if (!updatedData || updatedData.length === 0) {
+        toast.error('Errore: profilo non trovato. Ricarica la pagina e riprova.');
+        return;
+      }
 
       setProfile(prev => prev ? { ...prev, ...updateData } : null);
       toast.success('Modifica salvata con successo');
       setEditingField(null);
       setEditValue('');
       setEditTitoli([]);
-    } catch (error: any) {
+      setNewTitoloInput('');
+    } catch (error: unknown) {
       console.error('Errore salvataggio:', error);
       toast.error('Errore nel salvataggio');
     }
@@ -214,11 +236,14 @@ export default function ProfiloPage() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        toast.error('Sessione scaduta. Effettua di nuovo l\'accesso.');
+        return;
+      }
 
       // Upload su Supabase Storage
       // Usa bucket 'avatars' (già esistente) con path dedicato per professionisti
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.includes('.') ? (file.name.split('.').pop() || 'jpg') : 'jpg';
       const fileName = `${user.id}/professional-${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
@@ -273,20 +298,31 @@ export default function ProfiloPage() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        toast.error('Sessione scaduta. Effettua di nuovo l\'accesso.');
+        return;
+      }
 
-      const { error } = await supabase
+      const { error, data: updatedData } = await supabase
         .from('professionals')
         .update({ specializzazioni: specializations })
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        toast.error('Errore nel salvataggio: ' + (error.message || 'Errore sconosciuto'));
+        return;
+      }
+      if (!updatedData || updatedData.length === 0) {
+        toast.error('Errore: profilo non trovato. Ricarica la pagina e riprova.');
+        return;
+      }
 
       setProfile(prev => prev ? { ...prev, specializzazioni: specializations } : null);
       toast.success('Specializzazioni salvate');
       setEditingField(null);
       setSpecializations([]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Errore salvataggio:', error);
       toast.error('Errore nel salvataggio');
     }
@@ -295,8 +331,15 @@ export default function ProfiloPage() {
 
   if (!loading && !profile) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">Profilo non trovato</div>
+      <div className="flex flex-col items-center justify-center min-h-[400px] py-20">
+        <p className="text-gray-500 text-lg mb-4">Profilo non trovato</p>
+        <button
+          type="button"
+          onClick={loadProfile}
+          className="px-4 py-2 bg-[#EEBA2B] text-black rounded-lg font-medium hover:bg-[#d4a826] transition-colors"
+        >
+          Riprova
+        </button>
       </div>
     );
   }
@@ -996,6 +1039,7 @@ export default function ProfiloPage() {
                         onClick={() => {
                           setEditingField(null);
                           setSpecializations([]);
+                          setNewSpecInput('');
                         }}
                         className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
                       >

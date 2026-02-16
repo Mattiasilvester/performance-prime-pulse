@@ -35,7 +35,10 @@ export default function SpecializzazioniModal({ onClose, onSuccess }: Specializz
   }, [user?.id]);
 
   const fetchSpecializzazioni = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
