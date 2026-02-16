@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 import {
   parseFile,
   downloadTemplate,
+  downloadClientsExcel,
+  getClientsForExport,
   autoMapColumns,
   mapRows,
   validateAndPrepareRows,
@@ -18,6 +20,7 @@ import {
   type ParsedRow,
   type ValidationResult,
   type ImportResult,
+  type ClientExportRow,
 } from '@/services/clientImportService';
 
 const FIELD_LABELS: Record<string, string> = {
@@ -42,6 +45,7 @@ export default function ImportClientsModal({ professionalId, onClose, onSuccess 
   const [isImporting, setIsImporting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [exportClients, setExportClients] = useState<ClientExportRow[] | null>(null);
 
   const handleClose = useCallback(() => {
     if (!isImporting) onClose();
@@ -59,6 +63,19 @@ export default function ImportClientsModal({ professionalId, onClose, onSuccess 
     document.body.classList.add('modal-open');
     return () => document.body.classList.remove('modal-open');
   }, []);
+
+  // Carica clienti per export/template quando si è in step 1
+  useEffect(() => {
+    if (step !== 1) return;
+    let cancelled = false;
+    (async () => {
+      const clients = await getClientsForExport(professionalId);
+      if (!cancelled) setExportClients(clients);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [step, professionalId]);
 
   const handleFile = useCallback(async (f: File) => {
     const res = await parseFile(f);
@@ -131,9 +148,14 @@ export default function ImportClientsModal({ professionalId, onClose, onSuccess 
   }, [validationResult, professionalId, onSuccess]);
 
   const handleDownloadTemplate = useCallback(() => {
-    downloadTemplate();
-    toast.success('Template scaricato');
-  }, []);
+    if (exportClients && exportClients.length > 0) {
+      downloadClientsExcel(exportClients);
+      toast.success('Clienti esportati');
+    } else {
+      downloadTemplate();
+      toast.success('Template scaricato');
+    }
+  }, [exportClients]);
 
   const totalRows = parseResult?.ok ? parseResult.rows.length : 0;
   const skippedNoName = validationResult?.skippedNoName ?? 0;
@@ -208,10 +230,18 @@ export default function ImportClientsModal({ professionalId, onClose, onSuccess 
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 <Upload className="w-5 h-5" />
-                Scarica template Excel
+                {exportClients === null
+                  ? 'Scarica template Excel'
+                  : exportClients.length > 0
+                    ? '📥 Esporta clienti (Excel)'
+                    : '📥 Scarica template Excel'}
               </button>
               <p className="text-xs text-gray-500 text-center">
-                Il template contiene le colonne corrette: Nome, Email, Telefono, Note
+                {exportClients === null
+                  ? 'Scarica il template con le colonne da compilare'
+                  : exportClients.length > 0
+                    ? `Scarica tutti i tuoi ${exportClients.length} clienti in formato Excel`
+                    : 'Scarica il template con le colonne da compilare'}
               </p>
             </>
           )}

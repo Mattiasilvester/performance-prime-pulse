@@ -155,6 +155,52 @@ export function mapRows(
   return { rows: result, skippedNoName, skippedDuplicateInFile };
 }
 
+export type ClientExportRow = {
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+};
+
+/**
+ * Recupera i clienti del professionista per export Excel (stesso client Supabase, RLS).
+ */
+export async function getClientsForExport(
+  professionalId: string
+): Promise<ClientExportRow[]> {
+  const { data } = await supabase
+    .from('clients')
+    .select('full_name, email, phone, notes')
+    .eq('professional_id', professionalId)
+    .order('full_name', { ascending: true });
+  return (data ?? []) as ClientExportRow[];
+}
+
+/**
+ * Genera e scarica Excel con i clienti esistenti.
+ * Colonne: Nome Completo, Email, Telefono, Note.
+ * Nome file: PrimePro_Clienti_YYYY-MM-DD.xlsx
+ */
+export function downloadClientsExcel(clients: ClientExportRow[]): void {
+  const rows = clients.map((c) => ({
+    'Nome Completo': c.full_name ?? '',
+    Email: c.email ?? '',
+    Telefono: c.phone ?? '',
+    Note: c.notes ?? '',
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [
+    { wch: 25 },
+    { wch: 30 },
+    { wch: 20 },
+    { wch: 40 },
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Clienti');
+  const dateStr = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `PrimePro_Clienti_${dateStr}.xlsx`);
+}
+
 export function downloadTemplate(): void {
   const templateData = [
     {
