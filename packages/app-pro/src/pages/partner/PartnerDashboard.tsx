@@ -198,8 +198,7 @@ export default function PartnerDashboard() {
   const isOverview = location.pathname === '/partner/dashboard' || location.pathname === '/partner/dashboard/';
   const meta = user?.user_metadata as Record<string, unknown> | undefined;
   const firstName = (meta?.first_name as string)?.trim?.() || '';
-  const lastName = (meta?.last_name as string)?.trim?.() || '';
-  const displayName = [firstName, lastName].filter(Boolean).join(' ').trim() || 'Professionista';
+  const displayName = firstName || 'Professionista';
   const welcomeTitle = displayName !== 'Professionista' ? `Benvenuto, ${displayName}!` : 'Bentornato, Professionista!';
   const today = new Date();
   const formattedDate = today.toLocaleDateString('it-IT', {
