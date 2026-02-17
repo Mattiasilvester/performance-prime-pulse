@@ -15,7 +15,7 @@ const ToastViewport = React.forwardRef<
     ref={ref}
     style={{
       position: 'fixed',
-      top: '0px',
+      top: 'env(safe-area-inset-top, 0px)',
       right: '0px',
       bottom: 'auto',
       left: 'auto'

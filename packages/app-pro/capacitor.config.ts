@@ -5,20 +5,25 @@ const config: CapacitorConfig = {
   appName: 'PrimePro',
   webDir: 'dist',
   server: {
-    // In produzione, usa il server locale (file://)
-    // Per dev, puoi usare: url: 'http://localhost:5174'
     androidScheme: 'https',
     iosScheme: 'https',
+  },
+  ios: {
+    contentInset: 'always',
+    allowsLinkPreview: false,
+    scrollEnabled: true,
+    backgroundColor: '#FFFFFF',
   },
   plugins: {
     SplashScreen: {
       launchAutoHide: true,
       launchShowDuration: 2000,
-      backgroundColor: '#000000',
+      backgroundColor: '#FFFFFF',
     },
     StatusBar: {
       style: 'DARK',
-      backgroundColor: '#000000',
+      backgroundColor: '#FFFFFF',
+      overlaysWebView: true,
     },
   },
 };

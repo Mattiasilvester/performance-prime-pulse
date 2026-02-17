@@ -18,6 +18,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
+      external: ['@capacitor/status-bar'],
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
