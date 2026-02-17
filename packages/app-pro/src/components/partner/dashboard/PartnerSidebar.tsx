@@ -134,7 +134,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
           md:translate-x-0 md:!translate-x-0
           shadow-xl md:shadow-none
         `}
-        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        style={{ paddingTop: 'env(safe-area-inset-top, 16px)' }}
       >
         {/* Header Sidebar */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">

@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useState, lazy, Suspense } from 'react'
-import { Capacitor } from '@capacitor/core'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -153,16 +152,6 @@ function App() {
     document.documentElement.style.overflow = 'auto';
     document.body.style.height = 'auto';
     document.documentElement.style.height = 'auto';
-  }, []);
-
-  // iOS Capacitor: WebView sotto la status bar (elimina buco nero), status bar trasparente
-  useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
-        StatusBar.setOverlaysWebView({ overlay: true }).catch(() => {});
-        StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
-      }).catch(() => {});
-    }
   }, []);
 
   useEffect(() => {

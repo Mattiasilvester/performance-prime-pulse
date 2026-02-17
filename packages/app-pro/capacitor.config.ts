@@ -8,22 +8,11 @@ const config: CapacitorConfig = {
     androidScheme: 'https',
     iosScheme: 'https',
   },
-  ios: {
-    contentInset: 'always',
-    allowsLinkPreview: false,
-    scrollEnabled: true,
-    backgroundColor: '#FFFFFF',
-  },
   plugins: {
     SplashScreen: {
       launchAutoHide: true,
-      launchShowDuration: 2000,
+      launchShowDuration: 1000,
       backgroundColor: '#FFFFFF',
-    },
-    StatusBar: {
-      style: 'DARK',
-      backgroundColor: '#FFFFFF',
-      overlaysWebView: true,
     },
   },
 };
