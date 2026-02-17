@@ -2,7 +2,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+const isCapacitor = process.env.CAPACITOR_BUILD === 'true';
+
 export default defineConfig({
+  base: isCapacitor ? './' : '/',
   plugins: [react()],
   resolve: {
     alias: {

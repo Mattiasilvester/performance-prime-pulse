@@ -233,8 +233,8 @@ export default function ImportClientsModal({ professionalId, onClose, onSuccess 
                 {exportClients === null
                   ? 'Scarica template Excel'
                   : exportClients.length > 0
-                    ? '📥 Esporta clienti (Excel)'
-                    : '📥 Scarica template Excel'}
+                    ? 'Esporta clienti (Excel)'
+                    : 'Scarica template Excel'}
               </button>
               <p className="text-xs text-gray-500 text-center">
                 {exportClients === null
