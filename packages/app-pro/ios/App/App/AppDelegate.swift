@@ -7,7 +7,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // Status bar area: sfondo bianco per evitare buco nero sopra WebView
+        window?.rootViewController?.view.backgroundColor = .white
         return true
     }
 

@@ -607,9 +607,9 @@ export default function OverviewPage() {
         )}
       {kpiView === 'overview' ? (
         <>
-          {/* Header */}
+          {/* Header: titolo Benvenuto nascosto su mobile (mostrato in PartnerDashboard) */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+            <div className="hidden sm:block">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                 {userName !== 'Professionista' ? `Benvenuto, ${userName}!` : 'Bentornato, Professionista!'}
               </h1>
