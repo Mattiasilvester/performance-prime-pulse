@@ -209,7 +209,7 @@ export default function PartnerDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <div className="md:hidden flex items-center gap-3 px-4 pt-1 pb-1">
         <button
           type="button"

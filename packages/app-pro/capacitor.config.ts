@@ -14,6 +14,11 @@ const config: CapacitorConfig = {
       launchShowDuration: 1000,
       backgroundColor: '#FFFFFF',
     },
+    StatusBar: {
+      overlaysWebView: true,
+      style: 'DARK',
+      backgroundColor: '#FFFFFF',
+    },
   },
 };
 
