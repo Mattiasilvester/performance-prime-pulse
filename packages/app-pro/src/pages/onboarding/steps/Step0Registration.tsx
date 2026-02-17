@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { supabase } from '@/integrations/supabase/client';
+import { getAppUrl } from '@/utils/appUrl';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 interface FormData {
@@ -97,7 +98,7 @@ export function Step0Registration() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${getAppUrl()}/dashboard`
         }
       });
 

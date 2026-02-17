@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import RegistrationForm from '@/components/auth/RegistrationForm'
+import { getAppUrl } from '@/utils/appUrl'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -62,7 +63,7 @@ export default function LoginPage() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+        redirectTo: `${getAppUrl()}/auth/reset-password`,
       })
 
       if (error) {
@@ -98,7 +99,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${getAppUrl()}/dashboard`
         }
       })
       
@@ -127,7 +128,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${getAppUrl()}/dashboard`
         }
       })
       

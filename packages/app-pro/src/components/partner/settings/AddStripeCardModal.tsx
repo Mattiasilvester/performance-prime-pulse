@@ -9,6 +9,7 @@ import { X, Loader2, CreditCard, CheckCircle2 } from 'lucide-react';
 import { createCustomerAndSetupIntent, createSubscription } from '@/services/subscriptionService';
 import { useAuth } from '@/hooks/useAuth';
 import { getStripeErrorMessage } from '@/utils/stripeErrors';
+import { getAppUrl } from '@/utils/appUrl';
 import { PaymentProviderSelector } from '@/components/partner/subscription/PaymentProviderSelector';
 import { PayPalSubscriptionButton } from '@/components/partner/subscription/PayPalSubscriptionButton';
 import { isPayPalConfigured } from '@/lib/paypal';
@@ -91,7 +92,7 @@ function PaymentForm({ onSuccess, onClose, professionalId }: { onSuccess: () => 
       // Con billingDetails: 'auto', Stripe mostra i campi necessari e l'utente può inserirli
       // Possiamo comunque pre-compilare i campi con i dati del professionista se disponibili
       const confirmParams: Record<string, unknown> = {
-        return_url: window.location.origin + '/partner/dashboard/impostazioni',
+        return_url: getAppUrl() + '/partner/dashboard/impostazioni',
       };
 
       // Pre-compila billing details con dati del professionista (opzionale ma migliora UX)

@@ -3,6 +3,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { sendWelcomeEmail } from '@/services/emailService';
+import { getAppUrl } from '@/utils/appUrl';
 
 interface AuthContextType {
   user: User | null;
@@ -96,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${getAppUrl()}/auth/callback`,
           data: {
             full_name: `${first_name} ${last_name}`,
             first_name,
