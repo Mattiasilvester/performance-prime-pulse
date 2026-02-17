@@ -197,24 +197,25 @@ export default function PartnerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-      {/* Bottone hamburger mobile: safe area, z-index alto e touch per iOS WebView (Capacitor) */}
-      <button
-        type="button"
-        onClick={() => setSidebarOpen(true)}
-        onTouchEnd={(e) => {
-          e.preventDefault();
-          setSidebarOpen(true);
-        }}
-        className="fixed left-4 z-[100] p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-white rounded-lg shadow-md md:hidden hover:bg-gray-50 transition-colors cursor-pointer"
-        style={{
-          top: 'max(1rem, env(safe-area-inset-top, 0px))',
-          WebkitTapHighlightColor: 'transparent',
-          touchAction: 'manipulation',
-        }}
-        aria-label="Apri menu"
-      >
-        <Menu className="w-6 h-6 text-gray-600 shrink-0" />
-      </button>
+      {/* Barra hamburger mobile: nel flusso sotto la safe area (non fixed) */}
+      <div className="md:hidden flex items-center px-4 pb-2">
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            setSidebarOpen(true);
+          }}
+          className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors cursor-pointer"
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+          }}
+          aria-label="Apri menu"
+        >
+          <Menu className="w-6 h-6 text-gray-600 shrink-0" />
+        </button>
+      </div>
 
       <div className="flex">
         {/* Sidebar */}

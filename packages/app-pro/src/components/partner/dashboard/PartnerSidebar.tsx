@@ -119,7 +119,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
+      {/* Sidebar: padding-top safe area per logo sotto il notch (Capacitor iOS) */}
       <aside
         data-sidebar-open={isOpen ? 'true' : 'false'}
         data-partner-sidebar="true"
@@ -134,6 +134,7 @@ export function PartnerSidebar({ isOpen, onClose, currentPath }: PartnerSidebarP
           md:translate-x-0 md:!translate-x-0
           shadow-xl md:shadow-none
         `}
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         {/* Header Sidebar */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
