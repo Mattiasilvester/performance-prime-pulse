@@ -197,8 +197,8 @@ export default function PartnerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-      {/* Barra hamburger mobile: nel flusso sotto la safe area (non fixed) */}
-      <div className="md:hidden flex items-center px-4 pb-2">
+      {/* Barra hamburger mobile: solo safe area, max 8px sotto (pt-2), contenuto subito dopo (pb-1) */}
+      <div className="md:hidden flex items-center px-4 pt-2 pb-1">
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
