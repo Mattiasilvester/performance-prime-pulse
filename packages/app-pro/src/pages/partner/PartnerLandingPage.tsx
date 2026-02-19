@@ -141,9 +141,12 @@ export default function PartnerLandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-      {/* ========== 1. NAVBAR ========== */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+    <div className="min-h-screen bg-white">
+      {/* Navbar fixed top-0: sfondo bianco fino al bordo schermo, contenuto sotto Dynamic Island */}
+      <nav
+        className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-1 font-bold text-xl">
             <span className="text-gray-900">Prime</span>
@@ -167,8 +170,10 @@ export default function PartnerLandingPage() {
         </div>
       </nav>
 
+      {/* Spacer per navbar fixed (safe-area + ~64px altezza nav) */}
+      <main style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 88px)' }}>
       {/* ========== 2. HERO ========== */}
-      <section className="bg-white relative overflow-hidden py-16 md:py-24">
+      <section className="bg-white relative overflow-hidden pt-2 pb-16 md:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -642,6 +647,7 @@ export default function PartnerLandingPage() {
           </div>
         </div>
       </footer>
+      </main>
 
       {/* Modal Feedback */}
       <AnimatePresence>

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useState, lazy, Suspense } from 'react'
+import { Capacitor } from '@capacitor/core'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -154,6 +155,26 @@ function App() {
     document.documentElement.style.height = 'auto';
   }, []);
 
+  // Capacitor iOS: overlaysWebView true (WebView full-screen) + splash hide
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      const initNative = async () => {
+        try {
+          const { SplashScreen } = await import('@capacitor/splash-screen')
+          const { StatusBar, Style } = await import('@capacitor/status-bar')
+          await StatusBar.setOverlaysWebView({ overlay: true })
+          await StatusBar.setStyle({ style: Style.Dark })
+          setTimeout(async () => {
+            await SplashScreen.hide({ fadeOutDuration: 200 })
+          }, 300)
+        } catch (e) {
+          console.warn('Native plugin init error:', e)
+        }
+      }
+      initNative()
+    }
+  }, [])
+
   useEffect(() => {
     // Check sessione attuale
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -188,8 +209,8 @@ function App() {
             <CookieBanner />
             <Suspense fallback={<PageSkeleton variant="default" />}>
               <Routes>
-                {/* ROUTE PUBBLICHE */}
-                <Route path="/" element={<PartnerLandingPage />} />
+                {/* ROUTE PUBBLICHE — se già loggato va in dashboard (landing solo al primo accesso) */}
+                <Route path="/" element={session ? <Navigate to="/partner/dashboard" replace /> : <PartnerLandingPage />} />
                 {/* Route /partner/* specifiche PRIMA del redirect, così /partner/login e /partner/dashboard non vengono intercettate */}
                 <Route path="/partner/registrazione" element={<PartnerRegistration />} />
                 <Route path="/partner/login" element={<PartnerLogin />} />

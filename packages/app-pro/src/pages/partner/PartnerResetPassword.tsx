@@ -60,7 +60,25 @@ export default function PartnerResetPassword() {
   };
 
   return (
-    <div className="min-h-screen partner-theme partner-bg py-12 px-4">
+    <div className="min-h-screen partner-theme partner-bg">
+      {/* Barra fissa in cima: riempie la safe area (Dynamic Island) — bianco puro per evitare buco nero */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          minHeight: 'env(safe-area-inset-top, 0px)',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          backgroundColor: '#FFFFFF',
+          zIndex: 50,
+        }}
+        aria-hidden
+      />
+      <div
+        className="py-12 px-4"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 32px)' }}
+      >
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -144,9 +162,10 @@ export default function PartnerResetPassword() {
                         setEmail(e.target.value);
                         if (error) setError(null);
                       }}
-                      className={`w-full px-4 py-3 pl-11 bg-gray-800 border rounded-xl text-white placeholder:text-gray-400 focus:ring-2 focus:ring-[var(--partner-accent)] focus:border-transparent outline-none transition ${
+                      className={`w-full px-4 py-3 pl-11 bg-gray-800 border rounded-xl text-white placeholder:text-gray-400 focus:ring-2 focus:ring-[var(--partner-accent)] focus:border-transparent outline-none transition text-base ${
                         error ? 'border-red-300' : 'border-gray-600'
                       }`}
+                      style={{ fontSize: '16px' }}
                       placeholder="mario.rossi@example.com"
                       disabled={loading}
                     />
@@ -198,6 +217,7 @@ export default function PartnerResetPassword() {
             ← Torna alla pagina partner
           </Link>
         </div>
+      </div>
       </div>
     </div>
   );

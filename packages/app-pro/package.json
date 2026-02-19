@@ -20,6 +20,7 @@
     "@capacitor/android": "^7.4.0",
     "@capacitor/core": "^7.4.0",
     "@capacitor/ios": "^7.4.0",
+    "@capacitor/splash-screen": "^7.0.0",
     "@capacitor/status-bar": "^7.0.0",
     "@paypal/react-paypal-js": "^8.0.0",
     "@pp/shared": "workspace:*",

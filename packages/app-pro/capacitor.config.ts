@@ -10,13 +10,16 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: 'never',
-    backgroundColor: '#FFFFFF',
+    allowsLinkPreview: false,
   },
   plugins: {
     SplashScreen: {
-      launchAutoHide: true,
-      launchShowDuration: 1000,
+      launchShowDuration: 0,
+      launchAutoHide: false,
       backgroundColor: '#FFFFFF',
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
     },
     StatusBar: {
       overlaysWebView: true,

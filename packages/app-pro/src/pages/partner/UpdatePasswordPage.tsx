@@ -58,7 +58,25 @@ export default function UpdatePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen partner-theme partner-bg py-12 px-4">
+    <div className="min-h-screen partner-theme partner-bg">
+      {/* Barra fissa in cima: riempie la safe area (Dynamic Island) — bianco puro per evitare buco nero */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          minHeight: 'env(safe-area-inset-top, 0px)',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          backgroundColor: '#FFFFFF',
+          zIndex: 50,
+        }}
+        aria-hidden
+      />
+      <div
+        className="py-12 px-4"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 32px)' }}
+      >
       <div className="max-w-md mx-auto">
         {/* Logo in alto — solo testo come login */}
         <div className="flex justify-center mb-8">
@@ -187,6 +205,7 @@ export default function UpdatePasswordPage() {
             ← Torna alla pagina partner
           </a>
         </div>
+      </div>
       </div>
     </div>
   );

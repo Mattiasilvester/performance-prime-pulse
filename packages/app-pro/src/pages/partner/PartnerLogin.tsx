@@ -102,7 +102,25 @@ export default function PartnerLogin() {
   }, []);
 
   return (
-    <div className="min-h-screen partner-theme partner-bg py-12 px-4">
+    <div className="min-h-screen partner-theme partner-bg">
+      {/* Barra fissa in cima: riempie la safe area (Dynamic Island) — bianco puro per evitare buco nero */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          minHeight: 'env(safe-area-inset-top, 0px)',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          backgroundColor: '#FFFFFF',
+          zIndex: 50,
+        }}
+        aria-hidden
+      />
+      <div
+        className="py-12 px-4"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 32px)' }}
+      >
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -115,7 +133,7 @@ export default function PartnerLogin() {
         </div>
 
         {/* Form Card */}
-        <div className="partner-card rounded-2xl p-6 sm:p-8">
+        <div className="partner-card rounded-2xl p-6 sm:p-8" style={{ willChange: 'transform' }}>
           {errors.general && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
               <p className="text-red-800 text-sm">{errors.general}</p>
@@ -144,9 +162,10 @@ export default function PartnerLogin() {
                       });
                     }
                   }}
-                  className={`w-full px-4 py-3 pl-11 bg-gray-800 border rounded-xl text-white placeholder:text-gray-400 focus:ring-2 focus:ring-[var(--partner-accent)] focus:border-transparent outline-none transition ${
+                  className={`w-full px-4 py-3 pl-11 bg-gray-800 border rounded-xl text-white placeholder:text-gray-400 focus:ring-2 focus:ring-[var(--partner-accent)] focus:border-transparent outline-none transition text-base ${
                     errors.email ? 'border-red-300' : 'border-gray-600'
                   }`}
+                  style={{ fontSize: '16px' }}
                   placeholder="mario.rossi@example.com"
                 />
               </div>
@@ -176,9 +195,10 @@ export default function PartnerLogin() {
                       });
                     }
                   }}
-                  className={`w-full px-4 py-3 pl-11 pr-12 bg-gray-800 border rounded-xl text-white placeholder:text-gray-400 focus:ring-2 focus:ring-[var(--partner-accent)] focus:border-transparent outline-none transition ${
+                  className={`w-full px-4 py-3 pl-11 pr-12 bg-gray-800 border rounded-xl text-white placeholder:text-gray-400 focus:ring-2 focus:ring-[var(--partner-accent)] focus:border-transparent outline-none transition text-base ${
                     errors.password ? 'border-red-300' : 'border-gray-600'
                   }`}
+                  style={{ fontSize: '16px' }}
                   placeholder="Inserisci la tua password"
                 />
                 <button
@@ -264,6 +284,7 @@ export default function PartnerLogin() {
             ← Torna alla pagina partner
           </Link>
         </div>
+      </div>
       </div>
     </div>
   );

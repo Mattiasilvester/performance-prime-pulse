@@ -70,9 +70,13 @@ body {
 }
 
 /* Fix per viewport height su mobile - CORRETTO PER SCROLL */
+/* Sfondo bianco: nessun gap nero su Capacitor iOS */
 html, body {
   min-height: 100vh;
   height: auto;
+  margin: 0;
+  padding: 0;
+  background-color: #FFFFFF;
 }
 
 /* 1. FIX GLOBALE PER PULSANTI FLOATING - DISABILITATO */
@@ -435,8 +439,8 @@ button[type="button"],
 /* ——— Colore di sfondo globale ——— */
 html,
 body {
-  background: transparent;     /* rimosso background globale per evitare rettangolo nero */
-  color-scheme: dark;       /* status-bar e controlli di sistema in versione dark */
+  background-color: #FFFFFF;
+  color-scheme: dark;
   min-height: 100vh;
   height: auto;
 }
@@ -699,9 +703,10 @@ body {
   align-items: center;
 }
 
-body, #root, .app-container {
+/* RIMOSSO — causava buco nero su iOS: ogni pagina gestisce il safe-area individualmente (navbar, barra fissa, header) */
+/* body, #root, .app-container {
   padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
-}
+} */
 
 /* Stili per SmartHomePage - aggiornato con nuova palette */
 .homepage-loading {
@@ -778,7 +783,7 @@ body, #root, .app-container {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background: transparent; /* Rimosso background per evitare rettangolo nero */
+  background-color: #FFFFFF;
 }
 
 /* Previeni scroll su body quando in admin */
