@@ -93,3 +93,69 @@ pnpm build:pro
 2. Verifica layout/safe area su iOS Capacitor dopo il ripristino
 
 🚫 **Main** non toccato (commit e push su `dev`).
+
+---
+
+# FINE SESSIONE 23 Febbraio 2026
+
+## STEP 1: VERIFICA BRANCH
+
+```
+git branch --show-current → main
+```
+
+(Commit e push del fix erano già stati fatti su `main` in sessione.)
+
+## STEP 2: DOCUMENTA LAVORO SVOLTO
+
+### App su cui si è lavorato
+
+- [x] **PrimePro** (`packages/app-pro/`)
+- [ ] Performance Prime (`packages/app-user/`)
+- [ ] Shared (`packages/shared/`)
+
+### File modificati
+
+- `packages/app-pro/src/components/partner/subscription/SubscriptionGuard.tsx`
+
+### Funzionalità implementate
+
+- **Z-index overlay SubscriptionGuard:** overlay e card abbassati da `z-[100]`/`z-[101]` a `z-30`/`z-[31]` così la sidebar mobile (drawer) resta sopra e apribile.
+
+### Bug risolti
+
+- **[Sidebar mobile coperta da overlay]** Su mobile, con trial scaduto, l’overlay del SubscriptionGuard copriva tutto incluso il drawer della sidebar → l’utente non poteva aprire il menu per andare su "Abbonamento". **Soluzione:** overlay a z-30, sidebar/backdrop restano z-40/z-50 → drawer si apre sopra l’overlay.
+
+### TODO prossima sessione
+
+1. (Nessuno lasciato da questa sessione.)
+
+## STEP 3: TEST BUILD
+
+```bash
+pnpm build:pro
+# ✓ built in ~8.78s — 0 errori
+```
+
+## STEP 4: COMMIT & PUSH
+
+- Fix già committato e pushato su `main`: `4f68da7a` — *fix: sidebar mobile z-index sopra overlay SubscriptionGuard*
+- Working tree pulito (nessuna modifica da committare).
+
+## STEP 5: RIEPILOGO FINALE
+
+✅ **SESSIONE COMPLETATA**
+
+📍 **Branch:** main (fix già pushato)  
+🎯 **App:** PrimePro  
+📦 **Commit:** 4f68da7a — fix: sidebar mobile z-index sopra overlay SubscriptionGuard  
+
+✅ **Completato:**
+
+- Fix z-index SubscriptionGuard: overlay sotto sidebar mobile (z-30 vs z-40/z-50)
+- Sidebar mobile apribile anche con trial scaduto; utente può raggiungere "Abbonamento"
+- Build PrimePro: 0 errori
+
+📋 **TODO prossima sessione:** —
+
+⚠️ **Nota:** Per sviluppo normale la checklist prevede branch `dev` e push su `dev`; questo fix era già stato applicato e pushato su `main` in sessione.
