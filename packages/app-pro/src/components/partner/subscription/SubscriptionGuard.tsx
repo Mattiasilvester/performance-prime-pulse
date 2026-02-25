@@ -49,11 +49,11 @@ export function SubscriptionGuard({ subscription, loading, children }: Subscript
         <>
           {/* Sfondo semi-trasparente nero + blur - copre solo l'area contenuto (main) */}
           <div
-            className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 z-30 bg-black/80 backdrop-blur-sm"
             aria-hidden
           />
           {/* Card centrale */}
-          <div className="absolute inset-0 z-[101] flex items-center justify-center p-4 overflow-auto">
+          <div className="absolute inset-0 z-[31] flex items-center justify-center p-4 overflow-auto">
             <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 my-auto">
               <div
                 className="mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-6"
