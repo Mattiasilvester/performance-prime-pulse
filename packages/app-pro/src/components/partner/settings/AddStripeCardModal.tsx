@@ -330,17 +330,25 @@ function PaymentForm({ onSuccess, onClose, professionalId }: { onSuccess: () => 
       // FASE 1: Verifica se trial è scaduto e crea subscription automaticamente
       const { data: subscriptionData, error: trialCheckError } = await supabase
         .from('professional_subscriptions')
-        .select('trial_end, status')
+        .select('trial_end, status, stripe_subscription_id')
         .eq('professional_id', professionalId)
         .maybeSingle();
 
-      if (!trialCheckError && subscriptionData?.trial_end) {
-        const trialEnd = new Date(subscriptionData.trial_end);
+      if (!trialCheckError && subscriptionData) {
+        const trialEnd = subscriptionData.trial_end ? new Date(subscriptionData.trial_end) : null;
         const now = new Date();
-        const isTrialExpired = now > trialEnd;
+        const isTrialExpired = trialEnd ? now > trialEnd : false;
 
-        // Se trial scaduto e status è ancora 'trialing', crea subscription automaticamente
-        if (isTrialExpired && subscriptionData.status === 'trialing') {
+        // Crea subscription se:
+        // 1. Trial scaduto E status è ancora 'trialing' (caso normale)
+        // 2. OPPURE status è 'past_due', 'unpaid', 'incomplete' (trial scaduto + status aggiornato da webhook/sistema)
+        // 3. E NON esiste già una stripe_subscription_id (evita duplicati)
+        const needsSubscription = (
+          (isTrialExpired && subscriptionData.status === 'trialing') ||
+          (subscriptionData.status && ['past_due', 'unpaid', 'incomplete'].includes(subscriptionData.status))
+        );
+
+        if (needsSubscription && !subscriptionData.stripe_subscription_id) {
           try {
             console.log('[STRIPE] Trial scaduto, creazione subscription automatica...');
             toast.info('Creazione abbonamento in corso...');
