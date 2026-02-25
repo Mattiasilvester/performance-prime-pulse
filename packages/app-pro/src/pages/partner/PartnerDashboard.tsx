@@ -7,7 +7,7 @@ import { notificationSoundService } from '@/services/notificationSoundService';
 import { useProfessionalId } from '@/hooks/useProfessionalId';
 import { useScheduledNotificationsPolling } from '@/hooks/useScheduledNotificationsPolling';
 import { useSubscription } from '@/hooks/useSubscription';
-import { TrialExpiredGate } from '@/components/partner/TrialExpiredGate';
+import { SubscriptionGuard } from '@/components/partner/subscription/SubscriptionGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -247,11 +247,11 @@ export default function PartnerDashboard() {
         <main
           className="flex-1 min-h-screen bg-gray-50 partner-dashboard-main"
         >
-          <TrialExpiredGate subscription={subscription} loading={loading}>
+          <SubscriptionGuard subscription={subscription} loading={loading}>
             <div className="p-4 md:p-8">
               <Outlet />
             </div>
-          </TrialExpiredGate>
+          </SubscriptionGuard>
         </main>
       </div>
     </div>
