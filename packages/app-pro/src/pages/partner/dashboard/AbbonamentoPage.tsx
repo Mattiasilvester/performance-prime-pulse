@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- tipi Stripe/subscription */
 // Pagina Abbonamento - Mostra informazioni abbonamento PrimePro
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Loader2 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { TrialUrgencyBanner } from '@/components/partner/subscription/TrialUrgencyBanner';
 import { ActivePlanCard } from '@/components/partner/subscription/ActivePlanCard';
@@ -42,6 +43,22 @@ export default function AbbonamentoPage() {
 
   const [professionalId, setProfessionalId] = useState<string | null>(null);
   const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Ritorno da Stripe Checkout: gestisci query checkout=success | checkout=cancelled
+  useEffect(() => {
+    const checkout = searchParams.get('checkout');
+    if (checkout === 'success') {
+      toast.success('Abbonamento attivato con successo!');
+      refetch();
+      setSearchParams({}, { replace: true });
+    } else if (checkout === 'cancelled') {
+      toast.info('Pagamento annullato.');
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run only on mount/query change; refetch is stable
+  }, [searchParams]);
 
   // Carica professional_id
   React.useEffect(() => {
@@ -83,6 +100,28 @@ export default function AbbonamentoPage() {
   const handleCardSuccess = () => {
     refetch();
     setShowAddCardModal(false);
+  };
+
+  // Attiva abbonamento via Stripe Checkout (redirect a checkout.stripe.com)
+  const handleActivateSubscription = async () => {
+    try {
+      setActivating(true);
+      toast.info('Reindirizzamento a Stripe...');
+      const { data, error } = await supabase.functions.invoke('stripe-create-checkout-session', {
+        body: {},
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('URL checkout non ricevuto');
+      }
+    } catch (err) {
+      console.error('[CHECKOUT] Errore:', err);
+      toast.error('Errore nella creazione del pagamento. Riprova.');
+    } finally {
+      setActivating(false);
+    }
   };
 
   // Gestione cancellazione abbonamento
@@ -273,6 +312,37 @@ export default function AbbonamentoPage() {
       ) : (
         /* Content con Subscription */
         <>
+          {/* Pulsante Attiva abbonamento (Stripe Checkout) — quando trial scaduto o status past_due/unpaid/incomplete */}
+          {subscription.payment_provider !== 'paypal' &&
+            (['past_due', 'unpaid', 'incomplete'].includes(subscription.status) ||
+              (subscription.status === 'trialing' && getTrialDaysRemaining() <= 0)) && (
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Attiva il tuo abbonamento</h2>
+              <p className="text-gray-600 text-sm mb-4">
+                Completa il pagamento su Stripe per sbloccare tutte le funzionalità PrimePro.
+              </p>
+              <button
+                type="button"
+                onClick={handleActivateSubscription}
+                disabled={activating}
+                className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-black transition-opacity disabled:opacity-70"
+                style={{ backgroundColor: '#EEBA2B' }}
+              >
+                {activating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Reindirizzamento...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-5 h-5" />
+                    Attiva abbonamento — €50/mese
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
           {/* Banner Urgenza Trial */}
           {subscription.status === 'trialing' && (
             <TrialUrgencyBanner

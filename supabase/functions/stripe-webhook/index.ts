@@ -96,6 +96,77 @@ Deno.serve(async (req) => {
         break;
       }
 
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const professionalId = session.metadata?.professional_id;
+        if (!professionalId) {
+          console.error('[STRIPE] checkout.session.completed: missing professional_id in metadata');
+          break;
+        }
+        if (!session.subscription || !session.customer) {
+          console.error('[STRIPE] checkout.session.completed: missing subscription or customer');
+          break;
+        }
+        const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription.id;
+        const customerId = typeof session.customer === 'string' ? session.customer : session.customer.id;
+
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        let cardLast4: string | null = null;
+        let cardBrand: string | null = null;
+        let cardExpMonth: number | null = null;
+        let cardExpYear: number | null = null;
+        let paymentMethodId: string | null = null;
+        if (subscription.default_payment_method) {
+          const pmId = typeof subscription.default_payment_method === 'string'
+            ? subscription.default_payment_method
+            : subscription.default_payment_method.id;
+          const pm = await stripe.paymentMethods.retrieve(pmId);
+          paymentMethodId = pm.id;
+          if (pm.card) {
+            cardLast4 = pm.card.last4;
+            cardBrand = pm.card.brand;
+            cardExpMonth = pm.card.exp_month;
+            cardExpYear = pm.card.exp_year;
+          }
+        }
+
+        const priceId = subscription.items.data[0]?.price?.id ?? null;
+        const { error: updateError } = await supabaseAdmin
+          .from('professional_subscriptions')
+          .update({
+            stripe_subscription_id: subscription.id,
+            stripe_customer_id: customerId,
+            stripe_price_id: priceId,
+            status: 'active',
+            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            payment_method_id: paymentMethodId,
+            card_last4: cardLast4,
+            card_brand: cardBrand,
+            card_exp_month: cardExpMonth,
+            card_exp_year: cardExpYear,
+            cancel_at_period_end: false,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('professional_id', professionalId);
+
+        if (updateError) {
+          console.error('[STRIPE] checkout.session.completed: DB update error', updateError);
+        } else {
+          console.log(`[STRIPE] checkout.session.completed: subscription ${subscription.id} activated for professional ${professionalId}`);
+        }
+
+        await supabaseAdmin.from('professional_notifications').insert({
+          professional_id: professionalId,
+          type: 'custom',
+          title: 'Abbonamento attivato!',
+          message: 'Il tuo abbonamento Prime Business è ora attivo.',
+          data: { notification_type: 'subscription_created', stripe_subscription_id: subscription.id },
+          is_read: false,
+        });
+        break;
+      }
+
       default:
         console.log(`[STRIPE] Evento non gestito: ${event.type}`);
     }
