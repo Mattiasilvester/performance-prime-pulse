@@ -1,0 +1,135 @@
+
+import { supabase } from '@/integrations/supabase/client';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  surname: string;
+  birth_place: string;
+  phone: string;
+  bio: string;
+  avatarUrl: string;
+  email: string;
+  birth_date?: Date | null;
+}
+
+export const fetchUserProfile = async (): Promise<UserProfile | null> => {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (error || !user) {
+      // Non loggare errori 403 ripetuti che causano spam console
+      if (error?.message !== 'User from sub claim in JWT does not exist') {
+        console.warn('User fetch failed (non-critical):', error?.message);
+      }
+      return null;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      return null;
+    }
+
+    if (!profile) {
+      const defaultProfile: UserProfile = {
+        id: user.id,
+        name: user.email?.split('@')[0] || 'Utente',
+        surname: '',
+        birth_place: '',
+        phone: '',
+        bio: 'Appassionato di fitness e benessere',
+        avatarUrl: '👨‍💼',
+        email: user.email || '',
+        birth_date: null
+      };
+      
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          first_name: defaultProfile.name,
+          last_name: defaultProfile.surname,
+          birth_place: defaultProfile.birth_place,
+          phone: defaultProfile.phone,
+          avatar_url: defaultProfile.avatarUrl,
+          email: defaultProfile.email
+        });
+
+      if (insertError) {
+        return null;
+      }
+      
+      return defaultProfile;
+    }
+
+    return {
+      id: profile.id,
+      name: profile.first_name || '',
+      surname: profile.last_name || '',
+      birth_place: profile.birth_place || '',
+      phone: profile.phone || '',
+      bio: 'Appassionato di fitness e benessere',
+      avatarUrl: profile.avatar_url || '👨‍💼',
+      email: profile.email || user.email || '',
+      birth_date: profile.birth_date ? new Date(profile.birth_date) : null
+    };
+  } catch (error) {
+    return null;
+  }
+};
+
+export const updateUserProfile = async (formData: { name: string; surname: string; birthPlace: string; phone?: string; birthDate?: string; avatarUrl?: string }) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('User not authenticated');
+
+  const updateData: Record<string, unknown> = {
+    first_name: formData.name,
+    last_name: formData.surname,
+    birth_place: formData.birthPlace,
+    updated_at: new Date().toISOString()
+  };
+
+  if (formData.phone) {
+    updateData.phone = formData.phone;
+  }
+
+  if (formData.birthDate) {
+    updateData.birth_date = formData.birthDate;
+  }
+
+  if (formData.avatarUrl) {
+    updateData.avatar_url = formData.avatarUrl;
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update(updateData)
+    .eq('id', user.id);
+
+  if (error) throw error;
+};
+
+export const uploadAvatar = async (file: File): Promise<string> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('User not authenticated');
+
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${user.id}/avatar.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(fileName, file, { upsert: true });
+
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(fileName);
+
+  return data.publicUrl;
+};
