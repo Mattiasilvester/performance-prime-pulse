@@ -343,12 +343,12 @@ Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Pri
       cost_usd: cost,
       model: 'gpt-3.5-turbo',
       message: message.substring(0, 500),
-      response: successData.choices[0].message.content.substring(0, 500)
+      response: (successData.choices?.[0]?.message?.content ?? '').substring(0, 500)
     });
 
     console.log(`[AI] User: ${userId.substring(0,8)}... | Uso: ${limit.used + 1}/${MONTHLY_LIMIT} | Costo: $${cost.toFixed(5)}`);
     
-    const botResponse = successData.choices[0].message.content;
+    const botResponse = successData.choices?.[0]?.message?.content ?? '';
 
     // Salva l'interazione su primebot_interactions (se abbiamo sessionId)
     if (sessionId) {
@@ -756,7 +756,7 @@ IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli t
     }
 
     const successData = data as OpenAIResponse;
-    let aiResponse = successData.choices[0].message.content;
+    let aiResponse = successData.choices?.[0]?.message?.content ?? '';
     console.log('📥 Risposta AI ricevuta:', aiResponse.substring(0, 200) + '...');
 
     // Converti risposta AI in piano strutturato con gestione errori robusta
@@ -810,7 +810,7 @@ ${workoutPlanSystemPrompt}
           retryData = await retryResponse.json() as OpenAIApiResponse;
           
           if (retryResponse.ok && 'choices' in retryData && retryData.choices?.length && retryData.choices[0]) {
-            aiResponse = (retryData as OpenAIResponse).choices[0].message.content;
+            aiResponse = (retryData as OpenAIResponse).choices?.[0]?.message?.content ?? '';
             console.log('📥 Risposta retry ricevuta:', aiResponse.substring(0, 200) + '...');
             plan = convertAIResponseToPlan(aiResponse);
             if (plan) {

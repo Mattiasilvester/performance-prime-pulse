@@ -102,9 +102,9 @@ const Step5HealthLimitations = forwardRef<Step5HealthLimitationsHandle, Step5Hea
       try {
         const payload = {
           haLimitazioni: false,
-          limitazioniFisiche: null,
+          limitazioniFisiche: undefined,
           zoneEvitare: [],
-          condizioniMediche: null,
+          condizioniMediche: undefined,
         };
         
         updateData(payload);
@@ -127,9 +127,9 @@ const Step5HealthLimitations = forwardRef<Step5HealthLimitationsHandle, Step5Hea
         try {
           const payload = {
             haLimitazioni: hasLimitations === true,
-            limitazioniFisiche: hasLimitations === true ? limitationsText : null,
+            limitazioniFisiche: hasLimitations === true ? limitationsText : undefined,
             zoneEvitare: hasLimitations === true ? selectedZones : [],
-            condizioniMediche: medicalConditions || null,
+            condizioniMediche: medicalConditions || undefined,
           };
 
           console.log('📦 Step 5 Payload:', payload);

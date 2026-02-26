@@ -20,7 +20,7 @@ export const AICoach = () => {
     const aiMessage = generateAIPlan(planData);
     
     // Invia il messaggio automaticamente alla chat
-    if (chatInterfaceRef.current) {
+    if (chatInterfaceRef.current?.sendMessage) {
       chatInterfaceRef.current.sendMessage(aiMessage);
     }
     
@@ -38,7 +38,8 @@ export const AICoach = () => {
       'condizionamento': 'migliorare il condizionamento fisico generale'
     };
 
-    let message = `Crea un piano di allenamento personalizzato per ${goalMap[planData.goal] || planData.goal}`;
+    const goalLabel = planData.goal ? (goalMap as Record<string, string>)[planData.goal] : undefined;
+    let message = `Crea un piano di allenamento personalizzato per ${goalLabel ?? planData.goal ?? 'questo obiettivo'}`;
     
     if (planData.title) {
       message += ` con il titolo "${planData.title}"`;

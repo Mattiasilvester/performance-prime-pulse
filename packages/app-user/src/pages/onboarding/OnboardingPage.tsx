@@ -82,22 +82,22 @@ export function OnboardingPage() {
         const existingData = await onboardingService.loadOnboardingData(user.id);
 
         if (existingData) {
-          // Pre-compila lo store con i dati esistenti
+          // Pre-compila lo store con i dati esistenti (null → undefined per tipi store)
           updateData({
-            obiettivo: existingData.obiettivo,
-            livelloEsperienza: existingData.livello_esperienza,
-            giorniSettimana: existingData.giorni_settimana,
+            obiettivo: existingData.obiettivo ?? undefined,
+            livelloEsperienza: existingData.livello_esperienza ?? undefined,
+            giorniSettimana: existingData.giorni_settimana ?? undefined,
             luoghiAllenamento: existingData.luoghi_allenamento || [],
-            tempoSessione: existingData.tempo_sessione,
-            nome: existingData.nome,
-            eta: existingData.eta,
-            peso: existingData.peso,
-            altezza: existingData.altezza,
-            consigliNutrizionali: existingData.consigli_nutrizionali,
-            haLimitazioni: existingData.ha_limitazioni,
-            limitazioniFisiche: existingData.limitazioni_fisiche,
+            tempoSessione: existingData.tempo_sessione ?? undefined,
+            nome: existingData.nome ?? undefined,
+            eta: existingData.eta ?? undefined,
+            peso: existingData.peso ?? undefined,
+            altezza: existingData.altezza ?? undefined,
+            consigliNutrizionali: existingData.consigli_nutrizionali ?? undefined,
+            haLimitazioni: existingData.ha_limitazioni ?? undefined,
+            limitazioniFisiche: existingData.limitazioni_fisiche ?? undefined,
             zoneEvitare: existingData.zone_evitare || [],
-            condizioniMediche: existingData.condizioni_mediche,
+            condizioniMediche: existingData.condizioni_mediche ?? undefined,
           });
 
           console.log('✅ Dati esistenti caricati:', existingData);

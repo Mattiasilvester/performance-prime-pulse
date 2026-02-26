@@ -186,7 +186,7 @@ export const ChatInterface = forwardRef<{ sendMessage: (text: string) => void },
       sender: 'ai',
       timestamp: new Date(),
       suggestions: generateSuggestions(text),
-      navigation: generateNavigation(text)
+      navigation: generateNavigation(text) ?? undefined
     };
 
     setMessages(prev => [...prev, userMessage, aiResponse]);

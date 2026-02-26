@@ -107,7 +107,7 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
         {/* Data programmata */}
         <div className="mb-4">
           <p className="text-white/70 text-sm">
-            Programmato per: {new Date(workout.scheduled_date).toLocaleDateString('it-IT')}
+            Programmato per: {new Date(workout.scheduled_date ?? '').toLocaleDateString('it-IT')}
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
           <div className="mb-6">
             <h5 className="text-white font-medium mb-3">Esercizi:</h5>
             <div className="space-y-3">
-              {workout.exercises.map((exercise: { name?: string; sets?: number; reps?: number; rest?: string }, index: number) => (
+              {(workout.exercises as { name?: string; sets?: number; reps?: number; rest?: string }[]).map((exercise, index) => (
                 <div key={index} className="bg-white/10 rounded-lg p-3">
                   <h6 className="text-white font-medium">{exercise.name}</h6>
                   <div className="flex space-x-4 mt-1 text-sm text-white/70">

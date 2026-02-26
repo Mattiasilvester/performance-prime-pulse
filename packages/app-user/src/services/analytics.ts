@@ -158,25 +158,25 @@ class Analytics {
 
   trackWorkout(action: 'start' | 'complete' | 'pause' | 'cancel', workoutType?: string) {
     this.trackUserAction(`workout_${action}`, {
-      workout_type: workoutType
+      workout_type: workoutType ?? ''
     });
   }
 
   trackAICoach(action: 'chat_start' | 'plan_generated' | 'plan_saved', planType?: string) {
     this.trackUserAction(`ai_coach_${action}`, {
-      plan_type: planType
+      plan_type: planType ?? ''
     });
   }
 
   trackSettings(action: 'view' | 'update', setting?: string) {
     this.trackUserAction(`settings_${action}`, {
-      setting
+      setting: setting ?? ''
     });
   }
 
   trackSubscription(action: 'view' | 'upgrade' | 'downgrade', plan?: string) {
     this.trackUserAction(`subscription_${action}`, {
-      plan
+      plan: plan ?? ''
     });
   }
 }

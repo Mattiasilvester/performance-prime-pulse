@@ -426,7 +426,7 @@ function WorkoutDayContent({ workout }: WorkoutDayContentProps) {
 
       {exercises.length > 0 ? (
         <div className="space-y-3">
-          {exercises.map((exercise: Record<string, unknown>, exIndex: number) => {
+          {(exercises as Record<string, unknown>[]).map((exercise, exIndex) => {
             const name = String(exercise.nome ?? exercise.name ?? 'Esercizio');
             const sets = Number(exercise.serie ?? exercise.sets ?? 3);
             const reps = Number(exercise.ripetizioni ?? exercise.reps ?? 12);

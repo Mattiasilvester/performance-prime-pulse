@@ -20,17 +20,17 @@ export async function getExerciseGifs(): Promise<Record<string, string>> {
   }
 
   // Carica il JSON
-  exerciseGifsLoadPromise = (async () => {
+  exerciseGifsLoadPromise = (async (): Promise<Record<string, string>> => {
     try {
       const response = await fetch('/data/exerciseGifs.json');
       if (!response.ok) {
         throw new Error(`Failed to load exercise GIFs: ${response.status}`);
       }
-      exerciseGifsCache = await response.json();
+      const data = (await response.json()) as Record<string, string> | null;
+      exerciseGifsCache = data ?? {};
       return exerciseGifsCache;
     } catch (error) {
       console.error('Error loading exercise GIFs:', error);
-      // Fallback: ritorna oggetto vuoto
       exerciseGifsCache = {};
       return exerciseGifsCache;
     } finally {

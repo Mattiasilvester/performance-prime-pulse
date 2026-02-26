@@ -4,8 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, XCircle, AlertTriangle, Loader2 } from 'lucide-react';
-import emailValidation from '../../services/emailValidation';
-import { useAuth } from '../../hooks/useAuth';
+import emailValidation from '@/services/emailValidation';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { validateInput } from '@/lib/security';
@@ -25,12 +25,12 @@ type EmailValidationResult = {
   checks: EmailValidationChecks;
 };
 
-function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number) {
+function debounce<A extends unknown[]>(func: (...args: A) => void | Promise<void>, wait: number) {
   let timeout: ReturnType<typeof setTimeout>;
-  return (...args: Parameters<T>) => {
+  return (...args: A) => {
     const later = () => {
       clearTimeout(timeout);
-      func(...args);
+      void func(...args);
     };
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);

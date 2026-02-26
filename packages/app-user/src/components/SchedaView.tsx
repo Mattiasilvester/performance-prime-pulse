@@ -16,15 +16,15 @@ const SchedaView: React.FC<SchedaViewProps> = ({ scheda, onEdit, onDelete }) => 
         <div className="scheda-metadata">
           <div className="metadata-item">
             <span className="label">Tipo:</span>
-            <span className="value">{scheda.metadata.tipoAllenamento || 'Non specificato'}</span>
+            <span className="value">{scheda.metadata?.tipoAllenamento || 'Non specificato'}</span>
           </div>
           <div className="metadata-item">
             <span className="label">Durata:</span>
-            <span className="value">{scheda.metadata.durataStimata || 'Non specificata'}</span>
+            <span className="value">{scheda.metadata?.durataStimata || 'Non specificata'}</span>
           </div>
           <div className="metadata-item">
             <span className="label">Difficoltà:</span>
-            <span className="value">{scheda.metadata.difficolta || 'Non specificata'}</span>
+            <span className="value">{scheda.metadata?.difficolta || 'Non specificata'}</span>
           </div>
         </div>
       </div>
@@ -33,9 +33,9 @@ const SchedaView: React.FC<SchedaViewProps> = ({ scheda, onEdit, onDelete }) => 
         {/* RISCALDAMENTO */}
         <Section 
           title="🔥 Riscaldamento" 
-          esercizi={scheda.riscaldamento.esercizi}
-          generato={scheda.riscaldamento.generato}
-          presente={scheda.riscaldamento.presente}
+          esercizi={scheda.riscaldamento?.esercizi ?? []}
+          generato={scheda.riscaldamento?.generato ?? false}
+          presente={scheda.riscaldamento?.presente ?? false}
           sectionType="riscaldamento"
           onEdit={onEdit}
           onDelete={onDelete}
@@ -44,7 +44,7 @@ const SchedaView: React.FC<SchedaViewProps> = ({ scheda, onEdit, onDelete }) => 
         {/* SCHEDA GIORNALIERA */}
         <Section 
           title="💪 Allenamento Principale" 
-          esercizi={scheda.schedaGiornaliera.esercizi}
+          esercizi={scheda.schedaGiornaliera?.esercizi ?? []}
           generato={false}
           presente={true}
           sectionType="allenamento"
@@ -55,9 +55,9 @@ const SchedaView: React.FC<SchedaViewProps> = ({ scheda, onEdit, onDelete }) => 
         {/* STRETCHING */}
         <Section 
           title="🧘 Stretching" 
-          esercizi={scheda.stretching.esercizi}
-          generato={scheda.stretching.generato}
-          presente={scheda.stretching.presente}
+          esercizi={scheda.stretching?.esercizi ?? []}
+          generato={scheda.stretching?.generato ?? false}
+          presente={scheda.stretching?.presente ?? false}
           sectionType="stretching"
           onEdit={onEdit}
           onDelete={onDelete}
@@ -69,14 +69,14 @@ const SchedaView: React.FC<SchedaViewProps> = ({ scheda, onEdit, onDelete }) => 
         <div className="info-box">
           <h4>ℹ️ Informazioni</h4>
           <ul>
-            <li>Fonte: {scheda.metadata.fonte}</li>
-            {scheda.riscaldamento.generato && (
+            <li>Fonte: {scheda.metadata?.fonte}</li>
+            {scheda.riscaldamento?.generato && (
               <li>🔥 Riscaldamento generato automaticamente</li>
             )}
-            {scheda.stretching.generato && (
+            {scheda.stretching?.generato && (
               <li>🧘 Stretching generato automaticamente</li>
             )}
-            <li>Totale esercizi: {scheda.schedaGiornaliera.esercizi.length}</li>
+            <li>Totale esercizi: {scheda.schedaGiornaliera?.esercizi.length ?? 0}</li>
           </ul>
         </div>
       </div>

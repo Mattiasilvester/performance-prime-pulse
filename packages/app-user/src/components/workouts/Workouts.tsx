@@ -15,13 +15,13 @@ interface WorkoutExerciseShape {
   rest?: string | number;
 }
 
-/** Workout generato/custom con meta opzionale */
+/** Workout generato/custom con meta opzionale (duration da generator può essere string | number) */
 interface GeneratedWorkoutShape {
   id?: string;
   name?: string;
   title?: string;
   exercises?: WorkoutExerciseShape[];
-  meta?: { workoutTitle?: string; workoutType?: string; duration?: number };
+  meta?: { workoutTitle?: string; workoutType?: string; duration?: number | string };
   workout_type?: string;
   total_duration?: number;
   completed?: boolean;
@@ -189,7 +189,7 @@ export const Workouts = () => {
         </div>
       </div>
 
-      <WorkoutCategories onStartWorkout={handleStartWorkout} />
+      <WorkoutCategories onStartWorkout={(workoutId, duration, generatedWorkout) => handleStartWorkout(workoutId, duration, generatedWorkout ?? null)} />
     </div>
   );
 };

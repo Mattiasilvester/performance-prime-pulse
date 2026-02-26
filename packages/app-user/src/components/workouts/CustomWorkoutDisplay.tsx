@@ -186,7 +186,8 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
       mobilita: '#8C52FF',
       personalizzato: '#c89116'
     };
-    return colorMap[workout.workout_type] || '#c89116';
+    const typeKey = workout.workout_type ?? 'personalizzato';
+    return colorMap[typeKey] || '#c89116';
   };
 
   return (

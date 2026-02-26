@@ -88,9 +88,9 @@ export function FastDatePicker({ date, onDateChange, disabled, placeholder = "Se
         
         <Calendar
           mode="single"
-          selected={date}
+          selected={date ?? undefined}
           onSelect={(selectedDate) => {
-            onDateChange(selectedDate)
+            onDateChange(selectedDate ?? null)
             setOpen(false)
           }}
           month={displayMonth}

@@ -162,17 +162,17 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
 
       let workoutTitle = '';
       let workoutType = '';
-      let exercisesData = [];
+      let exercisesData: Record<string, unknown>[] = [];
 
       if (creationMethod === 'manual') {
         workoutTitle = selectedType === 'personalizzato' ? customTitle : 
           workoutTypes.find(t => t.id === selectedType)?.name || '';
         workoutType = selectedType;
-        exercisesData = exercises.filter(ex => ex.name.trim() !== '');
+        exercisesData = exercises.filter(ex => ex.name.trim() !== '') as unknown as Record<string, unknown>[];
       } else if (creationMethod === 'file') {
         workoutTitle = fileAnalysis?.workoutTitle || uploadedFile?.name.split('.')[0] || 'Allenamento da File';
         workoutType = 'personalizzato';
-        exercisesData = fileAnalysis?.exercises || []; // Usa gli esercizi estratti dal file
+        exercisesData = (fileAnalysis?.exercises ?? []) as unknown as Record<string, unknown>[];
       }
 
       const { data, error } = await supabase
@@ -182,7 +182,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
           title: workoutTitle,
           workout_type: workoutType,
           scheduled_date: selectedDate.toISOString().split('T')[0],
-          exercises: exercisesData as Record<string, unknown>[],
+          exercises: exercisesData,
         })
         .select('id, title, workout_type, scheduled_date, total_duration, completed, completed_at, created_at')
         .single();
@@ -248,17 +248,17 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
 
       let workoutTitle = '';
       let workoutType = '';
-      let exercisesData = [];
+      let exercisesData: Record<string, unknown>[] = [];
 
       if (creationMethod === 'manual') {
         workoutTitle = selectedType === 'personalizzato' ? customTitle : 
           workoutTypes.find(t => t.id === selectedType)?.name || '';
         workoutType = selectedType;
-        exercisesData = exercises.filter(ex => ex.name.trim() !== '');
+        exercisesData = exercises.filter(ex => ex.name.trim() !== '') as unknown as Record<string, unknown>[];
       } else if (creationMethod === 'file') {
         workoutTitle = fileAnalysis?.workoutTitle || uploadedFile?.name.split('.')[0] || 'Allenamento da File';
         workoutType = 'personalizzato';
-        exercisesData = fileAnalysis?.exercises || []; // Usa gli esercizi estratti dal file
+        exercisesData = (fileAnalysis?.exercises ?? []) as unknown as Record<string, unknown>[];
       }
 
       // SEMPRE creare l'allenamento per OGGI quando si clicca "Inizia Allenamento"

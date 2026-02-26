@@ -25,7 +25,7 @@ export const StatsWidget = () => {
         getUserMetrics(),
         getWeeklyStats(),
       ]);
-      setMetrics(metricsData);
+      setMetrics(metricsData as UserStats | null);
       setWeeklyStats(weeklyData);
     } catch (error) {
       console.error('Error loading stats:', error);

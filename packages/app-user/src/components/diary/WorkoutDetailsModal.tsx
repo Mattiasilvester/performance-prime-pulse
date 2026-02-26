@@ -68,7 +68,7 @@ export function WorkoutDetailsModal({ entry, open, onOpenChange }: WorkoutDetail
           <div className="space-y-2">
             <h4 className="font-semibold text-sm">📋 Esercizi:</h4>
             <div className="space-y-2">
-              {entry.exercises && entry.exercises.map((exercise: { name?: string; duration?: number; rest?: number; completed?: boolean }, index: number) => (
+              {entry.exercises && (entry.exercises as { name?: string; duration?: number; rest?: number; completed?: boolean }[]).map((exercise, index) => (
                 <div 
                   key={index}
                   className="flex items-start gap-3 p-3 bg-muted rounded-md border border-[#EEBA2B]/10"
@@ -103,7 +103,7 @@ export function WorkoutDetailsModal({ entry, open, onOpenChange }: WorkoutDetail
               <div>
                 <p className="text-muted-foreground">Esercizi completati</p>
                 <p className="font-medium">
-                  {entry.exercises ? entry.exercises.filter((ex: { completed?: boolean }) => ex.completed).length : 0}/{entry.exercises_count}
+                  {entry.exercises ? (entry.exercises as { completed?: boolean }[]).filter(ex => ex.completed).length : 0}/{entry.exercises_count}
                 </p>
               </div>
               {entry.completed_at && (
@@ -116,7 +116,7 @@ export function WorkoutDetailsModal({ entry, open, onOpenChange }: WorkoutDetail
                       year: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit'
-                    })}
+                    } as Intl.DateTimeFormatOptions)}
                   </p>
                 </div>
               )}

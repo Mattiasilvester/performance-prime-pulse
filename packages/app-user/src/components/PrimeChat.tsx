@@ -561,7 +561,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
               setMsgs(prev => [...prev, {
                 id: crypto.randomUUID(),
                 role: 'bot' as const,
-                text: planResponse.question,
+                text: planResponse.question ?? '',
               }]);
               setAwaitingLimitationsResponse(true);
               setOriginalWorkoutRequest(planRequest);
@@ -732,7 +732,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
             setMsgs(prev => [...prev, {
               id: crypto.randomUUID(),
               role: 'bot' as const,
-              text: planResponse.question,
+              text: planResponse.question ?? '',
             }]);
             setAwaitingLimitationsResponse(true);
             setOriginalWorkoutRequest(planRequest);
@@ -1571,7 +1571,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             {
               id: crypto.randomUUID(),
               role: 'bot' as const,
-              text: planResponse.question,
+              text: planResponse.question ?? '',
             },
           ]);
           setAwaitingLimitationsResponse(true);
@@ -2013,7 +2013,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                               userId,
                               action.type,
                               action.payload,
-                              navigate
+                              (path: string, state?: unknown) => navigate(path, { state })
                             );
                             
                             if (result.success) {

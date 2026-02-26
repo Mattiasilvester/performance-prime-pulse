@@ -143,12 +143,12 @@ export const StatsOverview = () => {
             <div
               key={stat.label}
               className={`bg-gradient-to-br from-black to-[#c89116]/20 rounded-2xl p-4 shadow-lg border-2 border-[#c89116] hover:shadow-xl hover:shadow-[#c89116]/20 transition-all duration-200 ${
-                isMedalCard && medalData.state === 'challenge_active' ? 'ring-2 ring-pp-gold/50' : ''
+                isMedalCard && medalData?.state === 'challenge_active' ? 'ring-2 ring-pp-gold/50' : ''
               }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className={`p-2 rounded-xl bg-[#c89116]/20 border border-[#c89116]`}>
-                  {isMedalCard ? (
+                  {isMedalCard && medalData ? (
                     <span className="text-lg">{medalData.icon}</span>
                   ) : (
                     <Icon className={`h-5 w-5 ${stat.color}`} />
@@ -162,12 +162,12 @@ export const StatsOverview = () => {
                 {isMedalCard && stat.description && (
                   <p className="text-xs text-pp-gold/80">{stat.description}</p>
                 )}
-                {isMedalCard && medalData.state === 'challenge_active' && medalData.progress !== undefined && (
+                {isMedalCard && medalData?.state === 'challenge_active' && medalData.progress !== undefined && (
                   <div className="mt-1">
                     <div className="w-full bg-gray-700 rounded-full h-1">
                       <div 
                         className="bg-pp-gold h-1 rounded-full transition-all duration-300"
-                        style={{ width: `${(medalData.progress / 3) * 100}%` }}
+                        style={{ width: `${((medalData?.progress ?? 0) / 3) * 100}%` }}
                       ></div>
                     </div>
                   </div>

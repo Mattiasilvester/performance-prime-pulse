@@ -365,3 +365,45 @@ find src -name "*.backup" -o -name "test-*.ts" -o -name "test-*.tsx"
 - **Step5HealthLimitations.tsx** — limitazioniFisiche/condizioniMediche null vs string \| undefined (4)
 - **ProfessionalDetail.tsx** — risolto copiando availabilityOverrideService
 - Resto invariato rispetto a 0.3c (exerciseGifs, openai-service, analytics, reviewsService, PrimeChat, SchedaView, schedule, ui/fast-date-picker, workouts, ecc.)
+
+---
+
+## STEP 0.3f — BUILD FIX PASS (26 Febbraio 2026)
+
+### Completato
+
+| Voce | Valore |
+|------|--------|
+| Errori iniziali | **69** |
+| Errori finali | **0** |
+| Build app-user | **OK** |
+| Build app-pro | **OK** |
+| Build root | **OK** |
+| Dipendenze npm aggiunte | **nessuna** |
+| File rimossi (admin/partner) | **nessuno** |
+
+### File modificati (fix tipi / null-safety)
+
+- **data/exerciseGifs.ts** — Promise/Record null → fallback `{}`, tipo esplicito async
+- **services/analytics.ts** — `planType`/`workoutType`/`setting`/`plan` string \| undefined → `?? ''`
+- **services/reviewsService.ts** — `service_name: null` → `?? undefined`
+- **lib/openai-service.ts** — `successData.choices?.[0]?.message?.content ?? ''` (optional chaining)
+- **pages/onboarding/OnboardingPage.tsx** — campi existingData `?? undefined` per store
+- **pages/onboarding/steps/Step5HealthLimitations.tsx** — payload `null` → `undefined`
+- **components/auth/RegistrationForm.tsx** — import `@/services/emailValidation`, debounce generic `A extends unknown[]`
+- **services/emailValidation.d.ts** — dichiarazione modulo per .js
+- **tsconfig.app.json** — `allowJs: true` per emailValidation.js
+- **components/SchedaView.tsx** — optional chaining `scheda.metadata?.`, `scheda.riscaldamento?.`, ecc.
+- **components/ai/AICoach.tsx** — `sendMessage?.(aiMessage)`, goalLabel da planData.goal
+- **components/ai/ChatInterface.tsx** — `navigation: generateNavigation(text) ?? undefined`
+- **components/dashboard/StatsOverview.tsx** — `medalData?.state`, `medalData?.icon`, `medalData?.progress`
+- **components/diary/StatsWidget.tsx** — `setMetrics(metricsData as UserStats \| null)`
+- **components/diary/WorkoutDetailsModal.tsx** — cast `entry.exercises` per map/filter, `Intl.DateTimeFormatOptions` per toLocaleDateString
+- **components/plans/PlanPreview.tsx** — `(exercises as Record<string, unknown>[]).map(...)`
+- **components/PrimeChat.tsx** — `text: planResponse.question ?? ''` (3 punti), executeAction con wrapper `(path, state) => navigate(path, { state })`
+- **components/schedule/WorkoutCreationModal.tsx** — `exercisesData: Record<string, unknown>[]`, cast `as unknown as Record<string, unknown>[]`
+- **components/schedule/WorkoutViewModal.tsx** — `new Date(workout.scheduled_date ?? '')`, cast `workout.exercises` per map
+- **components/ui/fast-date-picker.tsx** — `selected={date ?? undefined}`, `onDateChange(selectedDate ?? null)`
+- **components/workouts/CustomWorkoutDisplay.tsx** — `typeKey = workout.workout_type ?? 'personalizzato'`
+- **components/workouts/Workouts.tsx** — `GeneratedWorkoutShape.meta.duration` → `number \| string`, wrapper onStartWorkout con `generatedWorkout ?? null`
+- **components/ui/menubar.tsx** — `const MenubarMenu: typeof MenubarPrimitive.Menu = ...` (portabilità tipo Radix)

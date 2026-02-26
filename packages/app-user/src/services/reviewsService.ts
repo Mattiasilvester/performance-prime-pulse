@@ -327,7 +327,7 @@ export async function getAvailableBookingsForReview(
         id: b.id,
         booking_date: b.booking_date,
         booking_time: b.booking_time,
-        service_name: (b.service as { name?: string } | null)?.name ?? null,
+        service_name: (b.service as { name?: string } | null)?.name ?? undefined,
       }));
 
     return availableBookings;
