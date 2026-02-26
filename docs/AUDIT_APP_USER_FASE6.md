@@ -407,3 +407,25 @@ find src -name "*.backup" -o -name "test-*.ts" -o -name "test-*.tsx"
 - **components/workouts/CustomWorkoutDisplay.tsx** — `typeKey = workout.workout_type ?? 'personalizzato'`
 - **components/workouts/Workouts.tsx** — `GeneratedWorkoutShape.meta.duration` → `number \| string`, wrapper onStartWorkout con `generatedWorkout ?? null`
 - **components/ui/menubar.tsx** — `const MenubarMenu: typeof MenubarPrimitive.Menu = ...` (portabilità tipo Radix)
+
+---
+
+## TEST LOCALE APP-USER (26 Febbraio 2026)
+
+### Dev Server
+- Avviato su: **http://localhost:5173** — OK (con permessi non sandbox; in sandbox fallisce con `uv_interface_addresses` di Node)
+- Errori in console allo startup: **0**
+
+### Variabili ambiente
+- `packages/app-user/.env` — presente; verificare che contenga `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (se manca la chiave, copiare da root: `cp .env packages/app-user/.env` o da `.env.local`)
+
+### Checklist visuale
+- Da completare manualmente nel browser su http://localhost:5173 (Landing, Login, Register, Dashboard, navigazione, console).
+
+### Build production
+- **app-user:** OK  
+- **app-pro:** OK  
+- **root:** OK  
+
+### Pronto per deploy
+- **SÌ** (build 0 errori). Consigliato: completare checklist manuale, poi merge dev → main e deploy.
