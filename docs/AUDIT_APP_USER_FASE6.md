@@ -300,3 +300,39 @@ find src -name "*.backup" -o -name "test-*.ts" -o -name "test-*.tsx"
 - `packages/app-user/src/vite-env.d.ts`
 - `packages/app-user/src/services/professionalAuthService.stub.ts`
 - Modifica `packages/app-user/src/hooks/useProfessionalId.ts` (import da stub)
+
+---
+
+## STEP 0.3c — MIGRAZIONE COMPONENTI UI (26 Febbraio 2026)
+
+### Completato
+
+| Voce | Valore |
+|------|--------|
+| Componenti shadcn/ui copiati | **55** |
+| Cartelle componenti B2C copiate | ai, auth, dashboard, diary, feedback, layout, legal, medals, notes, notifications, onboarding, plans, primebot, professionals, profile, schedule, user, workouts |
+| Componenti standalone copiati | PrimeChat, MobileScrollFix, ErrorBoundary, ProtectedRoute, DaySelector, ManualWorkoutInput, ProgressChart, QRCode, WorkoutResults, SchedaView, WorkoutUploader, OnboardingBot (+ .css dove presenti) |
+| File admin/partner rimossi | **0** (nessuno copiato; ProfessionalsList.tsx lasciato — lista professionisti B2C) |
+| Assets public/ copiati | **SÌ** (_redirects, clear-auth.html, data, images, robots.txt, sitemap.xml) |
+| Servizi aggiuntivi | professionalsService.ts, weeklyPlanGenerator.ts (per MatchQuiz e GeneratingWeeklyStep) |
+| File totali in app-user | **230** (.ts/.tsx) |
+| Componenti (solo .tsx/.ts in components/) | **145** |
+| Import problematici | 2 risolti copiando professionalsService e weeklyPlanGenerator |
+| Build app-user errori | **54** (erano 13 — aumentati per nuovi componenti con TS strict) |
+| Build app-pro | **OK** |
+| Build root | **OK** |
+
+### Errori build app-user (54 totali, categorie)
+
+- **exerciseGifs.ts** — null vs Record (2)
+- **openai-service.ts** — choices possibly undefined (4)
+- **analytics.ts** — string \| undefined (4)
+- **reviewsService.ts** — service_name null vs undefined (1)
+- **PrimeChat.tsx** — Msg.text string \| undefined, NavigateFunction (4)
+- **SchedaView.tsx** — possibly undefined (12)
+- **WorkoutCreationModal.tsx** — exercisesData implicit any (5)
+- **WorkoutViewModal.tsx** — overload, unknown (2)
+- **PlanPreview.tsx** — unknown vs Record (1)
+- **fast-date-picker.tsx** — Date \| null vs Matcher (2)
+- **CustomWorkoutDisplay.tsx** — undefined index (1)
+- **Workouts.tsx** — GeneratedWorkoutShape meta.duration (1)
