@@ -336,3 +336,32 @@ find src -name "*.backup" -o -name "test-*.ts" -o -name "test-*.tsx"
 - **fast-date-picker.tsx** — Date \| null vs Matcher (2)
 - **CustomWorkoutDisplay.tsx** — undefined index (1)
 - **Workouts.tsx** — GeneratedWorkoutShape meta.duration (1)
+
+---
+
+## STEP 0.3d/e — PAGINE, ROUTING, LANDING, APP (26 Febbraio 2026)
+
+### Completato
+
+| Voce | Valore |
+|------|--------|
+| Pagine B2C copiate | **31** (auth, diary, landing, onboarding, piani, settings + root: NotFound, PrivacyPolicy, ProfessionalDetail, Professionals, QuickWorkout, ResetPassword, Subscriptions, TermsAndConditions, Timer) |
+| Landing page | **SÌ** (landing-new + landing/BackToTopButton, pages/landing/NewLandingPage) |
+| Assets | **SÌ** (src/assets/images, src/styles/mobile-fix.css) |
+| App.tsx | **RISCRITTO** — sole route B2C, AuthProvider, NotificationProvider, PrimeBotProvider, ProtectedRoute, no partner/admin |
+| main.tsx | **ADATTATO** — index.css + mobile-fix.css, no admin-override, bonifica SW, safeGetElement |
+| index.css | **COPIATO** dalla root |
+| Servizio aggiuntivo | availabilityOverrideService.ts (per ProfessionalDetail) |
+| File totali in app-user | **273** (.ts/.tsx) |
+| File partner/admin in pages | **0** |
+| Build app-user errori | **69** (erano 54 — nuovi errori da pagine onboarding, Step5HealthLimitations, ecc.) |
+| Build app-pro | **OK** |
+| Build root | **OK** |
+| Dipendenze npm aggiunte | **nessuna** |
+
+### Errori build app-user (69 totali, nuove categorie 0.3d/e)
+
+- **OnboardingPage.tsx** — null vs undefined per obiettivo, livello, giorni, ecc. (12)
+- **Step5HealthLimitations.tsx** — limitazioniFisiche/condizioniMediche null vs string \| undefined (4)
+- **ProfessionalDetail.tsx** — risolto copiando availabilityOverrideService
+- Resto invariato rispetto a 0.3c (exerciseGifs, openai-service, analytics, reviewsService, PrimeChat, SchedaView, schedule, ui/fast-date-picker, workouts, ecc.)
