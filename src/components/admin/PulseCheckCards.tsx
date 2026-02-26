@@ -91,7 +91,7 @@ export default function PulseCheckCards({ pulseCheck, loading }: PulseCheckCards
               <span className="text-xl" aria-hidden>{icon}</span>
             </div>
             <div className="text-2xl font-bold text-white">
-              {format((pc as Record<string, number>)[key] ?? 0)}
+              {format((pc as unknown as Record<string, number>)[key] ?? 0)}
             </div>
             <p className="text-gray-500 text-xs mt-1">{subtitle}</p>
           </div>

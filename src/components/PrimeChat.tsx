@@ -161,7 +161,6 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [awaitingLimitationsResponse, setAwaitingLimitationsResponse] = useState(false);
   const [originalWorkoutRequest, setOriginalWorkoutRequest] = useState<string | null>(null);
 
-  // Voiceflow rimosso - ora usa solo OpenAI
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
 
   // Pain tracking hooks
@@ -295,7 +294,6 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         // I messaggi vengono gestiti solo dal bottone "Inizia Chat"
         console.log('useEffect PRINCIPALE: FINE - non aggiungo messaggi automaticamente');
 
-        // Voiceflow rimosso - ora usa solo OpenAI
       } catch (error) {
         console.error('Error in PrimeChat useEffect:', error);
         // NON aggiungere messaggi automaticamente - mantieni la Landing Page

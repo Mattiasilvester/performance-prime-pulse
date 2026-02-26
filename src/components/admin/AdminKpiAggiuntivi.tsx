@@ -9,7 +9,7 @@ interface AdminKpiAggiuntiviProps {
 
 export default function AdminKpiAggiuntivi({ pulseCheck, loading }: AdminKpiAggiuntiviProps) {
   const navigate = useNavigate()
-  const pc = pulseCheck ?? {}
+  const pc = pulseCheck ?? ({} as PulseCheck)
 
   const churnB2B = pc.churnB2BCanceledCount ?? 0
   const bookingCompletion = pc.bookingCompletionRate ?? 0
