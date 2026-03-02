@@ -34,3 +34,9 @@ public/site.webmanifest
 .vercel
 .env*.local
 .env
+
+# Monorepo / build
+.pnpm-store/
+bundle-analysis.html
+packages/app-pro/ios/
+packages/app-pro/android/
