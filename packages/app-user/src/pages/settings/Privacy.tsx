@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Shield, BarChart3, ToggleLeft, ToggleRight, FileText, RefreshCw } from 'lucide-react';
+import { ArrowLeft, BarChart3, FileText, RefreshCw, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -11,6 +11,14 @@ const Privacy = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/profile');
+    }
+  };
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
   const { hasConsent, acceptFileAccess, declineFileAccess, resetFileAccess } = useFileAccess();
 
@@ -63,175 +71,129 @@ const Privacy = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6 pb-24">
-      <div className="max-w-md mx-auto">
-        <div className="flex items-center mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/profile')}
-            className="text-[#EEBA2B] hover:bg-[#EEBA2B]/10"
+    <div className="min-h-screen bg-background flex flex-col gap-6 px-5 pb-32">
+      <div className="max-w-md mx-auto w-full pt-6">
+        <div className="flex items-center gap-2 mb-2">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="p-2 text-[#8A8A96] hover:text-[#EEBA2B] transition-colors"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Indietro
-          </Button>
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-xl font-bold text-[#F0EDE8]">Privacy</h1>
         </div>
-        
-        <div className="bg-surface-primary border-2 border-[#EEBA2B] rounded-2xl p-6">
-          <h2 className="text-xl font-semibold text-[#EEBA2B] mb-6">Privacy</h2>
-          
-          <div className="space-y-6">
-            {/* Analytics Settings */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <BarChart3 className="h-5 w-5 text-[#EEBA2B]" />
-                <h3 className="text-lg font-medium text-white">Plausible Analytics</h3>
-              </div>
-              
-              <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white font-medium">Analytics Privacy-Friendly</p>
-                    <p className="text-text-secondary text-sm">
-                      Aiutaci a migliorare l'app con dati anonimi
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    onClick={handleAnalyticsToggle}
-                    className={`p-2 rounded-full ${
-                      analyticsEnabled 
-                        ? 'bg-interactive-success text-white' 
-                        : 'bg-surface-tertiary text-text-secondary'
-                    }`}
-                  >
-                    {analyticsEnabled ? (
-                      <ToggleRight className="h-4 w-4" />
-                    ) : (
-                      <ToggleLeft className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                
-                <div className="text-xs text-text-muted space-y-1">
-                  <p>• Zero cookie di profilazione</p>
-                  <p>• Dati completamente anonimi</p>
-                  <p>• GDPR compliant di default</p>
-                  <p>• Outbound links tracking</p>
-                  <p>• Script ufficiale Plausible</p>
-                </div>
-              </div>
+        <p className="text-[13px] text-[#8A8A96]">Analytics, accesso file e documenti</p>
+      </div>
+
+      <div className="max-w-md mx-auto w-full flex flex-col gap-6">
+        {/* Analytics */}
+        <div className="bg-[#16161A] rounded-[14px] border border-[rgba(255,255,255,0.06)] p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <BarChart3 className="h-5 w-5 text-[#EEBA2B]" />
+            <h3 className="text-base font-bold text-[#F0EDE8]">Plausible Analytics</h3>
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-[#F0EDE8]">Analytics Privacy-Friendly</p>
+              <p className="text-[13px] text-[#8A8A96]">Aiutaci a migliorare l'app con dati anonimi</p>
             </div>
-            
-            {/* File Access Consent */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-[#EEBA2B]" />
-                <h3 className="text-lg font-medium text-white">Accesso ai File</h3>
-              </div>
-              
-              <div className="bg-surface-secondary rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white font-medium">Consenso Accesso File</p>
-                    <p className="text-text-secondary text-sm">
-                      {hasConsent === true 
-                        ? 'Consentito - Puoi caricare allegati agli allenamenti'
-                        : hasConsent === false
-                        ? 'Non consentito - Funzionalità allegati disabilitata'
-                        : 'Non ancora deciso'
-                      }
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    onClick={handleAnalyticsToggle}
-                    className={`p-2 rounded-full ${
-                      hasConsent === true
-                        ? 'bg-interactive-success text-white' 
-                        : 'bg-surface-tertiary text-text-secondary'
-                    }`}
-                  >
-                    {hasConsent === true ? (
-                      <ToggleRight className="h-4 w-4" />
-                    ) : (
-                      <ToggleLeft className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                
-                <div className="text-xs text-text-muted space-y-1">
-                  <p>• Accesso solo ai file selezionati manualmente</p>
-                  <p>• Nessun accesso automatico al sistema</p>
-                  <p>• File utilizzati solo per allegati allenamenti</p>
-                  <p>• Supporta JPEG, PNG e PDF (max 10MB)</p>
-                </div>
-                
-                <div className="flex gap-2 pt-2">
-                  {hasConsent === null ? (
-                    <>
-                      <Button
-                        onClick={acceptFileAccess}
-                        className="flex-1 bg-[#EEBA2B] hover:bg-[#d4a61a] text-black text-sm"
-                      >
-                        Accetta
-                      </Button>
-                      <Button
-                        onClick={declineFileAccess}
-                        variant="outline"
-                        className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800 text-sm"
-                      >
-                        Rifiuta
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      onClick={resetFileAccess}
-                      className="w-full bg-gray-600 hover:bg-gray-700 text-white text-sm"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Cambia Decisione
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            {/* Privacy Policy and Terms Links */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Shield className="h-5 w-5 text-[#EEBA2B]" />
-                <h3 className="text-lg font-medium text-white">Documenti Privacy</h3>
-              </div>
-              
-              <div className="space-y-3">
-                <Button
-                  onClick={() => navigate('/privacy-policy')}
-                  className="w-full bg-[#EEBA2B] hover:bg-[#d4a61a] text-black"
-                >
-                  Informativa sulla privacy
-                </Button>
-                
-                <Button
-                  onClick={() => navigate('/terms-and-conditions')}
-                  variant="outline"
-                  className="w-full border-[#EEBA2B] text-[#EEBA2B] hover:bg-[#EEBA2B] hover:text-black"
-                >
-                  Termini e condizioni
-                </Button>
-              </div>
-            </div>
-            
-            {/* Save Button */}
-            <Button 
-              onClick={handleSave}
-              disabled={isLoading}
-              className="w-full bg-[#EEBA2B] hover:bg-[#d4a61a] text-black disabled:opacity-50"
+            <button
+              type="button"
+              onClick={handleAnalyticsToggle}
+              role="switch"
+              aria-checked={analyticsEnabled}
+              className={`relative inline-flex shrink-0 items-center p-[2px] transition-colors duration-200 ease-out rounded-full ${
+                analyticsEnabled ? 'bg-[#34C759]' : 'bg-[#E9E9EB]'
+              }`}
+              style={{
+                width: 56,
+                height: 44,
+              }}
             >
-              {isLoading ? 'Salvando...' : 'Salva impostazioni'}
+              <span
+                className={`inline-block rounded-full bg-white transition-transform duration-200 ease-out shrink-0 ${
+                  analyticsEnabled ? 'translate-x-[28px]' : 'translate-x-0'
+                }`}
+                style={{
+                  width: 24,
+                  height: 24,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                }}
+              />
+            </button>
+          </div>
+          <div className="text-[13px] text-[#8A8A96] space-y-1 mt-3">
+            <p>• Zero cookie di profilazione</p>
+            <p>• Dati completamente anonimi</p>
+            <p>• GDPR compliant di default</p>
+            <p>• Outbound links tracking</p>
+            <p>• Script ufficiale Plausible</p>
+          </div>
+        </div>
+
+        {/* File Access */}
+        <div className="bg-[#16161A] rounded-[14px] border border-[rgba(255,255,255,0.06)] p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <FileText className="h-5 w-5 text-[#EEBA2B]" />
+            <h3 className="text-base font-bold text-[#F0EDE8]">Accesso ai File</h3>
+          </div>
+          <div className="mb-3">
+            <p className="text-sm font-medium text-[#F0EDE8]">Consenso Accesso File</p>
+            <p className="text-[13px] text-[#8A8A96]">
+              {hasConsent === true ? 'Consentito - Puoi caricare allegati agli allenamenti' : hasConsent === false ? 'Non consentito - Funzionalità allegati disabilitata' : 'Non ancora deciso'}
+            </p>
+          </div>
+          <div className="text-[13px] text-[#8A8A96] space-y-1 mt-3">
+            <p>• Accesso solo ai file selezionati manualmente</p>
+            <p>• Nessun accesso automatico al sistema</p>
+            <p>• File utilizzati solo per allegati allenamenti</p>
+            <p>• Supporta JPEG, PNG e PDF (max 10MB)</p>
+          </div>
+          <div className="flex gap-2 pt-4">
+            {hasConsent === null ? (
+              <>
+                <Button onClick={acceptFileAccess} className="flex-1 rounded-[14px] py-3 font-bold text-[#0A0A0C] border-0" style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)' }}>
+                  Accetta
+                </Button>
+                <Button onClick={declineFileAccess} className="flex-1 rounded-[14px] py-3 bg-[#1E1E24] text-[#8A8A96] border-0">
+                  Rifiuta
+                </Button>
+              </>
+            ) : (
+              <Button onClick={resetFileAccess} className="w-full rounded-[14px] py-3 bg-[#1E1E24] text-[#8A8A96] border-0">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Cambia Decisione
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Documenti */}
+        <div className="bg-[#16161A] rounded-[14px] border border-[rgba(255,255,255,0.06)] p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <Shield className="h-5 w-5 text-[#EEBA2B]" />
+            <h3 className="text-base font-bold text-[#F0EDE8]">Documenti Privacy</h3>
+          </div>
+          <div className="space-y-3">
+            <Button onClick={() => navigate('/privacy-policy')} className="w-full rounded-[14px] py-3 font-bold text-[#0A0A0C] border-0" style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)' }}>
+              Informativa sulla privacy
+            </Button>
+            <Button onClick={() => navigate('/terms-and-conditions')} variant="outline" className="w-full rounded-[14px] py-3 border border-[#EEBA2B] text-[#EEBA2B] bg-transparent hover:bg-[#EEBA2B]/10">
+              Termini e condizioni
             </Button>
           </div>
         </div>
+
+        <Button
+          type="button"
+          onClick={handleSave}
+          disabled={isLoading}
+          className="w-full rounded-[14px] py-3 font-bold text-[#0A0A0C] border-0 disabled:opacity-50 mb-24"
+          style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)' }}
+        >
+          {isLoading ? 'Salvando...' : 'Salva impostazioni'}
+        </Button>
       </div>
     </div>
   );

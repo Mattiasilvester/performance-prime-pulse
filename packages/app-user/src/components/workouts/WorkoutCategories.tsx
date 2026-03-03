@@ -132,26 +132,26 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
     <div className="space-y-6">
       <StartTodayButton />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 items-stretch">
         {categories.map((category) => {
           const Icon = category.icon;
           const style = categoryStyles[category.id] ?? categoryStyles.strength;
           return (
             <div
               key={category.id}
-              className="relative bg-[#16161A] rounded-[14px] p-5 border border-[rgba(255,255,255,0.06)] overflow-hidden"
+              className="relative flex flex-col h-full bg-[#16161A] rounded-[14px] p-5 border border-[rgba(255,255,255,0.06)] overflow-hidden"
             >
               <div
                 className="absolute -top-2.5 -right-2.5 w-[60px] h-[60px] rounded-full"
                 style={{ background: style.circleBg }}
                 aria-hidden
               />
-              <div className="relative">
+              <div className="flex-1 flex flex-col min-h-0 relative">
                 <div className="mb-3 flex items-center justify-center w-10 h-10 rounded-[10px] shrink-0" style={{ background: style.bgOpacity }}>
                   <Icon className="h-6 w-6" style={{ color: category.iconColor }} />
                 </div>
                 <h3 className="text-base font-bold text-[#F0EDE8]">{category.name}</h3>
-                <p className="text-xs text-[#8A8A96] mb-3">{category.description}</p>
+                <p className="text-xs text-[#8A8A96] mb-3 line-clamp-2 min-h-[32px]">{category.description}</p>
                 <span
                   className="inline-block text-[11px] font-semibold rounded-full py-0.5 px-2.5"
                   style={{ color: style.color, background: style.bgOpacity }}
@@ -159,7 +159,6 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                   {category.workouts} workout
                 </span>
                 <div className="mt-3">
-                  
                   {/* Filtri per FORZA */}
                   {category.id === 'strength' && showFilters[category.id] && (
                     <div className="mt-4 p-3 bg-[#1E1E24] rounded-[14px] border border-[rgba(255,255,255,0.06)]">
@@ -265,15 +264,6 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                       </div>
                     </div>
                   )}
-                </div>
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-xs text-[#8A8A96]">{category.duration}</span>
-                  <Button
-                    onClick={() => handleCategoryClick(category)}
-                    className="bg-[#EEBA2B] hover:bg-[#D4A017] text-[#0A0A0C] font-semibold text-sm border-0"
-                  >
-                    Inizia
-                  </Button>
                 </div>
               </div>
 
@@ -396,6 +386,16 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                   </div>
                 </div>
               )}
+
+              <div className="flex items-center justify-between mt-auto pt-3">
+                <span className="text-xs text-[#8A8A96]">{category.duration}</span>
+                <Button
+                  onClick={() => handleCategoryClick(category)}
+                  className="bg-[#EEBA2B] hover:bg-[#D4A017] text-[#0A0A0C] font-semibold text-sm border-0"
+                >
+                  Inizia
+                </Button>
+              </div>
             </div>
           );
         })}

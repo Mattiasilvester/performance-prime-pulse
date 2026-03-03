@@ -230,7 +230,7 @@ const QuickActions = () => {
     },
   ];
 
-  const quickCardBase = 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] py-4 px-2 flex flex-col items-center gap-2 w-full transition-opacity hover:opacity-90 active:opacity-80';
+  const quickCardBase = 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] py-4 px-3 flex flex-col items-center gap-2 w-full min-w-0 overflow-hidden transition-opacity hover:opacity-90 active:opacity-80';
   const iconBoxBase = 'w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0';
 
   const renderPlanCard = () => {
@@ -243,7 +243,7 @@ const QuickActions = () => {
           <div className={iconBoxBase} style={{ background: iconBg }}>
             <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#EEBA2B]/30 border-t-[#EEBA2B]" />
           </div>
-          <p className="text-[10px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px]">Caricamento...</p>
+          <p className="text-[9px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px] text-center truncate w-full min-w-0">Caricamento...</p>
         </div>
       );
     }
@@ -258,9 +258,9 @@ const QuickActions = () => {
         <div className={iconBoxBase} style={{ background: iconBg }}>
           <Target className="w-5 h-5 shrink-0" style={{ color: iconColor }} />
         </div>
-        <div className="text-center">
-          <p className="text-[10px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px]">Piano Personalizzato</p>
-          <p className="text-[10px] text-[#8A8A96]/80 mt-0.5">{planCountLabel}</p>
+        <div className="text-center w-full min-w-0">
+          <p className="text-[9px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px] truncate w-full">Piano Personalizzato</p>
+          <p className="text-[9px] text-[#8A8A96]/80 mt-0.5 truncate w-full">{planCountLabel}</p>
         </div>
       </Button>
     );
@@ -274,7 +274,7 @@ const QuickActions = () => {
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-4 gap-3">
         {renderPlanCard()}
         {actions.map((action) => {
           const Icon = action.icon;
@@ -292,20 +292,20 @@ const QuickActions = () => {
                 <div className={iconBoxBase} style={{ background: iconBgRgba }}>
                   <Icon className="w-5 h-5 shrink-0" style={{ color: action.color }} />
                 </div>
-                <p className="text-[10px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px]">{action.label}</p>
+                <p className="text-[9px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px] text-center truncate w-full min-w-0">{action.label}</p>
               </Button>
             );
           } else {
             return (
-              <div key={action.label} className="relative">
+              <div key={action.label} className="relative min-w-0">
                 <div className={`${quickCardBase} opacity-50 pointer-events-none`}>
                   <div className={iconBoxBase} style={{ background: iconBgRgba }}>
                     <Icon className="w-5 h-5 shrink-0" style={{ color: action.color }} />
                   </div>
-                  <p className="text-[10px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px]">{action.label}</p>
+                  <p className="text-[9px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px] text-center truncate w-full min-w-0">{action.label}</p>
                 </div>
                 <div className="absolute inset-0 bg-gray-600/40 backdrop-blur-sm rounded-[14px] z-10 flex items-center justify-center">
-                  <p className="text-[10px] text-gray-200">Prossimamente</p>
+                  <p className="text-[9px] text-gray-200">Prossimamente</p>
                 </div>
               </div>
             );

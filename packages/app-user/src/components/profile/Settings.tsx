@@ -1,6 +1,5 @@
 import { Bell, Lock, Globe, HelpCircle, User, Shield, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
 const settingsItems = [
@@ -15,17 +14,6 @@ const settingsItems = [
 export const Settings = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
-
-  useEffect(() => {
-    const savedScrollPosition = sessionStorage.getItem('settingsScrollPosition');
-    if (savedScrollPosition) {
-      const timeoutId = setTimeout(() => {
-        window.scrollTo(0, parseInt(savedScrollPosition, 10));
-        sessionStorage.removeItem('settingsScrollPosition');
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, []);
 
   const handleSettingClick = (action: string) => {
     sessionStorage.setItem('settingsScrollPosition', window.scrollY.toString());

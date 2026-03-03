@@ -6,8 +6,8 @@ type WeeklyProgressChartProps = {
 };
 
 const WEEK_DAYS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
-const BAR_MAX_HEIGHT = 100;
 const BAR_MIN_HEIGHT = 8;
+const BAR_MAX_PX = 80;
 const CONTAINER_HEIGHT = 100;
 
 const WeeklyProgressChart = ({ data }: WeeklyProgressChartProps) => {
@@ -16,7 +16,7 @@ const WeeklyProgressChart = ({ data }: WeeklyProgressChartProps) => {
 
   const getBarHeight = (workouts: number) => {
     if (workouts === 0) return BAR_MIN_HEIGHT;
-    return BAR_MIN_HEIGHT + (workouts / maxWorkouts) * (CONTAINER_HEIGHT - BAR_MIN_HEIGHT);
+    return BAR_MIN_HEIGHT + (workouts / maxWorkouts) * (BAR_MAX_PX - BAR_MIN_HEIGHT);
   };
 
   return (

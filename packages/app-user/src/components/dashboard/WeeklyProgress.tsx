@@ -220,14 +220,14 @@ export const WeeklyProgress = () => {
 
   return (
     <div className="bg-[#16161A] rounded-[18px] p-5 border border-[rgba(255,255,255,0.06)]">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between">
         <h3 className="text-base font-bold text-[#F0EDE8]">Progressi Settimanali</h3>
         <span className="text-[13px] text-[#8A8A96] cursor-pointer hover:text-[#F0EDE8] transition-colors">
           Dettagli →
         </span>
       </div>
 
-      <div style={{ height: 100 }}>
+      <div className="mt-4 max-h-[100px] h-[100px]" style={{ height: 100 }}>
         <Suspense fallback={<div className="h-full w-full rounded-lg bg-[#1E1E24] animate-pulse opacity-30" />}>
           <WeeklyProgressChart data={data} />
         </Suspense>

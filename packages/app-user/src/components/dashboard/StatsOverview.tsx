@@ -133,7 +133,7 @@ export const StatsOverview = () => {
   ];
   return (
     <>
-      <div className="grid grid-cols-2 gap-2.5 px-0">
+      <div className="grid grid-cols-2 gap-3 px-0">
         {statsCards.map((stat) => {
           const Icon = stat.icon;
           const isMedalCard = stat.isMedalCard;

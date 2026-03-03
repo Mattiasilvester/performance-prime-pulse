@@ -56,8 +56,8 @@ export const Dashboard = () => {
   return (
     <div className="pb-0 pt-0 dashboard-container min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-5 py-0 space-y-1 sm:space-y-1 pt-0">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="container mx-auto px-5 flex flex-col gap-6 pb-6 pt-0">
+        <div className="pt-6 pb-2 flex items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0 flex-1">
             <h2 className="text-[26px] font-bold text-[#F0EDE8] leading-tight truncate" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
               {getGreeting()}, {userName}
@@ -82,7 +82,6 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Onboarding Bot per nuovi utenti */}
         <OnboardingBot 
           userName={userName}
           onSendMessage={handleSendMessage}
@@ -92,9 +91,8 @@ export const Dashboard = () => {
         <Suspense fallback={<div className="text-[#8A8A96]">Caricamento statistiche...</div>}>
           <StatsOverview />
         </Suspense>
-        
-        {/* CTA Avvia allenamento rapido */}
-        <div className="w-full mb-4">
+
+        <div className="w-full mx-0">
           <button
             onClick={() => navigate('/workout/quick')}
             className="w-full py-4 px-4 rounded-[18px] font-bold text-base text-[#0A0A0C] flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98]"
@@ -120,7 +118,6 @@ export const Dashboard = () => {
           <QuickActions />
         </Suspense>
 
-        {/* PrimeBot Teaser */}
         <button
           type="button"
           onClick={() => navigate('/ai-coach')}
@@ -143,7 +140,7 @@ export const Dashboard = () => {
           <ChevronRight className="w-5 h-5 shrink-0 text-[#5C5C66]" aria-hidden />
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-4">
           <Suspense fallback={<div className="text-white">Caricamento progressi...</div>}>
             <WeeklyProgress />
           </Suspense>

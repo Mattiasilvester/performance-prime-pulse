@@ -15,6 +15,14 @@ import { analytics } from '@/services/analytics';
 const PersonalInfo = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/profile');
+    }
+  };
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     nome: '',
@@ -131,36 +139,38 @@ const PersonalInfo = () => {
     analytics.trackUserAction('avatar_remove');
   };
 
+  const inputClass = 'bg-[#1A1A1F] border border-[rgba(255,255,255,0.1)] rounded-[14px] text-[#F0EDE8] placeholder:text-[#5C5C66] focus:border-[#EEBA2B] focus:ring-1 focus:ring-[#EEBA2B] px-4 py-3';
+  const labelClass = 'text-sm font-medium text-[#8A8A96] mb-2';
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-black p-6">
-        <div className="max-w-md mx-auto">
-          <div className="text-white text-center">Caricamento...</div>
+      <div className="min-h-screen bg-background flex flex-col gap-6 px-5 pb-6 pt-6">
+        <div className="max-w-md mx-auto w-full">
+          <div className="text-[#8A8A96] text-center">Caricamento...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black p-6 pb-24">
-      <div className="max-w-md mx-auto">
-        <div className="flex items-center mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/profile')}
-            className="text-[#EEBA2B] hover:bg-[#EEBA2B]/10"
+    <div className="min-h-screen bg-background flex flex-col gap-6 px-5 pb-6">
+      <div className="max-w-md mx-auto w-full pt-6">
+        <div className="flex items-center gap-2 mb-2">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="p-2 text-[#8A8A96] hover:text-[#EEBA2B] transition-colors"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Indietro
-          </Button>
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-xl font-bold text-[#F0EDE8]">Informazioni personali</h1>
         </div>
-        
-        <div className="bg-surface-primary border-2 border-[#EEBA2B] rounded-2xl p-6 mb-6">
-          <h2 className="text-xl font-semibold text-[#EEBA2B] mb-6">Informazioni personali</h2>
-          
+        <p className="text-[13px] text-[#8A8A96] mb-4">Aggiorna i tuoi dati personali</p>
+      </div>
+
+      <div className="max-w-md mx-auto w-full">
+        <div className="bg-[#16161A] rounded-[14px] border border-[rgba(255,255,255,0.06)] p-5">
           <div className="space-y-4">
-            {/* Avatar Upload Section */}
             <div className="flex flex-col items-center space-y-4">
               <div className="relative">
                 {avatarPreview ? (
@@ -180,12 +190,11 @@ const PersonalInfo = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-gray-800 border-2 border-[#EEBA2B] flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-[#1E1E24] border-2 border-[rgba(255,255,255,0.06)] flex items-center justify-center">
                     <span className="text-[#EEBA2B] text-2xl">👤</span>
                   </div>
                 )}
               </div>
-              
               <input
                 ref={fileInputRef}
                 type="file"
@@ -193,77 +202,74 @@ const PersonalInfo = () => {
                 onChange={handleAvatarChange}
                 className="hidden"
               />
-              
               <Button
+                type="button"
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-black border-[#EEBA2B] text-[#EEBA2B] hover:bg-[#EEBA2B] hover:text-black"
+                className="bg-[#1E1E24] border border-[rgba(255,255,255,0.06)] text-[#8A8A96] hover:text-[#F0EDE8] hover:bg-[#1E1E24]/80 rounded-[14px]"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Carica foto profilo
               </Button>
             </div>
-            
+
             <div>
-              <Label htmlFor="nome" className="text-white">Nome</Label>
+              <Label htmlFor="nome" className={labelClass}>Nome</Label>
               <Input
                 id="nome"
                 type="text"
-                className="bg-black border-gray-500 text-white"
+                className={cn('border-0', inputClass)}
                 placeholder="Inserisci il tuo nome"
                 value={formData.nome}
                 onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
               />
             </div>
-            
             <div>
-              <Label htmlFor="cognome" className="text-white">Cognome</Label>
+              <Label htmlFor="cognome" className={labelClass}>Cognome</Label>
               <Input
                 id="cognome"
                 type="text"
-                className="bg-black border-gray-500 text-white"
+                className={cn('border-0', inputClass)}
                 placeholder="Inserisci il tuo cognome"
                 value={formData.cognome}
                 onChange={(e) => setFormData({ ...formData, cognome: e.target.value })}
               />
             </div>
-            
             <div>
-              <Label htmlFor="data-nascita" className="text-white">Data di nascita</Label>
+              <Label htmlFor="data-nascita" className={labelClass}>Data di nascita</Label>
               <FastDatePicker
                 date={formData.dataNascita}
                 onDateChange={(date) => setFormData({ ...formData, dataNascita: date })}
                 placeholder="Seleziona data di nascita"
               />
             </div>
-            
             <div>
-              <Label htmlFor="luogo-nascita" className="text-white">Luogo di nascita</Label>
+              <Label htmlFor="luogo-nascita" className={labelClass}>Luogo di nascita</Label>
               <Input
                 id="luogo-nascita"
                 type="text"
-                className="bg-black border-gray-500 text-white"
+                className={cn('border-0', inputClass)}
                 placeholder="Inserisci il luogo di nascita"
                 value={formData.luogoNascita}
                 onChange={(e) => setFormData({ ...formData, luogoNascita: e.target.value })}
               />
             </div>
-            
             <div>
-              <Label htmlFor="telefono" className="text-white">Numero di telefono</Label>
+              <Label htmlFor="telefono" className={labelClass}>Numero di telefono</Label>
               <Input
                 id="telefono"
                 type="tel"
-                className="bg-black border-gray-500 text-white"
+                className={cn('border-0', inputClass)}
                 placeholder="Inserisci il numero di telefono"
                 value={formData.telefono}
                 onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
               />
             </div>
-            
-            <Button 
+            <Button
+              type="button"
               onClick={handleSave}
-              className="w-full bg-[#EEBA2B] hover:bg-[#d4a61a] text-black"
+              className="w-full rounded-[14px] py-3 font-bold text-[#0A0A0C] border-0"
+              style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)' }}
             >
               Salva modifiche
             </Button>
