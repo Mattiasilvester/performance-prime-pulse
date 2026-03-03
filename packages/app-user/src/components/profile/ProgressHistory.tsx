@@ -45,19 +45,19 @@ export const ProgressHistory = () => {
   };
 
   return (
-    <div className="bg-black rounded-2xl shadow-sm border border-[#EEBA2B] p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-[#EEBA2B]">{t('progressHistory.title')}</h3>
-        
-        {/* Desktop buttons */}
+    <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[18px] p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-bold text-[#F0EDE8]">Storico Progressi</h3>
+        <span className="text-[13px] text-[#8A8A96]">Periodo</span>
+      </div>
+      <div className="flex items-center justify-end gap-2 mb-4">
         <div className="hidden lg:flex gap-2">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.key}
+              type="button"
               className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                period === opt.key 
-                  ? 'bg-[#EEBA2B] text-black font-medium' 
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                period === opt.key ? 'bg-[#EEBA2B] text-[#0A0A0C] font-medium' : 'bg-[#1E1E24] text-[#8A8A96]'
               }`}
               onClick={() => setPeriod(opt.key)}
             >
@@ -65,52 +65,39 @@ export const ProgressHistory = () => {
             </button>
           ))}
         </div>
-
-        {/* Mobile dropdown */}
         <div className="lg:hidden">
-          <label className="block text-sm font-medium text-[#EEBA2B] mb-1">Periodo</label>
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
-            className="bg-black border border-[#EEBA2B] text-[#EEBA2B] px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#EEBA2B]"
+            className="bg-[#1E1E24] border border-[rgba(255,255,255,0.06)] text-[#F0EDE8] px-3 py-2 rounded-lg text-sm"
           >
             {PERIOD_OPTIONS.map(opt => (
-              <option key={opt.key} value={opt.key} className="bg-black text-[#EEBA2B]">
+              <option key={opt.key} value={opt.key} className="bg-[#1E1E24]">
                 {t(opt.label)}
               </option>
             ))}
           </select>
         </div>
       </div>
-
       <div className="mb-6">
         {loading ? (
           <div className="h-64 flex items-center justify-center">
-            <div className="text-gray-400">Caricamento dati...</div>
+            <div className="text-[#8A8A96] text-sm">Caricamento dati...</div>
           </div>
         ) : (
-          <Suspense fallback={<div className="h-64 w-full rounded-lg bg-white/5 animate-pulse" />}>
+          <Suspense fallback={<div className="h-64 w-full rounded-lg bg-[#1E1E24] animate-pulse" />}>
             <ProgressChart data={chartData || []} />
           </Suspense>
         )}
       </div>
-
       <div className="grid grid-cols-2 gap-4">
-        <div className="text-center p-3 bg-gradient-to-br from-[#EEBA2B]/20 to-transparent rounded-xl border border-[#EEBA2B]/30">
-          <div className="flex items-center justify-center mb-2">
-            <div className="w-3 h-3 bg-[#EEBA2B] rounded-full mr-2"></div>
-            <span className="text-sm font-medium text-white">{t('progressHistory.workouts')}</span>
-          </div>
-          <div className="text-2xl font-bold text-[#EEBA2B]">{totalStats.workouts}</div>
-          <div className="text-sm text-gray-400">{t('progressHistory.inPeriod')}</div>
+        <div className="text-center p-3 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#1E1E24]">
+          <div className="text-2xl font-bold text-[#F0EDE8]">{totalStats.workouts}</div>
+          <div className="text-[10px] text-[#5C5C66] mt-1">{t('progressHistory.workouts')} · {t('progressHistory.inPeriod')}</div>
         </div>
-        <div className="text-center p-3 bg-gradient-to-br from-orange-500/20 to-transparent rounded-xl border border-orange-500/30">
-          <div className="flex items-center justify-center mb-2">
-            <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
-            <span className="text-sm font-medium text-white">{t('progressHistory.totalHours')}</span>
-          </div>
-          <div className="text-2xl font-bold text-orange-500">{formatTotalHours(totalStats.hours)}</div>
-          <div className="text-sm text-gray-400">{t('progressHistory.inPeriod')}</div>
+        <div className="text-center p-3 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#1E1E24]">
+          <div className="text-2xl font-bold text-[#10B981]">{formatTotalHours(totalStats.hours)}</div>
+          <div className="text-[10px] text-[#5C5C66] mt-1">{t('progressHistory.totalHours')} · {t('progressHistory.inPeriod')}</div>
         </div>
       </div>
     </div>

@@ -12,7 +12,7 @@ type QuickAction = {
   label: string;
   description: string;
   icon: LucideIcon;
-  color: string;
+  color: string; // hex per icon box
   textColor: string;
   onClick: () => void;
   accessible: boolean;
@@ -202,7 +202,7 @@ const QuickActions = () => {
       label: 'Timer',
       description: 'Timer per allenamenti',
       icon: Clock,
-      color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
+      color: '#3B82F6',
       textColor: 'text-white',
       onClick: handleTimerClick,
       accessible: true,
@@ -212,7 +212,7 @@ const QuickActions = () => {
       label: 'Calendario',
       description: 'Prenota appuntamenti',
       icon: Calendar,
-      color: 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116]',
+      color: '#3B82F6',
       textColor: 'text-white',
       onClick: handleScheduleClick,
       accessible: true,
@@ -222,7 +222,7 @@ const QuickActions = () => {
       label: 'PrimeBot',
       description: 'AI Coach personale',
       icon: Bot,
-      color: 'bg-gradient-to-r from-[#c89116] to-black hover:from-black hover:to-[#c89116] border-2 border-[#c89116]',
+      color: '#10B981',
       textColor: 'text-white',
       onClick: handlePrimeBotClick,
       accessible: true,
@@ -230,22 +230,21 @@ const QuickActions = () => {
     },
   ];
 
+  const quickCardBase = 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] py-4 px-2 flex flex-col items-center gap-2 w-full transition-opacity hover:opacity-90 active:opacity-80';
+  const iconBoxBase = 'w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0';
+
   const renderPlanCard = () => {
-    const baseClasses = 'bg-gradient-to-r from-black to-[#c89116] hover:from-[#c89116] hover:to-black border-2 border-[#c89116] text-white h-auto p-2 sm:p-4 flex flex-col items-center space-y-1 sm:space-y-2 hover:scale-105 transition-all duration-200';
+    const iconColor = '#EEBA2B';
+    const iconBg = 'rgba(238,186,43,0.08)';
 
     if (isLoadingPlans) {
       return (
-        <Button
-          key="plan-loading"
-          disabled
-          className={`${baseClasses} opacity-50 cursor-wait`}
-        >
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-black border-t-transparent"></div>
-          <div className="text-center">
-            <p className="font-medium text-xs sm:text-sm">Caricamento...</p>
-            <p className="text-xs opacity-90 hidden sm:block">Recupero piani</p>
+        <div key="plan-loading" className={`${quickCardBase} opacity-60 cursor-wait`}>
+          <div className={iconBoxBase} style={{ background: iconBg }}>
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#EEBA2B]/30 border-t-[#EEBA2B]" />
           </div>
-        </Button>
+          <p className="text-[10px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px]">Caricamento...</p>
+        </div>
       );
     }
 
@@ -253,71 +252,65 @@ const QuickActions = () => {
       <Button
         key="plan-card"
         onClick={handlePlanCardClick}
-        className={baseClasses}
+        variant="ghost"
+        className={`${quickCardBase} h-auto min-h-0`}
       >
-        <Target className="h-4 w-4 sm:h-6 sm:w-6" />
+        <div className={iconBoxBase} style={{ background: iconBg }}>
+          <Target className="w-5 h-5 shrink-0" style={{ color: iconColor }} />
+        </div>
         <div className="text-center">
-          <p className="font-medium text-xs sm:text-sm">Piano Personalizzato</p>
-          <p className="text-xs sm:text-sm text-white/80 mt-1">
-            {planCountLabel}
-          </p>
+          <p className="text-[10px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px]">Piano Personalizzato</p>
+          <p className="text-[10px] text-[#8A8A96]/80 mt-0.5">{planCountLabel}</p>
         </div>
       </Button>
     );
   };
 
+  const getIconBgRgba = (hex: string) => {
+    if (hex === '#3B82F6') return 'rgba(59,130,246,0.1)';
+    if (hex === '#10B981') return 'rgba(16,185,129,0.1)';
+    return 'rgba(238,186,43,0.08)';
+  };
+
   return (
     <>
-      <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-3 sm:p-6 shadow-lg">
-
-        <h3 className="text-base sm:text-lg font-semibold text-pp-gold mb-3 sm:mb-4">Azioni Rapide</h3>
-        
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-          {renderPlanCard()}
-          {actions.map((action) => {
-            const Icon = action.icon;
-            
-            if (action.accessible) {
-              return (
-                <Button
-                  key={action.label}
-                  onClick={action.onClick}
-                  disabled={action.disabled}
-                  className={`${action.color} ${action.textColor} h-auto p-2 sm:p-4 flex flex-col items-center space-y-1 sm:space-y-2 hover:scale-105 transition-all duration-200`}
-                >
-                  <Icon className="h-4 w-4 sm:h-6 sm:w-6" />
-                  <div className="text-center">
-                    <p className="font-medium text-xs sm:text-sm">{action.label}</p>
-                    <p className="text-xs opacity-90 hidden sm:block">{action.description}</p>
-                  </div>
-                </Button>
-              );
-            } else {
-              return (
-                <div key={action.label} className="relative">
-                  <Button
-                    disabled
-                    className={`${action.color} ${action.textColor} h-auto p-2 sm:p-4 flex flex-col items-center space-y-1 sm:space-y-2 opacity-50`}
-                  >
-                    <Icon className="h-4 w-4 sm:h-6 sm:w-6" />
-                    <div className="text-center">
-                      <p className="font-medium text-xs sm:text-sm">{action.label}</p>
-                      <p className="text-xs opacity-90 hidden sm:block">{action.description}</p>
-                    </div>
-                  </Button>
-                  
-                  {/* Overlay individuale per azioni bloccate */}
-                  <div className="absolute inset-0 bg-gray-600/40 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-2xl mb-2">🔒</div>
-                      <p className="text-xs text-gray-200">Prossimamente</p>
-                    </div>
-                  </div>
+      <div className="grid grid-cols-4 gap-2.5">
+        {renderPlanCard()}
+        {actions.map((action) => {
+          const Icon = action.icon;
+          const iconBgRgba = getIconBgRgba(action.color);
+          
+          if (action.accessible) {
+            return (
+              <Button
+                key={action.label}
+                onClick={action.onClick}
+                disabled={action.disabled}
+                variant="ghost"
+                className={`${quickCardBase} h-auto min-h-0`}
+              >
+                <div className={iconBoxBase} style={{ background: iconBgRgba }}>
+                  <Icon className="w-5 h-5 shrink-0" style={{ color: action.color }} />
                 </div>
-              );
-            }
-          })}
-        </div>
+                <p className="text-[10px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px]">{action.label}</p>
+              </Button>
+            );
+          } else {
+            return (
+              <div key={action.label} className="relative">
+                <div className={`${quickCardBase} opacity-50 pointer-events-none`}>
+                  <div className={iconBoxBase} style={{ background: iconBgRgba }}>
+                    <Icon className="w-5 h-5 shrink-0" style={{ color: action.color }} />
+                  </div>
+                  <p className="text-[10px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px]">{action.label}</p>
+                </div>
+                <div className="absolute inset-0 bg-gray-600/40 backdrop-blur-sm rounded-[14px] z-10 flex items-center justify-center">
+                  <p className="text-[10px] text-gray-200">Prossimamente</p>
+                </div>
+              </div>
+            );
+          }
+        })}
       </div>
 
       {/* Modal per nuovo obiettivo */}

@@ -6,7 +6,11 @@ export default {
     extend: {
       colors: {
         'pp-gold': '#EEBA2B',
-        'pp-black': '#000000',
+        'pp-black': '#0A0A0C',
+        'pp-teal': '#10B981',
+        'pp-red': '#EF4444',
+        'pp-blue': '#3B82F6',
+        'pp-purple': '#A855F7',
         border: 'hsl(var(--border))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',

@@ -70,7 +70,7 @@ export class ErrorBoundary extends Component<Props, State> {
         : 'Si è verificato un errore imprevisto'
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-black p-4">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
           <div className="max-w-lg w-full bg-gray-900 rounded-xl p-8 text-center border border-gray-800">
             {/* Icona */}
             <div className="text-6xl mb-6">

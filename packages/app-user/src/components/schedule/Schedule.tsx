@@ -44,11 +44,11 @@ export const Schedule = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-pp-gold">Calendario</h2>
-          <p className="text-white">Gestisci i tuoi appuntamenti</p>
+          <h2 className="text-2xl font-bold text-[#F0EDE8]">Calendario</h2>
+          <p className="text-[13px] text-[#8A8A96] mt-0.5">Gestisci allenamenti e appuntamenti</p>
         </div>
       </div>
 

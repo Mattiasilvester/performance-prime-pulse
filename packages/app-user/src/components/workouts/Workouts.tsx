@@ -178,14 +178,12 @@ export const Workouts = () => {
     );
   }
 
-  // Se non c'è allenamento attivo, mostra il layout normale
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="min-h-screen bg-background space-y-6 px-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-pp-gold">Allenamenti</h2>
-          <p className="text-white">Scegli il tuo workout perfetto</p>
+          <h2 className="text-2xl font-bold text-[#F0EDE8]">Allenamento</h2>
+          <p className="text-[13px] text-[#8A8A96] mt-0.5">Scegli il tuo workout perfetto</p>
         </div>
       </div>
 

@@ -171,7 +171,7 @@ const ProfessionalDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#EEBA2B]"></div>
       </div>
     );
@@ -179,7 +179,7 @@ const ProfessionalDetail: React.FC = () => {
 
   if (!professional) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center text-white">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center text-[#F0EDE8]">
         <p className="text-xl mb-4">Professionista non trovato</p>
         <button 
           onClick={() => navigate('/professionals')}
@@ -320,13 +320,13 @@ const ProfessionalDetail: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black pb-24">
-      {/* Header con back button */}
-      <div className="sticky top-0 z-10 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800">
+    <div className="min-h-screen bg-background pb-24">
+      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-lg border-b border-[rgba(255,255,255,0.06)]">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <button 
+          <button
+            type="button"
             onClick={() => navigate('/professionals')}
-            className="flex items-center gap-2 text-gray-400 hover:text-[#EEBA2B] transition-colors"
+            className="flex items-center gap-2 text-[#8A8A96] hover:text-[#EEBA2B] transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Torna ai professionisti</span>
@@ -335,54 +335,42 @@ const ProfessionalDetail: React.FC = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        
-        {/* HEADER PROFILO */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+        <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-6">
           <div className="flex flex-col md:flex-row gap-6">
-            {/* Foto */}
             <div className="flex-shrink-0">
               {professional.foto_url ? (
-                <img 
-                  src={professional.foto_url} 
+                <img
+                  src={professional.foto_url}
                   alt={`${professional.first_name} ${professional.last_name}`}
-                  className="w-32 h-32 md:w-40 md:h-40 rounded-2xl object-cover border-2 border-gray-700"
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-[14px] object-cover border border-[rgba(255,255,255,0.06)]"
                 />
               ) : (
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 
-                              border-2 border-gray-700 flex items-center justify-center text-4xl">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-[14px] border border-[rgba(255,255,255,0.06)] flex items-center justify-center text-4xl bg-[#1E1E24]">
                   {categoryIcon}
                 </div>
               )}
             </div>
-
-            {/* Info */}
             <div className="flex-1 space-y-3">
               <div>
-                {/* Badge Partner */}
                 {professional.is_partner && (
-                  <div className="inline-flex items-center gap-1 bg-gradient-to-r from-[#EEBA2B] to-yellow-500 
-                                  text-black font-bold text-sm px-4 py-1.5 rounded-full mb-2">
+                  <div className="inline-flex items-center gap-1 text-[#0A0A0C] font-bold text-sm px-3 py-1 rounded-full mb-2 bg-[#EEBA2B]">
                     <span>🏆</span>
                     <span>Partner Performance Prime</span>
                   </div>
                 )}
-                <h1 className="text-2xl md:text-3xl font-bold text-white">
+                <h1 className="text-2xl md:text-3xl font-bold text-[#F0EDE8]">
                   {professional.first_name} {professional.last_name}
                 </h1>
-                <p className="text-[#EEBA2B] font-medium text-lg">{getCategoryLabel(professional.category)}</p>
+                <p className="text-[#8A8A96] font-medium text-lg">{getCategoryLabel(professional.category)}</p>
               </div>
-
-              {/* Rating */}
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
-                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  <span className="text-white font-bold">{professional.rating.toFixed(1)}</span>
+                  <Star className="w-5 h-5 text-[#EEBA2B] fill-[#EEBA2B]" />
+                  <span className="text-[#F0EDE8] font-bold">{professional.rating.toFixed(1)}</span>
                 </div>
-                <span className="text-gray-400">({professional.reviews_count} recensioni)</span>
+                <span className="text-[#8A8A96]">({professional.reviews_count} recensioni)</span>
               </div>
-
-              {/* Meta info */}
-              <div className="flex flex-wrap gap-4 text-gray-400 text-sm">
+              <div className="flex flex-wrap gap-4 text-[#8A8A96] text-sm">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
                   <span>{professional.zona || 'Non specificata'}</span>
@@ -396,21 +384,20 @@ const ProfessionalDetail: React.FC = () => {
                   <span>{professional.prezzo_fascia}</span>
                 </div>
               </div>
-
-              {/* CTA Buttons */}
               <div className="flex flex-wrap gap-3 pt-2">
-                <button 
+                <button
+                  type="button"
                   onClick={() => setShowContactModal(true)}
-                  className="flex items-center gap-2 bg-transparent border-2 border-[#EEBA2B] text-[#EEBA2B] 
-                           font-bold py-3 px-6 rounded-xl hover:bg-[#EEBA2B] hover:text-black transition-all"
+                  className="flex items-center gap-2 bg-[#1E1E24] border border-[rgba(255,255,255,0.06)] text-[#F0EDE8] font-bold py-3 px-6 rounded-[14px] hover:opacity-90 transition-opacity"
                 >
                   <MessageCircle className="w-5 h-5" />
                   Contatta
                 </button>
-                <button 
+                <button
+                  type="button"
                   onClick={() => setShowBookingModal(true)}
-                  className="flex items-center gap-2 bg-[#EEBA2B] text-black font-bold py-3 px-6 rounded-xl 
-                           hover:bg-yellow-400 transition-all hover:shadow-[0_0_20px_rgba(238,186,43,0.4)]"
+                  className="flex items-center gap-2 font-bold py-3 px-6 rounded-[14px] text-[#0A0A0C] transition-opacity hover:opacity-95"
+                  style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)' }}
                 >
                   <Calendar className="w-5 h-5" />
                   Prenota
@@ -420,28 +407,25 @@ const ProfessionalDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* CHI SONO */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-6">
+          <h2 className="text-xl font-bold text-[#F0EDE8] mb-4 flex items-center gap-2">
             📝 Chi sono
           </h2>
-          <p className="text-gray-300 leading-relaxed break-words whitespace-normal overflow-hidden">
+          <p className="text-[#8A8A96] leading-relaxed break-words whitespace-normal overflow-hidden">
             {professional.bio || 'Nessuna descrizione disponibile.'}
           </p>
         </div>
 
-        {/* SPECIALIZZAZIONI */}
         {professional.specializzazioni && professional.specializzazioni.length > 0 && (
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-6">
+            <h2 className="text-xl font-bold text-[#F0EDE8] mb-4 flex items-center gap-2">
               🎯 Specializzazioni
             </h2>
             <div className="flex flex-wrap gap-2">
               {professional.specializzazioni.map((spec, index) => (
-                <span 
+                <span
                   key={index}
-                  className="bg-gray-800 text-gray-300 px-4 py-2 rounded-full text-sm border border-gray-700
-                           hover:border-[#EEBA2B] hover:text-[#EEBA2B] transition-colors"
+                  className="bg-[#1E1E24] text-[#8A8A96] px-4 py-2 rounded-full text-sm border border-[rgba(255,255,255,0.06)]"
                 >
                   {spec}
                 </span>
@@ -450,14 +434,13 @@ const ProfessionalDetail: React.FC = () => {
           </div>
         )}
 
-        {/* FORMAZIONE (titoli di studio) */}
         {(() => {
           const titoli = professional.titolo_studio
             ? (Array.isArray(professional.titolo_studio) ? professional.titolo_studio : [professional.titolo_studio])
             : [];
           return titoli.length > 0 ? (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-6">
+              <h2 className="text-xl font-bold text-[#F0EDE8] mb-4 flex items-center gap-2">
                 <GraduationCap className="w-5 h-5 text-[#EEBA2B]" />
                 Formazione
               </h2>
@@ -465,7 +448,7 @@ const ProfessionalDetail: React.FC = () => {
                 {titoli.map((titolo, index) => (
                   <li
                     key={index}
-                    className="flex items-center gap-2 text-gray-300"
+                    className="flex items-center gap-2 text-[#8A8A96]"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-[#EEBA2B] flex-shrink-0" />
                     {titolo}
@@ -476,53 +459,54 @@ const ProfessionalDetail: React.FC = () => {
           ) : null;
         })()}
 
-        {/* INFORMAZIONI */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-6">
+          <h2 className="text-xl font-bold text-[#F0EDE8] mb-4 flex items-center gap-2">
             📊 Informazioni
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 text-gray-300">
+            <div className="flex items-center gap-3 text-[#8A8A96]">
               <MapPin className="w-5 h-5 text-[#EEBA2B]" />
               <div>
-                <p className="text-gray-500 text-sm">Zona</p>
-                <p>{professional.zona || 'Non specificata'}</p>
+                <p className="text-[#5C5C66] text-sm">Zona</p>
+                <p className="text-[#F0EDE8]">{professional.zona || 'Non specificata'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 text-gray-300">
+            <div className="flex items-center gap-3 text-[#8A8A96]">
               <Video className="w-5 h-5 text-[#EEBA2B]" />
               <div>
-                <p className="text-gray-500 text-sm">Modalità</p>
-                <p>{modalitaLabel}</p>
+                <p className="text-[#5C5C66] text-sm">Modalità</p>
+                <p className="text-[#F0EDE8]">{modalitaLabel}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 text-gray-300">
+            <div className="flex items-center gap-3 text-[#8A8A96]">
               <Euro className="w-5 h-5 text-[#EEBA2B]" />
               <div>
                 <p className="text-gray-500 text-sm">Fascia prezzo</p>
                 <p>{professional.prezzo_fascia} {professional.prezzo_fascia === '€' ? '(Economico)' : professional.prezzo_fascia === '€€' ? '(Medio)' : '(Premium)'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 text-gray-300">
+            <div className="flex items-center gap-3 text-[#8A8A96]">
               <Users className="w-5 h-5 text-[#EEBA2B]" />
               <div>
-                <p className="text-gray-500 text-sm">Clienti seguiti</p>
-                <p>{professional.reviews_count}+ clienti</p>
+                <p className="text-[#5C5C66] text-sm">Clienti seguiti</p>
+                <p className="text-[#F0EDE8]">{professional.reviews_count}+ clienti</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* RECENSIONI */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+        <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-xl font-bold text-[#F0EDE8] flex items-center gap-2">
               ⭐ Recensioni ({professional.reviews_count})
             </h2>
             {canReview && user && (
               <button
+                type="button"
                 onClick={() => setShowReviewForm(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#EEBA2B] text-black rounded-lg font-semibold hover:bg-[#d4a827] transition-colors text-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-[14px] font-semibold text-sm text-[#0A0A0C] hover:opacity-95 transition-opacity"
+                style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)' }}
                 disabled={checkingCanReview}
               >
                 <Plus className="w-4 h-4" />
@@ -530,18 +514,19 @@ const ProfessionalDetail: React.FC = () => {
               </button>
             )}
           </div>
-          
           {reviewsLoading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#EEBA2B]"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#EEBA2B]" />
             </div>
           ) : reviews.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-400 text-sm mb-4">Nessuna recensione ancora</p>
+              <p className="text-[#8A8A96] text-sm mb-4">Nessuna recensione ancora</p>
               {canReview && user && (
                 <button
+                  type="button"
                   onClick={() => setShowReviewForm(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#EEBA2B] text-black rounded-lg font-semibold hover:bg-[#d4a827] transition-colors text-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-[14px] font-semibold text-sm text-[#0A0A0C]"
+                  style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)' }}
                 >
                   <Plus className="w-4 h-4" />
                   Sii il primo a lasciare una recensione
@@ -551,53 +536,44 @@ const ProfessionalDetail: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {reviews.map((review) => (
-                <div key={review.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-                  {/* Stelle con badge e data sulla stessa riga */}
+                <div key={review.id} className="bg-[#1E1E24] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600'}`} 
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${i < review.rating ? 'text-[#EEBA2B] fill-[#EEBA2B]' : 'text-[#5C5C66]'}`}
                         />
                       ))}
                     </div>
                     <div className="flex items-center gap-2">
                       {review.is_verified && (
-                        <span className="flex items-center gap-1 text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded">
+                        <span className="flex items-center gap-1 text-xs text-[#10B981] bg-[rgba(16,185,129,0.1)] px-2 py-0.5 rounded">
                           <CheckCircle className="w-3 h-3" />
                           Verificata
                         </span>
                       )}
-                      <span className="text-gray-500 text-sm">{formatRelativeDate(review.created_at)}</span>
+                      <span className="text-[#5C5C66] text-sm">{formatRelativeDate(review.created_at)}</span>
                     </div>
                   </div>
-                  
-                  {/* Nome utente */}
                   <div className="mb-3">
-                    <span className="text-white font-medium">{getUserDisplayName(review)}</span>
+                    <span className="text-[#F0EDE8] font-medium">{getUserDisplayName(review)}</span>
                   </div>
-                  
-                  {/* Titolo */}
                   {review.title && (
-                    <h3 className="text-white font-semibold text-sm mb-2">{review.title}</h3>
+                    <h3 className="text-[#F0EDE8] font-semibold text-sm mb-2">{review.title}</h3>
                   )}
-                  
-                  {/* Commento */}
                   {review.comment && (
-                    <p className="text-gray-300 text-sm mb-3">{review.comment}</p>
+                    <p className="text-[#8A8A96] text-sm mb-3">{review.comment}</p>
                   )}
-                  
-                  {/* Risposta professionista */}
                   {review.response && (
-                    <div className="mt-3 pt-3 border-t border-gray-700">
+                    <div className="mt-3 pt-3 border-t border-[rgba(255,255,255,0.06)]">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-[#EEBA2B] font-semibold text-xs">Risposta del professionista</span>
                         {review.response_at && (
-                          <span className="text-gray-500 text-xs">{formatRelativeDate(review.response_at)}</span>
+                          <span className="text-[#5C5C66] text-xs">{formatRelativeDate(review.response_at)}</span>
                         )}
                       </div>
-                      <p className="text-gray-300 text-sm">{review.response}</p>
+                      <p className="text-[#8A8A96] text-sm">{review.response}</p>
                     </div>
                   )}
                 </div>

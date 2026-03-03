@@ -101,7 +101,7 @@ const Security = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black p-6 pb-24">
+    <div className="min-h-screen bg-background p-6 pb-24">
       <div className="max-w-md mx-auto">
         <div className="flex items-center mb-6">
           <Button

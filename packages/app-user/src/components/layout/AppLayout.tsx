@@ -9,7 +9,7 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <div className="bg-black">
+    <div className="bg-background">
       {/* Header */}
       <Header />
       

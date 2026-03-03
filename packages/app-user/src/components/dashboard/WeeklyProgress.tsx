@@ -219,24 +219,29 @@ export const WeeklyProgress = () => {
   // Funzione per refresh manuale rimossa - non più necessaria
 
   return (
-    <div className="bg-black rounded-2xl p-4 shadow-lg border-2 border-pp-gold">
+    <div className="bg-[#16161A] rounded-[18px] p-5 border border-[rgba(255,255,255,0.06)]">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-pp-gold">Progressi Settimanali</h3>
-        <span className="text-sm text-white">Tutti gli allenamenti</span>
+        <h3 className="text-base font-bold text-[#F0EDE8]">Progressi Settimanali</h3>
+        <span className="text-[13px] text-[#8A8A96] cursor-pointer hover:text-[#F0EDE8] transition-colors">
+          Dettagli →
+        </span>
       </div>
-      
-      <div className="h-64">
-        <Suspense fallback={<div className="h-full w-full rounded-lg bg-white/5 animate-pulse" />}>
+
+      <div style={{ height: 100 }}>
+        <Suspense fallback={<div className="h-full w-full rounded-lg bg-[#1E1E24] animate-pulse opacity-30" />}>
           <WeeklyProgressChart data={data} />
         </Suspense>
       </div>
-      
-      <div className="mt-4 text-center">
-        <p className="text-sm text-pp-gold/80">
-          <span className="font-semibold text-pp-gold">
-            {loading ? '...' : totalWeeklyWorkouts} allenamenti
-          </span> completati totali
-        </p>
+
+      <div className="border-t border-[rgba(255,255,255,0.06)] mt-4 pt-4 flex items-center justify-center gap-6">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#10B981]" aria-hidden />
+          <span className="text-[11px] text-[#8A8A96]">Completato</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#EEBA2B]" aria-hidden />
+          <span className="text-[11px] text-[#8A8A96]">Oggi</span>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, Target, Search, Filter } from 'lucide-react';
+import { Zap, Target, Search, Filter, Heart, ChevronRight, Star, MapPin } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import MatchQuiz from '@/components/professionals/MatchQuiz';
@@ -178,104 +178,103 @@ const Professionals: React.FC = () => {
   return (
     <div 
       style={{ visibility: isPositionRestored ? 'visible' : 'hidden' }} 
-      className="min-h-screen bg-black text-white"
+      className="min-h-screen bg-background text-white"
     >
-      {/* Header Pagina */}
-      <div className="p-6 text-center border-b border-gray-800">
-        <h1 className="text-2xl font-bold mb-2">
-          🔍 TROVA IL TUO PROFESSIONISTA
-        </h1>
-        <p className="text-gray-400 text-sm">
-          Personal Trainer, Nutrizionisti, Fisioterapisti e Mental Coach
-        </p>
+      <div className="px-5 pt-6 pb-4">
+        <h1 className="text-2xl font-bold text-[#F0EDE8]">Professionisti</h1>
+        <p className="text-[13px] text-[#8A8A96] mt-0.5">Trova il professionista perfetto per te</p>
       </div>
 
-      {/* Sezione Match Cards - NASCONDI in modalità match */}
       {matchMode === 'list' && (
-        <div className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {/* Card Match Rapido */}
-          <div 
-            className="bg-gradient-to-br from-gray-900 to-black border border-gray-700 rounded-xl p-6 
-                       hover:border-[#EEBA2B] hover:shadow-[0_0_20px_rgba(238,186,43,0.2)] 
-                       transition-all duration-300"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-[#EEBA2B]/20 rounded-full flex items-center justify-center">
-                <Zap className="w-6 h-6 text-[#EEBA2B]" />
-              </div>
-              <h2 className="text-xl font-bold">MATCH RAPIDO</h2>
+        <>
+          <div className="px-5 flex gap-2.5 mb-4">
+            <div className="flex-1 flex items-center gap-2.5 bg-[#1A1A1F] border border-[rgba(255,255,255,0.1)] rounded-[14px] py-2.5 px-3.5">
+              <Search className="w-4 h-4 text-[#5C5C66] shrink-0" />
+              <input
+                type="text"
+                placeholder="Cerca città o nome..."
+                value={filters.zona || ''}
+                onChange={(e) => handleFilterChange('zona', e.target.value)}
+                className="flex-1 bg-transparent border-none text-sm text-[#F0EDE8] placeholder:text-[#5C5C66] focus:outline-none"
+              />
             </div>
-            <p className="text-gray-400 text-sm mb-4">
-              Basato sui tuoi dati di onboarding. Trova subito i professionisti più adatti a te!
-            </p>
-            <button 
-              onClick={handleMatchRapido}
-              disabled={matchLoading}
-              className="w-full bg-[#EEBA2B] text-black font-bold py-3 px-4 rounded-lg 
-                         hover:bg-[#d4a826] transition-colors disabled:opacity-50"
+            <button
+              type="button"
+              onClick={() => setShowFilters(!showFilters)}
+              className="w-11 h-11 rounded-[14px] bg-[#16161A] border border-[rgba(255,255,255,0.06)] flex items-center justify-center shrink-0"
             >
-              {matchLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  Analisi in corso...
-                </span>
-              ) : (
-                '⚡ Trova subito'
-              )}
+              <Filter className="w-4 h-4 text-[#8A8A96]" />
             </button>
           </div>
 
-          {/* Card Match Interattivo */}
-          <div 
-            className="bg-gradient-to-br from-gray-900 to-black border border-gray-700 rounded-xl p-6 
-                       hover:border-[#EEBA2B] hover:shadow-[0_0_20px_rgba(238,186,43,0.2)] 
-                       transition-all duration-300"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-[#EEBA2B]/20 rounded-full flex items-center justify-center">
-                <Target className="w-6 h-6 text-[#EEBA2B]" />
-              </div>
-              <h2 className="text-xl font-bold">MATCH INTERATTIVO</h2>
-            </div>
-            <p className="text-gray-400 text-sm mb-4">
-              Rispondi a 5-7 domande per trovare il professionista perfetto per te!
-            </p>
-            <button 
+          <div className="px-5 flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {PROFESSIONAL_CATEGORIES.map(cat => (
+              <button
+                key={cat.value}
+                type="button"
+                onClick={() => handleFilterChange('category', cat.value)}
+                className={`shrink-0 py-2 px-4 rounded-full text-xs font-semibold transition-colors ${
+                  filters.category === cat.value
+                    ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                    : 'bg-[#16161A] text-[#8A8A96]'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="px-5 space-y-4 mb-8">
+            <div
+              className="rounded-[18px] p-5 flex items-center gap-4 cursor-pointer transition-opacity hover:opacity-95"
+              style={{ background: 'linear-gradient(135deg, #16161A 0%, rgba(168,85,247,0.06) 100%)', border: '1px solid rgba(168,85,247,0.15)' }}
               onClick={() => setShowQuiz(true)}
-              className="w-full bg-transparent border-2 border-[#EEBA2B] text-[#EEBA2B] font-bold py-3 px-4 rounded-lg 
-                         hover:bg-[#EEBA2B] hover:text-black transition-colors"
             >
-              🎯 Inizia il quiz
-            </button>
+              <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0" style={{ background: 'rgba(168,85,247,0.1)' }}>
+                <Heart className="w-6 h-6 text-[#A855F7]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-bold text-[#F0EDE8]">Trova il tuo Match</p>
+                <p className="text-[13px] text-[#8A8A96] mt-0.5">Quiz rapido per trovare il professionista ideale</p>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleMatchRapido(); }}
+                  disabled={matchLoading}
+                  className="text-[11px] font-semibold text-[#A855F7] mt-2 hover:underline disabled:opacity-50"
+                >
+                  {matchLoading ? 'Analisi...' : 'Oppure match rapido dai tuoi dati'}
+                </button>
+              </div>
+              <ChevronRight className="w-5 h-5 text-[#5C5C66] shrink-0" />
+            </div>
           </div>
-          </div>
-        </div>
+        </>
       )}
 
-      {/* Sezione Professionisti */}
-      <div className="p-4">
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
+      <div className="px-5 pb-24">
+        <div className="mb-4">
+          <div className="flex items-center justify-between">
             {matchMode === 'match' ? (
               <>
                 <div>
-                  <h2 className="text-xl font-bold">🎯 I Tuoi Match</h2>
-                  <p className="text-sm text-gray-400">Professionisti ordinati per compatibilità</p>
+                  <h2 className="text-lg font-bold text-[#F0EDE8]">I Tuoi Match</h2>
+                  <p className="text-[13px] text-[#8A8A96]">Professionisti ordinati per compatibilità</p>
                 </div>
-                <button 
+                <button
+                  type="button"
                   onClick={handleBackToList}
-                  className="text-[#EEBA2B] text-sm hover:underline"
+                  className="text-[13px] text-[#8A8A96] hover:text-[#EEBA2B]"
                 >
                   ← Torna alla lista
                 </button>
               </>
             ) : (
               <>
-                <h2 className="text-xl font-bold">📋 Tutti i Professionisti</h2>
-                <button 
+                <h2 className="text-lg font-bold text-[#F0EDE8]">Tutti i Professionisti</h2>
+                <button
+                  type="button"
                   onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 text-[#EEBA2B] text-sm"
+                  className="flex items-center gap-2 text-[13px] text-[#8A8A96] hover:text-[#EEBA2B]"
                 >
                   <Filter className="w-4 h-4" />
                   {showFilters ? 'Nascondi filtri' : 'Mostra filtri'}
@@ -284,41 +283,18 @@ const Professionals: React.FC = () => {
             )}
           </div>
 
-          {/* Filtri - mostra solo in modalità lista */}
           {matchMode === 'list' && showFilters && (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 mb-4 space-y-4">
-              {/* Categoria */}
+            <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-4 mt-4 space-y-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Categoria</label>
-                <div className="flex flex-wrap gap-2">
-                  {PROFESSIONAL_CATEGORIES.map(cat => (
-                    <button
-                      key={cat.value}
-                      onClick={() => handleFilterChange('category', cat.value)}
-                      className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                        filters.category === cat.value
-                          ? 'bg-[#EEBA2B] text-black font-medium'
-                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Modalità */}
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Modalità</label>
+                <label className="block text-[11px] font-semibold text-[#8A8A96] uppercase tracking-wide mb-2">Modalità</label>
                 <div className="flex flex-wrap gap-2">
                   {MODALITA_OPTIONS.map(mod => (
                     <button
                       key={mod.value}
+                      type="button"
                       onClick={() => handleFilterChange('modalita', mod.value)}
-                      className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                        filters.modalita === mod.value
-                          ? 'bg-[#EEBA2B] text-black font-medium'
-                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                        filters.modalita === mod.value ? 'bg-[#EEBA2B] text-[#0A0A0C]' : 'bg-[#1E1E24] text-[#8A8A96]'
                       }`}
                     >
                       {mod.label}
@@ -326,40 +302,21 @@ const Professionals: React.FC = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Prezzo */}
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Fascia prezzo</label>
+                <label className="block text-[11px] font-semibold text-[#8A8A96] uppercase tracking-wide mb-2">Fascia prezzo</label>
                 <div className="flex flex-wrap gap-2">
                   {PREZZO_OPTIONS.map(prezzo => (
                     <button
                       key={prezzo.value}
+                      type="button"
                       onClick={() => handleFilterChange('prezzo_fascia', prezzo.value)}
-                      className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                        filters.prezzo_fascia === prezzo.value
-                          ? 'bg-[#EEBA2B] text-black font-medium'
-                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                        filters.prezzo_fascia === prezzo.value ? 'bg-[#EEBA2B] text-[#0A0A0C]' : 'bg-[#1E1E24] text-[#8A8A96]'
                       }`}
                     >
                       {prezzo.label}
                     </button>
                   ))}
-                </div>
-              </div>
-
-              {/* Zona */}
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Zona</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input
-                    type="text"
-                    placeholder="Cerca città..."
-                    value={filters.zona || ''}
-                    onChange={(e) => handleFilterChange('zona', e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-10 pr-4 
-                             text-white placeholder-gray-500 focus:border-[#EEBA2B] focus:outline-none"
-                  />
                 </div>
               </div>
             </div>
@@ -376,200 +333,116 @@ const Professionals: React.FC = () => {
             <p className="text-gray-400">Nessun professionista trovato con questi filtri.</p>
           </div>
         ) : matchMode === 'match' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pb-24 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {matchedProfessionals.map((professional: ProfessionalWithMatch, index: number) => (
-              <div 
+              <div
                 key={professional.id}
-                className={`relative rounded-xl p-4 transition-all duration-300 cursor-pointer
-                  ${professional.is_partner 
-                    ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 border-2 border-[#EEBA2B] hover:shadow-[0_0_30px_rgba(238,186,43,0.4)] hover:scale-[1.02]' 
-                    : 'bg-gradient-to-br from-gray-900 to-black border border-gray-700 hover:border-[#EEBA2B] hover:shadow-[0_0_20px_rgba(238,186,43,0.2)] hover:scale-[1.02]'
-                  }`}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  sessionStorage.setItem('professionals_scroll_position', window.scrollY.toString());
+                  navigate(`/professionals/${professional.id}`);
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sessionStorage.setItem('professionals_scroll_position', window.scrollY.toString()); navigate(`/professionals/${professional.id}`); } }}
+                className="relative bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-4 flex flex-col gap-3 cursor-pointer transition-opacity hover:opacity-95"
               >
-                {/* Badge Partner */}
-                {professional.is_partner && (
-                  <div className="absolute top-3 right-3 bg-gradient-to-r from-[#EEBA2B] to-yellow-500 
-                                  text-black font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1 z-20">
-                    <span>🏆</span>
-                    <span>Partner</span>
-                  </div>
-                )}
-
-                {/* Badge Match Score - solo in modalità match */}
-                {matchMode === 'match' && 'matchScore' in professional && (
-                  <div className={`absolute ${professional.is_partner ? '-top-2 -right-16' : '-top-2 -right-2'} bg-[#EEBA2B] text-black text-xs font-bold 
-                                  px-2 py-1 rounded-full shadow-lg z-10`}>
+                {'matchScore' in professional && (
+                  <div className="absolute top-3 right-3 z-10 bg-[#EEBA2B] text-[#0A0A0C] text-xs font-bold px-2 py-1 rounded-full">
                     {professional.matchScore}% match
                   </div>
                 )}
-                
-                {/* Posizione podio per top 3 */}
-                {matchMode === 'match' && index < 3 && (
-                  <div className="absolute -top-2 -left-2 w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 
-                                  rounded-full flex items-center justify-center text-black font-bold shadow-lg z-10">
+                {index < 3 && (
+                  <div className="absolute -top-2 -left-2 w-8 h-8 rounded-full flex items-center justify-center text-[#0A0A0C] font-bold z-10 bg-[#EEBA2B]">
                     {index + 1}
                   </div>
                 )}
-                {/* Header Card */}
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center text-2xl">
+                <div className="flex items-center gap-3.5">
+                  <div
+                    className="w-14 h-14 rounded-[14px] shrink-0 flex items-center justify-center text-lg font-bold text-[#EEBA2B]"
+                    style={{ background: 'linear-gradient(135deg, #1E1E24 0%, rgba(238,186,43,0.08) 100%)' }}
+                  >
                     {professional.foto_url ? (
-                      <img src={professional.foto_url} alt="" className="w-full h-full rounded-full object-cover" />
+                      <img src={professional.foto_url} alt="" className="w-full h-full rounded-[14px] object-cover" />
                     ) : (
-                      getCategoryIcon(professional.category)
+                      <span>{(professional.first_name?.[0] || '') + (professional.last_name?.[0] || '')}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-white truncate">
-                      {professional.first_name} {professional.last_name}
-                    </h3>
-                    <p className="text-[#EEBA2B] text-sm">
-                      {getCategoryLabel(professional.category)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="space-y-2 mb-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400">📍 {professional.zona || 'Non specificata'}</span>
-                    <span className="text-gray-400">{professional.modalita}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-yellow-400">
-                      ⭐ {professional.rating.toFixed(1)} ({professional.reviews_count})
-                    </span>
-                  </div>
-                  
-                  {/* Prezzi: Servizi > Prezzo Seduta > Prezzo Fascia */}
-                  <div className="mt-2">
-                    {renderPricing(professional)}
-                  </div>
-                </div>
-
-                {/* Bio */}
-                {professional.bio && (
-                  <p className="text-gray-400 text-xs line-clamp-2 mb-3">
-                    {professional.bio}
-                  </p>
-                )}
-
-                {/* Specializzazioni */}
-                {professional.specializzazioni && professional.specializzazioni.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {professional.specializzazioni.slice(0, 3).map((spec, idx) => (
-                      <span key={idx} className="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded">
-                        {spec}
+                    <h3 className="text-[15px] font-bold text-[#F0EDE8] truncate">{professional.first_name} {professional.last_name}</h3>
+                    <p className="text-xs text-[#8A8A96]">{getCategoryLabel(professional.category)}</p>
+                    {professional.is_partner && (
+                      <span className="inline-block mt-1 text-[11px] font-semibold rounded-full py-0.5 px-2.5" style={{ color: '#EEBA2B', background: 'rgba(238,186,43,0.08)' }}>
+                        Partner
                       </span>
-                    ))}
-                    {professional.specializzazioni.length > 3 && (
-                      <span className="text-gray-500 text-xs">+{professional.specializzazioni.length - 3}</span>
                     )}
                   </div>
-                )}
-
-                {/* CTA */}
-                <button 
-                  onClick={() => {
-                    // Salva la posizione di scroll prima di navigare
-                    sessionStorage.setItem('professionals_scroll_position', window.scrollY.toString());
-                    navigate(`/professionals/${professional.id}`);
-                  }}
-                  className="w-full bg-[#EEBA2B]/10 border border-[#EEBA2B]/30 text-[#EEBA2B] 
-                           font-medium py-2 rounded-lg hover:bg-[#EEBA2B]/20 transition-colors text-sm">
-                  Vedi profilo
-                </button>
+                </div>
+                <div className="flex items-center gap-3 text-xs mt-1">
+                  <span className="flex items-center gap-1">
+                    <Star className="w-3.5 h-3.5 text-[#EEBA2B] fill-[#EEBA2B]" />
+                    <span className="font-semibold text-[#EEBA2B]">{professional.rating.toFixed(1)}</span>
+                    <span className="text-[#5C5C66]">({professional.reviews_count})</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-[#8A8A96]">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {professional.zona || '—'}
+                  </span>
+                  <span className="ml-auto font-bold text-[#10B981]">
+                    {professional.prezzo_seduta ? `€${professional.prezzo_seduta}` : professional.prezzo_fascia || '—'}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {professionals.map((professional: Professional) => (
-              <div 
+              <div
                 key={professional.id}
-                className={`relative rounded-xl p-4 transition-all duration-300 cursor-pointer
-                  ${professional.is_partner 
-                    ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 border-2 border-[#EEBA2B] hover:shadow-[0_0_30px_rgba(238,186,43,0.4)] hover:scale-[1.02]' 
-                    : 'bg-gray-900/50 border border-gray-700 hover:border-[#EEBA2B] hover:shadow-[0_0_20px_rgba(238,186,43,0.2)] hover:scale-[1.02]'
-                  }`}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  sessionStorage.setItem('professionals_scroll_position', window.scrollY.toString());
+                  navigate(`/professionals/${professional.id}`);
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sessionStorage.setItem('professionals_scroll_position', window.scrollY.toString()); navigate(`/professionals/${professional.id}`); } }}
+                className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-4 flex flex-col gap-3 cursor-pointer transition-opacity hover:opacity-95"
               >
-                {/* Badge Partner */}
-                {professional.is_partner && (
-                  <div className="absolute top-3 right-3 bg-gradient-to-r from-[#EEBA2B] to-yellow-500 
-                                  text-black font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1 z-10">
-                    <span>🏆</span>
-                    <span>Partner</span>
-                  </div>
-                )}
-                {/* Header Card */}
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center text-2xl">
+                <div className="flex items-center gap-3.5">
+                  <div
+                    className="w-14 h-14 rounded-[14px] shrink-0 flex items-center justify-center text-lg font-bold text-[#EEBA2B]"
+                    style={{ background: 'linear-gradient(135deg, #1E1E24 0%, rgba(238,186,43,0.08) 100%)' }}
+                  >
                     {professional.foto_url ? (
-                      <img src={professional.foto_url} alt="" className="w-full h-full rounded-full object-cover" />
+                      <img src={professional.foto_url} alt="" className="w-full h-full rounded-[14px] object-cover" />
                     ) : (
-                      getCategoryIcon(professional.category)
+                      <span>{(professional.first_name?.[0] || '') + (professional.last_name?.[0] || '')}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-white truncate">
-                      {professional.first_name} {professional.last_name}
-                    </h3>
-                    <p className="text-[#EEBA2B] text-sm">
-                      {getCategoryLabel(professional.category)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="space-y-2 mb-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400">📍 {professional.zona || 'Non specificata'}</span>
-                    <span className="text-gray-400">{professional.modalita}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-yellow-400">
-                      ⭐ {professional.rating.toFixed(1)} ({professional.reviews_count})
-                    </span>
-                  </div>
-                  
-                  {/* Prezzi: Servizi > Prezzo Seduta > Prezzo Fascia */}
-                  <div className="mt-2">
-                    {renderPricing(professional)}
-                  </div>
-                </div>
-
-                {/* Bio */}
-                {professional.bio && (
-                  <p className="text-gray-400 text-xs line-clamp-2 mb-3">
-                    {professional.bio}
-                  </p>
-                )}
-
-                {/* Specializzazioni */}
-                {professional.specializzazioni && professional.specializzazioni.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {professional.specializzazioni.slice(0, 3).map((spec, idx) => (
-                      <span key={idx} className="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded">
-                        {spec}
+                    <h3 className="text-[15px] font-bold text-[#F0EDE8] truncate">{professional.first_name} {professional.last_name}</h3>
+                    <p className="text-xs text-[#8A8A96]">{getCategoryLabel(professional.category)}</p>
+                    {professional.is_partner && (
+                      <span className="inline-block mt-1 text-[11px] font-semibold rounded-full py-0.5 px-2.5" style={{ color: '#EEBA2B', background: 'rgba(238,186,43,0.08)' }}>
+                        Partner
                       </span>
-                    ))}
-                    {professional.specializzazioni.length > 3 && (
-                      <span className="text-gray-500 text-xs">+{professional.specializzazioni.length - 3}</span>
                     )}
                   </div>
-                )}
-
-                {/* CTA */}
-                <button 
-                  onClick={() => {
-                    // Salva la posizione di scroll prima di navigare
-                    sessionStorage.setItem('professionals_scroll_position', window.scrollY.toString());
-                    navigate(`/professionals/${professional.id}`);
-                  }}
-                  className="w-full bg-gradient-to-r from-[#EEBA2B] to-yellow-500 text-black font-bold py-2 px-4 rounded-lg 
-                           hover:from-yellow-400 hover:to-yellow-300 transition-all">
-                  Vedi profilo
-                </button>
+                </div>
+                <div className="flex items-center gap-3 text-xs mt-1">
+                  <span className="flex items-center gap-1">
+                    <Star className="w-3.5 h-3.5 text-[#EEBA2B] fill-[#EEBA2B]" />
+                    <span className="font-semibold text-[#EEBA2B]">{professional.rating.toFixed(1)}</span>
+                    <span className="text-[#5C5C66]">({professional.reviews_count})</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-[#8A8A96]">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {professional.zona || '—'}
+                  </span>
+                  <span className="ml-auto font-bold text-[#10B981]">
+                    {professional.prezzo_seduta ? `€${professional.prezzo_seduta}` : professional.prezzo_fascia || '—'}
+                  </span>
+                </div>
               </div>
             ))}
           </div>

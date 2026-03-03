@@ -25,10 +25,10 @@ export function NewLandingPage() {
       <HeroSection />
       <ProblemSection />
       <SolutionSection />
-      <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <Suspense fallback={<div className="min-h-screen bg-background" />}>
         <SocialProof />
       </Suspense>
-      <Suspense fallback={<div className="min-h-[24rem] bg-black" />}>
+      <Suspense fallback={<div className="min-h-[24rem] bg-background" />}>
         <CTASection />
       </Suspense>
       <Suspense fallback={<div className="min-h-64 bg-[#212121]" />}>

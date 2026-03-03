@@ -17,7 +17,7 @@ export function PageSkeleton({ variant = 'default', className }: PageSkeletonPro
   return (
     <div
       className={cn(
-        'min-h-screen w-full bg-black',
+        'min-h-screen w-full bg-background',
         'flex flex-col',
         className
       )}

@@ -4,6 +4,13 @@ import { StartTodayButton } from './StartTodayButton';
 import { useState } from 'react';
 import { generateFilteredStrengthWorkout, generateFilteredHIITWorkout, generateWorkout } from '@/services/workoutGenerator';
 
+const categoryStyles: Record<string, { color: string; bgOpacity: string; circleBg: string }> = {
+  cardio: { color: '#10B981', bgOpacity: 'rgba(16,185,129,0.1)', circleBg: 'rgba(16,185,129,0.03)' },
+  strength: { color: '#EEBA2B', bgOpacity: 'rgba(238,186,43,0.08)', circleBg: 'rgba(238,186,43,0.03)' },
+  hiit: { color: '#EF4444', bgOpacity: 'rgba(239,68,68,0.1)', circleBg: 'rgba(239,68,68,0.03)' },
+  mobility: { color: '#A855F7', bgOpacity: 'rgba(168,85,247,0.1)', circleBg: 'rgba(168,85,247,0.03)' },
+};
+
 const categories = [
   {
     id: 'cardio',
@@ -11,8 +18,7 @@ const categories = [
     description: 'Brucia calorie e migliora la resistenza',
     duration: '60 min',
     icon: Heart,
-    iconBgColor: 'bg-[#004AAD]',
-    iconColor: '#38B6FF',
+    iconColor: '#10B981',
     workouts: 12,
   },
   {
@@ -21,8 +27,7 @@ const categories = [
     description: 'Costruisci massa muscolare',
     duration: '60 min',
     icon: Dumbbell,
-    iconBgColor: 'bg-[#EF4136]',
-    iconColor: '#BC1823',
+    iconColor: '#EEBA2B',
     workouts: 18,
   },
   {
@@ -31,8 +36,7 @@ const categories = [
     description: 'Allenamento ad alta intensità',
     duration: '60 min',
     icon: Zap,
-    iconBgColor: 'bg-[#FF5757]',
-    iconColor: '#FFD400',
+    iconColor: '#EF4444',
     workouts: 8,
   },
   {
@@ -41,8 +45,7 @@ const categories = [
     description: 'Stretching e flessibilità',
     duration: '10-20 min',
     icon: Activity,
-    iconBgColor: 'bg-[#8C52FF]',
-    iconColor: '#FF66C4',
+    iconColor: '#A855F7',
     workouts: 15,
   },
 ];
@@ -127,34 +130,42 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
   };
   return (
     <div className="space-y-6">
-      {/* Pulsante Inizia allenamento di oggi */}
       <StartTodayButton />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 gap-3">
         {categories.map((category) => {
           const Icon = category.icon;
+          const style = categoryStyles[category.id] ?? categoryStyles.strength;
           return (
             <div
               key={category.id}
-              className="bg-gradient-to-r from-black to-[#C89116] rounded-2xl shadow-lg border-2 border-black overflow-hidden hover:shadow-xl hover:shadow-pp-gold/20 transition-all duration-300 hover:scale-105"
+              className="relative bg-[#16161A] rounded-[14px] p-5 border border-[rgba(255,255,255,0.06)] overflow-hidden"
             >
-              <div className="p-4 sm:p-6">
-                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <div className={`${category.iconBgColor} rounded-xl p-2 sm:p-3 flex items-center justify-center`}>
-                    <Icon className="h-6 w-6 sm:h-8 sm:w-8" style={{ color: category.iconColor }} />
-                  </div>
-                  <span className="text-sm text-white/80">{category.workouts} workout</span>
+              <div
+                className="absolute -top-2.5 -right-2.5 w-[60px] h-[60px] rounded-full"
+                style={{ background: style.circleBg }}
+                aria-hidden
+              />
+              <div className="relative">
+                <div className="mb-3 flex items-center justify-center w-10 h-10 rounded-[10px] shrink-0" style={{ background: style.bgOpacity }}>
+                  <Icon className="h-6 w-6" style={{ color: category.iconColor }} />
                 </div>
-                <div className="mb-3 sm:mb-4">
-                  <h3 className="text-lg sm:text-xl font-bold text-pp-gold mb-1 sm:mb-2">{category.name}</h3>
-                  <p className="text-white text-xs sm:text-sm mb-2 sm:mb-3">{category.description}</p>
+                <h3 className="text-base font-bold text-[#F0EDE8]">{category.name}</h3>
+                <p className="text-xs text-[#8A8A96] mb-3">{category.description}</p>
+                <span
+                  className="inline-block text-[11px] font-semibold rounded-full py-0.5 px-2.5"
+                  style={{ color: style.color, background: style.bgOpacity }}
+                >
+                  {category.workouts} workout
+                </span>
+                <div className="mt-3">
                   
                   {/* Filtri per FORZA */}
                   {category.id === 'strength' && showFilters[category.id] && (
-                    <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-600">
+                    <div className="mt-4 p-3 bg-[#1E1E24] rounded-[14px] border border-[rgba(255,255,255,0.06)]">
                       <div className="space-y-3">
                         <div>
-                          <h4 className="text-white font-semibold mb-2 text-sm">Gruppo Muscolare</h4>
+                          <h4 className="text-[#F0EDE8] font-semibold mb-2 text-sm">Gruppo Muscolare</h4>
                           <div className="flex flex-wrap gap-1">
                             {['Tutti', 'Petto', 'Schiena', 'Spalle', 'Braccia', 'Gambe', 'Core'].map((group) => (
                               <button
@@ -162,8 +173,8 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                                 onClick={() => setMuscleGroupFilter(group)}
                                 className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                                   muscleGroupFilter === group
-                                    ? 'bg-[#EEBA2B] text-black'
-                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                                    : 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] text-[#8A8A96]'
                                 }`}
                               >
                                 {group}
@@ -172,7 +183,7 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                           </div>
                         </div>
                         <div>
-                          <h4 className="text-white font-semibold mb-2 text-sm">Attrezzatura</h4>
+                          <h4 className="text-[#F0EDE8] font-semibold mb-2 text-sm">Attrezzatura</h4>
                           <div className="flex flex-wrap gap-1">
                             {['Tutte', 'Corpo libero', 'Manubri', 'Bilanciere', 'Elastici', 'Kettlebell'].map((equipment) => (
                               <button
@@ -180,8 +191,8 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                                 onClick={() => setEquipmentFilter(equipment)}
                                 className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                                   equipmentFilter === equipment
-                                    ? 'bg-[#EEBA2B] text-black'
-                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                                    : 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] text-[#8A8A96]'
                                 }`}
                               >
                                 {equipment}
@@ -189,10 +200,11 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                             ))}
                           </div>
                         </div>
-                        <div className="mt-4 pt-3 border-t border-gray-600">
-                          <Button 
+                        <div className="mt-4 pt-3 border-t border-[rgba(255,255,255,0.06)]">
+                          <Button
                             onClick={handleStartFilteredStrengthWorkout}
-                            className="w-full bg-[#EEBA2B] hover:bg-[#D4A017] text-black font-semibold"
+                            className="w-full font-semibold border-0"
+                            style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)', color: '#0A0A0C' }}
                           >
                             AVVIA ALLENAMENTO FORZA
                           </Button>
@@ -203,10 +215,10 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                   
                   {/* Filtri per HIIT */}
                   {category.id === 'hiit' && showFilters[category.id] && (
-                    <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-600">
+                    <div className="mt-4 p-3 bg-[#1E1E24] rounded-[14px] border border-[rgba(255,255,255,0.06)]">
                       <div className="space-y-3">
                         <div>
-                          <h4 className="text-white font-semibold mb-2 text-sm">Durata</h4>
+                          <h4 className="text-[#F0EDE8] font-semibold mb-2 text-sm">Durata</h4>
                           <div className="flex flex-wrap gap-1">
                             {['Tutte', '5-10 min', '15-20 min', '25-30 min'].map((duration) => (
                               <button
@@ -214,8 +226,8 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                                 onClick={() => setDurationFilter(duration)}
                                 className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                                   durationFilter === duration
-                                    ? 'bg-[#EEBA2B] text-black'
-                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                                    : 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] text-[#8A8A96]'
                                 }`}
                               >
                                 {duration}
@@ -224,7 +236,7 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                           </div>
                         </div>
                         <div>
-                          <h4 className="text-white font-semibold mb-2 text-sm">Livello</h4>
+                          <h4 className="text-[#F0EDE8] font-semibold mb-2 text-sm">Livello</h4>
                           <div className="flex flex-wrap gap-1">
                             {['Tutti', 'Principiante', 'Intermedio', 'Avanzato'].map((level) => (
                               <button
@@ -232,8 +244,8 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                                 onClick={() => setLevelFilter(level)}
                                 className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                                   levelFilter === level
-                                    ? 'bg-[#EEBA2B] text-black'
-                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                                    : 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] text-[#8A8A96]'
                                 }`}
                               >
                                 {level}
@@ -241,10 +253,11 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                             ))}
                           </div>
                         </div>
-                        <div className="mt-4 pt-3 border-t border-gray-600">
-                          <Button 
+                        <div className="mt-4 pt-3 border-t border-[rgba(255,255,255,0.06)]">
+                          <Button
                             onClick={handleStartFilteredHIITWorkout}
-                            className="w-full bg-[#EEBA2B] hover:bg-[#D4A017] text-black font-semibold"
+                            className="w-full font-semibold border-0"
+                            style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)', color: '#0A0A0C' }}
                           >
                             AVVIA ALLENAMENTO HIIT
                           </Button>
@@ -253,11 +266,11 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-white/80">{category.duration}</span>
-                  <Button 
+                <div className="flex items-center justify-between mt-3">
+                  <span className="text-xs text-[#8A8A96]">{category.duration}</span>
+                  <Button
                     onClick={() => handleCategoryClick(category)}
-                    className="bg-black hover:bg-gray-900 text-white border border-white/20"
+                    className="bg-[#EEBA2B] hover:bg-[#D4A017] text-[#0A0A0C] font-semibold text-sm border-0"
                   >
                     Inizia
                   </Button>
@@ -266,10 +279,10 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
 
               {/* Filtri per CARDIO - stesso stile di FORZA */}
               {category.id === 'cardio' && showFilters[category.id] && (
-                <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-600">
+                <div className="mt-4 p-3 bg-[#1E1E24] rounded-[14px] border border-[rgba(255,255,255,0.06)]">
                   <div className="space-y-3">
                     <div>
-                      <h4 className="text-white font-semibold mb-2 text-sm">Livello</h4>
+                      <h4 className="text-[#F0EDE8] font-semibold mb-2 text-sm">Livello</h4>
                       <div className="flex flex-wrap gap-1">
                         {['Principiante', 'Intermedio', 'Avanzato'].map((level) => (
                           <button
@@ -277,8 +290,8 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                             onClick={() => setUserLevel(level.toUpperCase())}
                             className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                               userLevel === level.toUpperCase()
-                                ? 'bg-[#EEBA2B] text-black'
-                                : 'bg-gray-700 text-white hover:bg-gray-600'
+                                ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                                : 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] text-[#8A8A96]'
                             }`}
                           >
                             {level}
@@ -287,14 +300,14 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                       </div>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold mb-2 text-sm">Modalità</h4>
+                      <h4 className="text-[#F0EDE8] font-semibold mb-2 text-sm">Modalità</h4>
                       <div className="flex flex-wrap gap-1">
                         <button
                           onClick={() => setQuickMode(false)}
                           className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                             !quickMode
-                              ? 'bg-[#EEBA2B] text-black'
-                              : 'bg-gray-700 text-white hover:bg-gray-600'
+                              ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                              : 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] text-[#8A8A96]'
                           }`}
                         >
                           ⏱️ Standard
@@ -303,18 +316,19 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                           onClick={() => setQuickMode(true)}
                           className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                             quickMode
-                              ? 'bg-[#EEBA2B] text-black'
-                              : 'bg-gray-700 text-white hover:bg-gray-600'
+                              ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                              : 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] text-[#8A8A96]'
                           }`}
                         >
                           ⚡ Quick 10min
                         </button>
                       </div>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-gray-600">
-                      <Button 
+                    <div className="mt-4 pt-3 border-t border-[rgba(255,255,255,0.06)]">
+                      <Button
                         onClick={() => handleStartCardioWorkout(userLevel, quickMode)}
-                        className="w-full bg-[#EEBA2B] hover:bg-[#D4A017] text-black font-semibold"
+                        className="w-full font-semibold border-0"
+                        style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)', color: '#0A0A0C' }}
                       >
                         AVVIA ALLENAMENTO CARDIO
                       </Button>
@@ -325,10 +339,10 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
 
               {/* Filtri per MOBILITÀ - stesso stile di FORZA/CARDIO */}
               {category.id === 'mobility' && showFilters[category.id] && (
-                <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-600">
+                <div className="mt-4 p-3 bg-[#1E1E24] rounded-[14px] border border-[rgba(255,255,255,0.06)]">
                   <div className="space-y-3">
                     <div>
-                      <h4 className="text-white font-semibold mb-2 text-sm">Livello</h4>
+                      <h4 className="text-[#F0EDE8] font-semibold mb-2 text-sm">Livello</h4>
                       <div className="flex flex-wrap gap-1">
                         {['Principiante', 'Intermedio', 'Avanzato'].map((level) => (
                           <button
@@ -336,8 +350,8 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                             onClick={() => setUserLevel(level.toUpperCase())}
                             className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                               userLevel === level.toUpperCase()
-                                ? 'bg-[#EEBA2B] text-black'
-                                : 'bg-gray-700 text-white hover:bg-gray-600'
+                                ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                                : 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] text-[#8A8A96]'
                             }`}
                           >
                             {level}
@@ -346,14 +360,14 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                       </div>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold mb-2 text-sm">Modalità</h4>
+                      <h4 className="text-[#F0EDE8] font-semibold mb-2 text-sm">Modalità</h4>
                       <div className="flex flex-wrap gap-1">
                         <button
                           onClick={() => setQuickMode(false)}
                           className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                             !quickMode
-                              ? 'bg-[#EEBA2B] text-black'
-                              : 'bg-gray-700 text-white hover:bg-gray-600'
+                              ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                              : 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] text-[#8A8A96]'
                           }`}
                         >
                           ⏱️ Standard
@@ -362,20 +376,19 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
                           onClick={() => setQuickMode(true)}
                           className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                             quickMode
-                              ? 'bg-[#EEBA2B] text-black'
-                              : 'bg-gray-700 text-white hover:bg-gray-600'
+                              ? 'bg-[#EEBA2B] text-[#0A0A0C]'
+                              : 'bg-[#16161A] border border-[rgba(255,255,255,0.06)] text-[#8A8A96]'
                           }`}
                         >
                           ⚡ Quick 10min
                         </button>
                       </div>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-gray-600">
-                      <Button 
-                        onClick={() => {
-                          handleStartMobilityWorkout(userLevel, quickMode);
-                        }}
-                        className="w-full bg-[#EEBA2B] hover:bg-[#D4A017] text-black font-semibold"
+                    <div className="mt-4 pt-3 border-t border-[rgba(255,255,255,0.06)]">
+                      <Button
+                        onClick={() => handleStartMobilityWorkout(userLevel, quickMode)}
+                        className="w-full font-semibold border-0"
+                        style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)', color: '#0A0A0C' }}
                       >
                         AVVIA ALLENAMENTO MOBILITÀ
                       </Button>
@@ -388,21 +401,21 @@ export const WorkoutCategories = ({ onStartWorkout }: WorkoutCategoriesProps) =>
         })}
       </div>
 
-      {/* Today's Recommended */}
-      <div className="bg-gradient-to-r from-black to-[#C89116] rounded-2xl p-4 sm:p-6 border-2 border-black">
+      <div className="bg-[#16161A] rounded-[14px] p-5 border border-[rgba(255,255,255,0.06)]">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2 text-pp-gold">Consigliato per Oggi</h3>
-            <p className="text-white mb-3 sm:mb-4 text-sm sm:text-base">HIIT Total Body - Perfetto per il tuo livello</p>
-            <Button 
+            <h3 className="text-base font-bold text-[#F0EDE8] mb-1">Consigliato per Oggi</h3>
+            <p className="text-[13px] text-[#8A8A96] mb-3">HIIT Total Body - Perfetto per il tuo livello</p>
+            <Button
               onClick={() => onStartWorkout('recommended')}
-              className="bg-black text-white hover:bg-gray-900 border border-white/20"
+              className="font-semibold border-0"
+              style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)', color: '#0A0A0C' }}
             >
               Inizia Workout
             </Button>
           </div>
           <div className="hidden md:block">
-            <Zap className="h-16 w-16 text-white" />
+            <Zap className="h-12 w-12 text-[#EEBA2B]" />
           </div>
         </div>
       </div>

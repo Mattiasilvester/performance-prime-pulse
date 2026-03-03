@@ -147,50 +147,40 @@ export const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-black/20 backdrop-blur-xl shadow-lg border-b border-white/20 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <img 
-                src="/images/logo-pp-transparent.png" 
-                alt="Performance Prime Logo" 
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="flex flex-col">
-              <h1 className="text-sm lg:text-xl font-bold text-pp-gold leading-tight">Performance Prime</h1>
-              <p className="text-xs text-gray-300 leading-tight">Oltre ogni limite</p>
-            </div>
+    <header className="fixed top-0 left-0 right-0 bg-background border-b border-[rgba(255,255,255,0.06)] z-50 px-5 py-3">
+      <div className="container mx-auto px-0">
+        <div className="flex items-center justify-between min-h-[2.5rem]">
+          {/* Brand: solo testo */}
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-xl font-bold text-[#EEBA2B] leading-tight truncate" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
+              Performance Prime
+            </h1>
+            <p className="text-[11px] text-[#8A8A96] uppercase tracking-[1.5px] leading-tight truncate" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
+              Oltre ogni limite
+            </p>
           </div>
 
-          {/* RIMOSSO: Barra di navigazione rapida per desktop con Timer, Note e Abbonamenti */}
-          {/* Ora l'header è pulito e focalizzato su logo, search e menu utente */}
-
           {/* User info and actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-1">
             {user && (
-              <span className="text-sm text-gray-300 hidden sm:block">
+              <span className="text-sm text-[#8A8A96] hidden lg:block mr-1">
                 {userProfile?.name || user.email}
               </span>
             )}
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-white hover:bg-gray-800 hover:text-pp-gold transition-colors"
+              className="text-[#8A8A96] hover:text-[#EEBA2B] transition-colors p-2"
               onClick={handleSearch}
             >
               <Search className="h-5 w-5" />
             </Button>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="relative text-white hover:bg-gray-800 hover:text-pp-gold transition-colors">
+                <Button variant="ghost" size="sm" className="relative text-[#8A8A96] hover:text-[#EEBA2B] transition-colors p-2">
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                      {unreadCount}
-                    </span>
+                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#EF4444]" aria-label={`${unreadCount} notifiche non lette`} />
                   )}
                 </Button>
               </PopoverTrigger>
@@ -248,7 +238,7 @@ export const Header = () => {
             </Popover>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-white hover:bg-gray-800 hover:text-pp-gold transition-colors">
+                <Button variant="ghost" size="sm" className="text-[#8A8A96] hover:text-[#EEBA2B] transition-colors p-2">
                   <Menu className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>

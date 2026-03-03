@@ -61,9 +61,6 @@ const BottomNavigation = () => {
         if (isMobile) {
           nav.style.transform = 'translateZ(0)'; // Force hardware acceleration
           nav.style.willChange = 'transform';
-          console.log('📱 Mobile BottomNavigation positioning forced');
-        } else {
-          console.log('🖥️ Desktop BottomNavigation positioning forced');
         }
       }
     };
@@ -91,9 +88,8 @@ const BottomNavigation = () => {
         width: '100%'
       }}
     >
-      {/* Effetto vetro con blur e trasparenza */}
-      <div className="backdrop-blur-xl bg-black/20 shadow-lg border-t border-white/20">
-        <div className="flex justify-around items-center h-16">
+      <div className="bg-background border-t border-[rgba(255,255,255,0.06)] pt-2 pb-3">
+        <div className="flex justify-around items-center">
           {navItems.map((item) => {
             const IconComponent = item.icon;
             const active = isActive(item.path);
@@ -102,17 +98,22 @@ const BottomNavigation = () => {
               <button
                 key={item.id}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-all duration-200 ${
-                  active 
-                    ? 'text-yellow-400' 
-                    : 'text-white/70 hover:text-white'
-                }`}
+                className="relative flex flex-col items-center justify-center flex-1 py-2 transition-all duration-200"
               >
+                {/* Indicatore barretta oro sopra icona quando attivo */}
+                {active && (
+                  <div 
+                    className="absolute -top-2 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-[2px] bg-[#EEBA2B]" 
+                    aria-hidden 
+                  />
+                )}
                 <IconComponent 
                   size={24} 
-                  className={active ? 'mb-1' : 'mb-1 opacity-70'} 
+                  className={active ? 'mb-1 text-[#EEBA2B]' : 'mb-1 text-[#5C5C66]'} 
                 />
-                <span className="text-xs font-medium">{item.label}</span>
+                <span className={`text-[10px] ${active ? 'font-bold text-[#EEBA2B]' : 'font-medium text-[#5C5C66]'}`}>
+                  {item.label}
+                </span>
               </button>
             );
           })}

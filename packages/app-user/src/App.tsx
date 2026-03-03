@@ -95,7 +95,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-[#EEBA2B] text-xl">Caricamento...</div>
       </div>
     )

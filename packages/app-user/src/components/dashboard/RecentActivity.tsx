@@ -113,41 +113,51 @@ export const RecentActivity = () => {
     loadRecentActivities();
   }, []);
 
+  const getIconStyle = (activity: Activity) => {
+    const isObjective = activity.type === 'objective';
+    const color = isObjective ? '#10B981' : '#EEBA2B';
+    const bg = isObjective ? 'rgba(16,185,129,0.1)' : 'rgba(238,186,43,0.08)';
+    return { color, background: bg };
+  };
+
   return (
-    <div className="bg-gradient-to-br from-black to-[#c89116]/10 rounded-2xl p-6 shadow-lg border-2 border-[#c89116]">
+    <div className="bg-[#16161A] rounded-[18px] p-5 border border-[rgba(255,255,255,0.06)]">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-pp-gold">Attività Recenti</h3>
-        <button 
+        <h3 className="text-base font-bold text-[#F0EDE8]">Attività Recente</h3>
+        <button
+          type="button"
           onClick={() => setIsModalOpen(true)}
-          className="text-sm text-white hover:text-pp-gold font-medium transition-colors"
+          className="text-[13px] text-[#8A8A96] hover:text-[#F0EDE8] transition-colors cursor-pointer"
         >
-          Vedi tutte
+          Tutto →
         </button>
       </div>
-      
-      <div className="space-y-4">
+
+      <div className="space-y-2">
         {loading ? (
-          <div className="text-center text-pp-gold/60 py-8">
-            Caricamento attività...
-          </div>
+          <div className="text-center text-[#8A8A96] py-8">Caricamento attività...</div>
         ) : activities.length === 0 ? (
-          <div className="text-center text-pp-gold/60 py-8">
-            Nessuna attività recente
-          </div>
+          <div className="text-center text-[#8A8A96] py-8">Nessuna attività recente</div>
         ) : (
           activities.map((activity, index) => {
             const Icon = activity.icon;
+            const iconStyle = getIconStyle(activity);
             return (
-              <div key={index} className="flex items-center space-x-3 p-3 hover:bg-[#c89116]/10 rounded-xl transition-colors">
-                <div className={`p-2 rounded-xl bg-[#c89116]/20 border border-[#c89116]`}>
-                  <Icon className={`h-4 w-4 ${activity.color}`} />
+              <div
+                key={index}
+                className="flex items-center gap-3.5 p-3 bg-[#1E1E24] rounded-[10px] border border-[rgba(255,255,255,0.06)]"
+              >
+                <div
+                  className="w-[42px] h-[42px] rounded-[10px] flex items-center justify-center shrink-0"
+                  style={{ background: iconStyle.background }}
+                >
+                  <Icon className="h-5 w-5 shrink-0" style={{ color: iconStyle.color }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">{activity.title}</p>
-                  <div className="flex items-center space-x-2 text-sm text-white/70">
-                    <Clock className="h-3 w-3" />
-                    <span>{activity.time}</span>
-                    <span>•</span>
+                  <p className="text-sm font-semibold text-[#F0EDE8] truncate">{activity.title}</p>
+                  <div className="flex items-center gap-2 text-xs text-[#8A8A96] mt-0.5">
+                    {activity.time && <span>{activity.time}</span>}
+                    {activity.time && activity.ago && <span>·</span>}
                     <span>{activity.ago}</span>
                   </div>
                 </div>
@@ -160,39 +170,41 @@ export const RecentActivity = () => {
       {/* Modale Attività Recenti */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-black rounded-2xl border-2 border-[#c89116] max-w-2xl w-full max-h-[80vh] overflow-hidden">
-            {/* Header Modale */}
-            <div className="flex items-center justify-between p-6 border-b border-[#c89116]/30">
-              <h2 className="text-xl font-semibold text-pp-gold">Tutte le Attività</h2>
+          <div className="bg-[#16161A] rounded-[18px] border border-[rgba(255,255,255,0.06)] max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-5 border-b border-[rgba(255,255,255,0.06)]">
+              <h2 className="text-base font-bold text-[#F0EDE8]">Tutte le Attività</h2>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-white hover:text-pp-gold transition-colors"
+                className="text-[#8A8A96] hover:text-[#F0EDE8] transition-colors"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
-
-            {/* Contenuto Modale */}
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
+            <div className="p-5 overflow-y-auto max-h-[60vh]">
               {allActivities.length === 0 ? (
-                <div className="text-center text-pp-gold/60 py-8">
-                  Nessuna attività recente
-                </div>
+                <div className="text-center text-[#8A8A96] py-8">Nessuna attività recente</div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {allActivities.map((activity, index) => {
                     const Icon = activity.icon;
+                    const iconStyle = getIconStyle(activity);
                     return (
-                      <div key={index} className="flex items-center space-x-3 p-3 hover:bg-[#c89116]/10 rounded-xl transition-colors">
-                        <div className={`p-2 rounded-xl bg-[#c89116]/20 border border-[#c89116]`}>
-                          <Icon className={`h-4 w-4 ${activity.color}`} />
+                      <div
+                        key={index}
+                        className="flex items-center gap-3.5 p-3 bg-[#1E1E24] rounded-[10px] border border-[rgba(255,255,255,0.06)]"
+                      >
+                        <div
+                          className="w-[42px] h-[42px] rounded-[10px] flex items-center justify-center shrink-0"
+                          style={{ background: iconStyle.background }}
+                        >
+                          <Icon className="h-5 w-5 shrink-0" style={{ color: iconStyle.color }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-white truncate">{activity.title}</p>
-                          <div className="flex items-center space-x-2 text-sm text-white/70">
-                            <Clock className="h-3 w-3" />
-                            <span>{activity.time}</span>
-                            <span>•</span>
+                          <p className="text-sm font-semibold text-[#F0EDE8] truncate">{activity.title}</p>
+                          <div className="flex items-center gap-2 text-xs text-[#8A8A96] mt-0.5">
+                            {activity.time && <span>{activity.time}</span>}
+                            {activity.time && activity.ago && <span>·</span>}
                             <span>{activity.ago}</span>
                           </div>
                         </div>

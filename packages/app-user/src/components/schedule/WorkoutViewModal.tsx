@@ -83,43 +83,40 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[45]" onClick={onClose}>
-      <div className="bg-black border-2 border-[#c89116] rounded-2xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[18px] p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-pp-gold">Allenamento Salvato</h3>
-          <button onClick={onClose} className="text-white hover:text-pp-gold">
+          <h3 className="text-xl font-bold text-[#F0EDE8]">Allenamento Salvato</h3>
+          <button type="button" onClick={onClose} className="text-[#8A8A96] hover:text-[#F0EDE8]">
             <X className="h-6 w-6" />
           </button>
         </div>
 
-        {/* Titolo allenamento */}
         <div className="mb-4">
-          <h4 className="text-lg font-semibold text-white mb-2">{workout.title}</h4>
+          <h4 className="text-lg font-semibold text-[#F0EDE8] mb-2">{workout.title}</h4>
           <div className="flex items-center space-x-2">
-            <span 
+            <span
               className="px-3 py-1 rounded-full text-sm text-white"
-              style={{ backgroundColor: workoutTypeInfo?.color || '#c89116' }}
+              style={{ backgroundColor: workoutTypeInfo?.color || '#EEBA2B' }}
             >
               {workoutTypeInfo?.name || workout.workout_type}
             </span>
           </div>
         </div>
 
-        {/* Data programmata */}
         <div className="mb-4">
-          <p className="text-white/70 text-sm">
+          <p className="text-[#8A8A96] text-sm">
             Programmato per: {new Date(workout.scheduled_date ?? '').toLocaleDateString('it-IT')}
           </p>
         </div>
 
-        {/* Esercizi */}
         {workout.exercises && workout.exercises.length > 0 && (
           <div className="mb-6">
-            <h5 className="text-white font-medium mb-3">Esercizi:</h5>
+            <h5 className="text-[#F0EDE8] font-medium mb-3">Esercizi:</h5>
             <div className="space-y-3">
               {(workout.exercises as { name?: string; sets?: number; reps?: number; rest?: string }[]).map((exercise, index) => (
-                <div key={index} className="bg-white/10 rounded-lg p-3">
-                  <h6 className="text-white font-medium">{exercise.name}</h6>
-                  <div className="flex space-x-4 mt-1 text-sm text-white/70">
+                <div key={index} className="bg-[#1E1E24] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-3">
+                  <h6 className="text-[#F0EDE8] font-medium">{exercise.name}</h6>
+                  <div className="flex space-x-4 mt-1 text-sm text-[#8A8A96]">
                     {exercise.sets && <span>Serie: {exercise.sets}</span>}
                     {exercise.reps && <span>Rip: {exercise.reps}</span>}
                     {exercise.rest && <span>Rec: {exercise.rest}</span>}
@@ -130,19 +127,19 @@ export const WorkoutViewModal = ({ isOpen, onClose, workout, onWorkoutDeleted }:
           </div>
         )}
 
-        {/* Bottoni */}
         <div className="flex space-x-3">
-            <Button
-              onClick={handleDeleteWorkout}
-              disabled={isDeleting}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-black font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting ? 'Eliminando...' : 'Elimina'}
-            </Button>
+          <Button
+            onClick={handleDeleteWorkout}
+            disabled={isDeleting}
+            className="flex-1 bg-[#1E1E24] hover:bg-[#2a2a2e] text-[#8A8A96] font-medium border border-[rgba(255,255,255,0.06)] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {isDeleting ? 'Eliminando...' : 'Elimina'}
+          </Button>
           <Button
             onClick={handleStartWorkout}
-            className="flex-1 bg-[#c89116] hover:bg-[#c89116]/80 text-black font-medium"
+            className="flex-1 font-medium border-0"
+            style={{ background: 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)', color: '#0A0A0C' }}
           >
             Inizia Allenamento
           </Button>

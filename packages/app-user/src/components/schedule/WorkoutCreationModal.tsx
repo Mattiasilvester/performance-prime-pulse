@@ -338,10 +338,10 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[45]" onClick={onClose}>
-      <div className="bg-black border-2 border-[#c89116] rounded-2xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto mb-24" onClick={e => e.stopPropagation()}>
+      <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[18px] p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto mb-24" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-pp-gold">Crea Allenamento</h3>
-          <button onClick={onClose} className="text-white hover:text-pp-gold">
+          <h3 className="text-xl font-bold text-[#F0EDE8]">Crea Allenamento</h3>
+          <button type="button" onClick={onClose} className="text-[#8A8A96] hover:text-[#F0EDE8]">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -349,7 +349,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         {/* Scelta metodo di creazione */}
         {!creationMethod && (
           <div className="mb-6">
-            <label className="block text-white text-sm font-medium mb-4">
+            <label className="block text-[#8A8A96] text-sm font-medium mb-4">
               Come vuoi creare il tuo allenamento?
             </label>
             <div className="space-y-3">
@@ -404,7 +404,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         {/* Tipo di allenamento - solo se metodo manuale */}
         {creationMethod === 'manual' && (
           <div className="mb-4">
-            <label className="block text-white text-sm font-medium mb-2">
+            <label className="block text-[#8A8A96] text-sm font-medium mb-2">
               Tipo di allenamento
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -428,7 +428,7 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
         {/* Titolo personalizzato - solo se metodo manuale */}
         {creationMethod === 'manual' && selectedType === 'personalizzato' && (
           <div className="mb-4">
-            <label className="block text-white text-sm font-medium mb-2">
+            <label className="block text-[#8A8A96] text-sm font-medium mb-2">
               Nome del tuo allenamento
             </label>
             <input

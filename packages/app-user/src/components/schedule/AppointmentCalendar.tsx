@@ -110,23 +110,34 @@ export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrig
   };
 
   return (
-    <div className="calendar-panel max-h-[500px]">
+    <div className="max-h-[500px]">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="calendar-panel__title">
+        <h3 className="text-lg font-bold text-[#F0EDE8]">
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
         </h3>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')} className="bg-black/50 border-white/20 text-white hover:bg-white/10">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigateMonth('prev')}
+            className="text-[#8A8A96] hover:text-[#F0EDE8] p-2"
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigateMonth('next')} className="bg-black/50 border-white/20 text-white hover:bg-white/10">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigateMonth('next')}
+            className="text-[#8A8A96] hover:text-[#F0EDE8] p-2"
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <button 
-            className="calendar-panel__new-button"
+          <button
+            type="button"
             onClick={() => onDateSelect(new Date())}
+            className="text-[13px] text-[#8A8A96] hover:text-[#F0EDE8] flex items-center gap-1.5 py-2 px-2"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4" />
             Nuovo
           </button>
         </div>
@@ -134,7 +145,7 @@ export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrig
 
       <div className="grid grid-cols-7 gap-2 mb-4">
         {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map(day => (
-          <div key={day} className="p-2 text-center text-sm font-medium calendar-panel__weekday">
+          <div key={day} className="p-2 text-center text-[11px] font-semibold text-[#5C5C66] uppercase">
             {day}
           </div>
         ))}
@@ -142,28 +153,29 @@ export const AppointmentCalendar = ({ onDateSelect, onWorkoutSelect, refreshTrig
 
       <div className="grid grid-cols-7 gap-2">
         {emptyDays.map((_, index) => (
-          <div key={`empty-${index}`} className="p-2" />
+          <div key={`empty-${index}`} className="aspect-square rounded-[10px]" />
         ))}
         {days.map(day => (
-          <div
-            key={day}
-            onClick={() => handleDayClick(day)}
-            className={`p-2 text-center text-sm rounded-lg cursor-pointer transition-colors relative calendar-panel__day ${
-              isToday(day)
-                ? 'bg-[#c89116] text-black font-bold border-2 border-[#c89116] shadow-lg'
-                : hasWorkout(day)
-                ? 'bg-white/20 font-semibold hover:bg-white/30'
-                : 'hover:bg-white/10'
-            }`}
-          >
-            {day}
-            {hasWorkout(day) && !isToday(day) && (
-              <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full bg-red-500" />
-            )}
-            {hasWorkout(day) && isToday(day) && (
-              <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full bg-black" />
-            )}
-          </div>
+            <div
+              key={day}
+              role="button"
+              tabIndex={0}
+              onClick={() => handleDayClick(day)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleDayClick(day); }}
+              className={`aspect-square rounded-[10px] flex flex-col items-center justify-center cursor-pointer transition-colors relative ${
+                isToday(day)
+                  ? 'bg-[#EEBA2B] text-[#0A0A0C] font-bold'
+                  : 'bg-transparent text-[#F0EDE8] font-medium hover:bg-white/5'
+              } ${!isToday(day) && !hasWorkout(day) ? 'opacity-30' : ''}`}
+            >
+              <span className="text-[13px]">{day}</span>
+              {hasWorkout(day) && !isToday(day) && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#10B981]" />
+              )}
+              {hasWorkout(day) && isToday(day) && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#0A0A0C]" />
+              )}
+            </div>
         ))}
       </div>
     </div>
