@@ -1,0 +1,9 @@
+{
+  "buildCommand": "cd ../.. && pnpm install --no-frozen-lockfile && pnpm --filter @pp/app-user build",
+  "outputDirectory": "dist",
+  "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
