@@ -3,23 +3,24 @@ import { motion } from 'framer-motion';
 import { forwardRef, useImperativeHandle, useState, useEffect, useRef } from 'react';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { trackOnboarding } from '@/services/analytics';
-import { 
+import {
+  MapPin,
   Home,
-  Dumbbell,
-  Trees,
-  Clock,
-  Info,
-  CheckCircle,
-  Sparkles,
-  Package,
+  Building2,
+  Sun,
+  Briefcase,
   Check,
-  Loader2
+  X,
+  Dumbbell,
+  Zap,
+  Clock,
+  Flame,
+  Save,
+  Loader2,
 } from 'lucide-react';
 import { useOnboardingNavigation } from '@/hooks/useOnboardingNavigation';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 
 export interface Step3PreferencesHandle {
   handleContinue: () => void;
@@ -30,99 +31,22 @@ interface Step3PreferencesProps {
   isEditMode?: boolean;
 }
 
-interface TrainingLocation {
+interface LocationCard {
   id: string;
   icon: any;
+  iconBg: string;
+  iconColor: string;
   title: string;
-  description: string;
-  equipment: string[];
-  pros: string[];
-  gradient: string;
+  tags: string[];
 }
 
-interface TimeOption {
-  value: 15 | 30 | 45 | 60;
-  label: string;
-  description: string;
-  ideal: string;
-  icon: string;
-}
-
-const locations: TrainingLocation[] = [
-  {
-    id: 'casa',
-    icon: Home,
-    title: 'Casa',
-    description: 'Allenamenti a corpo libero o con attrezzatura minima',
-    equipment: ['Corpo libero', 'Elastici', 'Manubri leggeri'],
-    pros: ['Zero spostamenti', 'Massima flessibilità', 'Privacy totale'],
-    gradient: 'from-blue-500 to-cyan-500'
-  },
-  {
-    id: 'palestra',
-    icon: Dumbbell,
-    title: 'Palestra',
-    description: 'Accesso completo a pesi e macchinari professionali',
-    equipment: ['Bilancieri', 'Macchinari', 'Pesi completi'],
-    pros: ['Attrezzatura pro', 'Ambiente motivante', 'Supporto staff'],
-    gradient: 'from-purple-500 to-pink-500'
-  },
-  {
-    id: 'outdoor',
-    icon: Trees,
-    title: 'Outdoor',
-    description: 'Allenamenti all\'aperto, parchi o percorsi urbani',
-    equipment: ['Corpo libero', 'Panchine', 'Percorsi running'],
-    pros: ['Aria fresca', 'Vitamina D', 'Varietà scenari'],
-    gradient: 'from-green-500 to-teal-500'
-  }
+const locationCards: LocationCard[] = [
+  { id: 'casa', icon: Home, iconBg: 'rgba(16,185,129,0.1)', iconColor: '#10B981', title: 'Casa', tags: ['Corpo libero', 'Elastici'] },
+  { id: 'palestra', icon: Building2, iconBg: 'rgba(59,130,246,0.1)', iconColor: '#3B82F6', title: 'Palestra', tags: ['Bilancieri', 'Macchinari'] },
+  { id: 'outdoor', icon: Sun, iconBg: 'rgba(238,186,43,0.08)', iconColor: '#EEBA2B', title: 'Outdoor', tags: ['Parchi', 'Running'] },
 ];
 
-const timeOptions: TimeOption[] = [
-  {
-    value: 15,
-    label: '15 min',
-    description: 'Express',
-    ideal: 'Perfetto per routine mattutine o pause pranzo',
-    icon: '⚡'
-  },
-  {
-    value: 30,
-    label: '30 min',
-    description: 'Standard',
-    ideal: 'Bilanciato tra efficacia e praticità',
-    icon: '🎯'
-  },
-  {
-    value: 45,
-    label: '45 min',
-    description: 'Completo',
-    ideal: 'Allenamento completo con warm-up e cool-down',
-    icon: '💪'
-  },
-  {
-    value: 60,
-    label: '60+ min',
-    description: 'Intensivo',
-    ideal: 'Sessioni complete per risultati massimi',
-    icon: '🔥'
-  }
-];
-
-interface Attrezzo {
-  id: string;
-  label: string;
-  icon: string;
-}
-
-const listaAttrezzi: Attrezzo[] = [
-  { id: 'manubri', label: 'Manubri', icon: '🏋️' },
-  { id: 'bilanciere', label: 'Bilanciere', icon: '💪' },
-  { id: 'kettlebell', label: 'Kettlebell', icon: '🔔' },
-  { id: 'elastici', label: 'Elastici di resistenza', icon: '🎗️' },
-  { id: 'panca', label: 'Panca', icon: '🪑' },
-  { id: 'altro', label: 'Altro', icon: '➕' }
-];
+const ATTREZZI_IDS = ['manubri', 'bilanciere', 'kettlebell', 'elastici', 'panca', 'altro'] as const;
 
 const Step3Preferences = forwardRef<Step3PreferencesHandle, Step3PreferencesProps>(
   ({ onComplete, isEditMode = false }, ref) => {
@@ -138,15 +62,16 @@ const Step3Preferences = forwardRef<Step3PreferencesHandle, Step3PreferencesProp
     const { saveAndContinue, trackStepStarted } = useOnboardingNavigation(isEditMode);
     const { toast } = useToast();
     
-    // ✅ FIX: Ref per distinguere aggiornamenti manuali da automatici
     const isManualLocationUpdate = useRef(false);
+    const hasTrackedRef = useRef(false);
 
     useEffect(() => {
-      // ✅ FIX: Non trackare in edit mode (temporaneo per debug)
-      if (!isEditMode) {
+      if (!isEditMode && !hasTrackedRef.current) {
         trackStepStarted(3);
+        hasTrackedRef.current = true;
       }
-    }, [trackStepStarted, isEditMode]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isEditMode]);
 
     // ✅ FIX: Sincronizza stati con data usando useEffect invece di inizializzazione diretta
     useEffect(() => {
@@ -421,442 +346,324 @@ const Step3Preferences = forwardRef<Step3PreferencesHandle, Step3PreferencesProp
       }
     }));
 
-    const getComboMessage = () => {
-      if (selectedLocations.length === 3) {
-        return {
-          text: "Massima varietà! I tuoi allenamenti non saranno mai noiosi 🌟",
-          color: "text-[#FFD700]"
-        };
-      } else if (selectedLocations.length === 2) {
-        return {
-          text: "Ottima flessibilità! Potrai adattarti a ogni situazione 💪",
-          color: "text-blue-500"
-        };
-      } else if (selectedLocations.includes('palestra')) {
-        return {
-          text: "Focus sui risultati! Accesso a tutta l'attrezzatura professionale 🎯",
-          color: "text-purple-500"
-        };
-      } else if (selectedLocations.includes('casa')) {
-        return {
-          text: "Comodità massima! Allenati quando vuoi senza vincoli 🏠",
-          color: "text-cyan-500"
-        };
-      } else if (selectedLocations.includes('outdoor')) {
-        return {
-          text: "Natura e fitness! L'aria aperta aumenta energia e motivazione 🌳",
-          color: "text-green-500"
-        };
-      }
-      return null;
-    };
-
     return (
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
-        className="max-w-4xl mx-auto w-full"
+        className="max-w-3xl mx-auto w-full px-4"
       >
         {/* Header */}
         <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-            className="text-5xl mb-4"
+          <div
+            className="w-[72px] h-[72px] rounded-[20px] bg-[rgba(238,186,43,0.08)] border border-[rgba(238,186,43,0.2)] flex items-center justify-center mx-auto mb-[18px]"
           >
-            📍
-          </motion.div>
-          
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-3xl md:text-4xl font-bold text-white mb-3"
-          >
+            <MapPin size={32} color="#EEBA2B" />
+          </div>
+          <h1 className="text-[clamp(24px,5vw,34px)] font-extrabold text-[#F0EDE8] text-center leading-[1.15] tracking-[-0.5px] mb-[10px]">
             Dove preferisci allenarti?
-          </motion.h2>
-          
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="text-lg text-gray-400"
-          >
+          </h1>
+          <p className="text-[15px] text-[#F0EDE8]/50 text-center">
             Puoi selezionare più opzioni per massima flessibilità
-          </motion.p>
+          </p>
         </div>
 
-        {/* Location Cards */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
-        >
-          {locations.map((location, index) => {
+        {/* 3 card luoghi — multi-select */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[14px]">
+          {locationCards.map((location) => {
             const Icon = location.icon;
             const isSelected = selectedLocations.includes(location.id);
-            
+
             return (
-              <motion.button
+              <motion.div
                 key={location.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                role="button"
+                tabIndex={0}
                 onClick={() => toggleLocation(location.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleLocation(location.id);
+                  }
+                }}
+                whileHover={isSelected ? {} : { y: -3, transition: { duration: 0.15 } }}
+                whileTap={{ scale: 0.97, transition: { duration: 0.1 } }}
                 className={`
-                  relative p-5 rounded-2xl border-2 transition-all duration-300
-                  text-left group
-                  ${isSelected 
-                    ? 'bg-white/10 border-[#FFD700]/50 shadow-lg' 
-                    : 'bg-white/5 border-white/10 hover:border-white/20'}
+                  bg-[#16161A] border-[1.5px] rounded-[14px] p-5 cursor-pointer
+                  transition-all duration-[220ms] relative overflow-hidden
+                  ${isSelected
+                    ? 'border-[#EEBA2B] shadow-[0_0_0_1px_#EEBA2B,0_8px_32px_rgba(238,186,43,0.12)]'
+                    : 'border-white/[0.07] hover:border-white/[0.14]'
+                  }
                 `}
               >
-                {/* Header */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`
-                      p-2.5 rounded-xl transition-all
-                      ${isSelected 
-                        ? `bg-gradient-to-br ${location.gradient}` 
-                        : 'bg-white/10'}
-                    `}>
-                      <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-gray-400'}`} />
-                    </div>
-                    <h3 className="font-bold text-white text-lg">
-                      {location.title}
-                    </h3>
+                {isSelected && (
+                  <div className="absolute inset-0 bg-[rgba(238,186,43,0.08)] pointer-events-none" />
+                )}
+                {isSelected && (
+                  <div
+                    className="absolute top-3 right-3 w-[22px] h-[22px] rounded-full bg-[#EEBA2B] flex items-center justify-center z-10"
+                  >
+                    <Check size={12} strokeWidth={2.5} color="#000" />
                   </div>
-                  
-                  {/* Checkbox */}
-                  <div className={`
-                    w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center
-                    ${isSelected 
-                      ? 'bg-[#FFD700] border-[#FFD700]' 
-                      : 'border-white/30'}
-                  `}>
-                    {isSelected && (
-                      <CheckCircle className="w-4 h-4 text-black" />
-                    )}
-                  </div>
+                )}
+                <div
+                  className="w-[44px] h-[44px] rounded-[12px] flex items-center justify-center mb-[14px] relative z-10"
+                  style={{ backgroundColor: location.iconBg }}
+                >
+                  <Icon size={22} color={location.iconColor} />
                 </div>
-
-                {/* Description */}
-                <p className="text-sm text-gray-400 mb-3">
-                  {location.description}
+                <p className="text-[15px] font-bold mb-[6px] relative z-10 text-[#F0EDE8]">
+                  {location.title}
                 </p>
-
-                {/* Equipment */}
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {location.equipment.map((item, i) => (
+                <div className="flex flex-wrap gap-[6px] relative z-10">
+                  {location.tags.map((t) => (
                     <span
-                      key={i}
-                      className={`
-                        text-xs px-2 py-1 rounded-full transition-all
-                        ${isSelected 
-                          ? 'bg-white/20 text-white' 
-                          : 'bg-white/5 text-gray-500'}
-                      `}
+                      key={t}
+                      className="px-[9px] py-[3px] rounded-full border border-white/[0.07] text-[11px] font-medium text-[#F0EDE8]/50"
                     >
-                      {item}
+                      {t}
                     </span>
                   ))}
                 </div>
-
-                {/* Pros (shown when selected) */}
-                {isSelected && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="mt-3 pt-3 border-t border-white/10"
-                  >
-                    {location.pros.map((pro, i) => (
-                      <div key={i} className="text-xs text-[#FFD700] flex items-center gap-1">
-                        <span>✓</span> {pro}
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-              </motion.button>
+              </motion.div>
             );
           })}
-        </motion.div>
+        </div>
 
-        {/* Combo Message */}
-        {selectedLocations.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-3 bg-white/5 rounded-xl border border-white/10"
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#FFD700]" />
-              <p className={`text-sm font-medium ${getComboMessage()?.color}`}>
-                {getComboMessage()?.text}
-              </p>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Domanda Attrezzatura (Condizionale) */}
+        {/* Possiedi attrezzatura? — expand motion.div */}
         {mostraAttrezzatura && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 mb-6 overflow-hidden"
+            className="mt-[14px] bg-[#16161A] border border-white/[0.07] rounded-[14px] p-6 mb-4 overflow-hidden"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <Package className="w-5 h-5 text-[#FFD700]" />
-              <h3 className="text-lg font-bold text-white">
-                Possiedi attrezzatura?
-              </h3>
+            <div className="flex items-center gap-3 mb-5">
+              <div
+                className="w-[36px] h-[36px] rounded-[10px] bg-[rgba(238,186,43,0.08)] flex items-center justify-center"
+              >
+                <Briefcase size={18} color="#EEBA2B" />
+              </div>
+              <p className="text-[15px] font-semibold text-[#F0EDE8]">Possiedi attrezzatura?</p>
             </div>
 
-            {/* Opzioni Sì/No */}
             <div className="grid grid-cols-2 gap-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <motion.div
+                role="button"
+                tabIndex={0}
                 onClick={() => handleAttrezzaturaSelect(true)}
-                className={`
-                  p-4 rounded-xl border-2 transition-all
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAttrezzaturaSelect(true); } }}
+                whileHover={possiedeAttrezzatura === true ? {} : { y: -3, transition: { duration: 0.15 } }}
+                whileTap={{ scale: 0.97, transition: { duration: 0.1 } }}
+                className={`rounded-[12px] p-4 border-[1.5px] cursor-pointer transition-all flex items-center gap-3
                   ${possiedeAttrezzatura === true
-                    ? 'bg-[#FFD700]/20 border-[#FFD700] shadow-lg'
-                    : 'bg-white/5 border-white/10 hover:border-white/20'}
-                `}
+                    ? 'border-[#10B981] bg-[rgba(16,185,129,0.08)]'
+                    : 'border-white/[0.07] bg-[#1E1E24] hover:border-white/[0.14]'
+                  }`}
               >
-                <div className="text-2xl mb-1">✅</div>
-                <div className={`font-bold ${possiedeAttrezzatura === true ? 'text-[#FFD700]' : 'text-white'}`}>
-                  Sì
+                <div
+                  className="w-[36px] h-[36px] rounded-[10px] bg-[rgba(16,185,129,0.1)] flex items-center justify-center flex-shrink-0"
+                >
+                  <Check size={18} color="#10B981" />
                 </div>
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                <span className="font-semibold text-[15px] text-[#F0EDE8]">Sì</span>
+              </motion.div>
+              <motion.div
+                role="button"
+                tabIndex={0}
                 onClick={() => handleAttrezzaturaSelect(false)}
-                className={`
-                  p-4 rounded-xl border-2 transition-all
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAttrezzaturaSelect(false); } }}
+                whileHover={possiedeAttrezzatura === false ? {} : { y: -3, transition: { duration: 0.15 } }}
+                whileTap={{ scale: 0.97, transition: { duration: 0.1 } }}
+                className={`rounded-[12px] p-4 border-[1.5px] cursor-pointer transition-all flex items-center gap-3
                   ${possiedeAttrezzatura === false
-                    ? 'bg-[#FFD700]/20 border-[#FFD700] shadow-lg'
-                    : 'bg-white/5 border-white/10 hover:border-white/20'}
-                `}
+                    ? 'border-[#EF4444] bg-[rgba(239,68,68,0.08)]'
+                    : 'border-white/[0.07] bg-[#1E1E24] hover:border-white/[0.14]'
+                  }`}
               >
-                <div className="text-2xl mb-1">❌</div>
-                <div className={`font-bold ${possiedeAttrezzatura === false ? 'text-[#FFD700]' : 'text-white'}`}>
-                  No
+                <div
+                  className="w-[36px] h-[36px] rounded-[10px] bg-[rgba(239,68,68,0.1)] flex items-center justify-center flex-shrink-0"
+                >
+                  <X size={18} color="#EF4444" />
                 </div>
-              </motion.button>
+                <span className="font-semibold text-[15px] text-[#F0EDE8]">No</span>
+              </motion.div>
             </div>
 
-            {/* Messaggio validazione */}
-            {mostraAttrezzatura && possiedeAttrezzatura === undefined && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg"
-              >
-                <p className="text-xs text-yellow-400">
-                  ⚠️ Seleziona se possiedi attrezzatura per continuare
-                </p>
-              </motion.div>
-            )}
-
-            {/* Lista Attrezzi (mostra solo se "Sì") */}
             {possiedeAttrezzatura === true && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
-                className="mt-4 pt-4 border-t border-white/10 overflow-hidden"
+                className="mt-5 overflow-hidden"
               >
-                <h4 className="text-md font-semibold text-white mb-3">
-                  Quali attrezzi possiedi?
-                </h4>
+                <div className="flex items-center gap-2 mb-3">
+                  <Dumbbell size={16} color="#EEBA2B" />
+                  <p className="text-[13px] font-semibold text-[#F0EDE8]/70 uppercase tracking-[0.5px]">
+                    Quali attrezzi possiedi?
+                  </p>
+                </div>
 
-                {/* Grid Attrezzi */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-                  {listaAttrezzi.map((attrezzo) => {
-                    const isSelected = attrezzi.includes(attrezzo.id);
-                    
+                <div className="grid grid-cols-3 gap-[10px]">
+                  {ATTREZZI_IDS.map((attrezzo) => {
+                    const isSelected = attrezzi.includes(attrezzo);
                     return (
-                      <motion.button
-                        key={attrezzo.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => toggleAttrezzo(attrezzo.id)}
-                        className={`
-                          p-3 rounded-xl border-2 transition-all text-left
+                      <motion.div
+                        key={attrezzo}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => toggleAttrezzo(attrezzo)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            toggleAttrezzo(attrezzo);
+                          }
+                        }}
+                        whileHover={isSelected ? {} : { y: -2, transition: { duration: 0.15 } }}
+                        whileTap={{ scale: 0.97, transition: { duration: 0.1 } }}
+                        className={`rounded-[10px] p-[13px] border-[1.5px] cursor-pointer transition-all flex items-center gap-[10px]
                           ${isSelected
-                            ? 'bg-[#FFD700]/20 border-[#FFD700] shadow-lg'
-                            : 'bg-white/5 border-white/10 hover:border-white/20'}
-                        `}
+                            ? 'border-[#EEBA2B] bg-[rgba(238,186,43,0.08)]'
+                            : 'border-white/[0.07] bg-[#1E1E24] hover:border-white/[0.14]'
+                          }`}
                       >
-                        <div className="flex items-center gap-2">
-                          <div className={`
-                            w-5 h-5 rounded border-2 flex items-center justify-center transition-all
-                            ${isSelected
-                              ? 'bg-[#FFD700] border-[#FFD700]'
-                              : 'border-white/30 bg-transparent'}
-                          `}>
-                            {isSelected && (
-                              <CheckCircle className="w-3 h-3 text-black" />
-                            )}
-                          </div>
-                          <span className="text-lg">{attrezzo.icon}</span>
-                          <span className={`text-sm font-medium ${isSelected ? 'text-[#FFD700]' : 'text-white'}`}>
-                            {attrezzo.label}
-                          </span>
-                        </div>
-                      </motion.button>
+                      <div
+                        className={`w-[20px] h-[20px] rounded-[6px] border-[1.5px] flex-shrink-0 flex items-center justify-center transition-all
+                          ${attrezzi.includes(attrezzo)
+                            ? 'bg-[#EEBA2B] border-[#EEBA2B]'
+                            : 'border-white/[0.2] bg-transparent'
+                          }`}
+                      >
+                        {attrezzi.includes(attrezzo) && <Check size={12} strokeWidth={2.5} color="#000" />}
+                      </div>
+                      <span className="text-[13px] font-medium text-[#F0EDE8] capitalize">
+                        {attrezzo}
+                      </span>
+                    </motion.div>
                     );
                   })}
                 </div>
 
-                {/* Campo "Altro" (condizionale) */}
                 {attrezzi.includes('altro') && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="mt-3 space-y-3 overflow-hidden"
+                    transition={{ duration: 0.25 }}
+                    className="mt-4 overflow-hidden"
                   >
-                    {/* Textarea */}
-                    <Textarea
+                    <textarea
                       value={altriAttrezzi}
                       onChange={(e) => handleAltriAttrezziChange(e.target.value)}
                       placeholder="Es: TRX, Corda per saltare, Palla medica..."
+                      className="w-full bg-[#1E1E24] border border-white/[0.07] rounded-[10px] px-4 py-3 text-[16px] text-[#F0EDE8] placeholder:text-[#F0EDE8]/30 focus:border-[#EEBA2B] focus:ring-2 focus:ring-[#EEBA2B]/10 outline-none resize-none min-h-[80px]"
                       maxLength={200}
-                      rows={3}
-                      className="bg-white/5 border-2 border-white/10 text-white placeholder-gray-500 focus:border-[#FFD700] focus-visible:ring-[#FFD700] resize-none"
                     />
-                    
-                    {/* Contatore caratteri */}
-                    <p className="text-xs text-gray-500 text-right">
-                      {altriAttrezzi.length}/200
-                    </p>
-
-                    {/* Bottone Conferma */}
-                    <Button
-                      type="button"
-                      onClick={handleSalvaAltriAttrezzi}
-                      disabled={!altriAttrezzi?.trim() || altriAttrezzi.trim().length < 3 || isSavingAltri}
-                      className="w-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed mt-3"
-                    >
-                      {isSavingAltri ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Salvataggio...
-                        </>
-                      ) : justSaved ? (
-                        <>
-                          <Check className="mr-2 h-4 w-4" />
-                          ✅ Salvato!
-                        </>
-                      ) : (
-                        <>
-                          <Check className="mr-2 h-4 w-4" />
-                          Conferma attrezzi
-                        </>
-                      )}
-                    </Button>
-
-                    {/* Messaggio validazione (sotto bottone) */}
-                    {altriAttrezzi && altriAttrezzi.trim().length < 3 && (
-                      <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-sm text-yellow-500 mt-2"
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[12px] text-[#F0EDE8]/30">
+                        {altriAttrezzi?.length ?? 0}/200
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleSalvaAltriAttrezzi}
+                        disabled={isSavingAltri || !altriAttrezzi?.trim() || altriAttrezzi.trim().length < 3}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-[8px] text-[13px] font-semibold transition-all
+                          ${justSaved
+                            ? 'bg-[rgba(16,185,129,0.15)] border border-[rgba(16,185,129,0.3)] text-[#10B981]'
+                            : 'bg-[#EEBA2B] text-black hover:bg-[#f5c93a] disabled:opacity-40 disabled:cursor-not-allowed'
+                          }`}
                       >
-                        ⚠️ Specifica almeno 3 caratteri
-                      </motion.p>
-                    )}
+                        {isSavingAltri ? (
+                          <>
+                            <Loader2 size={14} className="animate-spin" />
+                            Salvataggio...
+                          </>
+                        ) : justSaved ? (
+                          <>
+                            <Check size={14} />
+                            Salvato!
+                          </>
+                        ) : (
+                          <>
+                            <Save size={14} />
+                            Conferma attrezzi
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </motion.div>
                 )}
 
-                {/* Messaggi validazione attrezzi */}
                 {possiedeAttrezzatura === true && attrezzi.length === 0 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg"
-                  >
-                    <p className="text-xs text-yellow-400">
-                      ⚠️ Seleziona almeno un attrezzo
-                    </p>
-                  </motion.div>
+                  <p className="text-[12px] text-[#F0EDE8]/50 mt-3">Seleziona almeno un attrezzo</p>
                 )}
               </motion.div>
             )}
           </motion.div>
         )}
 
-        {/* Time Selection */}
+        {/* Durata sessione */}
         {selectedLocations.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 mb-6"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Clock className="w-5 h-5 text-[#FFD700]" />
-              <h3 className="text-lg font-bold text-white">
-                Quanto tempo hai per ogni sessione?
-              </h3>
-            </div>
-
-            {/* Time Options Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-              {timeOptions.map((option) => (
-                <motion.button
-                  key={option.value}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleTimeSelect(option.value)}
-                  className={`
-                    p-4 rounded-xl border-2 transition-all
-                    ${selectedTime === option.value
-                      ? 'bg-[#FFD700]/20 border-[#FFD700] shadow-lg'
-                      : 'bg-white/5 border-white/10 hover:border-white/20'}
-                  `}
-                >
-                  <div className="text-2xl mb-1">{option.icon}</div>
-                  <div className={`font-bold ${selectedTime === option.value ? 'text-[#FFD700]' : 'text-white'}`}>
-                    {option.label}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {option.description}
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-
-            {/* Selected Time Description */}
-            <motion.div
-              key={selectedTime}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl"
-            >
-              <div className="flex items-start gap-2">
-                <Info className="w-4 h-4 text-blue-500 mt-0.5" />
-                <p className="text-xs text-gray-300">
-                  {timeOptions.find(t => t.value === selectedTime)?.ideal}
-                </p>
+          <div className="bg-[#16161A] border border-white/[0.07] rounded-[14px] p-6 mt-4">
+            <div className="flex items-center gap-3 mb-5">
+              <div
+                className="w-[36px] h-[36px] rounded-[10px] bg-[rgba(238,186,43,0.08)] flex items-center justify-center"
+              >
+                <Clock size={18} color="#EEBA2B" />
               </div>
-            </motion.div>
-          </motion.div>
-        )}
+              <p className="text-[15px] font-semibold text-[#F0EDE8]">
+                Quanto tempo per ogni sessione?
+              </p>
+            </div>
 
+            <div className="grid grid-cols-4 gap-[10px]">
+              {(
+                [
+                  { value: 15 as const, label: '15 min', sub: 'Express', icon: Zap, color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
+                  { value: 30 as const, label: '30 min', sub: 'Standard', icon: Clock, color: '#3B82F6', bg: 'rgba(59,130,246,0.1)' },
+                  { value: 45 as const, label: '45 min', sub: 'Completo', icon: Dumbbell, color: '#EEBA2B', bg: 'rgba(238,186,43,0.08)' },
+                  { value: 60 as const, label: '60+ min', sub: 'Intensivo', icon: Flame, color: '#EF4444', bg: 'rgba(239,68,68,0.1)' },
+                ] as const
+              ).map(({ value, label, sub, icon: Icon, color, bg }) => {
+                const isSelected = selectedTime === value;
+                return (
+                  <motion.div
+                    key={value}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleTimeSelect(value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleTimeSelect(value);
+                      }
+                    }}
+                    whileHover={isSelected ? {} : { y: -3, transition: { duration: 0.15 } }}
+                    whileTap={{ scale: 0.97, transition: { duration: 0.1 } }}
+                    className={`rounded-[12px] p-4 border-[1.5px] cursor-pointer transition-all text-center
+                      ${isSelected
+                        ? 'border-[#EEBA2B] bg-[rgba(238,186,43,0.08)] shadow-[0_0_0_1px_#EEBA2B]'
+                        : 'border-white/[0.07] bg-[#1E1E24] hover:border-white/[0.14]'
+                      }`}
+                  >
+                    <div className="flex flex-col items-center text-center w-full md:contents">
+                      <div
+                        className="w-[36px] h-[36px] rounded-[10px] flex items-center justify-center mx-auto mb-2 md:mx-auto"
+                        style={{ backgroundColor: bg }}
+                      >
+                        <Icon size={18} color={color} />
+                      </div>
+                      <p className="text-[14px] font-bold text-[#F0EDE8] text-center">{label}</p>
+                      <p className="text-[11px] text-[#F0EDE8]/50 mt-[2px] text-center">{sub}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </motion.div>
     );
   }

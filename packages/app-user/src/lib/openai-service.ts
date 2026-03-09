@@ -100,22 +100,21 @@ export const getAIResponse = async (
   }
 
   try {
-    // Recupera il contesto utente per personalizzare le risposte
+    // Recupera il contesto utente per personalizzare le risposte (in scope per system prompt)
     let userContextString = '';
+    let userContext: UserContext | null = null;
     try {
-      const userContext = await getUserContext(userId);
+      userContext = await getUserContext(userId);
       userContextString = formatUserContextForPrompt(userContext);
       console.log('👤 Contesto utente recuperato:', {
         nome: userContext.nome,
         obiettivi: userContext.obiettivi,
         livello: userContext.livello_fitness_it,
       });
-      
-      // Aggiorna primebot_preferences con i dati recuperati
+
       await updatePrimeBotPreferences(userId, userContext);
     } catch (contextError) {
       console.warn('⚠️ Errore recupero contesto utente (continuo senza personalizzazione):', contextError);
-      // Continua senza contesto se il recupero fallisce
     }
 
     // Recupera la cronologia conversazione se abbiamo un sessionId
@@ -133,19 +132,8 @@ export const getAIResponse = async (
     }
 
     // Prepara i messaggi per OpenAI: system prompt + cronologia + nuovo messaggio
-    // Costruisci system prompt base
-    let systemPrompt = `IMPORTANTE: Rispondi SEMPRE e SOLO in italiano. Mai usare inglese. Tutti i nomi degli esercizi devono essere in italiano. Non tradurre mai in inglese.
-
-Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Prime Pulse", solo "Performance Prime").
-
-  REGOLE FONDAMENTALI:
-  1. Rispondi SEMPRE in italiano - NON usare mai l'inglese per esercizi, termini tecnici o risposte
-  2. Usa formattazione markdown per strutturare le risposte
-  3. Includi emoji appropriate 💪🏋️‍♂️🔥
-  4. Fornisci risposte DETTAGLIATE e SPECIFICHE, mai generiche
-  5. Il nome dell'app è "Performance Prime" (MAI aggiungere "Pulse")
-
-  STRUTTURA DELLE RISPOSTE:
+    const nomeUtente = userContext?.nome && userContext.nome !== 'Utente' ? userContext.nome : null;
+    const systemPromptRest = `  STRUTTURA DELLE RISPOSTE:
   - Per esercizi: fornisci SEMPRE almeno 3-5 opzioni con:
     • Nome dell'esercizio
     • Serie x Ripetizioni
@@ -253,10 +241,24 @@ Sei PrimeBot, l'assistente AI esperto di Performance Prime (NON "Performance Pri
   **Evita:** Squat profondi, jump squat, affondi in avanzamento
   Vuoi che ti crei un piano che eviti stress sulle ginocchia? 🏋️"`;
 
+    let systemPrompt = `Sei PrimeBot, l'AI Coach personale${nomeUtente ? ` di ${nomeUtente}` : ''} su Performance Prime.
+Sei un coach esperto, motivante e preciso.
+
+REGOLE FONDAMENTALI:
+${nomeUtente ? `- Chiama l'utente per nome (${nomeUtente}) quando è naturale farlo\n` : '- Rivolgiti all\'utente in modo personale\n'}- Non chiedere mai dati già presenti nel profilo (obiettivo, livello, peso, ecc.)
+- Se l'utente ha limitazioni fisiche o zone da proteggere, NON proporre MAI esercizi che coinvolgono quelle zone
+- Adatta sempre volume, intensità e selezione esercizi al livello di esperienza indicato
+- Se la durata sessione è indicata nel profilo, rispetta quel vincolo di tempo
+- Rispondi sempre in italiano
+
+` + systemPromptRest;
+
     // Aggiungi contesto utente al system prompt se disponibile
     if (userContextString) {
       systemPrompt += `\n\nCONTESTO UTENTE:\n${userContextString}\n\nIMPORTANTE: Personalizza le tue risposte in base ai dati dell'utente sopra. Usa il suo nome quando appropriato e adatta consigli/allenamenti al suo livello, obiettivi e attrezzatura disponibile.`;
     }
+
+    console.log('SYSTEM PROMPT:', systemPrompt.substring(0, 500));
 
     // Costruisci array messaggi: system + cronologia + nuovo messaggio
     const messages = [

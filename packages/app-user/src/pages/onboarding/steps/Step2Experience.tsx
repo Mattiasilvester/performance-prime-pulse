@@ -1,16 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- tipi store onboarding */
-import { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import type { OnboardingData } from '@/stores/onboardingStore';
 import { trackOnboarding } from '@/services/analytics';
 import { Slider } from '@/components/ui/slider';
-import { 
-  Sparkles,
+import { motion } from 'framer-motion';
+import {
+  Activity,
+  Star,
   TrendingUp,
   Trophy,
   Calendar,
   Info,
-  ArrowRight
+  Check,
 } from 'lucide-react';
 import { useOnboardingNavigation } from '@/hooks/useOnboardingNavigation';
 
@@ -27,66 +29,44 @@ interface ExperienceLevel {
   id: 'principiante' | 'intermedio' | 'avanzato';
   icon: any;
   title: string;
+  subtitle: string;
   description: string;
-  timeRange: string;
-  characteristics: string[];
+  iconBg: string;
+  iconColor: string;
   recommendedDays: { min: number; max: number };
-  gradient: string;
 }
 
 const experienceLevels: ExperienceLevel[] = [
   {
     id: 'principiante',
-    icon: Sparkles,
+    icon: Star,
     title: 'Principiante',
-    description: 'Sto iniziando ora o riprendo dopo una pausa',
-    timeRange: '0-6 mesi di esperienza',
-    characteristics: [
-      'Mai allenato o lunga pausa',
-      'Voglio imparare le basi',
-      'Preferisco iniziare gradualmente'
-    ],
+    subtitle: '0–6 mesi',
+    description: 'Sto iniziando o riprendendo dopo una pausa',
+    iconBg: 'rgba(255,255,255,0.06)',
+    iconColor: '#F0EDE8',
     recommendedDays: { min: 2, max: 3 },
-    gradient: 'from-green-500 to-emerald-500'
   },
   {
     id: 'intermedio',
     icon: TrendingUp,
     title: 'Intermedio',
+    subtitle: '6 mesi–2 anni',
     description: 'Mi alleno con una certa regolarità',
-    timeRange: '6 mesi - 2 anni di esperienza',
-    characteristics: [
-      'Conosco gli esercizi base',
-      'Alleno 2-4 volte a settimana',
-      'Voglio migliorare la tecnica'
-    ],
+    iconBg: 'rgba(59,130,246,0.1)',
+    iconColor: '#3B82F6',
     recommendedDays: { min: 3, max: 4 },
-    gradient: 'from-blue-500 to-cyan-500'
   },
   {
     id: 'avanzato',
     icon: Trophy,
     title: 'Avanzato',
-    description: 'Mi alleno da anni con costanza',
-    timeRange: '2+ anni di esperienza',
-    characteristics: [
-      'Tecnica consolidata',
-      'Alleno 4-6 volte a settimana',
-      'Cerco stimoli avanzati'
-    ],
+    subtitle: '2+ anni',
+    description: 'Mi alleno con costanza da tempo',
+    iconBg: 'rgba(238,186,43,0.08)',
+    iconColor: '#EEBA2B',
     recommendedDays: { min: 4, max: 6 },
-    gradient: 'from-purple-500 to-pink-500'
-  }
-];
-
-const dayMessages = [
-  { days: 1, message: "Un giorno è meglio di zero! 💪", color: 'text-yellow-500' },
-  { days: 2, message: "Ottimo per iniziare! 🌱", color: 'text-green-500' },
-  { days: 3, message: "Perfetto equilibrio! ⚖️", color: 'text-blue-500' },
-  { days: 4, message: "Sei motivato! 🔥", color: 'text-orange-500' },
-  { days: 5, message: "Atleta dedicato! 🎯", color: 'text-purple-500' },
-  { days: 6, message: "Quasi tutti i giorni! 💎", color: 'text-pink-500' },
-  { days: 7, message: "Campione assoluto! 🏆", color: 'text-[#FFD700]' }
+  },
 ];
 
 const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
@@ -100,13 +80,15 @@ const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
     );
     const [canProceed, setCanProceed] = useState(false);
     const { saveAndContinue, trackStepStarted } = useOnboardingNavigation(isEditMode);
+    const hasTrackedRef = useRef(false);
 
     useEffect(() => {
-      // ✅ FIX: Non trackare in edit mode (temporaneo per debug)
-      if (!isEditMode) {
+      if (!isEditMode && !hasTrackedRef.current) {
         trackStepStarted(2);
+        hasTrackedRef.current = true;
       }
-    }, [trackStepStarted, isEditMode]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isEditMode]);
 
     useEffect(() => {
       setCanProceed(!!selectedLevel);
@@ -154,190 +136,197 @@ const Step2Experience = forwardRef<Step2ExperienceHandle, Step2ExperienceProps>(
       }
     }));
 
-    const getCurrentMessage = () => {
-      return dayMessages.find(m => m.days === daysPerWeek) || dayMessages[2];
-    };
-
     return (
-      <div className="max-w-4xl mx-auto w-full animate-slide-up" style={{ animationDelay: '0.05s' }}>
-        {/* Header */}
-        <div className="text-center mb-8 space-y-3">
-          <div className="text-5xl mb-4 animate-scale-in" style={{ animationDelay: '0.15s' }}>
-            💪
+      <div className="max-w-3xl mx-auto w-full px-4">
+        {/* Header — box icona gold + titolo + sottotitolo */}
+        <div className="text-center mb-8">
+          <div
+            className="w-[72px] h-[72px] rounded-[20px] bg-[rgba(238,186,43,0.08)] border border-[rgba(238,186,43,0.2)] flex items-center justify-center mx-auto mb-[18px]"
+          >
+            <Activity size={32} color="#EEBA2B" />
           </div>
-          
-          <h2
-            className="text-3xl md:text-4xl font-bold text-white mb-3 animate-slide-up"
-            style={{ animationDelay: '0.2s' }}
-          >
+          <h1 className="text-[clamp(24px,5vw,34px)] font-extrabold text-[#F0EDE8] text-center leading-[1.15] tracking-[-0.5px] mb-[10px]">
             Qual è il tuo livello di esperienza?
-          </h2>
-          
-          <p
-            className="text-lg text-gray-400 animate-slide-up"
-            style={{ animationDelay: '0.25s' }}
-          >
+          </h1>
+          <p className="text-[15px] text-[#F0EDE8]/50 text-center">
             Questo mi aiuta a calibrare l'intensità degli allenamenti
           </p>
         </div>
 
-        {/* Experience Level Cards */}
-        <div
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 animate-fade-in"
-          style={{ animationDelay: '0.3s' }}
-        >
-          {experienceLevels.map((level, index) => {
+        {/* 3 card livello — griglia 3 colonne */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[14px]">
+          {experienceLevels.map((level) => {
             const Icon = level.icon;
             const isSelected = selectedLevel === level.id;
-            
+
             return (
-              <button
+              <motion.div
                 key={level.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => handleSelectLevel(level.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSelectLevel(level.id);
+                  }
+                }}
+                whileHover={isSelected ? {} : { y: -3, transition: { duration: 0.15 } }}
+                whileTap={{ scale: 0.97, transition: { duration: 0.1 } }}
                 className={`
-                  relative p-6 rounded-2xl border-2 transition-all duration-300 transform
-                  text-left group
-                  ${isSelected 
-                    ? 'bg-white/10 border-[#FFD700]/50 shadow-lg' 
-                    : 'bg-white/5 border-white/10 hover:border-white/20'}
+                  bg-[#16161A] border-[1.5px] rounded-[14px] p-5 cursor-pointer
+                  transition-all duration-[220ms] relative overflow-hidden
+                  ${isSelected
+                    ? 'border-[#EEBA2B] shadow-[0_0_0_1px_#EEBA2B,0_8px_32px_rgba(238,186,43,0.12)]'
+                    : 'border-white/[0.07] hover:border-white/[0.14]'
+                  }
                 `}
               >
-                {/* Icon and Title */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`
-                    p-3 rounded-xl transition-all
-                    ${isSelected 
-                      ? `bg-gradient-to-br ${level.gradient}` 
-                      : 'bg-white/10'}
-                  `}>
-                    <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-gray-400'}`} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">
-                      {level.title}
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      {level.timeRange}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <p className="text-sm text-gray-400 mb-3">
-                  {level.description}
-                </p>
-
-                {/* Characteristics */}
-                <div className="space-y-1">
-                  {level.characteristics.map((char, i) => (
-                    <div 
-                      key={i}
-                      className={`
-                        text-xs flex items-start gap-1 transition-all
-                        ${isSelected ? 'text-white' : 'text-gray-500'}
-                      `}
-                    >
-                      <span className={isSelected ? 'text-[#FFD700]' : ''}>•</span>
-                      <span>{char}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Selected indicator */}
                 {isSelected && (
-                  <div className="absolute top-3 right-3 w-6 h-6 bg-[#FFD700] rounded-full flex items-center justify-center animate-scale-in">
-                    <span className="text-black text-sm">✓</span>
-                  </div>
+                  <div className="absolute inset-0 bg-[rgba(238,186,43,0.08)] pointer-events-none" />
                 )}
-
-                {/* Recommended badge */}
                 {isSelected && (
                   <div
-                    className="mt-3 text-xs text-[#FFD700] animate-slide-up"
-                    style={{ animationDelay: '0.1s' }}
+                    className="absolute top-3 right-3 w-[22px] h-[22px] rounded-full bg-[#EEBA2B] flex items-center justify-center z-10"
                   >
-                    Consigliati: {level.recommendedDays.min}-{level.recommendedDays.max} giorni/settimana
+                    <Check size={12} strokeWidth={2.5} color="#000" />
                   </div>
                 )}
-              </button>
+                <div
+                  className="w-[44px] h-[44px] rounded-[12px] flex items-center justify-center mb-[14px] relative z-10"
+                  style={{ backgroundColor: level.iconBg }}
+                >
+                  <Icon size={22} color={level.iconColor} />
+                </div>
+                <p className="text-[15px] font-bold mb-[4px] relative z-10 text-[#F0EDE8]">
+                  {level.title}
+                </p>
+                <p className="text-[13px] text-[#F0EDE8]/50 mb-[8px] relative z-10">
+                  {level.subtitle}
+                </p>
+                <p className="text-[13px] text-[#F0EDE8]/50 leading-[1.5] relative z-10">
+                  {level.description}
+                </p>
+              </motion.div>
             );
           })}
         </div>
 
-        {/* Days per Week Slider */}
+        {/* Sezione slider giorni — visibile solo se selectedLevel */}
         {selectedLevel && (
-          <div
-            className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 mb-6 animate-slide-up"
-            style={{ animationDelay: '0.35s' }}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Calendar className="w-5 h-5 text-[#FFD700]" />
-              <h3 className="text-lg font-bold text-white">
-                Quanti giorni a settimana vuoi allenarti?
-              </h3>
-            </div>
-
-            {/* Days Display */}
-            <div className="text-center mb-4">
+          <div className="bg-[#16161A] border border-white/[0.07] rounded-[14px] p-6 mt-[14px]">
+            <div className="flex items-center gap-3 mb-5">
               <div
-                key={daysPerWeek}
-                className="inline-block animate-scale-in"
+                className="w-[36px] h-[36px] rounded-[10px] bg-[rgba(238,186,43,0.08)] flex items-center justify-center"
               >
-                <span className="text-5xl font-bold text-[#FFD700]">
-                  {daysPerWeek}
-                </span>
-                <span className="text-2xl text-white ml-2">
-                  {daysPerWeek === 1 ? 'giorno' : 'giorni'}
-                </span>
+                <Calendar size={18} color="#EEBA2B" />
               </div>
+              <p className="text-[15px] font-semibold text-[#F0EDE8]">
+                Quanti giorni a settimana vuoi allenarti?
+              </p>
             </div>
 
-            {/* Slider */}
-            <div className="px-4">
+            <div className="text-center mb-4">
+              <span className="text-[56px] font-extrabold text-[#EEBA2B] leading-none">
+                {daysPerWeek}
+              </span>
+              <span className="text-[20px] text-[#F0EDE8]/50 ml-2">
+                {daysPerWeek === 1 ? 'giorno' : 'giorni'}
+              </span>
+            </div>
+
+            <div className="px-2 [&_[role=slider]]:!hidden">
               <Slider
                 value={[daysPerWeek]}
-                onValueChange={(value) => setDaysPerWeek(value[0])}
+                onValueChange={(v) => setDaysPerWeek(v[0])}
                 min={1}
                 max={7}
                 step={1}
-                className="mb-4"
               />
-              
-              {/* Day markers */}
-              <div className="flex justify-between text-xs text-gray-500">
-                {[1, 2, 3, 4, 5, 6, 7].map(day => (
-                  <span 
-                    key={day}
-                    className={daysPerWeek === day ? 'text-[#FFD700] font-bold' : ''}
+            </div>
+
+            <div className="flex justify-between mt-3 px-1">
+              {[1, 2, 3, 4, 5, 6, 7].map((n) => {
+                const isSelected = daysPerWeek === n;
+                return (
+                  <motion.button
+                    key={n}
+                    type="button"
+                    onClick={() => setDaysPerWeek(n)}
+                    whileHover={isSelected ? {} : { scale: 1.08, transition: { duration: 0.15 } }}
+                    whileTap={{ scale: 0.97, transition: { duration: 0.1 } }}
+                    className={`w-[32px] h-[32px] rounded-full text-[13px] font-bold transition-all
+                      ${isSelected
+                        ? 'bg-[#EEBA2B] text-black shadow-[0_0_12px_rgba(238,186,43,0.4)]'
+                        : 'bg-white/[0.06] text-[#F0EDE8]/50 hover:bg-white/[0.12]'
+                      }`}
                   >
-                    {day}
-                  </span>
-                ))}
-              </div>
+                    {n}
+                  </motion.button>
+                );
+              })}
             </div>
 
-            {/* Message */}
-            <div
-              key={daysPerWeek}
-              className={`text-center mt-4 font-medium animate-fade-in ${getCurrentMessage().color}`}
-              style={{ animationDelay: '0.4s' }}
-            >
-              {getCurrentMessage().message}
-            </div>
-
-            {/* Info box */}
-            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-              <div className="flex items-start gap-2">
-                <Info className="w-4 h-4 text-blue-500 mt-0.5" />
-                <p className="text-xs text-gray-300">
-                  Non preoccuparti se non riesci sempre a rispettare i giorni prefissati. 
-                  Il piano si adatterà automaticamente ai tuoi impegni!
-                </p>
-              </div>
-            </div>
+            {(() => {
+              const info: Record<number, { color: string; bg: string; border: string; text: string }> = {
+                1: {
+                  color: '#3B82F6',
+                  bg: 'rgba(59,130,246,0.08)',
+                  border: 'rgba(59,130,246,0.2)',
+                  text: 'Un punto di partenza — anche poco conta!',
+                },
+                2: {
+                  color: '#10B981',
+                  bg: 'rgba(16,185,129,0.08)',
+                  border: 'rgba(16,185,129,0.2)',
+                  text: 'Ottimo per iniziare con recupero adeguato',
+                },
+                3: {
+                  color: '#10B981',
+                  bg: 'rgba(16,185,129,0.08)',
+                  border: 'rgba(16,185,129,0.2)',
+                  text: 'Il classico dei principianti, funziona bene',
+                },
+                4: {
+                  color: '#EEBA2B',
+                  bg: 'rgba(238,186,43,0.08)',
+                  border: 'rgba(238,186,43,0.2)',
+                  text: 'Ottimo equilibrio tra recupero e progressi',
+                },
+                5: {
+                  color: '#EEBA2B',
+                  bg: 'rgba(238,186,43,0.08)',
+                  border: 'rgba(238,186,43,0.2)',
+                  text: 'Atleta dedicato! Alta frequenza',
+                },
+                6: {
+                  color: '#EEBA2B',
+                  bg: 'rgba(238,186,43,0.08)',
+                  border: 'rgba(238,186,43,0.2)',
+                  text: 'Intensità massima — assicurati di recuperare',
+                },
+                7: {
+                  color: '#EEBA2B',
+                  bg: 'rgba(238,186,43,0.08)',
+                  border: 'rgba(238,186,43,0.2)',
+                  text: 'Ogni giorno! Pianifica bene il recupero attivo',
+                },
+              };
+              const i = info[daysPerWeek];
+              return (
+                <div
+                  className="mt-4 rounded-[10px] px-4 py-3 flex items-center gap-3 border"
+                  style={{ backgroundColor: i.bg, borderColor: i.border }}
+                >
+                  <Info size={16} style={{ color: i.color, flexShrink: 0 }} />
+                  <p className="text-[13px] font-medium" style={{ color: i.color }}>
+                    {i.text}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         )}
-
       </div>
     );
   }

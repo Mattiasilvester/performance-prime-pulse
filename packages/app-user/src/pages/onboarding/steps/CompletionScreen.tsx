@@ -4,7 +4,8 @@ import { useEffect, useState, MouseEvent, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { Button } from '@/components/ui/button';
-import { 
+import {
+  Star,
   Dumbbell,
   Clock,
   Target,
@@ -12,9 +13,10 @@ import {
   Play,
   Home,
   TreePine,
-  MapPin
+  MapPin,
 } from 'lucide-react';
 import { safeLocalStorage } from '@/utils/domHelpers';
+import { onboardingService } from '@/services/onboardingService';
 import { calculateWorkoutParameters, mapExperienceLevel } from '@/utils/workoutParameters';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -119,38 +121,21 @@ interface WorkoutPlanCardProps {
   onIniziaDopo: (piano: WorkoutPlan) => void;
 }
 
-// Helper function per icone luoghi
+// Helper function per icone luoghi (22px, #EEBA2B)
 function getLuogoIcon(luogo: string) {
   const luogoLower = luogo.toLowerCase();
-  
-  if (luogoLower.includes('casa')) {
-    return <Home className="w-6 h-6 text-[#FFD700]" />;
-  } else if (luogoLower.includes('palestra')) {
-    return <Dumbbell className="w-6 h-6 text-[#FFD700]" />;
-  } else if (luogoLower.includes('outdoor') || luogoLower.includes('aperto')) {
-    return <TreePine className="w-6 h-6 text-[#FFD700]" />;
-  } else {
-    return <MapPin className="w-6 h-6 text-[#FFD700]" />;
-  }
+  const iconClass = 'w-[22px] h-[22px] text-[#EEBA2B]';
+  if (luogoLower.includes('casa')) return <Home className={iconClass} />;
+  if (luogoLower.includes('palestra')) return <Dumbbell className={iconClass} />;
+  if (luogoLower.includes('outdoor') || luogoLower.includes('aperto')) return <TreePine className={iconClass} />;
+  return <MapPin className={iconClass} />;
 }
 
 // Componente card singola
 function WorkoutPlanCard({ piano, index, isExpanded, onToggle, onIniziaPiano, onIniziaDopo }: WorkoutPlanCardProps) {
-
-  useEffect(() => {
-    console.log(`Card ${piano.luogo} - isExpanded changed to:`, isExpanded);
-  }, [isExpanded, piano.luogo]);
-
   const handleToggle = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('=== TOGGLE DEBUG ===');
-    console.log('Card:', piano.luogo);
-    console.log('Index:', index);
-    console.log('Current isExpanded:', isExpanded);
-    console.log('Target element:', e.currentTarget);
-    console.log('Screen width:', window.innerWidth);
-    console.log('Is desktop:', window.innerWidth >= 768);
     onToggle();
   };
 
@@ -158,121 +143,84 @@ function WorkoutPlanCard({ piano, index, isExpanded, onToggle, onIniziaPiano, on
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ 
-        scale: 1.02,
-        boxShadow: "0 0 30px rgba(238, 186, 43, 0.3)"
-      }}
-      transition={{ 
-        delay: 0.2 + index * 0.1,
-        duration: 0.2
-      }}
-      className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-2xl overflow-hidden hover:border-[#FFD700]/60 transition-all duration-300 cursor-pointer relative"
+      transition={{ delay: 0.2 + index * 0.1, duration: 0.2 }}
+      className="bg-[#16161A] border-[1.5px] border-white/[0.07] rounded-[14px] overflow-hidden hover:border-[rgba(238,186,43,0.3)] transition-all relative"
     >
       {/* Header Card - Cliccabile per espandere */}
       <button
+        type="button"
         onClick={handleToggle}
-        onMouseDown={(e) => {
-          console.log('MouseDown on card:', piano.luogo, 'screen width:', window.innerWidth);
-        }}
-        className="w-full p-6 text-left transition-all cursor-pointer relative group
-        bg-white/5 border-2 border-white/20 rounded-xl mb-4
-        hover:border-[#FFD700] hover:bg-white/10
-        hover:shadow-lg hover:shadow-[#FFD700]/20 active:scale-[0.99]"
+        className="w-full p-5 text-left transition-all cursor-pointer relative group"
       >
-        {/* Indicatore visivo "espandi" */}
-        <div className="absolute top-4 right-4 flex items-center gap-2 text-sm text-gray-400 group-hover:text-[#FFD700] transition-colors z-10">
+        <div className="absolute top-4 right-4 flex items-center gap-2 text-sm text-[#F0EDE8]/50 group-hover:text-[#EEBA2B] transition-colors z-10">
           <span className="hidden md:inline">
             {isExpanded ? 'Nascondi dettagli' : 'Vedi dettagli'}
           </span>
           <motion.div
-            animate={{ 
-              rotate: isExpanded ? 180 : 0,
-              scale: isExpanded ? 1 : [1, 1.1, 1] // Pulse quando chiusa
-            }}
-            transition={{ 
-              duration: 0.3,
-              scale: {
-                repeat: isExpanded ? 0 : Infinity,
-                duration: 2,
-                ease: "easeInOut"
-              }
-            }}
-            className="w-8 h-8 bg-[#FFD700]/20 rounded-full flex items-center justify-center group-hover:bg-[#FFD700]/30 transition-colors"
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-8 h-8 rounded-full bg-[rgba(238,186,43,0.12)] flex items-center justify-center group-hover:bg-[rgba(238,186,43,0.2)] transition-colors"
           >
-            <ChevronDown className="w-5 h-5 text-[#FFD700]" />
+            <ChevronDown className="w-5 h-5 text-[#EEBA2B]" />
           </motion.div>
         </div>
 
-        <div className="flex items-start justify-between mb-4 pr-20">
-          <div className="flex items-center gap-3">
-            {/* Icona luogo */}
-            <div className="w-12 h-12 bg-[#FFD700]/20 rounded-xl flex items-center justify-center">
-              {getLuogoIcon(piano.luogo)}
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-white">{piano.luogo}</h3>
-              <p className="text-sm text-gray-400">{piano.giorno}</p>
-            </div>
+        <div className="flex items-center gap-4 pr-16">
+          <div className="w-[44px] h-[44px] rounded-[12px] bg-[rgba(238,186,43,0.08)] flex items-center justify-center flex-shrink-0">
+            {getLuogoIcon(piano.luogo)}
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-[17px] font-bold text-[#F0EDE8]">{piano.luogo}</h3>
+            <p className="text-[13px] text-[#F0EDE8]/50 mt-0.5">{piano.giorno}</p>
           </div>
         </div>
 
-        {/* Info obiettivo e durata */}
-        <div className="flex flex-wrap items-center gap-3 text-sm mb-3">
-          <div className="flex items-center gap-2 bg-[#FFD700]/10 px-3 py-1 rounded-full">
-            <Target className="w-4 h-4 text-[#FFD700]" />
-            <span className="text-gray-300">{piano.obiettivoTradotto}</span>
-          </div>
-          <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full">
-            <Clock className="w-4 h-4 text-[#FFD700]" />
-            <span className="text-gray-300">{piano.durata} min</span>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 mt-3">
+          <span className="inline-flex items-center gap-1.5 bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.2)] text-[#10B981] text-[12px] px-[10px] py-[4px] rounded-full">
+            <Target className="w-3.5 h-3.5" />
+            {piano.obiettivoTradotto}
+          </span>
+          <span className="inline-flex items-center gap-1.5 bg-[rgba(59,130,246,0.1)] border border-[rgba(59,130,246,0.2)] text-[#3B82F6] text-[12px] px-[10px] py-[4px] rounded-full">
+            <Clock className="w-3.5 h-3.5" />
+            {piano.durata} min
+          </span>
         </div>
 
-        {/* Preview esercizi - SOLO NUMERO */}
-        <p className="text-sm text-gray-400">
+        <p className="text-[13px] text-[#F0EDE8]/50 mt-2">
           {piano.esercizi.length} esercizi
         </p>
       </button>
 
-      {/* Lista esercizi espandibile */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
+            animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="border-t border-white/10"
+            className="border-t border-white/[0.07] px-5 pb-5 pt-4"
           >
-            <div className="p-6 space-y-3 bg-black/20">
+            <div className="space-y-3">
               {piano.esercizi.map((esercizio, idx) => (
                 <div
                   key={idx}
-                  className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-white/10 transition-colors"
+                  className="bg-[#1E1E24] border border-white/[0.07] rounded-[10px] p-3"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-[#FFD700] rounded-lg flex items-center justify-center text-black font-bold flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-[#EEBA2B] flex items-center justify-center text-black font-bold flex-shrink-0 text-[13px]">
                       {idx + 1}
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white mb-1">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-[#F0EDE8] text-[14px] mb-1">
                         {esercizio.nome}
                       </h4>
                       {esercizio.note && (
-                        <p className="text-xs text-gray-400 mb-2">
-                          💡 {esercizio.note}
-                        </p>
+                        <p className="text-[12px] text-[#F0EDE8]/50 mb-2">💡 {esercizio.note}</p>
                       )}
-                      <div className="flex flex-wrap gap-3 text-sm text-gray-300">
-                        <span className="bg-white/5 px-2 py-1 rounded">
-                          <strong className="text-[#FFD700]">Serie:</strong> {esercizio.serie}
-                        </span>
-                        <span className="bg-white/5 px-2 py-1 rounded">
-                          <strong className="text-[#FFD700]">Rip:</strong> {esercizio.rip}
-                        </span>
-                        <span className="bg-white/5 px-2 py-1 rounded">
-                          <strong className="text-[#FFD700]">Riposo:</strong> {esercizio.tempo}
-                        </span>
+                      <div className="flex flex-wrap gap-2 text-[12px] text-[#F0EDE8]/70">
+                        <span className="bg-white/[0.06] px-2 py-1 rounded"><strong className="text-[#EEBA2B]">Serie:</strong> {esercizio.serie}</span>
+                        <span className="bg-white/[0.06] px-2 py-1 rounded"><strong className="text-[#EEBA2B]">Rip:</strong> {esercizio.rip}</span>
+                        <span className="bg-white/[0.06] px-2 py-1 rounded"><strong className="text-[#EEBA2B]">Riposo:</strong> {esercizio.tempo}</span>
                       </div>
                     </div>
                   </div>
@@ -283,26 +231,26 @@ function WorkoutPlanCard({ piano, index, isExpanded, onToggle, onIniziaPiano, on
         )}
       </AnimatePresence>
 
-      {/* Bottoni azione (sempre visibili) */}
-      <div className="p-6 pt-0 space-y-3">
+      <div className="p-5 pt-0">
         <Button
+          type="button"
           onClick={(e) => {
-            e.stopPropagation(); // Previene toggle accordion
+            e.stopPropagation();
             onIniziaPiano(piano);
           }}
-          className="w-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold h-12 rounded-xl flex items-center justify-center gap-2"
+          className="w-full bg-[#EEBA2B] hover:bg-[#EEBA2B]/90 text-black font-bold rounded-[10px] py-[13px] mt-4 flex items-center justify-center gap-2"
         >
           <Play className="w-4 h-4" />
           Inizia Piano Personalizzato
         </Button>
-        
         <Button
+          type="button"
+          variant="outline"
           onClick={(e) => {
-            e.stopPropagation(); // Previene toggle accordion
+            e.stopPropagation();
             onIniziaDopo(piano);
           }}
-          variant="outline"
-          className="w-full border-white/20 text-white hover:bg-white/10 h-12 rounded-xl flex items-center justify-center gap-2"
+          className="w-full bg-transparent border border-white/[0.14] text-[#F0EDE8]/70 rounded-[10px] py-[13px] mt-2 hover:border-white/[0.3] flex items-center justify-center gap-2"
         >
           <Clock className="w-4 h-4" />
           Inizia Dopo
@@ -327,7 +275,6 @@ export function CompletionScreen() {
     if (isEditMode && !step5SetRef.current) {
       const currentStepValue = useOnboardingStore.getState().currentStep;
       if (currentStepValue !== 6) {
-        console.log('🔧 CompletionScreen: forcing currentStep to 6 (one time only)');
         step5SetRef.current = true;
         setStep(6);
       } else {
@@ -367,17 +314,6 @@ export function CompletionScreen() {
     return () => {
       isMounted = false;
     };
-  }, []);
-
-  // Debug: Verifica store direttamente
-  useEffect(() => {
-    const storeState = useOnboardingStore.getState();
-    console.log('=== STORE STATE DEBUG ===');
-    console.log('Store completo:', storeState);
-    console.log('Store data:', storeState.data);
-    console.log('Store luoghiAllenamento:', storeState.data.luoghiAllenamento);
-    console.log('Store tempoSessione:', storeState.data.tempoSessione);
-    console.log('=== FINE STORE DEBUG ===');
   }, []);
 
   const buildResponsesSnapshot = (
@@ -531,18 +467,15 @@ export function CompletionScreen() {
       const currentHash = buildResponsesHash(snapshot);
 
       if (planMetadata?.responses_hash === currentHash) {
-        console.log('✅ Risposte non modificate, piano esistente OK');
         return false;
       }
 
-      console.log('🔄 Risposte modificate - eliminazione vecchio piano...');
       await supabase
         .from('workout_plans')
         .delete()
         .eq('user_id', user.id)
         .eq('source', 'onboarding');
 
-      console.log('🔄 Rigenerazione piano con nuove risposte...');
       return true;
     } catch (error) {
       console.error('Errore controllo rigenerazione:', error);
@@ -902,24 +835,14 @@ export function CompletionScreen() {
   };
 
   const convertToActiveWorkoutFormat = (piano: WorkoutPlan) => {
-    console.log('=== CONVERSIONE ESERCIZI CON PARAMETRI DINAMICI ===');
-    console.log('Livello utente:', data.livelloEsperienza);
-    console.log('Obiettivo utente:', data.obiettivo);
-    console.log('Luogo allenamento:', piano.luogo);
-
     const level = mapExperienceLevel(data.livelloEsperienza);
 
-    return piano.esercizi.map((esercizio, index) => {
+    return piano.esercizi.map((esercizio) => {
       const params = calculateWorkoutParameters(
         esercizio.nome,
         data.livelloEsperienza,
         data.obiettivo
       );
-
-      console.log(`\nEsercizio ${index + 1}: ${esercizio.nome}`);
-      console.log('- Serie:', params.sets);
-      console.log('- Ripetizioni:', params.reps);
-      console.log('- Riposo:', params.rest);
 
       return {
         name: esercizio.nome,
@@ -934,12 +857,8 @@ export function CompletionScreen() {
   };
 
   const handleIniziaPiano = async (piano: WorkoutPlan) => {
-    console.log('=== AVVIO PIANO PERSONALIZZATO ===');
-    console.log('Piano:', piano);
-
     try {
       const exercisesFormatted = convertToActiveWorkoutFormat(piano);
-      console.log('Esercizi convertiti:', exercisesFormatted);
 
       const { data: userData } = await supabase.auth.getUser();
 
@@ -978,8 +897,6 @@ export function CompletionScreen() {
 
         if (error) {
           console.error('Errore salvataggio piano:', error);
-        } else {
-          console.log('Piano salvato su Supabase');
         }
       }
 
@@ -1005,11 +922,6 @@ export function CompletionScreen() {
   };
 
   const handleIniziaDopo = async (clickedPiano: WorkoutPlan) => {
-    console.log('=== SALVA TUTTI I PIANI PER DOPO ===');
-    console.log('Piano cliccato:', clickedPiano.luogo);
-    console.log('Piani totali da salvare:', piani.length);
-    console.log('Piani:', piani.map(p => p.luogo));
-
     try {
       const { data: userData } = await supabase.auth.getUser();
 
@@ -1055,8 +967,6 @@ export function CompletionScreen() {
         metadata: metadataPayload
       }));
 
-      console.log('Salvataggio di', pianiDaSalvare.length, 'piani...');
-
       const { data: upsertedPlans, error } = await supabase
         .from('workout_plans')
         .upsert(pianiDaSalvare, {
@@ -1092,9 +1002,6 @@ export function CompletionScreen() {
         titoloToast = `${pianiSalvati} piani salvati!`;
       }
 
-      console.log('✅ Tutti i piani salvati:', upsertedPlans);
-      console.log('✅ Salvati', pianiSalvati, 'piani su Supabase');
-
       toast({
         title: titoloToast,
         description: `${luoghi}\n\nLi troverai nella dashboard.`,
@@ -1119,31 +1026,19 @@ export function CompletionScreen() {
   const toggleCard = (luogo: string) => {
     setExpandedCards(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(luogo)) {
-        newSet.delete(luogo);
-      } else {
-        newSet.add(luogo);
-      }
-      console.log('Expanded cards set:', Array.from(newSet));
+      if (newSet.has(luogo)) newSet.delete(luogo);
+      else newSet.add(luogo);
       return newSet;
     });
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     safeLocalStorage.removeItem('isOnboarding');
-    
-    // Reset onboarding dopo completamento
     resetOnboarding();
-    
-    navigate('/auth/register', { 
-      state: { 
-        fromOnboarding: true,
-        prefilledData: {
-          nome: data.nome,
-          eta: data.eta
-        }
-      }
-    });
+    if (user?.id) {
+      await onboardingService.markOnboardingComplete(user.id);
+    }
+    navigate('/dashboard');
   };
 
   return (
@@ -1153,23 +1048,18 @@ export function CompletionScreen() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-5xl mx-auto"
       >
-        {/* Header con titolo e descrizione */}
-        <div className="text-center mb-12">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", delay: 0.2 }}
-            className="w-20 h-20 mx-auto mb-6 bg-[#FFD700] rounded-full flex items-center justify-center"
+        {/* Header — box icona gold + titolo + sottotitolo (pattern step 1–5) */}
+        <div className="text-center mb-10">
+          <div
+            className="w-[72px] h-[72px] rounded-[20px] bg-[rgba(238,186,43,0.08)] border border-[rgba(238,186,43,0.2)] flex items-center justify-center mx-auto mb-[18px]"
           >
-            <Dumbbell className="w-10 h-10 text-black" />
-          </motion.div>
-          
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">
-            {piani.length === 1 ? 'Il Tuo Piano Personalizzato' : 'I Tuoi Piani Personalizzati'}
+            <Star size={32} color="#EEBA2B" />
+          </div>
+          <h1 className="text-[clamp(24px,5vw,34px)] font-extrabold text-[#F0EDE8] text-center leading-[1.15] tracking-[-0.5px] mb-[10px]">
+            I Tuoi Piani Personalizzati
           </h1>
-          
-          <p className="text-gray-400 text-lg">
-            Abbiamo creato {piani.length} {piani.length === 1 ? 'piano' : 'piani'} su misura per te
+          <p className="text-[15px] text-[#F0EDE8]/50 text-center">
+            Abbiamo creato piani su misura per te
           </p>
         </div>
 
