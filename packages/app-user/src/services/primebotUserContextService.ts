@@ -30,6 +30,12 @@ export interface UserContext {
   
   // Flag onboarding completato
   onboarding_completed: boolean;
+
+  // Limitazioni fisiche e salute (Step 5 onboarding)
+  ha_limitazioni?: boolean | null;
+  limitazioni_descrizione?: string | null;  // da limitazioni_fisiche in DB
+  zone_da_proteggere?: string[] | null;     // da zone_evitare in DB
+  note_mediche?: string | null;            // da condizioni_mediche in DB
 }
 
 /**
@@ -169,6 +175,11 @@ export async function getUserContext(userId: string): Promise<UserContext> {
       consigli_nutrizionali: onboardingData?.consigli_nutrizionali || false,
       
       onboarding_completed: !!onboardingData?.onboarding_completed_at,
+
+      ha_limitazioni: onboardingData?.ha_limitazioni ?? null,
+      limitazioni_descrizione: onboardingData?.limitazioni_fisiche ?? null,
+      zone_da_proteggere: onboardingData?.zone_evitare ?? null,
+      note_mediche: onboardingData?.condizioni_mediche ?? null,
     };
     
     console.log('✅ getUserContext: Contesto recuperato:', {
@@ -194,6 +205,10 @@ export async function getUserContext(userId: string): Promise<UserContext> {
       tempo_allenamento: null,
       luoghi_allenamento: [],
       onboarding_completed: false,
+      ha_limitazioni: null,
+      limitazioni_descrizione: null,
+      zone_da_proteggere: null,
+      note_mediche: null,
     };
   }
 }
@@ -317,7 +332,22 @@ export function formatUserContextForPrompt(context: UserContext): string {
   if (context.consigli_nutrizionali) {
     parts.push(`È interessato a consigli nutrizionali.`);
   }
-  
+
+  // Limitazioni fisiche
+  if (context.ha_limitazioni && context.limitazioni_descrizione) {
+    parts.push(`⚠️ Ha limitazioni fisiche: ${context.limitazioni_descrizione}.`);
+  }
+
+  // Zone da proteggere
+  if (context.zone_da_proteggere && context.zone_da_proteggere.length > 0) {
+    parts.push(`🚫 Zone da NON sollecitare: **${context.zone_da_proteggere.join(', ')}**. Non proporre mai esercizi che coinvolgono queste zone.`);
+  }
+
+  // Note mediche
+  if (context.note_mediche) {
+    parts.push(`🏥 Note mediche: ${context.note_mediche}.`);
+  }
+
   return parts.join('\n');
 }
 

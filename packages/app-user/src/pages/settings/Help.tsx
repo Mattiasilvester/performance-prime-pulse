@@ -1,8 +1,10 @@
-import { ArrowLeft, Mail } from 'lucide-react';
+import { ArrowLeft, Mail, Compass } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTour } from '@/contexts/TourContext';
 
 const Help = () => {
   const navigate = useNavigate();
+  const { startTour } = useTour();
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -28,7 +30,7 @@ const Help = () => {
         <p className="text-[13px] text-[#8A8A96]">Contattaci per supporto</p>
       </div>
 
-      <div className="max-w-md mx-auto w-full">
+      <div className="max-w-md mx-auto w-full space-y-4">
         <div className="bg-[#16161A] rounded-[14px] border border-[rgba(255,255,255,0.06)] p-5">
           <div className="flex items-center gap-3 p-4 bg-[#1A1A1F] rounded-[14px] border border-[rgba(255,255,255,0.1)]">
             <Mail className="h-5 w-5 text-[#EEBA2B] shrink-0" />
@@ -39,6 +41,19 @@ const Help = () => {
               </a>
             </div>
           </div>
+        </div>
+        <div className="bg-[#16161A] rounded-[14px] border border-[rgba(255,255,255,0.06)] p-5">
+          <button
+            type="button"
+            onClick={() => startTour()}
+            className="flex items-center gap-3 w-full p-4 bg-[#1A1A1F] rounded-[14px] border border-[rgba(255,255,255,0.1)] hover:border-[rgba(238,186,43,0.4)] hover:bg-[#1E1E24] transition-colors text-left"
+          >
+            <Compass className="h-5 w-5 text-[#EEBA2B] shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-[#F0EDE8]">Rivedi il tour dell'app</p>
+              <p className="text-xs text-[#8A8A96]">Ripeti la guida introduttiva della dashboard</p>
+            </div>
+          </button>
         </div>
       </div>
     </div>

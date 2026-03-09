@@ -6,6 +6,9 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AuthProvider } from '@/hooks/useAuth'
 import { NotificationProvider } from '@/hooks/useNotifications'
 import { PrimeBotProvider, usePrimeBot } from '@/contexts/PrimeBotContext'
+import { TourProvider } from '@/contexts/TourContext'
+import PrimeBotWidget from '@/components/PrimeBotWidget'
+import { useAuth } from '@/hooks/useAuth'
 import MobileScrollFix from '@/components/MobileScrollFix'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
@@ -18,6 +21,7 @@ import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { NewLandingPage } from '@/pages/landing/NewLandingPage'
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage'
 import LoginPage from '@/pages/auth/LoginPage'
+import ResetPassword from '@/pages/ResetPassword'
 
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const TermsAndConditions = lazy(() => import('@/pages/TermsAndConditions'))
@@ -71,6 +75,28 @@ const ConditionalFeedbackWidget = () => {
   return <FeedbackWidget />
 }
 
+const EXCLUDED_WIDGET_PATHS = [
+  '/',
+  '/onboarding',
+  '/auth',
+  '/auth/login',
+  '/auth/register',
+  '/auth/reset-password',
+  '/terms-and-conditions',
+  '/privacy-policy',
+  '/workout/quick',
+  '/timer',
+]
+
+function ConditionalPrimeBotWidget() {
+  const location = useLocation()
+  const { session } = useAuth()
+  if (!session) return null
+  if (EXCLUDED_WIDGET_PATHS.includes(location.pathname)) return null
+  if (location.pathname.startsWith('/auth')) return null
+  return <PrimeBotWidget />
+}
+
 function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
@@ -109,8 +135,9 @@ function App() {
           <PrimeBotProvider>
             <Router>
               <CookieBanner />
-              <Suspense fallback={<PageSkeleton variant="default" />}>
-                <Routes>
+              <TourProvider>
+                <Suspense fallback={<PageSkeleton variant="default" />}>
+                  <Routes>
                   <Route path="/" element={<NewLandingPage />} />
                   <Route path="/onboarding" element={<OnboardingPage />} />
                   <Route path="/auth/login" element={session ? <Navigate to="/dashboard" /> : <LoginPage />} />
@@ -122,6 +149,7 @@ function App() {
                       </Suspense>
                     )
                   } />
+                  <Route path="/auth/reset-password" element={<ResetPassword />} />
                   <Route path="/terms-and-conditions" element={<Suspense fallback={<PageSkeleton />}><TermsAndConditions /></Suspense>} />
                   <Route path="/privacy-policy" element={<Suspense fallback={<PageSkeleton />}><MainPrivacyPolicy /></Suspense>} />
 
@@ -305,6 +333,8 @@ function App() {
                   <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
                 </Routes>
               </Suspense>
+              <ConditionalPrimeBotWidget />
+            </TourProvider>
             </Router>
             <Toaster />
             <Suspense fallback={null}>

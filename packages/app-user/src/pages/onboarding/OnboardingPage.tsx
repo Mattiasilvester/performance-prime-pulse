@@ -4,7 +4,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { trackOnboarding } from '@/services/analytics';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { safeLocalStorage } from '@/utils/domHelpers';
@@ -54,6 +53,7 @@ export function OnboardingPage() {
   } = useOnboardingStore();
 
   const [animatedProgress, setAnimatedProgress] = useState(0);
+  const [direction, setDirection] = useState(1); // 1 = avanti, -1 = indietro (per slide)
   const step2Ref = useRef<Step2ExperienceHandle>(null);
   const step3Ref = useRef<Step3PreferencesHandle>(null);
   const step4Ref = useRef<Step4PersonalizationHandle>(null);
@@ -320,11 +320,9 @@ export function OnboardingPage() {
 
   const handleBack = () => {
     if (currentStep === 0) {
-      // Se siamo allo step 0 (Registrazione), tornare alla landing page
-      // Questo caso dovrebbe essere irraggiungibile se il bottone "Indietro" è nascosto su step 0
       navigate('/');
     } else {
-      // ✅ FIX: Usa handleBack dal hook per aggiornare anche l'URL in edit mode
+      setDirection(-1);
       handleBackFromHook();
     }
   };
@@ -343,8 +341,41 @@ export function OnboardingPage() {
     }
   };
 
+  const isDev = import.meta.env.DEV;
+
+  const handleDevStepJump = (stepNum: number) => {
+    setStep(stepNum);
+    if (isEditMode) {
+      setSearchParams({ mode: 'edit', step: stepNum.toString() }, { replace: true });
+    } else {
+      setSearchParams({ step: stepNum.toString() }, { replace: true });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex flex-col">
+      {/* Dev only: navigazione libera tra step */}
+      {isDev && (
+        <div className="sticky top-0 z-[100] flex flex-wrap items-center gap-1 bg-[#1a1a1a] border-b border-white/10 px-3 py-2">
+          <span className="text-xs text-gray-500 mr-1">Dev:</span>
+          {[0, 1, 2, 3, 4, 5, 6].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => handleDevStepJump(n)}
+              className={`
+                min-w-[28px] h-7 px-1.5 rounded text-xs font-medium transition-colors
+                ${currentStep === n
+                  ? 'bg-[#EEBA2B] text-black'
+                  : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'}
+              `}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ✅ MODIFICA 2: Banner solo durante edit attivo (Step 1-5), non su Completion */}
       {isEditMode && currentStep >= 1 && currentStep <= 5 && (
         <motion.div
@@ -366,22 +397,39 @@ export function OnboardingPage() {
         </motion.div>
       )}
 
-      {/* Progress Bar - Hidden on step 0 and completion screen */}
+      {/* Progress Bar - Hidden on step 0 and completion screen (design system), fill animato */}
       {currentStep >= 1 && currentStep < 6 && (
-        <div className="p-4 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="px-4 py-3 bg-[#16161A]/95 backdrop-blur-sm border-b border-white/[0.07] sticky top-0 z-50">
           <div className="max-w-3xl mx-auto">
-            <Progress 
-              value={animatedProgress} 
-              className="h-2 bg-gray-800"
-            />
+            <div className="w-full h-2 bg-[#2A2A2E] rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-[#EEBA2B] rounded-full"
+                style={
+                  animatedProgress === 100
+                    ? { boxShadow: '0 0 12px rgba(238,186,43,0.6)' }
+                    : undefined
+                }
+                animate={{ width: `${animatedProgress}%` }}
+                transition={{
+                  width: { duration: 0.5, ease: 'easeOut' },
+                  ...(animatedProgress === 100 && {
+                    boxShadow: {
+                      duration: 0.8,
+                      repeat: 1,
+                      repeatType: 'reverse',
+                    },
+                  }),
+                }}
+              />
+            </div>
             <div className="flex justify-between mt-2">
-              <span className="text-sm text-gray-400">
+              <span className="text-[13px] text-[#F0EDE8]/50">
                 Passo {currentStep} di 5
               </span>
-              <span className="text-sm font-medium text-[#FFD700]">
+              <span className="text-[13px] font-medium text-[#F0EDE8]">
                 {getStepTitle()}
               </span>
-              <span className="text-sm text-[#FFD700]">
+              <span className="text-[13px] font-medium text-[#EEBA2B]">
                 {Math.round(progressPercentage)}%
               </span>
             </div>
@@ -389,83 +437,110 @@ export function OnboardingPage() {
         </div>
       )}
 
-      {/* Content */}
-      <div className="flex-1 flex items-center justify-center p-4 py-8">
-        <div className="w-full">
-          <AnimatePresence mode="wait">
-            {currentStep === 0 && (
-              <Suspense key="step0" fallback={<StepFallback />}>
-                <Step0Registration />
-              </Suspense>
-            )}
+      {/* Content — pb quando nav fixed è visibile (step 1–5) per evitare contenuto coperto */}
+      <div
+        className={`flex-1 flex items-center justify-center p-4 py-8 ${
+          currentStep >= 1 && currentStep <= 5 ? 'pb-28' : ''
+        }`}
+      >
+        <div className="w-full overflow-hidden">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={currentStep}
+              custom={direction}
+              variants={{
+                enter: (dir: number) => ({
+                  x: dir > 0 ? 60 : -60,
+                  opacity: 0,
+                }),
+                center: { x: 0, opacity: 1 },
+                exit: (dir: number) => ({
+                  x: dir > 0 ? -60 : 60,
+                  opacity: 0,
+                }),
+              }}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: 'spring', stiffness: 300, damping: 30 },
+                opacity: { duration: 0.15 },
+              }}
+              className="w-full"
+            >
+              {currentStep === 0 && (
+                <Suspense key="step0" fallback={<StepFallback />}>
+                  <Step0Registration />
+                </Suspense>
+              )}
 
-            {currentStep === 1 && (
-              <Suspense key="step1" fallback={<StepFallback />}>
-                <Step1Goals isEditMode={isEditMode} />
-              </Suspense>
-            )}
+              {currentStep === 1 && (
+                <Suspense key="step1" fallback={<StepFallback />}>
+                  <Step1Goals isEditMode={isEditMode} />
+                </Suspense>
+              )}
 
-            {currentStep === 2 && (
-              <Suspense key="step2" fallback={<StepFallback />}>
-                <Step2Experience 
-                  ref={step2Ref}
-                  onComplete={handleNext}
-                  isEditMode={isEditMode}
-                />
-              </Suspense>
-            )}
+              {currentStep === 2 && (
+                <Suspense key="step2" fallback={<StepFallback />}>
+                  <Step2Experience 
+                    ref={step2Ref}
+                    onComplete={handleNext}
+                    isEditMode={isEditMode}
+                  />
+                </Suspense>
+              )}
 
-            {currentStep === 3 && (
-              <Suspense key="step3" fallback={<StepFallback />}>
-                <Step3Preferences 
-                  ref={step3Ref}
-                  onComplete={handleNext}
-                  isEditMode={isEditMode}
-                />
-              </Suspense>
-            )}
+              {currentStep === 3 && (
+                <Suspense key="step3" fallback={<StepFallback />}>
+                  <Step3Preferences 
+                    ref={step3Ref}
+                    onComplete={handleNext}
+                    isEditMode={isEditMode}
+                  />
+                </Suspense>
+              )}
 
-            {currentStep === 4 && (
-              <Suspense key="step4" fallback={<StepFallback />}>
-                <Step4Personalization 
-                  ref={step4Ref}
-                  onComplete={handleNext}
-                  isEditMode={isEditMode}
-                />
-              </Suspense>
-            )}
+              {currentStep === 4 && (
+                <Suspense key="step4" fallback={<StepFallback />}>
+                  <Step4Personalization 
+                    ref={step4Ref}
+                    onComplete={handleNext}
+                    isEditMode={isEditMode}
+                  />
+                </Suspense>
+              )}
 
-            {currentStep === 5 && (
-              <Suspense key="step5" fallback={<StepFallback />}>
-                <Step5HealthLimitations 
-                  ref={step5Ref}
-                  onComplete={handleNext}
-                  isEditMode={isEditMode}
-                />
-              </Suspense>
-            )}
+              {currentStep === 5 && (
+                <Suspense key="step5" fallback={<StepFallback />}>
+                  <Step5HealthLimitations 
+                    ref={step5Ref}
+                    onComplete={handleNext}
+                    isEditMode={isEditMode}
+                  />
+                </Suspense>
+              )}
 
-            {currentStep === 6 && (
-              <Suspense key="completion" fallback={<StepFallback />}>
-                <CompletionScreen />
-              </Suspense>
-            )}
+              {currentStep === 6 && (
+                <Suspense key="completion" fallback={<StepFallback />}>
+                  <CompletionScreen />
+                </Suspense>
+              )}
+            </motion.div>
           </AnimatePresence>
 
-          {/* Navigation - Nascosta su step 0 e completion screen */}
+          {/* Navigation - Fixed bottom con safe area (iPhone notch), nascosta su step 0 e completion */}
           {currentStep >= 1 && currentStep <= 5 && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex justify-between items-center max-w-3xl mx-auto mt-8"
+              className="fixed bottom-0 left-0 right-0 z-40 flex justify-between items-center max-w-3xl mx-auto px-4 py-3 bg-[#16161A]/95 backdrop-blur-sm border-t border-white/[0.07] pb-[max(0.75rem,env(safe-area-inset-bottom))]"
             >
               {/* Bottone Indietro - visibile da step 1 in poi */}
               <Button
                 onClick={handleBack}
                 variant="outline"
-                size="lg"
-                className="border-white/20 text-white hover:bg-white/10 h-12"
+                className="border-white/20 text-white hover:bg-white/10 py-[14px]"
               >
                 <ArrowLeft className="mr-2 w-4 h-4" />
                 Indietro
@@ -475,17 +550,17 @@ export function OnboardingPage() {
               {currentStep >= 1 && currentStep <= 3 && (
                 <Button
                   onClick={() => {
+                    setDirection(1);
                     if (currentStep === 1) {
                       trackOnboarding.stepCompleted(1, { obiettivo: data.obiettivo });
-                      handleNext(); // ✅ ROLLBACK: Ripristina handleNext
+                      handleNext();
                     } else if (currentStep === 2) {
                       step2Ref.current?.handleContinue();
                     } else if (currentStep === 3) {
                       step3Ref.current?.handleContinue();
                     }
                   }}
-                  size="lg"
-                  className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold h-12"
+                  className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold py-[14px]"
                 >
                   {isEditMode ? 'Salva e Continua' : 'Continua'}
                   <ArrowRight className="ml-2 w-4 h-4" />
@@ -496,60 +571,27 @@ export function OnboardingPage() {
               {currentStep === 4 && (
                 <Button
                   onClick={() => {
-                    console.log('╔════════════════════════════════════════╗');
-                    console.log('║   BUTTON SALVA MODIFICHE CLICKED       ║');
-                    console.log('╚════════════════════════════════════════╝');
-                    console.log('🖱️ User clicked "Salva e Continua"');
-                    console.log('📊 State before handleContinue:', {
-                      isEditMode,
-                      currentStep,
-                      step4RefExists: !!step4Ref.current,
-                      step4HandleContinueExists: !!step4Ref.current?.handleContinue
-                    });
-                    
+                    setDirection(1);
                     step4Ref.current?.handleContinue();
-                    
-                    console.log('📤 handleContinue() called');
-                    console.log('╔════════════════════════════════════════╗');
-                    console.log('║   BUTTON CLICK HANDLER ENDED           ║');
-                    console.log('╚════════════════════════════════════════╝');
                   }}
-                  size="lg"
-                  className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold h-12"
+                  className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-bold py-[14px]"
                 >
                   {isEditMode ? 'Salva e Continua' : 'Continua'}
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               )}
               
-              {/* Bottone Completa solo su step 5 */}
+              {/* Bottone Completa solo su step 5 — nessun link "Salta" su step 5 */}
               {currentStep === 5 && (
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={async () => {
-                      // Salta questo step
-                      const { updateHealthLimitations } = await import('@/services/primebotUserContextService');
-                      const { data: { user } } = await supabase.auth.getUser();
-                      if (user) {
-                        await updateHealthLimitations(user.id, false, undefined, undefined);
-                      }
-                      handleNext();
-                    }}
-                    className="text-gray-400 hover:text-white text-sm underline"
-                  >
-                    Salta questo step →
-                  </button>
-                  <Button
-                    onClick={() => {
-                      step5Ref.current?.handleContinue();
-                    }}
-                    size="lg"
-                    className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/90 text-black font-bold h-12"
-                  >
-                    {isEditMode ? 'Salva Modifiche' : 'Completa Onboarding ✓'}
-                    <ArrowRight className="ml-2 w-4 h-4" />
-                  </Button>
-                </div>
+                <Button
+                  onClick={() => {
+                    setDirection(1);
+                    step5Ref.current?.handleContinue();
+                  }}
+                  className="bg-[#EEBA2B] hover:bg-[#EEBA2B]/90 text-black font-bold py-[14px] px-[28px]"
+                >
+                  {isEditMode ? 'Salva Modifiche' : 'Completa Onboarding'}
+                </Button>
               )}
             </motion.div>
           )}

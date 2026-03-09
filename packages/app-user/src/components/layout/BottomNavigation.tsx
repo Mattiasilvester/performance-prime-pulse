@@ -77,7 +77,8 @@ const BottomNavigation = () => {
   }, []);
 
   return (
-    <nav 
+    <nav
+      data-tour="bottom-nav"
       className="bottom-navigation fixed bottom-0 left-0 right-0 z-[9999] pb-safe sm:z-[9999] md:z-[9999] lg:z-[9999] xl:z-[9999]"
       style={{
         position: 'fixed',

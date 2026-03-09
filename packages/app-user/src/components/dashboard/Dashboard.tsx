@@ -11,7 +11,6 @@ const WeeklyProgress = lazy(() =>
   import('./WeeklyProgress').then((module) => ({ default: module.WeeklyProgress }))
 );
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { OnboardingBot } from '@/components/OnboardingBot';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
@@ -40,14 +39,6 @@ export const Dashboard = () => {
 
   const userName = userProfile?.name || 'Utente';
 
-  const handleSendMessage = (message: string) => {
-    // Funzione per inviare messaggi al bot (da implementare se necessario)
-  };
-
-  const handleFocusChat = () => {
-    // Funzione per portare focus alla chat (da implementare se necessario)
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
@@ -57,7 +48,7 @@ export const Dashboard = () => {
     <div className="pb-0 pt-0 dashboard-container min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-5 flex flex-col gap-6 pb-6 pt-0">
-        <div className="pt-6 pb-2 flex items-center justify-between gap-3 flex-wrap">
+        <div data-tour="greeting" className="pt-6 pb-2 flex items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0 flex-1">
             <h2 className="text-[26px] font-bold text-[#F0EDE8] leading-tight truncate" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
               {getGreeting()}, {userName}
@@ -82,17 +73,13 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        <OnboardingBot 
-          userName={userName}
-          onSendMessage={handleSendMessage}
-          onFocusChat={handleFocusChat}
-        />
+        <div data-tour="stats">
+          <Suspense fallback={<div className="text-[#8A8A96]">Caricamento statistiche...</div>}>
+            <StatsOverview />
+          </Suspense>
+        </div>
 
-        <Suspense fallback={<div className="text-[#8A8A96]">Caricamento statistiche...</div>}>
-          <StatsOverview />
-        </Suspense>
-
-        <div className="w-full mx-0">
+        <div data-tour="quick-start" className="w-full mx-0">
           <button
             onClick={() => navigate('/workout/quick')}
             className="w-full py-4 px-4 rounded-[18px] font-bold text-base text-[#0A0A0C] flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98]"
@@ -114,9 +101,11 @@ export const Dashboard = () => {
           </button>
         </div>
         
-        <Suspense fallback={<div className="text-[#8A8A96]">Caricamento azioni rapide...</div>}>
-          <QuickActions />
-        </Suspense>
+        <div data-tour="quick-actions">
+          <Suspense fallback={<div className="text-[#8A8A96]">Caricamento azioni rapide...</div>}>
+            <QuickActions />
+          </Suspense>
+        </div>
 
         <button
           type="button"

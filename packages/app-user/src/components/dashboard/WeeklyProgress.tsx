@@ -51,16 +51,6 @@ export const WeeklyProgress = () => {
           .eq('user_id', user.id)
           .maybeSingle();
 
-        console.log('📊 [DEBUG] WeeklyProgress: Dati da custom_workouts:', {
-          workoutsFound: workouts?.length || 0,
-          workouts: workouts
-        });
-
-        console.log('📊 [DEBUG] WeeklyProgress: Dati da user_workout_stats:', {
-          userStats,
-          statsError
-        });
-
         // Filtro client-side per il mio utente
         const myWorkouts = workouts?.filter(workout => workout.user_id === user.id) || [];
 
@@ -69,17 +59,6 @@ export const WeeklyProgress = () => {
           return;
         }
 
-        console.log('📊 [DEBUG] WeeklyProgress: Query TUTTI i workout (TUTTI gli utenti):', {
-          totalWorkoutsInDB: workouts?.length || 0,
-          myUserId: user.id,
-          workouts: workouts?.slice(0, 10) // Mostra i primi 10 per debug
-        });
-
-        console.log('📊 [DEBUG] WeeklyProgress: I MIEI workout filtrati:', {
-          myWorkoutsFound: myWorkouts.length,
-          totalWorkoutsInDB: workouts?.length || 0
-        });
-
         // Filtra solo i completati per il grafico
         const completedWorkouts = myWorkouts.filter(workout => workout.completed === true);
         
@@ -87,102 +66,29 @@ export const WeeklyProgress = () => {
         const statsWorkouts = userStats?.total_workouts || 0;
         const customWorkouts = completedWorkouts.length;
         
-        console.log('📊 [DEBUG] WeeklyProgress: Confronto dati:', {
-          customWorkoutsFound: customWorkouts,
-          statsWorkoutsFound: statsWorkouts,
-          discrepancy: statsWorkouts - customWorkouts
-        });
-
-        if (statsWorkouts > customWorkouts) {
-          console.log('⚠️ [DEBUG] WeeklyProgress: DISCREPANZA RILEVATA!');
-          console.log(`⚠️ [DEBUG] user_workout_stats: ${statsWorkouts} workout`);
-          console.log(`⚠️ [DEBUG] custom_workouts: ${customWorkouts} workout`);
-          console.log(`⚠️ [DEBUG] Mancanti: ${statsWorkouts - customWorkouts} workout`);
-        }
-        
-        console.log('📊 [DEBUG] WeeklyProgress: Workout completati filtrati:', {
-          completedWorkoutsFound: completedWorkouts.length,
-          allWorkoutsFound: workouts?.length || 0,
-          statsWorkouts: statsWorkouts
-        });
-
-        // Debug dettagliato di tutti i workout nel database
-        workouts?.forEach((workout, index) => {
-          console.log(`📊 [DEBUG] Workout ${index + 1} (TUTTI):`, {
-            title: workout.title,
-            type: workout.workout_type,
-            scheduled_date: workout.scheduled_date,
-            completed_at: workout.completed_at,
-            completed: workout.completed,
-            user_id: workout.user_id,
-            isMyWorkout: workout.user_id === user.id
-          });
-        });
-
         // QUERY SPECIALE: Conta tutti i workout completati nel database
-        console.log('🔍 [DEBUG] Eseguo query speciale per contare TUTTI i workout completati...');
-        
         const { data: allCompletedWorkouts, error: allCompletedError } = await supabase
           .from('custom_workouts')
           .select('id, title, user_id, completed_at, created_at')
           .eq('completed', true)
           .order('created_at', { ascending: false });
 
-        if (!allCompletedError && allCompletedWorkouts) {
-          console.log('🔍 [DEBUG] TUTTI I WORKOUT COMPLETATI NEL DATABASE:', {
-            totalCompletedInDB: allCompletedWorkouts.length,
-            myCompletedWorkouts: allCompletedWorkouts.filter(w => w.user_id === user.id).length,
-            allWorkouts: allCompletedWorkouts.map(w => ({
-              title: w.title,
-              user_id: w.user_id,
-              isMyWorkout: w.user_id === user.id,
-              completed_at: w.completed_at,
-              created_at: w.created_at
-            }))
-          });
-        } else {
+        if (allCompletedError) {
           console.error('❌ [ERROR] Errore query workout completati:', allCompletedError);
         }
 
-        // Debug dettagliato dei MIEI workout
-        myWorkouts.forEach((workout, index) => {
-          console.log(`📊 [DEBUG] MIO Workout ${index + 1}:`, {
-            title: workout.title,
-            type: workout.workout_type,
-            scheduled_date: workout.scheduled_date,
-            completed_at: workout.completed_at,
-            completed: workout.completed
-          });
-        });
-
         // MODIFICA: Mostra TUTTI i workout completati, non solo quelli della settimana corrente
-        console.log('📊 [DEBUG] Analizzando TUTTI i workout completati per il grafico...');
-
-        completedWorkouts.forEach((workout, index) => {
+        completedWorkouts.forEach((workout) => {
           const workoutDate = new Date(workout.scheduled_date);
-          
-          console.log(`📊 [DEBUG] Analizzando workout completato ${index + 1}:`, {
-            title: workout.title,
-            scheduled_date: workout.scheduled_date,
-            workoutDate: workoutDate.toISOString().split('T')[0],
-            dayOfWeek: workoutDate.getDay(),
-            dayName: ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'][workoutDate.getDay()]
-          });
-          
-          // Aggiungi TUTTI i workout completati al grafico, indipendentemente dalla settimana
           const dayIndex = (workoutDate.getDay() + 6) % 7; // Converte domenica=0 a lunedì=0
           if (dayIndex >= 0 && dayIndex < 7) {
             weeklyData[dayIndex].workouts++;
-            console.log(`✅ [DEBUG] Workout aggiunto al giorno ${weeklyData[dayIndex].name}:`, workoutDate.toISOString().split('T')[0]);
           }
         });
 
         // Conta solo i workout della settimana corrente per il totale
         const weeklyWorkoutsCount = weeklyData.reduce((sum, day) => sum + day.workouts, 0);
-        
-        console.log('📊 [DEBUG] WeeklyProgress: Dati finali per grafico:', weeklyData);
-        console.log('📊 [DEBUG] WeeklyProgress: Totale workout questa settimana:', weeklyWorkoutsCount);
-        
+
         setData(weeklyData);
         setTotalWeeklyWorkouts(weeklyWorkoutsCount);
       } catch (error) {
@@ -196,14 +102,12 @@ export const WeeklyProgress = () => {
 
     // Ascolta l'evento di completamento workout per refresh automatico
     const handleWorkoutCompleted = () => {
-      console.log('🔄 [DEBUG] WeeklyProgress: Workout completato, ricarico dati settimanali...');
       setRefreshKey(prev => prev + 1); // Forza re-render
       loadWeeklyData();
     };
 
     // Refresh automatico ogni 10 secondi per aggiornamento più frequente
     const refreshInterval = setInterval(() => {
-      console.log('🔄 [DEBUG] WeeklyProgress: Refresh automatico dati...');
       setRefreshKey(prev => prev + 1); // Forza re-render
       loadWeeklyData();
     }, 10000);
