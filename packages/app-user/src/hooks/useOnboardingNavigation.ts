@@ -250,19 +250,12 @@ export function useOnboardingNavigation(isEditMode: boolean = false) {
     if (currentStep >= 0 && currentStep < 6) {
       const nextStepNum = currentStep + 1;
       
-      console.log(`📤 Advancing from step ${currentStep} to step ${nextStepNum}`);
-      
       if (isEditMode) {
-        console.log('🎨 Edit mode: updating both store and URL');
         nextStep();
         setSearchParams({ mode: 'edit', step: nextStepNum.toString() }, { replace: true });
       } else {
-        // Comportamento normale
-        console.log('🎨 Normal mode: updating store only');
         nextStep();
       }
-    } else {
-      console.log(`⚠️ Cannot advance: currentStep is ${currentStep} (must be 0-5)`);
     }
   }, [currentStep, isEditMode, nextStep, setSearchParams]);
 
@@ -273,7 +266,6 @@ export function useOnboardingNavigation(isEditMode: boolean = false) {
       
       // ✅ FIX: In edit mode, aggiorna anche l'URL
       if (isEditMode) {
-        console.log('📤 Edit mode: going back to step', prevStepNum, 'and updating URL');
         previousStep();
         setSearchParams({ mode: 'edit', step: prevStepNum.toString() }, { replace: true });
       } else {

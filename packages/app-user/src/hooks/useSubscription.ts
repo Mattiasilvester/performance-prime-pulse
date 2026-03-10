@@ -150,9 +150,6 @@ export function useSubscription() {
       // Usa sempre i dati reali dal DB. Nessun placeholder per la subscription così
       // il trial senza carta (ensure-partner-subscription) e il blocco a scadenza funzionano.
       setSubscription(sub || null);
-      if (isDev && sub) {
-        console.log('[DEV] Usando dati reali dal database (non placeholder)');
-      }
 
       // Recupera fatture usando professional_id (non subscription_id)
       const { data: invs, error: invError } = await supabase
@@ -168,7 +165,6 @@ export function useSubscription() {
       } else {
         // In development, usa placeholder solo se non ci sono fatture reali
         if (isDev && (!invs || invs.length === 0)) {
-          console.log('[PLACEHOLDER] Modalità DEV attiva - Nessuna fattura reale, usando dati placeholder');
           setInvoices(getPlaceholderInvoices());
         } else {
           // Usa dati reali (anche in DEV se esistono)

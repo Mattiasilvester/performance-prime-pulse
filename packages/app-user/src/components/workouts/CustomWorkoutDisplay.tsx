@@ -68,14 +68,12 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
     if (!isWorkoutTimerRunning) {
       setWorkoutStartTime(Date.now());
       setIsWorkoutTimerRunning(true);
-      console.log('🏃‍♂️ [DEBUG] Timer allenamento avviato');
     }
   };
 
   // Funzione per fermare il timer dell'allenamento
   const stopWorkoutTimer = () => {
     setIsWorkoutTimerRunning(false);
-    console.log('🏁 [DEBUG] Timer allenamento fermato');
   };
 
   // Funzione per formattare il tempo in MM:SS
@@ -117,11 +115,7 @@ export const CustomWorkoutDisplay = ({ workout, onClose }: CustomWorkoutDisplayP
           const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
           const minutes = Math.round(currentWorkoutTime / 60); // Converti secondi in minuti
           await updateWorkoutMetrics(user.id, minutes);
-          console.log('✅ [DEBUG] Metriche aggiornate con tempo reale:', currentWorkoutTime, 'secondi =', minutes, 'minuti');
-        
-        // Notifica il grafico settimanale per aggiornarsi
         window.dispatchEvent(new CustomEvent('workoutCompleted'));
-        console.log('📊 [DEBUG] Evento workoutCompleted inviato per aggiornare grafico');
       }
       
       onClose();

@@ -100,9 +100,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
       try {
         const { FileAnalyzer } = await import('../../services/fileAnalysis');
         const analysis = await FileAnalyzer.analyzeFile(file);
-        console.log('🔴 [DEBUG] Analysis risultato completo:', analysis);
-        console.log('🔴 [DEBUG] Esercizi estratti:', analysis?.exercises);
-        console.log('🔴 [DEBUG] Numero esercizi:', analysis?.exercises?.length);
         setFileAnalysis(analysis);
       } catch (error) {
         console.error('Errore analisi file:', error);
@@ -151,8 +148,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
   };
 
   const handleSave = async () => {
-    console.log('🔴 [DEBUG] handleSave - fileAnalysis:', fileAnalysis);
-    console.log('🔴 [DEBUG] handleSave - exercises:', fileAnalysis?.exercises);
     if ((creationMethod === 'manual' && !selectedType) || (creationMethod === 'file' && !uploadedFile)) return;
     
     setIsLoading(true);
@@ -214,16 +209,11 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                 file_type: uploadedFile.type,
                 mime_type: uploadedFile.type,
               });
-          } else {
-            console.log('ℹ️ [DEBUG] Upload file saltato (bucket non configurato):', uploadError.message);
           }
-        } catch (uploadErr) {
-          console.log('ℹ️ [DEBUG] Upload file saltato (errore non critico):', uploadErr);
+        } catch {
+          // Upload non critico, workout creato comunque
         }
       }
-
-      // NON aggiornare metriche qui - si aggiornano solo quando si COMPLETA un workout
-      console.log('✅ [DEBUG] Allenamento creato - metriche si aggiorneranno al completamento');
 
       onClose();
       if (onWorkoutCreated) {
@@ -237,8 +227,6 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
   };
 
   const handleStartNow = async () => {
-    console.log('🔴 [DEBUG] handleStartNow - fileAnalysis:', fileAnalysis);
-    console.log('🔴 [DEBUG] handleStartNow - exercises:', fileAnalysis?.exercises);
     if ((creationMethod === 'manual' && !selectedType) || (creationMethod === 'file' && !uploadedFile)) return;
     
     setIsLoading(true);
@@ -304,16 +292,11 @@ export const WorkoutCreationModal = ({ isOpen, onClose, selectedDate, onWorkoutC
                 file_type: uploadedFile.type,
                 mime_type: uploadedFile.type,
               });
-          } else {
-            console.log('ℹ️ [DEBUG] Upload file saltato (bucket non configurato):', uploadError.message);
           }
-        } catch (uploadErr) {
-          console.log('ℹ️ [DEBUG] Upload file saltato (errore non critico):', uploadErr);
+        } catch {
+          // Upload non critico, workout creato comunque
         }
       }
-
-      // NON aggiornare metriche qui - si aggiornano solo quando si COMPLETA un workout
-      console.log('✅ [DEBUG] Allenamento iniziato - metriche si aggiorneranno al completamento');
 
       onClose();
       if (onWorkoutCreated) {

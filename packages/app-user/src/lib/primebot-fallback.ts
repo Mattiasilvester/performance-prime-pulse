@@ -122,10 +122,7 @@ export function findPresetResponse(message: string): PresetResponseItem | null {
   );
 
   // Se il dolore è risolto, NON intercettare - passa all'LLM
-  if (isPainResolved) {
-    console.log('✅ FIX BUG 2: Dolore risolto rilevato, passo all\'LLM');
-    return null;
-  }
+  if (isPainResolved) return null;
 
   // Parole chiave per dolore/limitazioni fisiche
   const painKeywords = ['fa male', 'male', 'dolore', 'dolori', 'infortunio', 'infortunato', 'ferito', 'problema cardiaco', 'vertigini', 'svenimento'];
@@ -136,10 +133,7 @@ export function findPresetResponse(message: string): PresetResponseItem | null {
   const hasPlanRequest = planKeywords.some(keyword => lowerMessage.includes(keyword));
   
   // FIX CRITICO: Se c'è dolore + richiesta piano, passa a OpenAI (userà whitelist automaticamente)
-  if (hasPainMention && hasPlanRequest) {
-    console.log('🏋️ Dolore + richiesta piano: procedo con OpenAI + whitelist');
-    return null; // Passa all'AI che userà la whitelist
-  }
+  if (hasPainMention && hasPlanRequest) return null;
   
   // Se c'è solo dolore SENZA richiesta piano, mostra warning con bottone professionista
   if (hasPainMention && !hasPlanRequest && !presetResponses[lowerMessage]) {

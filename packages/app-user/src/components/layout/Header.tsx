@@ -119,7 +119,7 @@ export const Header = () => {
         throw error;
       }
       toast.success('Logout effettuato con successo');
-      navigate('/auth');
+      navigate('/auth/login');
     } catch (error: unknown) {
       toast.error('Errore durante il logout');
     } finally {

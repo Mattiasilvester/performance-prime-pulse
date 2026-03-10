@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Flame, Bot, ChevronRight } from 'lucide-react';
 const StatsOverview = lazy(() =>
   import('./StatsOverview').then((module) => ({ default: module.StatsOverview }))
@@ -12,10 +12,11 @@ const WeeklyProgress = lazy(() =>
 );
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { useFeedback15Days } from '@/hooks/useFeedback15Days';
 import { useAuth } from '@/hooks/useAuth';
+import { useTour } from '@/contexts/TourContext';
 import { checkMonthlyReset } from '@/services/monthlyStatsService';
 
 const getGreeting = () => {
@@ -28,8 +29,45 @@ const getGreeting = () => {
 export const Dashboard = () => {
   const { profile: userProfile } = useUserProfile();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
+  const { startTour } = useTour();
   useFeedback15Days(user?.id);
+
+  const tourScheduledRef = useRef(false);
+  const tourTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    tourScheduledRef.current = false;
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('startTour') === 'true' && !tourScheduledRef.current) {
+      tourScheduledRef.current = true;
+      setSearchParams({}, { replace: true });
+      // Timer in ref: non restituiamo cleanup qui, altrimenti al re-run (location.search → '')
+      // React eseguirebbe clearTimeout e il tour non partirebbe
+      tourTimerRef.current = setTimeout(() => {
+        startTour();
+        tourScheduledRef.current = false;
+        tourTimerRef.current = null;
+      }, 400);
+    }
+  }, [location.search, setSearchParams, startTour]);
+
+  useEffect(() => {
+    return () => {
+      if (tourTimerRef.current) clearTimeout(tourTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handler = () => startTour();
+    window.addEventListener('primebot:startTour', handler);
+    return () => window.removeEventListener('primebot:startTour', handler);
+  }, [startTour]);
 
   useEffect(() => {
     if (user?.id) {

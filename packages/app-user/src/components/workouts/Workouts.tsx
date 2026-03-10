@@ -58,7 +58,6 @@ export const Workouts = () => {
     if (location.state?.startCustomWorkout) {
       // Se abbiamo esercizi estratti dal file, usali direttamente
       if (location.state?.customExercises && location.state.customExercises.length > 0) {
-        console.log('✅ [DEBUG] Usando esercizi estratti dal file:', location.state.customExercises);
         const customWorkoutData = {
           id: location.state.startCustomWorkout,
           title: location.state.workoutTitle || 'Allenamento da File',

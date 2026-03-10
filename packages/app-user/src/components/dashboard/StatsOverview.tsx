@@ -66,9 +66,7 @@ export const StatsOverview = () => {
     loadStats();
 
     // Ascolta l'evento di completamento workout per refresh automatico
-    const handleWorkoutCompleted = (event: Event) => {
-      console.log('🔄 [DEBUG] StatsOverview: Evento workoutCompleted ricevuto!', (event as CustomEvent).detail);
-      console.log('🔄 [DEBUG] StatsOverview: Workout completato, ricarico statistiche...');
+    const handleWorkoutCompleted = () => {
       loadStats();
     };
 

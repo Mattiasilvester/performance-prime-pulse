@@ -29,7 +29,6 @@ export default function ProtectedRoute({ session, children }: ProtectedRouteProp
     );
     
     if (!isPublicRoute) {
-      console.log('⚠️ BYPASS ATTIVO - Accesso app completa senza autenticazione (solo DEV)');
       return <>{children}</>;
     }
   }

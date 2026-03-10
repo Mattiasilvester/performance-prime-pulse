@@ -26,14 +26,6 @@ export const FileAnalysisResults: React.FC<FileAnalysisResultsProps> = ({
   result, 
   onClose 
 }) => {
-  console.log('🔴 [DEBUG] FileAnalysisResults - result ricevuto:', result);
-  console.log('🔴 [DEBUG] FileAnalysisResults - exercises:', result?.exercises);
-  console.log('🔴 [DEBUG] FileAnalysisResults - sections:', result?.sections);
-  
-  if (result?.exercises?.length > 0) {
-    console.log('🔴 [DEBUG] Struttura primo esercizio:', result.exercises[0]);
-    console.log('🔴 [DEBUG] Campi esercizio:', Object.keys(result.exercises[0]));
-  }
   const getSectionIcon = (sectionName: string) => {
     switch (sectionName.toLowerCase()) {
       case 'riscaldamento':

@@ -49,11 +49,7 @@ export const OnboardingPreferencesCard = (_props: OnboardingPreferencesCardProps
   const luoghi = summary?.luoghi || [];
 
   const handleModify = () => {
-    console.log('🔘 Click Modifica Preferenze');
-    console.log('📍 Navigating to: /onboarding?mode=edit&step=1');
-    console.log('🔍 Current location:', window.location.href);
     navigate('/onboarding?mode=edit&step=1', { replace: true });
-    console.log('✅ Navigate chiamato');
   };
 
   if (loading) {

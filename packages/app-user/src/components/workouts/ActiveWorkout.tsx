@@ -625,17 +625,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
       
       const totalMinutes = getPresetWorkoutDuration(currentWorkout?.name);
 
-      // Crea un record in custom_workouts per attivare il trigger
-      console.log('🔍 [DEBUG] completeWorkout: Creazione record custom_workouts...');
-      // Usa title se disponibile, altrimenti name, altrimenti fallback
       const workoutTitle = (currentWorkout as CurrentWorkoutDisplay)?.title || currentWorkout?.name || 'Allenamento da File';
-      
-      console.log('📊 [DEBUG] completeWorkout: Dati da inserire:', {
-            user_id: user.id,
-        title: workoutTitle,
-        total_duration: Math.round(totalMinutes),
-        completed: true
-      });
 
       const { data: workoutRecord, error: createError } = await supabase
         .from('custom_workouts')
@@ -652,32 +642,19 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
         .select('id, title, total_duration, completed, completed_at')
         .maybeSingle();
 
-      console.log('📊 [DEBUG] completeWorkout: Risultato inserimento:', { workoutRecord, createError });
-
       if (createError) {
-        console.error('❌ [DEBUG] Errore creazione workout record:', createError);
+        console.error('Errore creazione workout record:', createError);
         toast.error('Errore nel salvataggio dell\'allenamento');
         return;
       }
 
-      if (!workoutRecord) {
-        console.warn('⚠️ [DEBUG] completeWorkout: nessun record restituito dall\'inserimento');
-        return;
-      }
+      if (!workoutRecord) return;
 
-      console.log('✅ [DEBUG] completeWorkout: Record creato con successo');
-      
-      // Aggiorna metriche manualmente (il trigger DB non si attiva su INSERT)
       const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
       await updateWorkoutMetrics(user.id, Math.round(totalMinutes));
-      console.log('✅ [DEBUG] Metriche aggiornate manualmente');
-      
-      // Emetti evento per refresh dashboard
-      console.log('🚀 [DEBUG] completeWorkout: Emetto evento workoutCompleted');
       window.dispatchEvent(new CustomEvent('workoutCompleted', {
         detail: { workoutId: workoutRecord.id }
       }));
-      console.log('✅ [DEBUG] completeWorkout: Evento workoutCompleted emesso');
       
       toast.success('Allenamento completato! Statistiche aggiornate.');
     } catch (error: unknown) {
@@ -700,16 +677,12 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
 
   // Salva su diario - integrazione completa
   const saveToDiary = async () => {
-    console.log('🚀 saveToDiary chiamato!');
-    
     if (!user?.id) {
-      console.error('❌ Utente non autenticato');
       toast.error('Utente non autenticato');
       return;
     }
 
     try {
-      console.log('✅ Utente autenticato, procedo con salvataggio...');
       // ✅ FIX 1: Calcola durata in secondi
       const totalSeconds = currentWorkout.exercises?.reduce((total, exercise) => {
         const duration = parseTimeToSeconds(exercise.duration);

@@ -59,51 +59,77 @@ function TourOverlay() {
   const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const [arrowDir, setArrowDir] = useState<'top' | 'bottom'>('top');
+  const scrollYRef = useRef(0);
 
   const step = TOUR_STEPS[currentStep];
   const isLast = currentStep === TOUR_STEPS.length - 1;
 
   useEffect(() => {
-    const scrollY = window.scrollY;
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
+    const el = document.querySelector(`[data-tour="${step.target}"]`);
+    if (!el) {
+      if (currentStep < TOUR_STEPS.length - 1) {
+        nextStep();
+      } else {
+        closeTour();
+      }
+      return () => {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, scrollYRef.current);
+      };
+    }
+
+    el.scrollIntoView({ behavior: 'instant', block: 'center' });
+
+    const rafId = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        scrollYRef.current = scrollY;
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = '100%';
+
+        const rect = el.getBoundingClientRect();
+        setSpotlightRect(rect);
+
+        const viewportH = window.innerHeight;
+        const spaceBelow = viewportH - rect.bottom;
+        const tooltipH = 180;
+        const tooltipW = 280;
+
+        // Se il target è la bottom navigation, forza il tooltip
+        // sufficientemente in alto da non coprirla
+        const isBottomNav = step.target === 'bottom-nav';
+        const bottomNavOffset = isBottomNav ? 100 : 12;
+
+        if (spaceBelow > tooltipH + 16) {
+          setTooltipPos({
+            top: rect.bottom + 12,
+            left: Math.min(Math.max(rect.left, 16), window.innerWidth - tooltipW - 16),
+          });
+          setArrowDir('top');
+        } else {
+          setTooltipPos({
+            top: rect.top - tooltipH - bottomNavOffset,
+            left: Math.min(Math.max(rect.left, 16), window.innerWidth - tooltipW - 16),
+          });
+          setArrowDir('bottom');
+        }
+      });
+    });
 
     return () => {
+      cancelAnimationFrame(rafId);
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
-      window.scrollTo(0, scrollY);
+      window.scrollTo(0, scrollYRef.current);
     };
-  }, []);
-
-  useEffect(() => {
-    const el = document.querySelector(`[data-tour="${step.target}"]`);
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    setSpotlightRect(rect);
-
-    const viewportH = window.innerHeight;
-    const spaceBelow = viewportH - rect.bottom;
-    const tooltipH = 180;
-    const tooltipW = 280;
-
-    if (spaceBelow > tooltipH + 16) {
-      setTooltipPos({
-        top: rect.bottom + 12,
-        left: Math.min(Math.max(rect.left, 16), window.innerWidth - tooltipW - 16),
-      });
-      setArrowDir('top');
-    } else {
-      setTooltipPos({
-        top: rect.top - tooltipH - 12,
-        left: Math.min(Math.max(rect.left, 16), window.innerWidth - tooltipW - 16),
-      });
-      setArrowDir('bottom');
-    }
-  }, [currentStep, step.target]);
+  }, [currentStep, step.target, nextStep, closeTour]);
 
   if (!spotlightRect) return null;
 

@@ -14,7 +14,6 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
 import { Header } from '@/components/layout/Header'
 import BottomNavigation from '@/components/layout/BottomNavigation'
-import FeedbackWidget from '@/components/feedback/FeedbackWidget'
 import CookieBanner from '@/components/legal/CookieBanner'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
 
@@ -64,15 +63,8 @@ const AICoachWrapper = ({ session }: { session: Session | null }) => {
         </Suspense>
       </div>
       {!isFullscreen && <BottomNavigation />}
-      <ConditionalFeedbackWidget />
     </ProtectedRoute>
   )
-}
-
-const ConditionalFeedbackWidget = () => {
-  const location = useLocation()
-  if (location.pathname === '/timer') return null
-  return <FeedbackWidget />
 }
 
 const EXCLUDED_WIDGET_PATHS = [
@@ -141,7 +133,10 @@ function App() {
                   <Route path="/" element={<NewLandingPage />} />
                   <Route path="/onboarding" element={<OnboardingPage />} />
                   <Route path="/auth/login" element={session ? <Navigate to="/dashboard" /> : <LoginPage />} />
-                  <Route path="/auth" element={<LoginPage />} />
+                  <Route
+                  path="/auth"
+                  element={session ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth/login" replace />}
+                />
                   <Route path="/auth/register" element={
                     session ? <Navigate to="/dashboard" /> : (
                       <Suspense fallback={<PageSkeleton />}>
@@ -160,7 +155,6 @@ function App() {
                         <Suspense fallback={<PageSkeleton variant="dashboard" />}><Dashboard /></Suspense>
                       </div>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/workouts" element={
@@ -170,7 +164,6 @@ function App() {
                         <Suspense fallback={<PageSkeleton variant="dashboard" />}><Workouts /></Suspense>
                       </div>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/diary" element={
@@ -178,7 +171,6 @@ function App() {
                       <Header />
                       <Suspense fallback={<PageSkeleton variant="dashboard" />}><DiaryPage /></Suspense>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/diary/notes" element={
@@ -186,7 +178,6 @@ function App() {
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><DiaryNotesPage /></Suspense>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/workout/quick" element={
@@ -199,7 +190,6 @@ function App() {
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Timer /></Suspense>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/schedule" element={
@@ -209,7 +199,6 @@ function App() {
                         <Suspense fallback={<PageSkeleton />}><Schedule /></Suspense>
                       </div>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/ai-coach" element={<AICoachWrapper session={session} />} />
@@ -218,7 +207,6 @@ function App() {
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Subscriptions /></Suspense>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/professionals" element={
@@ -228,7 +216,6 @@ function App() {
                         <Suspense fallback={<PageSkeleton />}><Professionals /></Suspense>
                       </div>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/professionals/:id" element={
@@ -238,7 +225,6 @@ function App() {
                         <Suspense fallback={<PageSkeleton />}><ProfessionalDetail /></Suspense>
                       </div>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/profile" element={
@@ -248,7 +234,6 @@ function App() {
                         <Suspense fallback={<PageSkeleton />}><Profile /></Suspense>
                       </div>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/piani" element={
@@ -258,7 +243,6 @@ function App() {
                         <Suspense fallback={<PageSkeleton variant="dashboard" />}><PlansPage /></Suspense>
                       </div>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/piani/nuovo" element={
@@ -268,7 +252,6 @@ function App() {
                         <Suspense fallback={<PageSkeleton />}><PlanCreationPage /></Suspense>
                       </div>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/piani-attivi" element={
@@ -278,7 +261,6 @@ function App() {
                         <Suspense fallback={<PageSkeleton />}><ActivePlansPage /></Suspense>
                       </div>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/settings/personal-info" element={
@@ -286,7 +268,6 @@ function App() {
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><PersonalInfo /></Suspense>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/settings/security" element={
@@ -294,7 +275,6 @@ function App() {
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Security /></Suspense>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/settings/notifications" element={
@@ -302,7 +282,6 @@ function App() {
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Notifications /></Suspense>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/settings/language" element={
@@ -310,7 +289,6 @@ function App() {
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Language /></Suspense>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/settings/privacy" element={
@@ -318,7 +296,6 @@ function App() {
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Privacy /></Suspense>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
                   <Route path="/settings/help" element={
@@ -326,7 +303,6 @@ function App() {
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Help /></Suspense>
                       <BottomNavigation />
-                      <ConditionalFeedbackWidget />
                     </ProtectedRoute>
                   } />
 

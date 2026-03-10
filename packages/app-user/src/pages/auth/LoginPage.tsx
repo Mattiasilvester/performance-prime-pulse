@@ -188,7 +188,7 @@ export default function LoginPage() {
 
         <p className="text-center text-[#F0EDE8]/50 text-[15px] mt-6">
           Non hai ancora un account?{' '}
-          <Link to="/auth/register" className="text-[#EEBA2B] font-semibold hover:underline">
+          <Link to="/onboarding?step=0" className="text-[#EEBA2B] font-semibold hover:underline">
             Registrati gratis
           </Link>
         </p>

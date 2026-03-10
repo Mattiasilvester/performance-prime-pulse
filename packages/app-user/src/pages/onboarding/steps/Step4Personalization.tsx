@@ -78,26 +78,10 @@ const Step4Personalization = forwardRef<Step4PersonalizationHandle, Step4Persona
 
   useImperativeHandle(ref, () => ({
     handleContinue: async () => {
-      console.log('═══════════════════════════════════════════');
-      console.log('🔵 handleContinue STARTED');
-      console.log('State:', { isValid, isGenerating, isEditMode });
-      console.log('═══════════════════════════════════════════');
-      
-      // ✅ FIX CRITICO: Usa nome dallo store se il campo locale è vuoto
       const nomeToUse = nome.trim() || data.nome?.trim() || '';
-      
-      if (!nomeToUse || isGenerating) {
-        console.log('❌ Validation failed:', { 
-          nomeLocal: nome, 
-          nomeStore: data.nome, 
-          nomeToUse, 
-          isGenerating 
-        });
-        return;
-      }
+      if (!nomeToUse || isGenerating) return;
 
       setIsGenerating(true);
-
       const payload = {
         nome: nomeToUse,
         eta,
@@ -107,20 +91,8 @@ const Step4Personalization = forwardRef<Step4PersonalizationHandle, Step4Persona
       };
 
       try {
-        console.log('📦 Payload:', payload);
-        
-        // 1. Aggiorna dati
-        console.log('▶️ Step 1/4: updateData');
         updateData(payload);
-        console.log('✅ Step 1/4: updateData OK');
-
-        // 2. Salva nel database
-        console.log('▶️ Step 2/4: saveAndContinue');
         await saveAndContinue(4, payload);
-        console.log('✅ Step 2/4: saveAndContinue OK');
-
-        // 3. Analytics
-        console.log('▶️ Step 3/4: trackOnboarding');
         trackOnboarding.stepCompleted(4, {
           nome: nomeToUse.length,
           eta,
@@ -128,20 +100,11 @@ const Step4Personalization = forwardRef<Step4PersonalizationHandle, Step4Persona
           altezza,
           consigliNutrizionali
         });
-        console.log('✅ Step 3/4: trackOnboarding OK');
-
-        // 4. SEMPRE chiama onComplete - lascia che gestisca lui edit/normal mode
-        console.log('▶️ Step 4/4: onComplete');
         onComplete();
-        console.log('✅ Step 4/4: onComplete OK');
-
       } catch (error) {
         console.error('❌ ERROR in handleContinue:', error);
       } finally {
         setIsGenerating(false);
-        console.log('═══════════════════════════════════════════');
-        console.log('🔵 handleContinue FINISHED');
-        console.log('═══════════════════════════════════════════');
       }
     }
   }));

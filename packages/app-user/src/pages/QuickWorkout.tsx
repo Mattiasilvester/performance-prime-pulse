@@ -203,9 +203,8 @@ const QuickWorkout = () => {
     const initAudio = () => {
       try {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-        console.log('Audio context inizializzato');
-      } catch (error) {
-        console.log('Audio non supportato, useremo feedback visivo');
+      } catch {
+        // Audio non supportato, useremo feedback visivo
       }
     };
 
@@ -303,8 +302,7 @@ const QuickWorkout = () => {
       
       oscillator.start(audioContextRef.current.currentTime);
       oscillator.stop(audioContextRef.current.currentTime + duration / 1000);
-    } catch (error) {
-      console.log('Errore riproduzione audio:', error);
+    } catch {
       // Fallback: flash visivo
       document.body.style.backgroundColor = '#ffd700';
       setTimeout(() => {
@@ -465,7 +463,6 @@ const QuickWorkout = () => {
     
     // Salva nel database Supabase
     try {
-      console.log('🔍 [DEBUG] QuickWorkout: Creazione record custom_workouts...');
       const { data: workoutRecord, error: createError } = await supabase
         .from('custom_workouts')
         .insert({
@@ -481,30 +478,20 @@ const QuickWorkout = () => {
         .select('id, title, total_duration, completed, completed_at')
         .single();
 
-      console.log('📊 [DEBUG] QuickWorkout: Risultato inserimento:', { workoutRecord, createError });
-
       if (createError) {
-        console.error('❌ [DEBUG] Errore creazione workout record:', createError);
+        console.error('Errore creazione workout record:', createError);
       } else {
-        console.log('✅ [DEBUG] QuickWorkout: Record creato con successo');
-        
-        // Aggiorna metriche manualmente (il trigger DB non si attiva su INSERT)
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
-          await updateWorkoutMetrics(user.id, 10); // 10 minuti
-          console.log('✅ [DEBUG] Metriche aggiornate manualmente');
+          await updateWorkoutMetrics(user.id, 10);
         }
-        
-        // Emetti evento per aggiornare dashboard
-        console.log('🚀 [DEBUG] QuickWorkout: Emetto evento workoutCompleted');
         window.dispatchEvent(new CustomEvent('workoutCompleted', {
           detail: { workoutId: workoutRecord.id }
         }));
-        console.log('✅ [DEBUG] QuickWorkout: Evento workoutCompleted emesso');
       }
     } catch (error) {
-      console.error('❌ [DEBUG] Errore salvataggio workout:', error);
+      console.error('Errore salvataggio workout:', error);
     }
     
     // Mostra notifica se c'è un messaggio
@@ -538,16 +525,12 @@ const QuickWorkout = () => {
 
   // Salva su diario - integrazione completa
   const saveToDiary = async () => {
-    console.log('🚀 QuickWorkout saveToDiary chiamato!');
-    
     if (!user?.id) {
-      console.error('❌ Utente non autenticato');
       toast.error('Utente non autenticato');
       return;
     }
 
     try {
-      console.log('✅ Utente autenticato, procedo con salvataggio QuickWorkout...');
       
       // Calcola durata totale in secondi
       const totalSeconds = WORKOUT_CIRCUIT.reduce((total, exercise) => {
@@ -564,14 +547,6 @@ const QuickWorkout = () => {
 
       // Assicurati che sia NUMBER INTEGER (non string)
       const finalDurationMinutes = parseInt(durationMinutes.toString(), 10);
-
-      console.log('🔍 DEBUG QuickWorkout Duration:', {
-        totalSeconds,
-        durationMinutes,
-        finalDurationMinutes,
-        type: typeof finalDurationMinutes,
-        exercisesCount: WORKOUT_CIRCUIT.length
-      });
 
       // Prepara dati workout per QuickWorkout
       const workoutData = {
@@ -592,12 +567,7 @@ const QuickWorkout = () => {
         saved_at: new Date().toISOString(),
       };
 
-      console.log('🔍 FULL QuickWorkout workoutData BEFORE save:', JSON.stringify(workoutData, null, 2));
-
-      // Salva nel diario
       await saveWorkoutToDiary(workoutData);
-
-      console.log('✅ QuickWorkout salvato con successo');
 
       // Registra completamento nel sistema medaglie
       recordWorkoutCompletion();
@@ -631,10 +601,7 @@ const QuickWorkout = () => {
       }, 800);
 
     } catch (error) {
-      console.error('❌ Full error object:', error);
-      console.error('❌ Error saving QuickWorkout to diary:', error);
-      
-      // Toast ERRORE solo se fallisce veramente
+      console.error('Error saving QuickWorkout to diary:', error);
       toast.error('❌ Errore', {
         description: 'Impossibile salvare nel diario',
       });

@@ -109,7 +109,6 @@ export class AdvancedWorkoutAnalyzer {
     
     // Log iniziale
     this.log('[ANALYSIS]', `File ricevuto → ${typeof file === 'string' ? 'URL' : 'File'}: ${typeof file === 'string' ? file : file.name} (${typeof file === 'string' ? 'N/A' : file.size} bytes)`);
-    console.log('🔴 [DEBUG] AdvancedWorkoutAnalyzer - File ricevuto:', typeof file === 'string' ? file : file.name);
     
     try {
       // 1. Gestione input (file o URL)
@@ -127,8 +126,6 @@ export class AdvancedWorkoutAnalyzer {
       
       // 3. Parsing struttura
       const parsedResult = await this.parseWorkoutStructure(extractedText.text);
-      console.log('🔴 [DEBUG] PDF testo estratto:', extractedText.text);
-      console.log('🔴 [DEBUG] Esercizi trovati nel testo:', parsedResult);
       
       // DEBUG: Log parsing results
       if (DEBUG_ANALYSIS) {
@@ -500,7 +497,6 @@ export class AdvancedWorkoutAnalyzer {
         const restUnit = restFormatMatch.groups?.[3]; // sec|min|seconds?|minutes?
         if (restVal && restUnit) {
           lastExercise.rest = `${restVal}${restUnit.includes('sec') ? 'sec' : 'min'}`;
-          console.log('✅ [DEBUG] RestFormat riconosciuto:', line, '→', lastExercise.rest);
           continue;
         }
       }

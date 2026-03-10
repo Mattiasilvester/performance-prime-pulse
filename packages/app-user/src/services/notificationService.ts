@@ -24,18 +24,8 @@ export async function createNotification({
   data = {}
 }: CreateNotificationParams): Promise<void> {
   try {
-    console.log('[CREATE NOTIFICATION] Inizio creazione notifica:', { professionalId, type, title });
-    
-    // Verifica se il professionista vuole ricevere questo tipo di notifica
     const shouldCreate = await shouldCreateNotification(professionalId, type);
-    
-    console.log('[CREATE NOTIFICATION] Should create:', shouldCreate);
-    
-    if (!shouldCreate) {
-      // L'utente ha disabilitato questo tipo di notifica
-      console.log('[CREATE NOTIFICATION] Notifica disabilitata dalle preferenze utente');
-      return;
-    }
+    if (!shouldCreate) return;
 
     // Crea la notifica
     const { data: insertedData, error } = await supabase
@@ -51,24 +41,13 @@ export async function createNotification({
       .select()
       .single();
 
-    if (error) {
-      console.error('[CREATE NOTIFICATION] Errore creazione notifica:', error);
-      console.error('[CREATE NOTIFICATION] Dettagli errore:', JSON.stringify(error, null, 2));
-      throw error;
-    }
+    if (error) throw error;
 
-    console.log('[CREATE NOTIFICATION] Notifica creata con successo:', insertedData?.id);
-
-    // Invia notifica push (non blocca se fallisce)
     if (insertedData?.id) {
-      sendPushNotificationAsync(professionalId, insertedData.id).catch((pushError) => {
-        console.error('[CREATE NOTIFICATION] Errore invio push (non bloccante):', pushError);
-        // Non bloccare il flusso se push fallisce
-      });
+      sendPushNotificationAsync(professionalId, insertedData.id).catch(() => {});
     }
   } catch (err: unknown) {
-    console.error('[CREATE NOTIFICATION] Errore in createNotification:', err);
-    console.error('[CREATE NOTIFICATION] Stack trace:', err instanceof Error ? err.stack : 'N/A');
+    console.error('Errore in createNotification:', err);
     // Non lanciare errore per non bloccare il flusso principale
     // Le notifiche sono un feature aggiuntivo
   }
@@ -80,10 +59,7 @@ export async function createNotification({
 async function sendPushNotificationAsync(professionalId: string, notificationId: string): Promise<void> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.log('[PUSH] Nessuna sessione, skip push');
-      return;
-    }
+    if (!session) return;
 
     // Chiama Edge Function per inviare push
     const { data, error } = await supabase.functions.invoke('send-push-notification', {
@@ -95,25 +71,12 @@ async function sendPushNotificationAsync(professionalId: string, notificationId:
 
     if (error) {
       // Se l'Edge Function non esiste o non è deployata, log silenzioso (non è critico)
-      if (error.message?.includes('Function not found') || error.message?.includes('404')) {
-        console.log('[PUSH] Edge Function non deployata, skip push notification');
-        return;
-      }
-      // Per altri errori (CORS, network, ecc.), log solo in dev
-      if (import.meta.env.DEV) {
-        console.warn('[PUSH] Errore chiamata Edge Function (non bloccante):', error);
-      }
+      if (error.message?.includes('Function not found') || error.message?.includes('404')) return;
+      if (import.meta.env.DEV) console.warn('Errore chiamata Edge Function push (non bloccante):', error);
       return;
     }
-
-    if (import.meta.env.DEV) {
-      console.log('[PUSH] Push inviate con successo:', data);
-    }
   } catch (error) {
-    // Gestione silenziosa errori push (non bloccanti)
-    if (import.meta.env.DEV) {
-      console.warn('[PUSH] Errore invio push (non bloccante):', error);
-    }
+    if (import.meta.env.DEV) console.warn('Errore invio push (non bloccante):', error);
     // Non lanciare errore, push è opzionale
   }
 }
@@ -127,46 +90,20 @@ async function shouldCreateNotification(
   type: ProfessionalNotificationType
 ): Promise<boolean> {
   try {
-    console.log('[SHOULD CREATE] Verifica preferenze per:', { professionalId, type });
-    
-    // Carica le preferenze notifiche del professionista
     const { data: settings, error } = await supabase
       .from('professional_settings')
       .select('notify_new_booking, notify_booking_cancelled, notify_booking_reminder, notify_reviews')
       .eq('professional_id', professionalId)
       .maybeSingle();
 
-    if (error) {
-      console.log('[SHOULD CREATE] Errore query settings:', error);
-      // Se non ci sono preferenze, crea la notifica (default: abilitato)
-      return true;
-    }
+    if (error) return true;
+    if (!settings) return true;
 
-    if (!settings) {
-      console.log('[SHOULD CREATE] Nessuna preferenza trovata, default: abilitato');
-      // Se non ci sono preferenze, crea la notifica (default: abilitato)
-      return true;
-    }
-
-    console.log('[SHOULD CREATE] Preferenze trovate:', settings);
-
-    // Mappa tipo notifica a colonna preferenza
     const preferenceValue = getPreferenceValue(settings, type);
-    
-    console.log('[SHOULD CREATE] Valore preferenza per', type, ':', preferenceValue);
-    
-    // Se la preferenza non esiste o è undefined, default: abilitato
-    if (preferenceValue === undefined || preferenceValue === null) {
-      console.log('[SHOULD CREATE] Preferenza non definita, default: abilitato');
-      return true;
-    }
-
-    const result = preferenceValue === true;
-    console.log('[SHOULD CREATE] Risultato finale:', result);
-    return result;
+    if (preferenceValue === undefined || preferenceValue === null) return true;
+    return preferenceValue === true;
   } catch (err) {
-    // In caso di errore, crea la notifica (fail-safe)
-    console.error('[SHOULD CREATE] Errore verifica preferenze notifiche:', err);
+    console.error('Errore verifica preferenze notifiche:', err);
     return true;
   }
 }

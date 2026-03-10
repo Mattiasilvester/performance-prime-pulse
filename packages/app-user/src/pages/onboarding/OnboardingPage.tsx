@@ -65,20 +65,12 @@ export function OnboardingPage() {
   // ✅ FIX: Usa handleNext e handleBack dal hook per aggiornare anche l'URL
   const { handleNext, handleBack: handleBackFromHook } = useOnboardingNavigation(isEditMode);
   
-  // ✅ DEBUG: Log ogni cambio di currentStep
-  useEffect(() => {
-    console.log('🔢 currentStep changed to:', currentStep);
-    console.log('📍 URL step param:', searchParams.get('step'));
-    console.log('🎭 isEditMode:', isEditMode);
-  }, [currentStep, searchParams, isEditMode]);
-  
   // ✅ FASE 3: Carica dati esistenti in edit mode
   useEffect(() => {
     const loadExistingData = async () => {
       if (!isEditMode || !user?.id) return;
 
       try {
-        console.log('📥 Edit mode: caricamento dati esistenti...');
         const existingData = await onboardingService.loadOnboardingData(user.id);
 
         if (existingData) {
@@ -100,7 +92,6 @@ export function OnboardingPage() {
             condizioniMediche: existingData.condizioni_mediche ?? undefined,
           });
 
-          console.log('✅ Dati esistenti caricati:', existingData);
         }
       } catch (error) {
         console.error('❌ Errore caricamento dati esistenti:', error);
@@ -130,27 +121,14 @@ export function OnboardingPage() {
     // Leggi currentStep direttamente dallo store per evitare dipendenze
     const currentStepValue = useOnboardingStore.getState().currentStep;
     
-    console.log('🔄 useEffect sync step triggered:', { stepParam, mode, currentStepValue });
-    
     // ✅ FIX: In edit mode, sincronizza SOLO UNA VOLTA all'inizio
     if (mode === 'edit' && stepParam) {
       const stepNum = parseInt(stepParam, 10);
       
       // ✅ FIX FINALE: Se siamo su Completion (step 6), NON fare sync
-      if (stepNum === 6) {
-        console.log('✅ Edit mode: su Completion, skip sync');
-        return;
-      }
-      
-      // Se step è già quello giusto, NON fare nulla
-      if (stepNum === currentStepValue) {
-        console.log('✅ Edit mode: step già corretto, skip sync');
-        return;
-      }
-      
-      // Se step è diverso, sincronizza UNA VOLTA
+      if (stepNum === 6) return;
+      if (stepNum === currentStepValue) return;
       if (!isNaN(stepNum) && stepNum >= 1 && stepNum <= 5) {
-        console.log('📥 Edit mode: syncing step from URL:', stepNum);
         setStep(stepNum);
         return;
       }
@@ -158,7 +136,6 @@ export function OnboardingPage() {
     
     // ✅ FIX: In edit mode senza step nell'URL, vai a step 1
     if (mode === 'edit' && !stepParam) {
-      console.log('📥 Edit mode: no step in URL, defaulting to 1');
       setStep(1);
       setSearchParams({ mode: 'edit', step: '1' }, { replace: true });
       return;
@@ -169,10 +146,7 @@ export function OnboardingPage() {
     if (stepParam !== null && mode !== 'edit') {
       const stepNum = parseInt(stepParam, 10);
       if (!isNaN(stepNum) && stepNum >= 0 && stepNum <= 6) {
-        if (stepNum !== currentStepValue) {
-          console.log('📥 Normal mode: syncing step from URL:', stepNum, 'to store (current:', currentStepValue, ')');
-          setStep(stepNum);
-        }
+        if (stepNum !== currentStepValue) setStep(stepNum);
       }
     }
      
@@ -180,99 +154,39 @@ export function OnboardingPage() {
   
   // Sincronizza URL quando cambia currentStep (ma solo se non c'è già un parametro step nell'URL)
   useEffect(() => {
-    console.log('=== useEffect sync URL START ===');
-    console.log('📊 State:', {
-      currentStep,
-      isEditMode,
-      urlStepParam: searchParams.get('step'),
-      urlMode: searchParams.get('mode'),
-      urlSyncInProgress: urlSyncInProgress.current
-    });
-    
-    // ✅ FIX CRITICO: Previeni loop infinito
-    if (urlSyncInProgress.current) {
-      console.log('⏸️ URL sync already in progress, skipping');
-      console.log('=== useEffect sync URL END (skipped - in progress) ===');
-      return;
-    }
-    
-    // ✅ FIX: In edit mode, NON modificare URL se è già corretto
+    if (urlSyncInProgress.current) return;
+
     if (isEditMode) {
       const stepParam = searchParams.get('step');
       const mode = searchParams.get('mode');
-      
-      console.log('🎭 Edit mode detected');
-      console.log('🔍 Checking:', {
-        mode,
-        stepParam,
-        currentStep,
-        stepParamParsed: stepParam ? parseInt(stepParam, 10) : null,
-        shouldSkip: mode === 'edit' && stepParam && parseInt(stepParam, 10) === currentStep
-      });
-      
-      // Se URL ha già mode=edit e step corretto, NON fare nulla
-      if (mode === 'edit' && stepParam && parseInt(stepParam, 10) === currentStep) {
-        console.log('✅ Edit mode: URL già corretto, skip update');
-        console.log('=== useEffect sync URL END (skipped - already correct) ===');
-        return;
-      }
-      
-      // Se URL non è corretto, aggiornalo UNA VOLTA
-      console.log('📤 Edit mode: updating URL to match currentStep:', currentStep);
-      console.log('🔧 Calling setSearchParams with:', { mode: 'edit', step: currentStep.toString() });
-      
+      if (mode === 'edit' && stepParam && parseInt(stepParam, 10) === currentStep) return;
+
       urlSyncInProgress.current = true;
       setSearchParams({ mode: 'edit', step: currentStep.toString() }, { replace: true });
-      
-      // Reset dopo un breve delay
       setTimeout(() => {
         urlSyncInProgress.current = false;
-        console.log('🔄 urlSyncInProgress reset to false');
       }, 100);
-      
-      console.log('=== useEffect sync URL END (updated) ===');
       return;
     }
-    
-    // Comportamento normale per nuovo onboarding
+
     const stepParam = searchParams.get('step');
-    console.log('🆕 Normal mode');
     if (stepParam === null || parseInt(stepParam, 10) !== currentStep) {
-      console.log('📤 Normal mode: updating URL to match currentStep:', currentStep);
       setSearchParams({ step: currentStep.toString() }, { replace: true });
     }
-    console.log('=== useEffect sync URL END ===');
   }, [currentStep, setSearchParams, isEditMode]); // ✅ FIX CRITICO: searchParams RIMOSSO dalle dependencies!
 
   // SECONDO: Controllo se utente è già loggato - redirect a dashboard (solo se non c'è step nell'URL E non siamo in onboarding)
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
       // ✅ FASE 3: Se siamo in edit mode, NON fare redirect (utente vuole modificare preferenze)
-      if (isEditMode) {
-        console.log('Edit mode attivo, skipping auth redirect');
-        return;
-      }
-      
-      // Se c'è un parametro step nell'URL, NON fare redirect (permette navigazione diretta)
+      if (isEditMode) return;
       const stepParam = searchParams.get('step');
-      if (stepParam !== null) {
-        console.log('Step parameter in URL, skipping auth redirect');
-        return;
-      }
-      
-      // Se siamo nello step 0 (registrazione), NON fare redirect (utente si sta registrando)
-      if (currentStep === 0) {
-        console.log('Step 0 (registration), skipping auth redirect');
-        return;
-      }
-      
+      if (stepParam !== null) return;
+      if (currentStep === 0) return;
+
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          console.log('Utente già loggato - redirect a dashboard');
-          navigate('/dashboard', { replace: true });
-        }
+        if (session) navigate('/dashboard', { replace: true });
       } catch (error) {
         console.error('Errore controllo sessione:', error);
       }
@@ -291,10 +205,7 @@ export function OnboardingPage() {
       
       // Solo se NON ha completato (currentStep < 6)
       const currentStepOnUnmount = useOnboardingStore.getState().currentStep;
-      if (currentStepOnUnmount < 6) {
-        console.log('Utente uscito dall\'onboarding senza completare - reset state');
-        resetOnboarding();
-      }
+      if (currentStepOnUnmount < 6) resetOnboarding();
     };
   }, [resetOnboarding]);
 
