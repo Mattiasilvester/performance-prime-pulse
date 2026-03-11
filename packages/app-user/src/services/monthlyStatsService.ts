@@ -66,10 +66,10 @@ export const checkMonthlyReset = async (userId: string) => {
   }
 };
 
-// Aggiungi notifica per il riepilogo mensile
-const addMonthlyNotification = async (userId: string, monthName: string, workouts: number, hours: number) => {
-  // Qui potresti salvare la notifica in una tabella dedicata se necessario
-  // Per ora utilizziamo solo il toast
+// TODO: implementare notifica mensile persistente quando
+// il sistema notifiche utente sarà completato
+const addMonthlyNotification = async (_userId: string, _monthName: string, _workouts: number, _hours: number) => {
+  // Per ora solo toast in chiamante; notifica persistente/push da implementare
 };
 
 // Ottieni statistiche mensili dell'utente

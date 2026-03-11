@@ -21,6 +21,7 @@ import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { NewLandingPage } from '@/pages/landing/NewLandingPage'
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage'
 import LoginPage from '@/pages/auth/LoginPage'
+import AuthCallback from '@/pages/auth/AuthCallback'
 import ResetPassword from '@/pages/ResetPassword'
 
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
@@ -150,6 +151,7 @@ function App() {
                     )
                   } />
                   <Route path="/auth/reset-password" element={<ResetPassword />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/terms-and-conditions" element={<Suspense fallback={<PageSkeleton />}><TermsAndConditions /></Suspense>} />
                   <Route path="/privacy-policy" element={<Suspense fallback={<PageSkeleton />}><MainPrivacyPolicy /></Suspense>} />
 

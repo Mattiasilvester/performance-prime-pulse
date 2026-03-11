@@ -651,6 +651,48 @@ export type Database = {
         }
         Relationships: []
       }
+      nutrition_plans: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          description: string | null
+          goal: string | null
+          calorie_giornaliere: number | null
+          allergie_considerate: string[]
+          contenuto: Json
+          note: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          description?: string | null
+          goal?: string | null
+          calorie_giornaliere?: number | null
+          allergie_considerate?: string[]
+          contenuto: Json
+          note?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          description?: string | null
+          goal?: string | null
+          calorie_giornaliere?: number | null
+          allergie_considerate?: string[]
+          contenuto?: Json
+          note?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       primebot_interactions: {
         Row: {
           bot_intent: string | null

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import {
   getSessionHistory,
   formatHistoryForOpenAI,
@@ -17,6 +18,7 @@ import {
   validatePlanVariation,
   type StructuredWorkoutPlan,
 } from '@/services/workoutPlanGenerator';
+import type { StructuredNutritionPlan } from '@/types/nutritionPlan';
 import { 
   getTherapeuticAdvice, 
   detectBodyPart,
@@ -239,7 +241,24 @@ export const getAIResponse = async (
   **Modifica lo squat:** Prova squat al muro o box squat con range ridotto
   **Alternative:** Leg press con range controllato, ponte glutei, affondi inversi
   **Evita:** Squat profondi, jump squat, affondi in avanzamento
-  Vuoi che ti crei un piano che eviti stress sulle ginocchia? 🏋️"`;
+  Vuoi che ti crei un piano che eviti stress sulle ginocchia? 🏋️"
+
+  REGOLE SU PIANI E CONSIGLI PROFESSIONALI:
+
+  Quando fornisci piani di allenamento, schede, routine o programmi di esercizio:
+  - Crea il piano con precisione e cura, usando i dati reali dell'utente
+  - Concludi SEMPRE con: "💪 Ricorda: questo è un piano indicativo personalizzato sui tuoi dati. Per un programma professionale con supervisione continua, puoi trovare un Personal Trainer certificato su Performance Prime."
+
+  Quando fornisci piani alimentari, consigli nutrizionali specifici o calcoli calorici/macronutrienti:
+  - Fornisci i consigli con precisione, usando peso/altezza/età/allergie dell'utente
+  - Concludi SEMPRE con: "🥗 Questi sono consigli nutrizionali indicativi. Per una dieta personalizzata e sicura, ti consiglio di consultare uno dei nostri Nutrizionisti su Performance Prime."
+
+  Quando l'utente menziona dolori, infortuni o condizioni mediche:
+  - Suggerisci alternative sicure ed esercizi adatti
+  - Concludi SEMPRE con: "⚕️ Per dolori o condizioni mediche specifiche, ti consiglio di consultare uno dei nostri Fisioterapisti su Performance Prime prima di riprendere l'allenamento."
+
+  In tutti gli altri casi (domande generali, tecnica degli esercizi, motivazione, spiegazioni) NON aggiungere disclaimer — rispondi normalmente.
+  Il tono del disclaimer deve essere sempre naturale e incoraggiante, mai un muro di testo legale. Una frase, alla fine della risposta.`;
 
     let systemPrompt = `Sei PrimeBot, l'AI Coach personale${nomeUtente ? ` di ${nomeUtente}` : ''} su Performance Prime.
 Sei un coach esperto, motivante e preciso.
@@ -287,7 +306,7 @@ ${nomeUtente ? `- Chiama l'utente per nome (${nomeUtente}) quando è naturale fa
         },
         body: JSON.stringify({
           messages,
-          model: 'gpt-3.5-turbo'
+          model: 'gpt-4o-mini'
         })
       });
       
@@ -343,7 +362,7 @@ ${nomeUtente ? `- Chiama l'utente per nome (${nomeUtente}) quando è naturale fa
       tokens_completion: successData.usage?.completion_tokens || 0,
       tokens_total: successData.usage?.total_tokens || 0,
       cost_usd: cost,
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       message: message.substring(0, 500),
       response: (successData.choices?.[0]?.message?.content ?? '').substring(0, 500)
     });
@@ -665,6 +684,9 @@ ${limitationsCheck.hasExistingLimitations && therapeuticAdvice.length > 0 ? `
 IMPORTANTE: Se l'utente ha limitazioni fisiche, il JSON DEVE includere:
 - "therapeuticAdvice": array di stringhe con consigli terapeutici (esempio: ${JSON.stringify(therapeuticAdvice.slice(0, 2))})
 - "safetyNotes": stringa che spiega l'adattamento del piano. DEVI usare ESATTAMENTE questa frase: "Piano adattato per ${limitationsCheck.limitations || 'limitazioni fisiche'}. Gli esercizi sono stati selezionati per evitare stress sulla zona interessata."
+IMPORTANTE: Il campo "safetyNotes" deve contenere SOLO testo plain senza caratteri speciali, senza &, senza *, senza markdown di nessun tipo.
+Esempio corretto: "Nota di sicurezza: Piano adattato..."
+Esempio SBAGLIATO: "& &p **Nota di sicurezza**..."
 ` : ''}
 
 ⚠️ IMPORTANTE:
@@ -721,7 +743,7 @@ IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli t
         },
         body: JSON.stringify({
           messages,
-          model: 'gpt-3.5-turbo',
+          model: 'gpt-4o-mini',
         }),
       });
       
@@ -805,7 +827,7 @@ ${workoutPlanSystemPrompt}
             },
             body: JSON.stringify({
               messages: retryMessages,
-              model: 'gpt-3.5-turbo',
+              model: 'gpt-4o-mini',
             }),
           });
           
@@ -860,6 +882,11 @@ ${workoutPlanSystemPrompt}
       };
     }
 
+    // Sanitizza sempre safetyNotes da OpenAI: rimuovi & iniziale (ASCII o fullwidth) per evitare residui nel PDF
+    if (plan?.safetyNotes && typeof plan.safetyNotes === 'string') {
+      plan.safetyNotes = plan.safetyNotes.replace(/^\s*[&\uFF06]\s*/, '').trim();
+    }
+
     // FIX CRITICO: Forza consigli terapeutici e safety notes corretti (OpenAI potrebbe ignorarli)
     if (limitationsCheck.hasExistingLimitations && limitationsCheck.limitations && plan) {
       console.log('💊 Forzando consigli terapeutici pre-calcolati per:', limitationsCheck.limitations);
@@ -900,14 +927,14 @@ ${workoutPlanSystemPrompt}
         const zona = zonesArray[0];
         const preposition = ['anca', 'addome'].includes(zona.toLowerCase()) ? "all'" : 
                             ['spalla', 'schiena', 'caviglia', 'coscia'].includes(zona.toLowerCase()) ? 'alla ' : 'al ';
-        plan.safetyNotes = `⚠️ **Nota di sicurezza**: Piano adattato per il dolore ${preposition}${zona}. Tutti gli esercizi sono stati selezionati per evitare qualsiasi stress sulla zona interessata. Ascolta sempre il tuo corpo e fermati se senti dolore.`;
+        plan.safetyNotes = `Nota di sicurezza: Piano adattato per il dolore ${preposition}${zona}. Tutti gli esercizi sono stati selezionati per evitare stress sulla zona interessata. Ascolta sempre il tuo corpo e fermati se senti dolore.`;
       } else if (zonesArray.length > 1) {
         // Multiple zone
         const zonesText = zonesArray.slice(0, -1).join(', ') + ' e ' + zonesArray[zonesArray.length - 1];
-        plan.safetyNotes = `⚠️ **Nota di sicurezza**: Piano adattato per i dolori a ${zonesText}. Tutti gli esercizi sono stati selezionati per evitare qualsiasi stress su queste zone. Ascolta sempre il tuo corpo e fermati se senti dolore.`;
+        plan.safetyNotes = `Nota di sicurezza: Piano adattato per i dolori a ${zonesText}. Tutti gli esercizi sono stati selezionati per evitare stress su queste zone. Ascolta sempre il tuo corpo e fermati se senti dolore.`;
       } else {
         // Fallback se non ci sono zone valide
-        plan.safetyNotes = `⚠️ **Nota di sicurezza**: Piano adattato per le tue limitazioni fisiche. Gli esercizi sono stati selezionati per evitare stress sulle zone interessate.`;
+        plan.safetyNotes = `Nota di sicurezza: Piano adattato per le tue limitazioni fisiche. Gli esercizi sono stati selezionati per evitare stress sulle zone interessate.`;
       }
       
       console.log('🛡️ PROBLEMA 2 FIX: Safety note generata:', plan.safetyNotes);
@@ -999,7 +1026,7 @@ ${workoutPlanSystemPrompt}
       tokens_completion: data.usage?.completion_tokens || 0,
       tokens_total: data.usage?.total_tokens || 0,
       cost_usd: cost,
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       message: request.substring(0, 500),
       response: aiResponse.substring(0, 500),
     });
@@ -1041,3 +1068,165 @@ ${workoutPlanSystemPrompt}
     };
   }
 };
+
+/**
+ * Genera un piano nutrizionale strutturato via PrimeBot.
+ * Usa lo stesso checkMonthlyLimit di getStructuredWorkoutPlan.
+ */
+export async function getStructuredNutritionPlan(
+  request: string,
+  userId: string,
+  allergie: string[],
+  userContext?: string,
+  sessionId?: string
+): Promise<{
+  plan?: StructuredNutritionPlan;
+  message: string;
+  limitReached?: boolean;
+}> {
+  const limitCheck = await checkMonthlyLimit(userId);
+  if (!limitCheck.canUse) {
+    return {
+      message: `Hai raggiunto il limite di ${MONTHLY_LIMIT} domande AI questo mese. Riprova il mese prossimo!`,
+      limitReached: true,
+    };
+  }
+
+  const allergieSection = allergie.length > 0
+    ? `ALLERGIE E INTOLLERANZE DA ESCLUDERE TASSATIVAMENTE:\n${allergie.map(a => `- ${a}`).join('\n')}\nNon includere MAI alimenti che contengono questi ingredienti.`
+    : 'Nessuna allergia o intolleranza segnalata.';
+
+  const contextSection = userContext ? `\nCONTESTO UTENTE:\n${userContext}` : '';
+
+  const nutritionSystemPrompt = `Sei PrimeBot, esperto nutrizionista AI di Performance Prime.
+L'utente ha richiesto un piano alimentare personalizzato.
+
+${allergieSection}
+${contextSection}
+
+ISTRUZIONI:
+- Genera un piano alimentare di 3 giorni rappresentativi (Giorno 1, Giorno 2, Giorno 3) a meno che l'utente non specifichi esplicitamente il numero di giorni.
+- Mantieni ogni giorno CONCISO: massimo 4 pasti per giorno, massimo 4 alimenti per pasto.
+- Non aggiungere testo extra fuori dal JSON.
+- Ogni giorno può avere: Colazione, Spuntino (opzionale), Pranzo, Cena.
+- Indica quantità precise in grammi per ogni alimento.
+- Calcola le calorie totali giornaliere approssimative.
+- Adatta il piano all'obiettivo dell'utente (dimagrimento / massa muscolare / mantenimento / performance).
+- Il piano deve essere realistico, vario e bilanciato.
+- Includi almeno 3 consigli generali sulla nutrizione.
+
+IMPORTANTE — SICUREZZA:
+- Aggiungi sempre una nota finale che raccomanda di consultare un nutrizionista o dietologo certificato per un piano personalizzato e monitorato.
+- Non prescrivere integratori o farmaci.
+- Se l'utente ha patologie (diabete, ipertensione, ecc.), raccomanda il medico prima di tutto.
+
+FORMATO RISPOSTA — rispondi SOLO con JSON valido, nessun testo prima o dopo:
+{
+  "nome": "Piano Alimentare Settimanale",
+  "descrizione": "...",
+  "obiettivo": "...",
+  "calorie_giornaliere": 2000,
+  "macronutrienti": {
+    "proteine_percentuale": 30,
+    "carboidrati_percentuale": 45,
+    "grassi_percentuale": 25
+  },
+  "allergie_considerate": ["..."],
+  "giorni": [
+    {
+      "giorno": "Lunedì",
+      "pasti": [
+        {
+          "nome": "Colazione",
+          "orario": "07:30",
+          "alimenti": [
+            {
+              "nome": "Fiocchi d'avena",
+              "quantita": "80g",
+              "calorie": 300,
+              "note": "con acqua o latte vegetale"
+            }
+          ],
+          "calorie_totali": 450,
+          "note": "..."
+        }
+      ],
+      "calorie_totali": 2000,
+      "note": "..."
+    }
+  ],
+  "consigli_generali": ["...", "...", "..."],
+  "note_finali": "Consulta un nutrizionista..."
+}`;
+
+  try {
+    const response = await fetch('/api/ai-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: nutritionSystemPrompt },
+          { role: 'user', content: request },
+        ],
+        model: 'gpt-4o-mini',
+        max_tokens: 6000,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = (await response.json()) as OpenAIApiResponse;
+    if (!('choices' in data) || !data.choices?.length || !data.choices[0]) {
+      throw new Error('Risposta API non valida');
+    }
+    const successData = data as OpenAIResponse;
+    const rawText = successData.choices?.[0]?.message?.content ?? '';
+
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return {
+        message: 'Non sono riuscito a generare il piano. Riprova con una richiesta più specifica.',
+      };
+    }
+
+    const plan = JSON.parse(jsonMatch[0]) as StructuredNutritionPlan;
+
+    await supabase.from('nutrition_plans').insert({
+      user_id: userId,
+      name: plan.nome,
+      description: plan.descrizione ?? null,
+      goal: plan.obiettivo ?? null,
+      calorie_giornaliere: plan.calorie_giornaliere ?? null,
+      allergie_considerate: plan.allergie_considerate ?? [],
+      contenuto: plan as unknown as Json,
+      note: plan.note_finali ?? null,
+    });
+
+    const cost = calculateCost(
+      successData.usage?.prompt_tokens || 0,
+      successData.usage?.completion_tokens || 0
+    );
+    await supabase.from('openai_usage_logs').insert({
+      user_id: userId,
+      tokens_prompt: successData.usage?.prompt_tokens || 0,
+      tokens_completion: successData.usage?.completion_tokens || 0,
+      tokens_total: successData.usage?.total_tokens || 0,
+      cost_usd: cost,
+      model: 'gpt-4o-mini',
+      message: request.substring(0, 500),
+      response: rawText.substring(0, 500),
+    });
+
+    return {
+      plan,
+      message: 'Ho creato il tuo piano alimentare! 🥗',
+    };
+  } catch (error) {
+    console.error('getStructuredNutritionPlan error:', error);
+    return {
+      message: 'Errore nella generazione del piano alimentare. Riprova tra qualche istante.',
+    };
+  }
+}

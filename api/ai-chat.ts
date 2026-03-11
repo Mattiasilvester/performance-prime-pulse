@@ -44,11 +44,14 @@ export default async function handler(
       });
     }
 
-    const { messages, model = 'gpt-3.5-turbo' } = req.body;
+    const { messages, model = 'gpt-4o-mini', max_tokens: clientMaxTokens } = req.body as { messages?: unknown[]; model?: string; max_tokens?: number };
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Messages array required' });
     }
+
+    // max_tokens: dal client (es. 4000 per piani nutrizionali), default 1000 per chat
+    const max_tokens = typeof clientMaxTokens === 'number' && clientMaxTokens > 0 ? clientMaxTokens : 1000;
 
     // Chiamata a OpenAI (server-side, sicura!)
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -61,7 +64,7 @@ export default async function handler(
         model,
         messages,
         temperature: 0.7,
-        max_tokens: 500
+        max_tokens
       })
     });
 

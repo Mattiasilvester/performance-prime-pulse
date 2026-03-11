@@ -4,7 +4,12 @@ import { useNavigate } from 'react-router-dom';
 /**
  * Tipi di azioni supportate da PrimeBot
  */
-export type ActionType = 'save_workout' | 'add_diary' | 'navigate' | 'start_workout';
+export type ActionType =
+  | 'save_workout'
+  | 'add_diary'
+  | 'navigate'
+  | 'start_workout'
+  | 'plan_flow';
 
 /**
  * Payload per azione save_workout
@@ -41,6 +46,13 @@ export interface StartWorkoutPayload {
   workout_type?: 'quick' | 'custom';
   exercises?: unknown[];
   title?: string;
+}
+
+/**
+ * Payload per azione plan_flow (gestito in PrimeChat)
+ */
+export interface PlanFlowPayload {
+  action: string;
 }
 
 /**
@@ -212,7 +224,7 @@ export function startWorkout(payload: StartWorkoutPayload): ActionResult {
 export async function executeAction(
   userId: string,
   actionType: ActionType,
-  payload: SaveWorkoutPayload | AddDiaryPayload | NavigatePayload | StartWorkoutPayload,
+  payload: SaveWorkoutPayload | AddDiaryPayload | NavigatePayload | StartWorkoutPayload | PlanFlowPayload,
   navigate?: (path: string, state?: unknown) => void
 ): Promise<ActionResult> {
   console.log('🎯 executeAction: Esecuzione azione:', { actionType, payload });
@@ -253,6 +265,9 @@ export async function executeAction(
       }
       return workoutResult;
     }
+
+    case 'plan_flow':
+      return { success: true };
 
     default:
       return {

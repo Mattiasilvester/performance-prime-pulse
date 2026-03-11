@@ -59,13 +59,10 @@ export async function createNotification({
 
     console.log('[CREATE NOTIFICATION] Notifica creata con successo:', insertedData?.id);
 
-    // Invia notifica push (non blocca se fallisce)
-    if (insertedData?.id) {
-      sendPushNotificationAsync(professionalId, insertedData.id).catch((pushError) => {
-        console.error('[CREATE NOTIFICATION] Errore invio push (non bloccante):', pushError);
-        // Non bloccare il flusso se push fallisce
-      });
-    }
+    // Push non implementata per app-user (atleti). TODO: riattivare quando push per user_id sarà implementata.
+    // if (insertedData?.id) {
+    //   sendPushNotificationAsync(professionalId, insertedData.id).catch(() => {});
+    // }
   } catch (err: unknown) {
     console.error('[CREATE NOTIFICATION] Errore in createNotification:', err);
     console.error('[CREATE NOTIFICATION] Stack trace:', err instanceof Error ? err.stack : 'N/A');
