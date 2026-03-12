@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchUserPlans } from '@/services/planService';
@@ -14,6 +14,7 @@ type TabKind = 'workout' | 'nutrition';
 export default function IMieiPiani() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabKind>('workout');
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [nutritionPlans, setNutritionPlans] = useState<NutritionPlanRecord[]>([]);
@@ -21,6 +22,7 @@ export default function IMieiPiani() {
   const [loadingNutrition, setLoadingNutrition] = useState(true);
 
   useEffect(() => {
+    if (location.pathname !== '/i-miei-piani') return;
     if (!user?.id) return;
 
     const load = async () => {
@@ -46,7 +48,7 @@ export default function IMieiPiani() {
     };
 
     load();
-  }, [user?.id]);
+  }, [user?.id, location.pathname]);
 
   const totalPlans = workoutPlans.length + nutritionPlans.length;
   const isLoading = loadingWorkout && loadingNutrition;

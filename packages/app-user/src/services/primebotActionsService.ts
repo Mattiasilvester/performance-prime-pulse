@@ -1,5 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { savePlan } from '@/services/planService';
+import type { WorkoutPlan } from '@/types/plan';
 
 /**
  * Tipi di azioni supportate da PrimeBot
@@ -66,48 +68,53 @@ export interface ActionResult {
 }
 
 /**
- * Salva un piano allenamento su custom_workouts
+ * Salva un piano allenamento generato da PrimeBot in workout_plans
+ * (un solo INSERT, visibile in I miei piani)
  */
 export async function saveWorkoutPlan(
   userId: string,
   payload: SaveWorkoutPayload
 ): Promise<ActionResult> {
   try {
-    console.log('💾 saveWorkoutPlan: Salvataggio workout:', payload);
+    console.log('💾 saveWorkoutPlan: Salvataggio piano PrimeBot in workout_plans:', payload);
 
-    const { data, error } = await supabase
-      .from('custom_workouts')
-      .insert({
-        user_id: userId,
-        title: payload.name,
-        workout_type: payload.workout_type || 'personalizzato',
-        scheduled_date: payload.scheduled_date || new Date().toISOString().split('T')[0],
-        exercises: payload.exercises || [],
-        total_duration: payload.duration || null,
-        completed: false,
-      })
-      .select('id, title, workout_type, scheduled_date')
-      .single();
+    const exercises = (payload.exercises || []) as Array<Record<string, unknown>>;
+    const workoutPlanInput: Omit<WorkoutPlan, 'id' | 'created_at'> = {
+      user_id: userId,
+      name: payload.name || 'Piano PrimeBot',
+      goal: (payload.workout_type === 'forza' ? 'Aumentare massa muscolare' : payload.workout_type === 'cardio' ? 'Migliorare resistenza' : payload.workout_type === 'hiit' ? 'Perdere peso' : 'Tonificare'),
+      plan_type: 'daily',
+      source: 'primebot',
+      is_active: true,
+      status: 'pending',
+      workouts: [
+        {
+          name: 'Giorno 1',
+          exercises: exercises.map((ex) => ({
+            name: ex.name ?? 'Esercizio',
+            sets: ex.sets ?? 3,
+            reps: ex.reps ?? '10',
+            rest: ex.rest_seconds ? `${ex.rest_seconds}s` : '60s',
+            notes: ex.notes ?? '',
+            muscle: ex.muscle ?? '',
+          })),
+        },
+      ],
+    };
 
-    if (error) {
-      console.error('❌ Errore salvataggio workout:', error);
-      return {
-        success: false,
-        error: error.message || 'Errore durante il salvataggio del workout',
-      };
-    }
+    const savedPlan = await savePlan(workoutPlanInput);
 
-    console.log('✅ saveWorkoutPlan: Workout salvato con successo:', data);
+    console.log('✅ saveWorkoutPlan: Piano salvato con successo in workout_plans:', savedPlan.id);
     return {
       success: true,
-      message: `Workout "${payload.name}" salvato con successo!`,
-      data,
+      message: `Piano "${payload.name || 'PrimeBot'}" salvato con successo!`,
+      data: { id: savedPlan.id, name: savedPlan.name },
     };
   } catch (error) {
-    console.error('❌ Errore completo salvataggio workout:', error);
+    console.error('❌ Errore salvataggio piano PrimeBot:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Errore sconosciuto',
+      error: error instanceof Error ? error.message : 'Errore durante il salvataggio del piano',
     };
   }
 }

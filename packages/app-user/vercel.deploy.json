@@ -1,7 +1,7 @@
 {
   "framework": null,
   "rewrites": [
-    { "source": "/api/ai-chat", "destination": "/api/ai-chat" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/((?!assets/|api/).*)", "destination": "/index.html" }
   ]
 }

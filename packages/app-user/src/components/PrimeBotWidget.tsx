@@ -268,7 +268,7 @@ export default function PrimeBotWidget() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.96 }}
                 transition={{ duration: 0.3, ease: [0.34, 1.4, 0.64, 1] }}
-                className="absolute bottom-[140px] right-0 w-[288px] bg-[#16161A] border border-[rgba(238,186,43,0.3)] rounded-[20px_20px_4px_20px] p-[18px] shadow-[0_8px_40px_rgba(0,0,0,0.7)]"
+                className="absolute bottom-[72px] right-0 w-[288px] bg-[#16161A] border border-[rgba(238,186,43,0.3)] rounded-[20px_20px_4px_20px] p-[18px] shadow-[0_8px_40px_rgba(0,0,0,0.7)]"
               >
                 {renderBubbleContent(() => setMiniBubbleOpen(false))}
               </motion.div>
@@ -278,18 +278,18 @@ export default function PrimeBotWidget() {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3, ease: [0.34, 1.5, 0.64, 1] }}
-            onClick={() => setMiniBubbleOpen((prev) => !prev)}
-            className="w-[56px] h-[56px] rounded-full bg-[#1a1a2e] border-2 border-[#EEBA2B] flex items-center justify-center cursor-pointer shadow-[0_4px_20px_rgba(238,186,43,0.3)]"
+            onClick={() => setMiniBubbleOpen(prev => !prev)}
+            className="w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
+            style={{ position: 'fixed', bottom: '96px', right: '16px' }}
             whileTap={{ scale: 0.92 }}
-            style={{ filter: 'drop-shadow(0 4px 12px rgba(238,186,43,0.25))' }}
           >
-            <svg width="28" height="28" viewBox="0 0 90 118" fill="none">
-              <rect x="12" y="13" width="66" height="46" rx="22" fill="#1E1E26" stroke="#EEBA2B" strokeWidth="2.2" />
-              <ellipse cx="33" cy="36" rx="7.5" ry="8.5" fill="#EEBA2B" opacity="0.92" />
-              <circle cx="33" cy="36" r="4" fill="#0A0A0C" />
-              <ellipse cx="57" cy="36" rx="7.5" ry="8.5" fill="#EEBA2B" opacity="0.92" />
-              <circle cx="57" cy="36" r="4" fill="#0A0A0C" />
-              <path d="M34 49 Q45 55 56 49" stroke="#EEBA2B" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.8" />
+            <svg width="40" height="40" viewBox="8 8 76 54" fill="none" className="flex-shrink-0">
+              <rect x="12" y="13" width="66" height="46" rx="22" fill="rgba(255,255,255,0.15)" stroke="white" strokeWidth="2.2" />
+              <ellipse cx="33" cy="36" rx="7.5" ry="8.5" fill="white" opacity="0.95" />
+              <circle cx="33" cy="36" r="4" fill="rgba(0,0,0,0.3)" />
+              <ellipse cx="57" cy="36" rx="7.5" ry="8.5" fill="white" opacity="0.95" />
+              <circle cx="57" cy="36" r="4" fill="rgba(0,0,0,0.3)" />
+              <path d="M34 49 Q45 55 56 49" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.9" />
             </svg>
           </motion.button>
         </div>

@@ -12,6 +12,7 @@ import {
 } from '@/services/primebotConversationService';
 import {
   executeAction,
+  saveWorkoutPlan,
   type ActionType,
 } from '@/services/primebotActionsService';
 import { 
@@ -2145,6 +2146,28 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             // NON ha limitazioni O non ha mai risposto prima → mostra piano direttamente senza disclaimer
             console.log('✅ DEBUG - NON ha limitazioni O non ha mai risposto - Mostro piano direttamente');
             console.log('✅ Utente NON ha limitazioni O non ha mai risposto, mostro piano direttamente');
+            const savePayload = {
+              name: planResponse.plan.name,
+              workout_type: planResponse.plan.workout_type,
+              exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
+                name: ex.name,
+                sets: ex.sets,
+                reps: ex.reps,
+                rest_seconds: ex.rest_seconds,
+                notes: ex.notes,
+              })),
+              duration: planResponse.plan.duration_minutes,
+            };
+            if (userId) {
+              saveWorkoutPlan(userId, savePayload).catch(() => {
+                toast.error('Salvataggio piano fallito. Usa "Salva questo piano" per riprovare.');
+              });
+            }
+            const goToMyPlansAction: ParsedAction = {
+              type: 'navigate' as const,
+              label: '📋 Vai a I miei piani',
+              payload: { path: '/i-miei-piani' },
+            };
             const botMessage: Msg = {
               id: crypto.randomUUID(),
               role: 'bot' as const,
@@ -2154,19 +2177,9 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                 {
                   type: 'save_workout',
                   label: 'Salva questo piano',
-                  payload: {
-                    name: planResponse.plan.name,
-                    workout_type: planResponse.plan.workout_type,
-                    exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
-                      name: ex.name,
-                      sets: ex.sets,
-                      reps: ex.reps,
-                      rest_seconds: ex.rest_seconds,
-                      notes: ex.notes,
-                    })),
-                    duration: planResponse.plan.duration_minutes,
-                  },
+                  payload: savePayload,
                 },
+                goToMyPlansAction,
               ],
             };
             setMsgs(m => [...m, botMessage]);
@@ -2538,8 +2551,26 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                 <HealthDisclaimer
                   userId={userId ?? ''}
                   disclaimerType={pendingPlan.planType === 'nutrition' ? 'nutrition_plan' : 'workout_plan'}
-                  onAccept={() => {
+                  onAccept={async () => {
                     setShowPlanDisclaimer(false);
+                    if (pendingPlan.planType === 'workout' && pendingPlan.plan && userId) {
+                      try {
+                        await saveWorkoutPlan(userId, {
+                          name: pendingPlan.plan.name,
+                          workout_type: pendingPlan.plan.workout_type,
+                          exercises: pendingPlan.plan.exercises.map((ex: StructuredExercise) => ({
+                            name: ex.name,
+                            sets: ex.sets,
+                            reps: ex.reps,
+                            rest_seconds: ex.rest_seconds,
+                            notes: ex.notes,
+                          })),
+                          duration: pendingPlan.plan.duration_minutes,
+                        });
+                      } catch {
+                        toast.error('Piano non salvato. Puoi usare "Salva questo piano" per riprovare.');
+                      }
+                    }
                     const goToMyPlansAction: ParsedAction = {
                       type: 'navigate' as const,
                       label: '📋 Vai a I miei piani',
