@@ -2,9 +2,10 @@ import { MessageCircle } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 export default function FeedbackWidget() {
+  return null;
+  // Componente disabilitato: non renderizza nulla anche se importato per errore
   const location = useLocation();
-  
-  // Nascondi il bottone nella pagina timer
+
   if (location.pathname === '/timer') {
     return null;
   }

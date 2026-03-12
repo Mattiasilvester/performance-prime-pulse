@@ -87,7 +87,6 @@ const QuickActions = () => {
           console.error('Errore caricamento piani:', error);
           setSavedPlans([]);
         } else {
-          console.log('Piani caricati:', data);
           setSavedPlans(data);
         }
       } catch (error) {
@@ -169,7 +168,6 @@ const QuickActions = () => {
   };
 
   const handleStartPlan = (plan: SavedPlan) => {
-    console.log('Avvio piano:', plan);
     setShowPlanModal(false);
 
     const exercises = Array.isArray(plan.esercizi) ? plan.esercizi : [];

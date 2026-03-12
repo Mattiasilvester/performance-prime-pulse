@@ -21,9 +21,18 @@ const EXCLUDED_PATHS = [
   '/timer',
 ];
 
+const BUBBLE_ACTIONS = [
+  { action: 'chat' as const, icon: MessageCircle, color: '#EEBA2B', bg: 'rgba(238,186,43,0.1)', label: 'Chatta con me', sub: 'Consigli personalizzati' },
+  { action: 'workout' as const, icon: Dumbbell, color: '#10B981', bg: 'rgba(16,185,129,0.1)', label: 'Inizia il tuo allenamento', sub: 'Piano pronto per oggi' },
+  { action: 'plan' as const, icon: ClipboardList, color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', label: 'Vedi il tuo piano', sub: 'Workout personalizzato' },
+  { action: 'tour' as const, icon: Info, color: '#EEBA2B', bg: 'rgba(238,186,43,0.08)', label: "Fai il tour dell'app", sub: 'Ti guido in 5 step', gold: true },
+];
+
 export default function PrimeBotWidget() {
   const [bubbleOpen, setBubbleOpen] = useState(false);
   const [widgetVisible, setWidgetVisible] = useState(false);
+  const [miniVisible, setMiniVisible] = useState(false);
+  const [miniBubbleOpen, setMiniBubbleOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { startTour } = useTour();
@@ -40,11 +49,19 @@ export default function PrimeBotWidget() {
     }
   }, [widgetVisible]);
 
+  // Mostra mini launcher dopo dismiss
+  useEffect(() => {
+    if (!widgetVisible) {
+      const seen = safeLocalStorage.getItem(STORAGE_KEY);
+      if (seen) setMiniVisible(true);
+    }
+  }, [widgetVisible]);
+
   if (EXCLUDED_PATHS.some((p) => location.pathname === p || location.pathname.startsWith('/auth'))) {
     return null;
   }
 
-  if (!widgetVisible) return null;
+  if (!widgetVisible && !miniVisible) return null;
 
   const handleClose = () => {
     setBubbleOpen(false);
@@ -54,8 +71,10 @@ export default function PrimeBotWidget() {
 
   const handleOption = (action: 'chat' | 'workout' | 'plan' | 'tour') => {
     setBubbleOpen(false);
+    setMiniBubbleOpen(false);
+    safeLocalStorage.setItem(STORAGE_KEY, 'true');
+    setWidgetVisible(false);
     if (action === 'tour') {
-      setWidgetVisible(false);
       setTimeout(() => {
         startTour(() => {
           setWidgetVisible(true);
@@ -65,93 +84,91 @@ export default function PrimeBotWidget() {
       }, 300);
       return;
     }
-    safeLocalStorage.setItem(STORAGE_KEY, 'true');
-    setWidgetVisible(false);
     if (action === 'chat') navigate('/ai-coach');
     if (action === 'workout') navigate('/workouts');
     if (action === 'plan') navigate('/workouts', { state: { openPiano: true } });
   };
 
-  return (
-    <div
-      className="fixed z-[10000]"
-      style={{ bottom: 88, right: 16 }}
-    >
-      <AnimatePresence>
-        {bubbleOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.96 }}
-            transition={{ duration: 0.3, ease: [0.34, 1.4, 0.64, 1] }}
-            className="absolute bottom-[140px] right-0 w-[288px] bg-[#16161A] border border-[rgba(238,186,43,0.3)] rounded-[20px_20px_4px_20px] p-[18px] shadow-[0_8px_40px_rgba(0,0,0,0.7)]"
+  const renderBubbleContent = (onClose: () => void) => (
+    <>
+      <button
+        onClick={onClose}
+        className="absolute top-[10px] right-[10px] w-[22px] h-[22px] rounded-full bg-white/[0.06] border-none cursor-pointer flex items-center justify-center text-[#F0EDE8]/50 hover:bg-white/[0.14] hover:text-[#F0EDE8] transition-all"
+      >
+        <X size={11} />
+      </button>
+      <div className="flex items-center gap-[10px] mb-3 pr-6">
+        <div className="w-[34px] h-[34px] rounded-[10px] bg-[rgba(238,186,43,0.1)] border border-[rgba(238,186,43,0.25)] flex items-center justify-center flex-shrink-0">
+          <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="7" width="20" height="15" rx="6" fill="#1A1A20" stroke="#EEBA2B" strokeWidth="1.2" />
+            <circle cx="10" cy="14" r="2.5" fill="#EEBA2B" />
+            <circle cx="18" cy="14" r="2.5" fill="#EEBA2B" />
+            <circle cx="14" cy="4" r="2" fill="#EEBA2B" />
+            <line x1="14" y1="6" x2="14" y2="8" stroke="#EEBA2B" strokeWidth="1.2" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-[14px] font-bold text-[#F0EDE8]">Ciao! 👋</p>
+          <div className="flex items-center gap-[4px] mt-[1px]">
+            <div className="w-[6px] h-[6px] rounded-full bg-[#10B981] animate-pulse flex-shrink-0" />
+            <span className="text-[11px] text-[#F0EDE8]/40">PrimeBot • Online</span>
+          </div>
+        </div>
+      </div>
+      <p className="text-[13px] text-[#F0EDE8]/65 leading-[1.6] mb-[14px]">
+        Sono il tuo <strong className="text-[#F0EDE8]">AI Coach personale</strong> su Performance Prime. Ho già il tuo piano pronto — cosa vuoi fare adesso?
+      </p>
+      <div className="flex flex-col gap-[7px]">
+        {BUBBLE_ACTIONS.map(({ action, icon: Icon, color, bg, label, sub, gold }) => (
+          <motion.button
+            key={action}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => handleOption(action)}
+            className={`flex items-center gap-[10px] rounded-[10px] p-[10px_12px] border cursor-pointer transition-all text-left w-full ${
+              gold
+                ? 'border-[rgba(238,186,43,0.3)] bg-[rgba(238,186,43,0.06)] hover:bg-[rgba(238,186,43,0.1)]'
+                : 'border-white/[0.07] bg-white/[0.03] hover:border-[rgba(238,186,43,0.3)] hover:bg-[rgba(238,186,43,0.04)]'
+            }`}
           >
-            <button
-              onClick={handleClose}
-              className="absolute top-[10px] right-[10px] w-[22px] h-[22px] rounded-full bg-white/[0.06] border-none cursor-pointer flex items-center justify-center text-[#F0EDE8]/50 hover:bg-white/[0.14] hover:text-[#F0EDE8] transition-all"
+            <div
+              className="w-[28px] h-[28px] rounded-[8px] flex items-center justify-center flex-shrink-0"
+              style={{ background: bg }}
             >
-              <X size={11} />
-            </button>
-
-            <div className="flex items-center gap-[10px] mb-3 pr-6">
-              <div className="w-[34px] h-[34px] rounded-[10px] bg-[rgba(238,186,43,0.1)] border border-[rgba(238,186,43,0.25)] flex items-center justify-center flex-shrink-0">
-                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-                  <rect x="4" y="7" width="20" height="15" rx="6" fill="#1A1A20" stroke="#EEBA2B" strokeWidth="1.2" />
-                  <circle cx="10" cy="14" r="2.5" fill="#EEBA2B" />
-                  <circle cx="18" cy="14" r="2.5" fill="#EEBA2B" />
-                  <circle cx="14" cy="4" r="2" fill="#EEBA2B" />
-                  <line x1="14" y1="6" x2="14" y2="8" stroke="#EEBA2B" strokeWidth="1.2" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-[14px] font-bold text-[#F0EDE8]">Ciao! 👋</p>
-                <div className="flex items-center gap-[4px] mt-[1px]">
-                  <div className="w-[6px] h-[6px] rounded-full bg-[#10B981] animate-pulse flex-shrink-0" />
-                  <span className="text-[11px] text-[#F0EDE8]/40">PrimeBot • Online</span>
-                </div>
-              </div>
+              <Icon size={14} color={color} />
             </div>
-
-            <p className="text-[13px] text-[#F0EDE8]/65 leading-[1.6] mb-[14px]">
-              Sono il tuo <strong className="text-[#F0EDE8]">AI Coach personale</strong> su Performance Prime. Ho già il tuo piano pronto — cosa vuoi fare adesso?
-            </p>
-
-            <div className="flex flex-col gap-[7px]">
-              {[
-                { action: 'chat' as const, icon: MessageCircle, color: '#EEBA2B', bg: 'rgba(238,186,43,0.1)', label: 'Chatta con me', sub: 'Consigli personalizzati' },
-                { action: 'workout' as const, icon: Dumbbell, color: '#10B981', bg: 'rgba(16,185,129,0.1)', label: 'Inizia il tuo allenamento', sub: 'Piano pronto per oggi' },
-                { action: 'plan' as const, icon: ClipboardList, color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', label: 'Vedi il tuo piano', sub: 'Workout personalizzato' },
-                { action: 'tour' as const, icon: Info, color: '#EEBA2B', bg: 'rgba(238,186,43,0.08)', label: "Fai il tour dell'app", sub: 'Ti guido in 5 step', gold: true },
-              ].map(({ action, icon: Icon, color, bg, label, sub, gold }) => (
-                <motion.button
-                  key={action}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => handleOption(action)}
-                  className={`flex items-center gap-[10px] rounded-[10px] p-[10px_12px] border cursor-pointer transition-all text-left w-full ${
-                    gold
-                      ? 'border-[rgba(238,186,43,0.3)] bg-[rgba(238,186,43,0.06)] hover:bg-[rgba(238,186,43,0.1)]'
-                      : 'border-white/[0.07] bg-white/[0.03] hover:border-[rgba(238,186,43,0.3)] hover:bg-[rgba(238,186,43,0.04)]'
-                  }`}
-                >
-                  <div
-                    className="w-[28px] h-[28px] rounded-[8px] flex items-center justify-center flex-shrink-0"
-                    style={{ background: bg }}
-                  >
-                    <Icon size={14} color={color} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-[13px] font-semibold leading-none mb-[3px] ${gold ? 'text-[#EEBA2B]' : 'text-[#F0EDE8]'}`}>{label}</p>
-                    <p className="text-[11px] text-[#F0EDE8]/35">{sub}</p>
-                  </div>
-                  <span className="text-[#F0EDE8]/20 text-[16px]">›</span>
-                </motion.button>
-              ))}
+            <div className="flex-1 min-w-0">
+              <p className={`text-[13px] font-semibold leading-none mb-[3px] ${gold ? 'text-[#EEBA2B]' : 'text-[#F0EDE8]'}`}>{label}</p>
+              <p className="text-[11px] text-[#F0EDE8]/35">{sub}</p>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <span className="text-[#F0EDE8]/20 text-[16px]">›</span>
+          </motion.button>
+        ))}
+      </div>
+    </>
+  );
 
-      <motion.div
+  return (
+    <>
+      {widgetVisible && (
+        <div
+          className="fixed z-[10000]"
+          style={{ bottom: 88, right: 16 }}
+        >
+          <AnimatePresence>
+            {bubbleOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                transition={{ duration: 0.3, ease: [0.34, 1.4, 0.64, 1] }}
+                className="absolute bottom-[140px] right-0 w-[288px] bg-[#16161A] border border-[rgba(238,186,43,0.3)] rounded-[20px_20px_4px_20px] p-[18px] shadow-[0_8px_40px_rgba(0,0,0,0.7)]"
+              >
+                {renderBubbleContent(handleClose)}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.65, ease: [0.34, 1.5, 0.64, 1], delay: 0.1 }}
@@ -238,7 +255,45 @@ export default function PrimeBotWidget() {
           <rect x="51" y="102" width="18" height="12" rx="6" fill="#1E1E26" stroke="#EEBA2B" strokeWidth="2" />
           <rect x="47" y="111" width="26" height="8" rx="4" fill="#EEBA2B" opacity="0.9" />
         </motion.svg>
-      </motion.div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+
+      {miniVisible && (
+        <div className="fixed z-[10000]" style={{ bottom: 88, right: 16 }}>
+          <AnimatePresence>
+            {miniBubbleOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                transition={{ duration: 0.3, ease: [0.34, 1.4, 0.64, 1] }}
+                className="absolute bottom-[140px] right-0 w-[288px] bg-[#16161A] border border-[rgba(238,186,43,0.3)] rounded-[20px_20px_4px_20px] p-[18px] shadow-[0_8px_40px_rgba(0,0,0,0.7)]"
+              >
+                {renderBubbleContent(() => setMiniBubbleOpen(false))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3, ease: [0.34, 1.5, 0.64, 1] }}
+            onClick={() => setMiniBubbleOpen((prev) => !prev)}
+            className="w-[56px] h-[56px] rounded-full bg-[#1a1a2e] border-2 border-[#EEBA2B] flex items-center justify-center cursor-pointer shadow-[0_4px_20px_rgba(238,186,43,0.3)]"
+            whileTap={{ scale: 0.92 }}
+            style={{ filter: 'drop-shadow(0 4px 12px rgba(238,186,43,0.25))' }}
+          >
+            <svg width="28" height="28" viewBox="0 0 90 118" fill="none">
+              <rect x="12" y="13" width="66" height="46" rx="22" fill="#1E1E26" stroke="#EEBA2B" strokeWidth="2.2" />
+              <ellipse cx="33" cy="36" rx="7.5" ry="8.5" fill="#EEBA2B" opacity="0.92" />
+              <circle cx="33" cy="36" r="4" fill="#0A0A0C" />
+              <ellipse cx="57" cy="36" rx="7.5" ry="8.5" fill="#EEBA2B" opacity="0.92" />
+              <circle cx="57" cy="36" r="4" fill="#0A0A0C" />
+              <path d="M34 49 Q45 55 56 49" stroke="#EEBA2B" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.8" />
+            </svg>
+          </motion.button>
+        </div>
+      )}
+    </>
   );
 }
