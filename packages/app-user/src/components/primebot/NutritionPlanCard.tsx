@@ -8,6 +8,7 @@ import {
 import type { StructuredNutritionPlan } from '@/types/nutritionPlan';
 import { downloadNutritionPlanPDF } from '@/utils/pdfExport';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export interface NutritionPlanCardProps {
   plan: StructuredNutritionPlan;
@@ -34,16 +35,21 @@ export function NutritionPlanCard({
     setIsDeleting(true);
     try {
       if (planId && userId) {
-        await supabase
+        const { error } = await supabase
           .from('nutrition_plans')
           .delete()
           .eq('id', planId)
           .eq('user_id', userId);
+        if (error) {
+          console.error('NutritionPlanCard delete error:', error);
+          toast.error('Impossibile eliminare il piano. Riprova.');
+          return;
+        }
       }
       onDelete?.();
-    } catch {
-      // ignore; onDelete still removes card from chat
-      onDelete?.();
+    } catch (err) {
+      console.error('NutritionPlanCard delete error:', err);
+      toast.error('Impossibile eliminare il piano. Riprova.');
     } finally {
       setIsDeleting(false);
     }

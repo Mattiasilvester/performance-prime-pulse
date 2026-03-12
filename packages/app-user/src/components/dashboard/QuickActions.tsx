@@ -189,8 +189,7 @@ const QuickActions = () => {
   };
 
   const handlePlanCardClick = async () => {
-    // Naviga sempre alla pagina piani attivi
-    navigate('/piani-attivi');
+    navigate('/i-miei-piani');
   };
 
   const planCountLabel =
@@ -259,7 +258,7 @@ const QuickActions = () => {
           <Target className="w-5 h-5 shrink-0" style={{ color: iconColor }} />
         </div>
         <div className="text-center w-full min-w-0">
-          <p className="text-[9px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px] truncate w-full">Piano Personalizzato</p>
+          <p className="text-[9px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px] truncate w-full">I miei piani</p>
           <p className="text-[9px] text-[#8A8A96]/80 mt-0.5 truncate w-full">{planCountLabel}</p>
         </div>
       </Button>

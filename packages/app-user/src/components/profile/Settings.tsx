@@ -1,4 +1,4 @@
-import { Bell, Lock, Globe, HelpCircle, User, Shield, ChevronRight } from 'lucide-react';
+import { Bell, Lock, Globe, HelpCircle, User, Shield, ChevronRight, ClipboardList } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -9,6 +9,7 @@ const settingsItems = [
   { icon: Globe, label: 'Lingua e regione', action: '/settings/language' },
   { icon: Shield, label: 'Privacy', action: '/settings/privacy' },
   { icon: HelpCircle, label: 'Centro assistenza', action: '/settings/help' },
+  { icon: ClipboardList, label: 'I miei piani', action: '/i-miei-piani' },
 ];
 
 export const Settings = () => {

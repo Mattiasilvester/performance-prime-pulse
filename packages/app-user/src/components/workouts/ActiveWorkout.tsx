@@ -11,42 +11,7 @@ import { trackWorkoutForChallenge } from '@/utils/challengeTracking';
 import { updateWorkoutStats } from '@/services/workoutStatsService';
 import { completeWorkout as saveWorkoutToDiary } from '@/services/diaryService';
 import { toast } from 'sonner';
-
-// Helper function per convertire stringhe tempo in numeri
-const parseTimeToSeconds = (timeStr: string | undefined | number): number => {
-  if (typeof timeStr === 'number') {
-    return timeStr;
-  }
-  
-  if (!timeStr || typeof timeStr !== 'string') {
-    return 30; // default se undefined o non stringa
-  }
-  
-  const str = timeStr.toString().toLowerCase().trim();
-  let totalSeconds = 0;
-  
-  // Match minuti e secondi
-  const minutesMatch = str.match(/(\d+)\s*m/);
-  const secondsMatch = str.match(/(\d+)\s*s/);
-  
-  if (minutesMatch) {
-    totalSeconds += parseInt(minutesMatch[1]) * 60;
-  }
-  
-  if (secondsMatch) {
-    totalSeconds += parseInt(secondsMatch[1]);
-  }
-  
-  // Se non trova né minuti né secondi, prova a parsare come numero
-  if (totalSeconds === 0) {
-    const numberMatch = str.match(/(\d+)/);
-    if (numberMatch) {
-      totalSeconds = parseInt(numberMatch[1]);
-    }
-  }
-  
-  return totalSeconds || 30; // Default 30 secondi
-};
+import { parseTimeToSeconds, parseRestTime } from '@/utils/workoutUtils';
 
 // Helper function per convertire secondi in formato MM:SS
 const formatTime = (seconds: number): string => {
@@ -812,28 +777,6 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
   const isTimed = isTimedExercise(currentExercise);
   console.log('Esercizio corrente:', currentExercise?.name);
   console.log('È esercizio a tempo?', isTimed);
-
-  const parseRestTime = (rest: string | number | undefined): number => {
-    if (rest === undefined || rest === null) return 60;
-    if (typeof rest === 'number') return rest;
-    const restLower = rest.toLowerCase().trim();
-    if (restLower.includes('s') || restLower.includes('sec')) {
-      const match = restLower.match(/(\d+)/);
-      return match ? parseInt(match[1]) : 60;
-    }
-    if (restLower.includes('min')) {
-      const match = restLower.match(/(\d+\.?\d*)/);
-      if (match) {
-        const minutes = parseFloat(match[1]);
-        return Math.round(minutes * 60);
-      }
-    }
-    const numMatch = restLower.match(/^(\d+)$/);
-    if (numMatch) {
-      return parseInt(numMatch[1]);
-    }
-    return 60;
-  };
 
   const playRestStartSound = () => {
     playBeep(750, 220);

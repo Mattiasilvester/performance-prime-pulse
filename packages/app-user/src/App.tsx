@@ -51,6 +51,9 @@ const Help = lazy(() => import('@/pages/settings/Help'))
 const PlansPage = lazy(() => import('@/pages/piani/PlansPage'))
 const PlanCreationPage = lazy(() => import('@/pages/piani/PlanCreationPage'))
 const ActivePlansPage = lazy(() => import('@/pages/piani/ActivePlansPage').then(m => ({ default: m.ActivePlansPage })))
+const IMieiPiani = lazy(() => import('@/pages/IMieiPiani'))
+const EsecuzioneWorkout = lazy(() => import('@/pages/EsecuzioneWorkout'))
+const DietaDelGiorno = lazy(() => import('@/pages/DietaDelGiorno'))
 
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
@@ -278,6 +281,36 @@ function App() {
                       <Header />
                       <div className="min-h-screen pt-24 pb-20">
                         <Suspense fallback={<PageSkeleton />}><ActivePlansPage /></Suspense>
+                      </div>
+                      <BottomNavigation />
+                      <ConditionalFeedbackWidget />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/i-miei-piani" element={
+                    <ProtectedRoute session={session}>
+                      <Header />
+                      <div className="min-h-screen pt-24 pb-20">
+                        <Suspense fallback={<PageSkeleton />}><IMieiPiani /></Suspense>
+                      </div>
+                      <BottomNavigation />
+                      <ConditionalFeedbackWidget />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/esecuzione-workout" element={
+                    <ProtectedRoute session={session}>
+                      <Header />
+                      <div className="min-h-screen pt-24 pb-20">
+                        <Suspense fallback={<PageSkeleton />}><EsecuzioneWorkout /></Suspense>
+                      </div>
+                      <BottomNavigation />
+                      <ConditionalFeedbackWidget />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dieta-del-giorno" element={
+                    <ProtectedRoute session={session}>
+                      <Header />
+                      <div className="min-h-screen pt-24 pb-20">
+                        <Suspense fallback={<PageSkeleton />}><DietaDelGiorno /></Suspense>
                       </div>
                       <BottomNavigation />
                       <ConditionalFeedbackWidget />

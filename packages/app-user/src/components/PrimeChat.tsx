@@ -57,6 +57,7 @@ type Msg = {
   actions?: ParsedAction[];
   workoutPlan?: StructuredWorkoutPlan;
   nutritionPlan?: StructuredNutritionPlan;
+  nutritionPlanId?: string;
 };
 
 interface PrimeChatProps {
@@ -217,6 +218,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   interface PendingPlanResponse {
     plan?: StructuredWorkoutPlan;
     nutritionPlan?: StructuredNutritionPlan;
+    nutritionPlanId?: string;
     planType: 'workout' | 'nutrition';
     hasExistingLimitations?: boolean;
     hasAnsweredBefore?: boolean;
@@ -278,6 +280,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [waitingForNutritionLimitationsConfirm, setWaitingForNutritionLimitationsConfirm] = useState(false);
   const [waitingForWorkoutLimitationsUpdate, setWaitingForWorkoutLimitationsUpdate] = useState(false);
   const [waitingForNutritionLimitationsUpdate, setWaitingForNutritionLimitationsUpdate] = useState(false);
+  const [waitingForNutritionDuration, setWaitingForNutritionDuration] = useState(false);
   const [savedPlanRequest, setSavedPlanRequest] = useState<string | null>(null);
 
   // Helper function to add bot message
@@ -460,7 +463,26 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     setWaitingForNutritionLimitationsConfirm(false);
     setWaitingForWorkoutLimitationsUpdate(false);
     setWaitingForNutritionLimitationsUpdate(false);
+    setWaitingForNutritionDuration(false);
     setSavedPlanRequest(null);
+  }
+
+  function showNutritionDurationButtons() {
+    setMsgs(prev => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: 'bot' as const,
+        text: 'Perfetto! Quanti giorni vuoi che duri il tuo piano nutrizionale?',
+        actions: [
+          { type: 'plan_flow' as ActionType, label: '3 giorni', payload: { action: 'nutrition_duration', days: 3 } },
+          { type: 'plan_flow' as ActionType, label: '1 settimana', payload: { action: 'nutrition_duration', days: 7 } },
+          { type: 'plan_flow' as ActionType, label: '2 settimane', payload: { action: 'nutrition_duration', days: 14 } },
+          { type: 'plan_flow' as ActionType, label: '1 mese', payload: { action: 'nutrition_duration', days: 30 } },
+        ],
+      },
+    ]);
+    setWaitingForNutritionDuration(true);
   }
 
   async function startWorkoutPlanFlow(originalRequest: string) {
@@ -516,6 +538,12 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   }
 
   async function handlePlanFlowAction(payload: Record<string, unknown>) {
+    if (payload.action === 'nutrition_duration') {
+      const days = typeof payload.days === 'number' ? payload.days : 7;
+      setWaitingForNutritionDuration(false);
+      await generateNutritionPlanFromChat(savedPlanRequest || '', days);
+      return;
+    }
     const action = payload.action as string;
     switch (action) {
       case 'choose_workout':
@@ -541,8 +569,8 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         break;
       case 'proceed_nutrition':
         setWaitingForNutritionLimitationsConfirm(false);
-        await generateNutritionPlanFromChat('Crea il piano con le allergie già salvate');
-        break;
+        showNutritionDurationButtons();
+        return;
       case 'update_nutrition_limitations':
         setWaitingForNutritionLimitationsConfirm(false);
         setWaitingForNutritionLimitationsUpdate(true);
@@ -591,7 +619,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     }
   }
 
-  async function generateNutritionPlanFromChat(request: string) {
+  async function generateNutritionPlanFromChat(request: string, durationDays: number = 7) {
     setLoading(true);
     const loadingMsgId = crypto.randomUUID();
     setMsgs(prev => [...prev, {
@@ -604,7 +632,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
       const allergie = uid && !uid.startsWith('guest-') ? await getAllergies(uid) : [];
       const userCtx = uid ? await getUserContext(uid) : null;
       const contextStr = userCtx ? formatUserContextForPrompt(userCtx) : undefined;
-      const result = await getStructuredNutritionPlan(request, uid, allergie, contextStr, sessionId ?? undefined);
+      const result = await getStructuredNutritionPlan(request, uid, allergie, contextStr, sessionId ?? undefined, durationDays);
       if (result.limitReached) {
         setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'bot' as const, text: result.message }]);
         return;
@@ -612,6 +640,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
       if (result.plan) {
         setPendingPlan({
           nutritionPlan: result.plan,
+          nutritionPlanId: result.planId,
           planType: 'nutrition',
           hasLimitations: allergie.length > 0,
         });
@@ -1383,7 +1412,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         const nuoveAllergie = parseAllergiesFromText(trimmed);
         if (nuoveAllergie.length > 0) await updateAllergies(userId, nuoveAllergie);
       }
-      await generateNutritionPlanFromChat(savedPlanRequest || trimmed);
+      showNutritionDurationButtons();
       return;
     }
 
@@ -1414,7 +1443,24 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         await updateAllergies(userId, nuoveAllergie);
         addBotMessage(`Ho aggiornato le tue allergie: **${nuoveAllergie.join(', ')}**. Ora genero il piano... 🥗`);
       }
-      await generateNutritionPlanFromChat(trimmed);
+      showNutritionDurationButtons();
+      return;
+    }
+
+    // ── FLUSSO PIANO: attesa scelta durata nutrition ──────────────
+    if (waitingForNutritionDuration && trimmed) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      const lower = trimmed.toLowerCase();
+      let days = 7;
+      if (lower.includes('3') || lower.includes('tre')) days = 3;
+      else if (lower.includes('14') || lower.includes('due settimane')) days = 14;
+      else if (lower.includes('30') || lower.includes('mese')) days = 30;
+      setWaitingForNutritionDuration(false);
+      await generateNutritionPlanFromChat(savedPlanRequest || trimmed, days);
       return;
     }
     
@@ -2442,7 +2488,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                   {m.role === 'bot' && m.nutritionPlan && (
                     <NutritionPlanCard
                       plan={m.nutritionPlan}
-                      planId={undefined}
+                      planId={m.nutritionPlanId}
                       userId={userId}
                       onDelete={() => setMsgs((prev) => prev.filter((msg) => msg.id !== m.id))}
                     />
@@ -2494,19 +2540,26 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                   disclaimerType={pendingPlan.planType === 'nutrition' ? 'nutrition_plan' : 'workout_plan'}
                   onAccept={() => {
                     setShowPlanDisclaimer(false);
+                    const goToMyPlansAction: ParsedAction = {
+                      type: 'navigate' as const,
+                      label: '📋 Vai a I miei piani',
+                      payload: { path: '/i-miei-piani' },
+                    };
                     const botMessage: Msg = pendingPlan.planType === 'nutrition' && pendingPlan.nutritionPlan
                       ? {
                           id: crypto.randomUUID(),
                           role: 'bot' as const,
                           text: 'Ecco il tuo piano alimentare personalizzato! 🥗',
                           nutritionPlan: pendingPlan.nutritionPlan,
+                          nutritionPlanId: pendingPlan.nutritionPlanId,
+                          actions: [goToMyPlansAction],
                         }
                       : {
                           id: crypto.randomUUID(),
                           role: 'bot' as const,
                           text: 'Ecco il tuo piano di allenamento personalizzato! 💪',
                           workoutPlan: pendingPlan.plan,
-                          actions: pendingPlan.actions,
+                          actions: [...(pendingPlan.actions ?? []), goToMyPlansAction],
                         };
                     setMsgs(m => [...m, botMessage]);
                     setPendingPlan(null);

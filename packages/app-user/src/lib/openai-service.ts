@@ -1078,9 +1078,11 @@ export async function getStructuredNutritionPlan(
   userId: string,
   allergie: string[],
   userContext?: string,
-  sessionId?: string
+  sessionId?: string,
+  durationDays: number = 7
 ): Promise<{
   plan?: StructuredNutritionPlan;
+  planId?: string;
   message: string;
   limitReached?: boolean;
 }> {
@@ -1105,7 +1107,7 @@ ${allergieSection}
 ${contextSection}
 
 ISTRUZIONI:
-- Genera un piano alimentare di 3 giorni rappresentativi (Giorno 1, Giorno 2, Giorno 3) a meno che l'utente non specifichi esplicitamente il numero di giorni.
+- Crea un piano nutrizionale da ${durationDays} giorni. L'array "giorni" nel JSON deve contenere esattamente ${durationDays} elementi (Giorno 1, Giorno 2, ...).
 - Mantieni ogni giorno CONCISO: massimo 4 pasti per giorno, massimo 4 alimenti per pasto.
 - Non aggiungere testo extra fuori dal JSON.
 - Ogni giorno può avere: Colazione, Spuntino (opzionale), Pranzo, Cena.
@@ -1159,6 +1161,11 @@ FORMATO RISPOSTA — rispondi SOLO con JSON valido, nessun testo prima o dopo:
   "note_finali": "Consulta un nutrizionista..."
 }`;
 
+  const maxTokens = durationDays <= 3 ? 4000
+    : durationDays <= 7 ? 6000
+    : durationDays <= 14 ? 10000
+    : 16000;
+
   try {
     const response = await fetch('/api/ai-chat', {
       method: 'POST',
@@ -1169,7 +1176,7 @@ FORMATO RISPOSTA — rispondi SOLO con JSON valido, nessun testo prima o dopo:
           { role: 'user', content: request },
         ],
         model: 'gpt-4o-mini',
-        max_tokens: 6000,
+        max_tokens: maxTokens,
       }),
     });
 
@@ -1193,16 +1200,25 @@ FORMATO RISPOSTA — rispondi SOLO con JSON valido, nessun testo prima o dopo:
 
     const plan = JSON.parse(jsonMatch[0]) as StructuredNutritionPlan;
 
-    await supabase.from('nutrition_plans').insert({
-      user_id: userId,
-      name: plan.nome,
-      description: plan.descrizione ?? null,
-      goal: plan.obiettivo ?? null,
-      calorie_giornaliere: plan.calorie_giornaliere ?? null,
-      allergie_considerate: plan.allergie_considerate ?? [],
-      contenuto: plan as unknown as Json,
-      note: plan.note_finali ?? null,
-    });
+    const { data: insertData, error: insertError } = await supabase
+      .from('nutrition_plans')
+      .insert({
+        user_id: userId,
+        name: plan.nome,
+        description: plan.descrizione ?? null,
+        goal: plan.obiettivo ?? null,
+        calorie_giornaliere: plan.calorie_giornaliere ?? null,
+        allergie_considerate: plan.allergie_considerate ?? [],
+        contenuto: plan as unknown as Json,
+        note: plan.note_finali ?? null,
+      })
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.error('getStructuredNutritionPlan insert error:', insertError);
+    }
+    const savedPlanId = insertData?.id as string | undefined;
 
     const cost = calculateCost(
       successData.usage?.prompt_tokens || 0,
@@ -1221,6 +1237,7 @@ FORMATO RISPOSTA — rispondi SOLO con JSON valido, nessun testo prima o dopo:
 
     return {
       plan,
+      planId: savedPlanId,
       message: 'Ho creato il tuo piano alimentare! 🥗',
     };
   } catch (error) {
