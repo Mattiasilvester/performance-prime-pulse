@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps -- searchParams/setStep intenzionalmente omessi per evitare loop */
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { trackOnboarding } from '@/services/analytics';
@@ -42,8 +42,9 @@ const StepFallback = () => (
 
 export function OnboardingPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const isEditMode = searchParams.get('mode') === 'edit';
   const { 
     currentStep, 
@@ -124,9 +125,16 @@ export function OnboardingPage() {
     }
   }, [isEditMode, currentStep, setStep]);
 
-  // ✅ Google OAuth: utente già autenticato che arriva a step=0 (da AuthCallback) → schermata benvenuto Google o step 1
+  // ✅ Google OAuth: intent da location.state (AuthCallback) o fallback user+loading (refresh su step=0)
   useEffect(() => {
-    if (user && currentStep === 0 && !isEditMode) {
+    if (currentStep !== 0 || isEditMode) return;
+
+    if (location.state?.fromGoogleAuth === true) {
+      setShowGoogleWelcome(true);
+      return;
+    }
+
+    if (!loading && user) {
       const isGoogleUser =
         user.app_metadata?.provider === 'google' ||
         user.identities?.some((id: { provider?: string }) => id.provider === 'google');
@@ -136,8 +144,8 @@ export function OnboardingPage() {
         setStep(1);
       }
     }
-  }, [user, currentStep, isEditMode, setStep]);
-  
+  }, [location.state, currentStep, isEditMode, loading, user, setStep]);
+
   // PRIMA: Leggi step dalla query string e imposta nello store (priorità alta)
   // ✅ FIX CRITICO: Questo useEffect deve reagire SOLO ai cambiamenti dell'URL, NON ai cambiamenti dello store
   // Rimuoviamo currentStep dalle dipendenze per evitare loop infinito
@@ -383,6 +391,7 @@ export function OnboardingPage() {
           onContinue={() => {
             setShowGoogleWelcome(false);
             setStep(1);
+            navigate('/onboarding?step=1', { replace: true, state: {} });
           }}
         />
       </Suspense>

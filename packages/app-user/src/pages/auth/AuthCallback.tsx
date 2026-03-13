@@ -51,7 +51,13 @@ export default function AuthCallback() {
         subscription.unsubscribe()
 
         if (!onboardingData) {
-          navigate('/onboarding?step=0', { replace: true })
+          const isGoogleUser =
+            session.user.app_metadata?.provider === 'google' ||
+            session.user.identities?.some((id: { provider?: string }) => id.provider === 'google');
+          navigate('/onboarding?step=0', {
+            replace: true,
+            state: { fromGoogleAuth: !!isGoogleUser },
+          });
         } else {
           navigate('/dashboard', { replace: true })
         }
