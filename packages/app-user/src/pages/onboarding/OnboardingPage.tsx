@@ -63,6 +63,11 @@ export function OnboardingPage() {
   const step3Ref = useRef<Step3PreferencesHandle>(null);
   const step4Ref = useRef<Step4PersonalizationHandle>(null);
   const step5Ref = useRef<Step5HealthLimitationsHandle>(null);
+
+  // Cattura fromGoogleAuth al mount — location.state può cambiare dopo
+  const fromGoogleAuthRef = useRef<boolean>(
+    location.state?.fromGoogleAuth === true
+  );
   
   // ✅ FIX CRITICO: Ref per prevenire loop infinito in sync URL
   const urlSyncInProgress = useRef(false);
@@ -125,16 +130,19 @@ export function OnboardingPage() {
     }
   }, [isEditMode, currentStep, setStep]);
 
-  // ✅ Google OAuth: intent da location.state (AuthCallback) o fallback user+loading (refresh su step=0)
+  // ✅ Google OAuth: fromGoogleAuthRef (catturato al mount) o fallback user (refresh su step=0)
   useEffect(() => {
-    if (currentStep !== 0 || isEditMode) return;
+    if (isEditMode) return;
+    if (loading) return; // aspetta che auth sia risolta
 
-    if (location.state?.fromGoogleAuth === true) {
+    if (fromGoogleAuthRef.current) {
+      if (currentStep !== 0) setStep(0);
       setShowGoogleWelcome(true);
       return;
     }
 
-    if (!loading && user) {
+    // Fallback: refresh su /onboarding step=0 con utente Google già in sessione
+    if (currentStep === 0 && user) {
       const isGoogleUser =
         user.app_metadata?.provider === 'google' ||
         user.identities?.some((id: { provider?: string }) => id.provider === 'google');
@@ -144,7 +152,7 @@ export function OnboardingPage() {
         setStep(1);
       }
     }
-  }, [location.state, currentStep, isEditMode, loading, user, setStep]);
+  }, [loading, isEditMode, currentStep, user, setStep]);
 
   // PRIMA: Leggi step dalla query string e imposta nello store (priorità alta)
   // ✅ FIX CRITICO: Questo useEffect deve reagire SOLO ai cambiamenti dell'URL, NON ai cambiamenti dello store
@@ -389,6 +397,7 @@ export function OnboardingPage() {
         <GoogleWelcomeScreen
           userName={userName}
           onContinue={() => {
+            fromGoogleAuthRef.current = false;
             setShowGoogleWelcome(false);
             setStep(1);
             navigate('/onboarding?step=1', { replace: true, state: {} });
