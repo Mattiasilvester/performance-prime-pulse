@@ -252,9 +252,10 @@ const renderFormattedMessage = (text: string) => {
     // Match # ## ### (e oltre): #+ seguito da spazi opzionali e contenuto
     const h3Match = /^#+\s*(.+)$/.exec(trimmed);
     if (h3Match) {
+      const headingText = h3Match[1].trim().replace(/\*\*/g, '').replace(/\*/g, '');
       return (
         <h3 key={lineIndex} style={headingStyle}>
-          {h3Match[1].trim()}
+          {headingText}
         </h3>
       );
     }
