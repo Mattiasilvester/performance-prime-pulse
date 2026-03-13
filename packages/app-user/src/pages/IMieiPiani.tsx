@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { fetchUserPlans } from '@/services/planService';
 import { fetchUserNutritionPlans } from '@/services/nutritionPlanService';
 import type { WorkoutPlan } from '@/types/plan';
@@ -13,6 +14,7 @@ type TabKind = 'workout' | 'nutrition';
 
 export default function IMieiPiani() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabKind>('workout');
@@ -55,12 +57,20 @@ export default function IMieiPiani() {
 
   const handleWorkoutDelete = (id: string) => {
     setWorkoutPlans((prev) => prev.filter((p) => p.id !== id));
+    toast({
+      title: 'Piano eliminato',
+      description: 'Il piano di allenamento è stato rimosso.',
+    });
   };
   const handleWorkoutUpdate = (updated: WorkoutPlan) => {
     setWorkoutPlans((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
   };
   const handleNutritionDelete = (id: string) => {
     setNutritionPlans((prev) => prev.filter((p) => p.id !== id));
+    toast({
+      title: 'Piano eliminato',
+      description: 'Il piano nutrizionale è stato rimosso.',
+    });
   };
   const handleNutritionUpdate = (updated: NutritionPlanRecord) => {
     setNutritionPlans((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));

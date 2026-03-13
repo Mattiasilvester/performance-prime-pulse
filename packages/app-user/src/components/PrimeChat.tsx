@@ -65,29 +65,56 @@ interface PrimeChatProps {
   isModal?: boolean;
 }
 
+/** Frasi che escludono la classificazione come richiesta di piano (domande/negazioni) */
+const PLAN_REQUEST_EXCLUSIONS = [
+  'non ',
+  ' non',
+  'senza ',
+  ' cos\'è',
+  'cos\'è ',
+  'cos\'è',
+  ' cosa è',
+  'cosa è ',
+  ' che cos\'è',
+  'che cos\'è ',
+  'come funziona',
+  'mi spieghi',
+  'spiegami',
+  'informazioni su',
+];
+
+function containsPlanExclusion(text: string): boolean {
+  const lower = text.toLowerCase();
+  return PLAN_REQUEST_EXCLUSIONS.some((ex) => lower.includes(ex));
+}
+
 /**
  * Rileva se la richiesta è per un piano di allenamento
  */
 function isWorkoutPlanRequest(text: string): boolean {
+  if (containsPlanExclusion(text)) return false;
   const keywords = [
     'piano',
     'programma',
     'scheda',
     'allenamento per',
     'creami',
+    'crearmi',
     'fammi',
     'genera',
     'crea un piano',
+    'crei un piano',
     'fammi un piano',
     'mi serve un piano',
     'voglio un piano',
+    'allenarmi',
   ];
-  
   const textLower = text.toLowerCase();
-  return keywords.some(keyword => textLower.includes(keyword));
+  return keywords.some((keyword) => textLower.includes(keyword));
 }
 
 function isWorkoutPlanRequestExplicit(text: string): boolean {
+  if (containsPlanExclusion(text)) return false;
   const keywords = [
     'piano di allenamento',
     'piano allenamento',
@@ -99,11 +126,29 @@ function isWorkoutPlanRequestExplicit(text: string): boolean {
     'piano fitness',
     'piano sportivo',
     'piano di fitness',
+    'mi crei un piano',
+    'crea un piano',
+    'fammi un piano',
+    'fammi un programma',
+    'voglio allenarmi',
+    'voglio iniziare ad allenarmi',
+    'puoi crearmi',
+    'ho bisogno di un piano',
+    'ho bisogno di una scheda',
+    'programma di allenamento',
+    'piano per allenarmi',
+    'voglio un piano',
+    'costruisci un piano',
+    'preparami un piano',
+    'dammi un piano',
+    'dammi un programma',
+    'una scheda',
   ];
-  return keywords.some(k => text.toLowerCase().includes(k));
+  return keywords.some((k) => text.toLowerCase().includes(k));
 }
 
 function isNutritionPlanRequest(text: string): boolean {
+  if (containsPlanExclusion(text)) return false;
   const keywords = [
     'piano alimentare',
     'piano nutrizionale',
@@ -115,8 +160,16 @@ function isNutritionPlanRequest(text: string): boolean {
     'piano pasti',
     'dieta personalizzata',
     'schema alimentare',
+    'mi crei un piano alimentare',
+    'crea un piano alimentare',
+    'fammi un piano alimentare',
+    'cosa devo mangiare',
+    'come devo mangiare',
+    'voglio una dieta',
+    'fammi una dieta',
+    'ho bisogno di una dieta',
   ];
-  return keywords.some(k => text.toLowerCase().includes(k));
+  return keywords.some((k) => text.toLowerCase().includes(k));
 }
 
 function isGenericPlanRequest(text: string): boolean {
@@ -2528,7 +2581,11 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                               (path: string, state?: unknown) => navigate(path, { state })
                             );
                             if (result.success) {
-                              toast.success(result.message || 'Azione completata con successo!');
+                              if (action.type === 'navigate' && action.payload?.path === '/i-miei-piani') {
+                                toast.success('I miei piani', { description: 'Apertura dei tuoi piani...' });
+                              } else {
+                                toast.success(result.message || 'Azione completata con successo!');
+                              }
                             } else {
                               throw new Error(result.error || 'Errore durante l\'esecuzione');
                             }
