@@ -51,13 +51,15 @@ export default function AuthCallback() {
         subscription.unsubscribe()
 
         if (!onboardingData) {
-          const isGoogleUser =
+          const isGoogleUser = !!(
             session.user.app_metadata?.provider === 'google' ||
-            session.user.identities?.some((id: { provider?: string }) => id.provider === 'google');
-          navigate('/onboarding?step=0', {
-            replace: true,
-            state: { fromGoogleAuth: !!isGoogleUser },
-          });
+            session.user.identities?.some((id: { provider?: string }) => id.provider === 'google')
+          );
+          if (isGoogleUser) {
+            navigate('/onboarding/google-welcome', { replace: true });
+          } else {
+            navigate('/onboarding?step=0', { replace: true });
+          }
         } else {
           navigate('/dashboard', { replace: true })
         }

@@ -19,6 +19,7 @@ import { PageSkeleton } from '@/components/ui/PageSkeleton'
 
 import { NewLandingPage } from '@/pages/landing/NewLandingPage'
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage'
+import GoogleWelcomePage from '@/pages/onboarding/GoogleWelcomePage'
 import LoginPage from '@/pages/auth/LoginPage'
 import AuthCallback from '@/pages/auth/AuthCallback'
 import ResetPassword from '@/pages/ResetPassword'
@@ -138,6 +139,7 @@ function App() {
                   <Routes>
                   <Route path="/" element={<NewLandingPage />} />
                   <Route path="/onboarding" element={<OnboardingPage />} />
+                  <Route path="/onboarding/google-welcome" element={<GoogleWelcomePage />} />
                   <Route path="/auth/login" element={session ? <Navigate to="/dashboard" /> : <LoginPage />} />
                   <Route path="/auth" element={<LoginPage />} />
                   <Route path="/auth/register" element={

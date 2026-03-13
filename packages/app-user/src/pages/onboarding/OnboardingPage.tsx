@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps -- searchParams/setStep intenzionalmente omessi per evitare loop */
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { trackOnboarding } from '@/services/analytics';
@@ -30,9 +30,6 @@ const Step5HealthLimitations = lazy(() => import('./steps/Step5HealthLimitations
 const CompletionScreen = lazy(() =>
   import('./steps/CompletionScreen').then((mod) => ({ default: mod.CompletionScreen }))
 );
-const GoogleWelcomeScreen = lazy(() =>
-  import('./steps/GoogleWelcomeScreen').then((mod) => ({ default: mod.GoogleWelcomeScreen }))
-);
 
 const StepFallback = () => (
   <div className="flex h-64 items-center justify-center text-gray-400">
@@ -42,9 +39,8 @@ const StepFallback = () => (
 
 export function OnboardingPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const isEditMode = searchParams.get('mode') === 'edit';
   const { 
     currentStep, 
@@ -58,16 +54,10 @@ export function OnboardingPage() {
 
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const [direction, setDirection] = useState(1); // 1 = avanti, -1 = indietro (per slide)
-  const [showGoogleWelcome, setShowGoogleWelcome] = useState(false);
   const step2Ref = useRef<Step2ExperienceHandle>(null);
   const step3Ref = useRef<Step3PreferencesHandle>(null);
   const step4Ref = useRef<Step4PersonalizationHandle>(null);
   const step5Ref = useRef<Step5HealthLimitationsHandle>(null);
-
-  // Cattura fromGoogleAuth al mount — location.state può cambiare dopo
-  const fromGoogleAuthRef = useRef<boolean>(
-    location.state?.fromGoogleAuth === true
-  );
   
   // ✅ FIX CRITICO: Ref per prevenire loop infinito in sync URL
   const urlSyncInProgress = useRef(false);
@@ -129,30 +119,6 @@ export function OnboardingPage() {
       }
     }
   }, [isEditMode, currentStep, setStep]);
-
-  // ✅ Google OAuth: fromGoogleAuthRef (catturato al mount) o fallback user (refresh su step=0)
-  useEffect(() => {
-    if (isEditMode) return;
-    if (loading) return; // aspetta che auth sia risolta
-
-    if (fromGoogleAuthRef.current) {
-      if (currentStep !== 0) setStep(0);
-      setShowGoogleWelcome(true);
-      return;
-    }
-
-    // Fallback: refresh su /onboarding step=0 con utente Google già in sessione
-    if (currentStep === 0 && user) {
-      const isGoogleUser =
-        user.app_metadata?.provider === 'google' ||
-        user.identities?.some((id: { provider?: string }) => id.provider === 'google');
-      if (isGoogleUser) {
-        setShowGoogleWelcome(true);
-      } else {
-        setStep(1);
-      }
-    }
-  }, [loading, isEditMode, currentStep, user, setStep]);
 
   // PRIMA: Leggi step dalla query string e imposta nello store (priorità alta)
   // ✅ FIX CRITICO: Questo useEffect deve reagire SOLO ai cambiamenti dell'URL, NON ai cambiamenti dello store
@@ -385,27 +351,6 @@ export function OnboardingPage() {
       setSearchParams({ step: stepNum.toString() }, { replace: true });
     }
   };
-
-  if (showGoogleWelcome) {
-    const userName =
-      user?.user_metadata?.full_name ||
-      user?.user_metadata?.name ||
-      user?.email?.split('@')[0] ||
-      'atleta';
-    return (
-      <Suspense fallback={<StepFallback />}>
-        <GoogleWelcomeScreen
-          userName={userName}
-          onContinue={() => {
-            fromGoogleAuthRef.current = false;
-            setShowGoogleWelcome(false);
-            setStep(1);
-            navigate('/onboarding?step=1', { replace: true, state: {} });
-          }}
-        />
-      </Suspense>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex flex-col">
