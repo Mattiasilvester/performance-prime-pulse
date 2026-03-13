@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Dumbbell, Sparkles, Play, Pause } from 'lucide-react';
+import { Clock, Dumbbell, Sparkles, Play, Pause, Timer, RotateCcw } from 'lucide-react';
 import { ExerciseGifLink } from './ExerciseGifLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -651,7 +651,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
         </AnimatePresence>
 
         <div ref={recoveryTimerBoxRef} className="mb-3 rounded-[14px] border border-white/7 bg-[#1E1E24] p-4">
-          <p className="mb-1 text-xs text-[#8A8A96]">⏱ Timer recupero</p>
+          <p className="mb-1 text-xs text-[#8A8A96] flex items-center gap-1.5"><Timer size={12} /> Timer recupero</p>
           <p className="text-[28px] font-bold text-[#EEBA2B] font-variant-numeric tabular-nums">{formatTimer(timerSeconds)}</p>
           <div className="mt-2 flex gap-2">
             <button
@@ -660,7 +660,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-white/7 bg-white/5 text-white"
               aria-label="Reset"
             >
-              ↺
+              <RotateCcw size={18} />
             </button>
             <button
               type="button"
@@ -668,7 +668,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-[#EEBA2B] bg-[#EEBA2B] text-black font-bold"
               aria-label={timerRunning ? 'Pausa' : 'Play'}
             >
-              {timerRunning ? '⏸' : '▶'}
+              {timerRunning ? <Pause size={18} /> : <Play size={18} />}
             </button>
           </div>
         </div>

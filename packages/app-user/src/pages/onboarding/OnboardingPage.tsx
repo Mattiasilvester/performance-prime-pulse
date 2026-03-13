@@ -119,6 +119,13 @@ export function OnboardingPage() {
       }
     }
   }, [isEditMode, currentStep, setStep]);
+
+  // ✅ Google OAuth: utente già autenticato che arriva a step=0 (da AuthCallback) → salta a step 1 (obiettivi)
+  useEffect(() => {
+    if (user && currentStep === 0 && !isEditMode) {
+      setStep(1);
+    }
+  }, [user, currentStep, isEditMode, setStep]);
   
   // PRIMA: Leggi step dalla query string e imposta nello store (priorità alta)
   // ✅ FIX CRITICO: Questo useEffect deve reagire SOLO ai cambiamenti dell'URL, NON ai cambiamenti dello store

@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, Timer, RotateCcw } from 'lucide-react';
 import { PushPermissionModal } from '@/components/notifications/PushPermissionModal';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useMedalSystem } from '@/hooks/useMedalSystem';
@@ -508,8 +508,8 @@ const QuickWorkout = () => {
         style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}
       >
         <div className="text-center space-y-8 max-w-lg w-full">
-          <div className="w-32 h-32 rounded-full flex items-center justify-center mx-auto" style={{ background: 'rgba(238,186,43,0.2)' }}>
-            <span className="text-4xl">⏱</span>
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto border-2 border-[#EEBA2B]" style={{ background: '#16161A' }}>
+            <Timer className="text-[#EEBA2B]" size={40} />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white mb-2">Workout interrotto</h1>
@@ -562,8 +562,8 @@ const QuickWorkout = () => {
           >
             ← Torna alla Dashboard
           </button>
-          <div className="w-32 h-32 rounded-full flex items-center justify-center mx-auto" style={{ background: 'rgba(238,186,43,0.2)' }}>
-            <span className="text-4xl">⏱</span>
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto border-2 border-[#EEBA2B]" style={{ background: '#16161A' }}>
+            <Timer className="text-[#EEBA2B]" size={40} />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white mb-2">Workout rapido</h1>
@@ -575,7 +575,7 @@ const QuickWorkout = () => {
               <li>🔥 Riscaldamento (2 min)</li>
               <li>⚡ Esercizi intensi (6 min)</li>
               <li>🧘 Defaticamento (2 min)</li>
-              <li>⏱️ Timer recupero</li>
+              <li className="flex items-center gap-2"><Timer className="shrink-0" size={14} /> Timer recupero</li>
             </ul>
           </div>
           <div className="space-y-3 w-full">
@@ -699,7 +699,7 @@ const QuickWorkout = () => {
         </AnimatePresence>
 
         <div ref={recoveryTimerBoxRef} className="mb-3 rounded-[14px] border border-white/7 bg-[#1E1E24] p-4">
-          <p className="mb-1 text-xs text-[#8A8A96]">⏱ Timer recupero</p>
+          <p className="mb-1 text-xs text-[#8A8A96] flex items-center gap-1.5"><Timer size={12} /> Timer recupero</p>
           <p className="text-[28px] font-bold text-[#EEBA2B] font-variant-numeric tabular-nums">
             {formatTimer(timerSeconds)}
           </p>
@@ -710,7 +710,7 @@ const QuickWorkout = () => {
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-white/7 bg-white/5 text-white"
               aria-label="Reset"
             >
-              ↺
+              <RotateCcw size={18} />
             </button>
             <button
               type="button"
@@ -718,7 +718,7 @@ const QuickWorkout = () => {
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-[#EEBA2B] bg-[#EEBA2B] text-black font-bold"
               aria-label={timerRunning ? 'Pausa' : 'Play'}
             >
-              {timerRunning ? '⏸' : '▶'}
+              {timerRunning ? <Pause size={18} /> : <Play size={18} />}
             </button>
           </div>
         </div>

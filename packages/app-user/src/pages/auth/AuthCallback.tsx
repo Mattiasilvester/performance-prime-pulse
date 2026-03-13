@@ -25,23 +25,29 @@ export default function AuthCallback() {
         handledRef.current = true
         setStatus('success')
 
-        // Stessa logica di LoginPage: onboarding in tabella user_onboarding_responses
-        const { data: onboardingData } = await supabase
+        // Controlla se l'utente ha completato l'onboarding (record presente in user_onboarding_responses)
+        const { data: onboardingData, error: onboardingError } = await supabase
           .from('user_onboarding_responses')
-          .select('onboarding_completed_at')
+          .select('id')
           .eq('user_id', session.user.id)
           .maybeSingle()
 
-        const onboardingCompleted = !!onboardingData?.onboarding_completed_at
+        if (onboardingError) {
+          console.error('Errore check onboarding:', onboardingError)
+          clearTimeout(timeout)
+          subscription.unsubscribe()
+          navigate('/dashboard', { replace: true })
+          return
+        }
 
         clearTimeout(timeout)
         subscription.unsubscribe()
 
-        setTimeout(() => {
-          navigate(onboardingCompleted ? '/dashboard' : '/onboarding', {
-            replace: true,
-          })
-        }, 1500)
+        if (!onboardingData) {
+          navigate('/onboarding?step=0', { replace: true })
+        } else {
+          navigate('/dashboard', { replace: true })
+        }
       }
     )
 
