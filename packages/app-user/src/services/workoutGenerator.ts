@@ -28,7 +28,7 @@ const WORKOUT_RULES = {
   CARDIO: {
     minExercises: { PRINCIPIANTE: 8, INTERMEDIO: 10, AVANZATO: 12 },
     maxExercises: { PRINCIPIANTE: 10, INTERMEDIO: 12, AVANZATO: 15 },
-    exerciseDuration: { PRINCIPIANTE: 180, INTERMEDIO: 240, AVANZATO: 300 },
+    exerciseDuration: { PRINCIPIANTE: 40, INTERMEDIO: 50, AVANZATO: 60 },
     restBetweenExercises: { PRINCIPIANTE: 60, INTERMEDIO: 45, AVANZATO: 30 },
     sets: { PRINCIPIANTE: 1, INTERMEDIO: 1, AVANZATO: 1 }
   },
@@ -191,7 +191,7 @@ const detailedExerciseDatabase = {
     { name: 'Plank', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Side Plank', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Russian Twist', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
-    { name: 'Mountain Climbers', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
+    { name: 'Scalatori', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Crunch', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Leg Raises', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Dead Bug', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' },
@@ -210,12 +210,12 @@ const detailedExerciseDatabase = {
     // INTERMEDIO
     { name: 'Jump Squats', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Burpees', level: 'Intermedio', duration: '15-20 min' },
-    { name: 'Mountain Climbers', level: 'Intermedio', duration: '15-20 min' },
+    { name: 'Scalatori', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Plank Jacks', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Jump Squats', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Thrusters', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Jump Lunges', level: 'Intermedio', duration: '15-20 min' },
-    { name: 'Mountain Climbers', level: 'Intermedio', duration: '15-20 min' },
+    { name: 'Scalatori', level: 'Intermedio', duration: '15-20 min' },
     
     // AVANZATO
     { name: 'Burpees Esplosivi', level: 'Avanzato', duration: '25-30 min' },
@@ -231,7 +231,7 @@ const detailedExerciseDatabase = {
 const exerciseDatabase = {
   cardio: {
     exercises: [
-      'Jumping Jacks', 'Saltelli Laterali', 'Burpees', 'Mountain Climbers',
+      'Jumping Jacks', 'Saltelli Laterali', 'Burpees', 'Scalatori',
       'Corsa sul Posto', 'Jump Squats', 'Plank Jacks', 'Saltelli da Pattinatore',
       'Movimento Incrociato', 'Calci ai Glutei', 'Passi Laterali', 'Jump Squats',
       'Box Steps', 'Camminata dell\'Orso', 'Saltelli a Rana', 'High Knees'
@@ -258,7 +258,7 @@ const exerciseDatabase = {
   hiit: {
     exercises: [
       'Corsa sul Posto', 'Jump Squats', 'Burpees Esplosivi', 'Saltelli Laterali',
-      'Mountain Climbers', 'Plank Jacks', 'Jump Squats', 'Thrusters',
+      'Scalatori', 'Plank Jacks', 'Jump Squats', 'Thrusters',
       'Passi Veloce', 'Explosive Push-up', 'Jump Lunges', 'Star Jumps',
       'Skater Veloci', 'Power Punches', 'Quick Feet', 'Arm Circles'
     ],

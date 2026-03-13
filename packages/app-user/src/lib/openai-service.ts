@@ -1215,10 +1215,15 @@ FORMATO RISPOSTA — rispondi SOLO con JSON valido, nessun testo prima o dopo:
       .select('id')
       .single();
 
-    if (insertError) {
+    if (insertError || !insertData?.id) {
       console.error('getStructuredNutritionPlan insert error:', insertError);
+      return {
+        plan,
+        planId: undefined,
+        message: 'Ho creato il tuo piano alimentare! 🥗\n\n⚠️ Il piano è stato generato ma non salvato. Rigeneralo per salvarlo.',
+      };
     }
-    const savedPlanId = insertData?.id as string | undefined;
+    const savedPlanId = insertData.id as string;
 
     const cost = calculateCost(
       successData.usage?.prompt_tokens || 0,

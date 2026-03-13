@@ -53,6 +53,7 @@ const ActivePlansPage = lazy(() => import('@/pages/piani/ActivePlansPage').then(
 const IMieiPiani = lazy(() => import('@/pages/IMieiPiani'))
 const EsecuzioneWorkout = lazy(() => import('@/pages/EsecuzioneWorkout'))
 const DietaDelGiorno = lazy(() => import('@/pages/DietaDelGiorno'))
+const ActiveWorkoutPage = lazy(() => import('@/pages/ActiveWorkoutPage'))
 
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
@@ -81,6 +82,7 @@ const EXCLUDED_WIDGET_PATHS = [
   '/terms-and-conditions',
   '/privacy-policy',
   '/workout/quick',
+  '/workout/active',
   '/timer',
 ]
 
@@ -180,7 +182,20 @@ function App() {
                   } />
                   <Route path="/workout/quick" element={
                     <ProtectedRoute session={session}>
-                      <Suspense fallback={<PageSkeleton />}><QuickWorkout /></Suspense>
+                      <Header />
+                      <div className="min-h-screen pt-24 pb-20">
+                        <Suspense fallback={<PageSkeleton />}><QuickWorkout /></Suspense>
+                      </div>
+                      <BottomNavigation />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/workout/active" element={
+                    <ProtectedRoute session={session}>
+                      <Header />
+                      <div className="min-h-screen pt-24 pb-20">
+                        <Suspense fallback={<PageSkeleton />}><ActiveWorkoutPage /></Suspense>
+                      </div>
+                      <BottomNavigation />
                     </ProtectedRoute>
                   } />
                   <Route path="/timer" element={

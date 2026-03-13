@@ -1,9 +1,7 @@
-
 import { WorkoutCategories } from './WorkoutCategories';
-import { ActiveWorkout } from './ActiveWorkout';
 import { CustomWorkoutDisplay } from './CustomWorkoutDisplay';
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { generateWorkout, generateRecommendedWorkout } from '@/services/workoutGenerator';
 import { Sparkles, Clock, Dumbbell } from 'lucide-react';
@@ -44,6 +42,7 @@ export const Workouts = () => {
   const [generatedWorkout, setGeneratedWorkout] = useState<GeneratedWorkoutShape | null>(null);
   const [personalizedWorkout, setPersonalizedWorkout] = useState<LocationWorkoutState | null>(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (location.state && typeof location.state === 'object') {
@@ -112,6 +111,19 @@ export const Workouts = () => {
     setPersonalizedWorkout(null);
   };
 
+  // Navigate to dedicated /workout/active when an active workout is selected (except CustomWorkoutDisplay case)
+  const showCustomDisplayOnly = activeWorkout === 'custom' && customWorkout && (!customWorkout.exercises || customWorkout.exercises.length === 0);
+  useEffect(() => {
+    if (!activeWorkout || showCustomDisplayOnly) return;
+    navigate('/workout/active', {
+      state: {
+        workoutId: activeWorkout,
+        generatedWorkout: generatedWorkout ?? null,
+        customWorkout: customWorkout ?? null,
+      },
+    });
+  }, [activeWorkout, generatedWorkout, customWorkout, showCustomDisplayOnly, navigate]);
+
   const handleStartWorkout = (workoutId: string, duration?: number, generatedWorkout?: GeneratedWorkoutShape | null, userLevel?: string, quickMode?: boolean) => {
     if (generatedWorkout) {
       // Se viene passato un allenamento generato (con filtri), usalo direttamente
@@ -134,48 +146,19 @@ export const Workouts = () => {
     }
   };
 
-  // Se c'è un allenamento attivo, renderizza senza container limitante
-  if (activeWorkout) {
+  // Solo CustomWorkoutDisplay resta inline (custom senza esercizi); gli altri vanno su /workout/active
+  if (showCustomDisplayOnly && customWorkout) {
     return (
-      <>
-        {activeWorkout === 'custom' && customWorkout ? (
-          // Se gli esercizi vengono da un file, usa ActiveWorkout (esecuzione attiva)
-          customWorkout.exercises && customWorkout.exercises.length > 0 ? (
-            <ActiveWorkout 
-              workoutId="custom"
-              customWorkout={customWorkout}
-              onClose={handleCloseWorkout}
-            />
-          ) : (
-            <CustomWorkoutDisplay 
-              workout={customWorkout} 
-              onClose={handleCloseWorkout} 
-            />
-          )
-        ) : activeWorkout === 'generated' && generatedWorkout ? (
-          <ActiveWorkout 
-            workoutId="generated"
-            generatedWorkout={generatedWorkout}
-            onClose={handleCloseWorkout}
-          />
-        ) : (
-          <ActiveWorkout 
-            workoutId={activeWorkout} 
-            generatedWorkout={generatedWorkout}
-            customWorkout={customWorkout || (personalizedWorkout?.customExercises ? {
-              title: personalizedWorkout?.workoutTitle,
-              workout_type: personalizedWorkout?.workoutType,
-              exercises: personalizedWorkout?.customExercises,
-              duration: personalizedWorkout?.duration,
-              meta: personalizedWorkout
-            } : undefined)}
-            onClose={() => {
-              setActiveWorkout(null);
-            }}
-          />
-        )}
-      </>
+      <CustomWorkoutDisplay
+        workout={customWorkout}
+        onClose={handleCloseWorkout}
+      />
     );
+  }
+
+  // Durante il redirect a /workout/active mostriamo la lista (breve flash) o null
+  if (activeWorkout && !showCustomDisplayOnly) {
+    return null;
   }
 
   return (
