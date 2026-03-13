@@ -25,6 +25,13 @@ export default function AuthCallback() {
         handledRef.current = true
         setStatus('success')
 
+        // CRITICO: forza il client a usare la sessione appena ottenuta,
+        // così la query seguente viene eseguita come utente autenticato (evita 400 RLS)
+        await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        })
+
         // Controlla se l'utente ha completato l'onboarding (record presente in user_onboarding_responses)
         const { data: onboardingData, error: onboardingError } = await supabase
           .from('user_onboarding_responses')
