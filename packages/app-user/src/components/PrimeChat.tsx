@@ -232,27 +232,52 @@ function parseActionsFromText(text: string): { cleanText: string; actions: Parse
   return { cleanText, actions };
 }
 
-// Funzione per formattare markdown senza librerie
+const headingStyle: React.CSSProperties = {
+  color: '#EEBA2B',
+  fontSize: '1rem',
+  fontWeight: 700,
+  margin: '12px 0 4px 0',
+};
+
+// Funzione per formattare markdown senza librerie (grassetto, corsivo, heading ### ## #)
 const renderFormattedMessage = (text: string) => {
   if (!text) return null;
-  
-  // Splitta per ** e processa
-  const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
-  
-  return parts.map((part, index) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      // Grassetto
-      return <strong key={index} className="font-bold text-yellow-400">
-        {part.slice(2, -2)}
-      </strong>;
-    } else if (part.startsWith('*') && part.endsWith('*')) {
-      // Corsivo
-      return <em key={index} className="italic">
-        {part.slice(1, -1)}
-      </em>;
+
+  const lines = text.split('\n');
+
+  return lines.map((line, lineIndex) => {
+    const trimmed = line.trim();
+    const h3Match = /^### (.+)$/.exec(trimmed) ?? /^## (.+)$/.exec(trimmed) ?? /^# (.+)$/.exec(trimmed);
+    if (h3Match) {
+      return (
+        <h3 key={lineIndex} style={headingStyle}>
+          {h3Match[1]}
+        </h3>
+      );
     }
-    // Testo normale
-    return <span key={index}>{part}</span>;
+    // Bold/italic per riga (come prima)
+    const parts = line.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+    return (
+      <div key={lineIndex}>
+        {parts.map((part, partIndex) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return (
+              <strong key={partIndex} className="font-bold text-yellow-400">
+                {part.slice(2, -2)}
+              </strong>
+            );
+          }
+          if (part.startsWith('*') && part.endsWith('*')) {
+            return (
+              <em key={partIndex} className="italic">
+                {part.slice(1, -1)}
+              </em>
+            );
+          }
+          return <span key={partIndex}>{part}</span>;
+        })}
+      </div>
+    );
   });
 };
 
