@@ -35,7 +35,7 @@ export default function AuthCallback() {
         // Controlla se l'utente ha completato l'onboarding (record presente in user_onboarding_responses)
         const { data: onboardingData, error: onboardingError } = await supabase
           .from('user_onboarding_responses')
-          .select('id')
+          .select('user_id')
           .eq('user_id', session.user.id)
           .maybeSingle()
 
