@@ -243,15 +243,18 @@ const headingStyle: React.CSSProperties = {
 const renderFormattedMessage = (text: string) => {
   if (!text) return null;
 
-  const lines = text.split('\n');
+  // Normalizza fine riga (Windows \r\n o \r) così il match ^ $ funziona e lo split è corretto
+  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = normalized.split('\n');
 
   return lines.map((line, lineIndex) => {
     const trimmed = line.trim();
-    const h3Match = /^### (.+)$/.exec(trimmed) ?? /^## (.+)$/.exec(trimmed) ?? /^# (.+)$/.exec(trimmed);
+    // Match # ## ### (e oltre): #+ seguito da spazi opzionali e contenuto
+    const h3Match = /^#+\s*(.+)$/.exec(trimmed);
     if (h3Match) {
       return (
         <h3 key={lineIndex} style={headingStyle}>
-          {h3Match[1]}
+          {h3Match[1].trim()}
         </h3>
       );
     }
