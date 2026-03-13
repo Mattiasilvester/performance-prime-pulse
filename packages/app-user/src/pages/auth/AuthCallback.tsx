@@ -32,7 +32,9 @@ export default function AuthCallback() {
           refresh_token: session.refresh_token,
         })
 
-        // Controlla se l'utente ha completato l'onboarding (record presente in user_onboarding_responses)
+        // Rileggi utente aggiornato dal server (app_metadata e identities completi)
+        const { data: { user: freshUser } } = await supabase.auth.getUser()
+
         const { data: onboardingData, error: onboardingError } = await supabase
           .from('user_onboarding_responses')
           .select('user_id')
@@ -51,14 +53,18 @@ export default function AuthCallback() {
         subscription.unsubscribe()
 
         if (!onboardingData) {
+          // Usa freshUser per avere app_metadata e identities completi
+          const userToCheck = freshUser ?? session.user
           const isGoogleUser = !!(
-            session.user.app_metadata?.provider === 'google' ||
-            session.user.identities?.some((id: { provider?: string }) => id.provider === 'google')
-          );
+            userToCheck.app_metadata?.provider === 'google' ||
+            userToCheck.identities?.some((id: { provider?: string }) => id.provider === 'google')
+          )
+          console.log('[AuthCallback] freshUser.app_metadata:', userToCheck.app_metadata)
+          console.log('[AuthCallback] isGoogleUser:', isGoogleUser)
           if (isGoogleUser) {
-            navigate('/onboarding/google-welcome', { replace: true });
+            navigate('/onboarding/google-welcome', { replace: true })
           } else {
-            navigate('/onboarding?step=0', { replace: true });
+            navigate('/onboarding?step=0', { replace: true })
           }
         } else {
           navigate('/dashboard', { replace: true })
