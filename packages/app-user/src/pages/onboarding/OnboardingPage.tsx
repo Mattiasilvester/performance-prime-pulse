@@ -30,6 +30,9 @@ const Step5HealthLimitations = lazy(() => import('./steps/Step5HealthLimitations
 const CompletionScreen = lazy(() =>
   import('./steps/CompletionScreen').then((mod) => ({ default: mod.CompletionScreen }))
 );
+const GoogleWelcomeScreen = lazy(() =>
+  import('./steps/GoogleWelcomeScreen').then((mod) => ({ default: mod.GoogleWelcomeScreen }))
+);
 
 const StepFallback = () => (
   <div className="flex h-64 items-center justify-center text-gray-400">
@@ -54,6 +57,7 @@ export function OnboardingPage() {
 
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const [direction, setDirection] = useState(1); // 1 = avanti, -1 = indietro (per slide)
+  const [showGoogleWelcome, setShowGoogleWelcome] = useState(false);
   const step2Ref = useRef<Step2ExperienceHandle>(null);
   const step3Ref = useRef<Step3PreferencesHandle>(null);
   const step4Ref = useRef<Step4PersonalizationHandle>(null);
@@ -120,10 +124,17 @@ export function OnboardingPage() {
     }
   }, [isEditMode, currentStep, setStep]);
 
-  // ✅ Google OAuth: utente già autenticato che arriva a step=0 (da AuthCallback) → salta a step 1 (obiettivi)
+  // ✅ Google OAuth: utente già autenticato che arriva a step=0 (da AuthCallback) → schermata benvenuto Google o step 1
   useEffect(() => {
     if (user && currentStep === 0 && !isEditMode) {
-      setStep(1);
+      const isGoogleUser =
+        user.app_metadata?.provider === 'google' ||
+        user.identities?.some((id: { provider?: string }) => id.provider === 'google');
+      if (isGoogleUser) {
+        setShowGoogleWelcome(true);
+      } else {
+        setStep(1);
+      }
     }
   }, [user, currentStep, isEditMode, setStep]);
   
@@ -358,6 +369,25 @@ export function OnboardingPage() {
       setSearchParams({ step: stepNum.toString() }, { replace: true });
     }
   };
+
+  if (showGoogleWelcome) {
+    const userName =
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.name ||
+      user?.email?.split('@')[0] ||
+      'atleta';
+    return (
+      <Suspense fallback={<StepFallback />}>
+        <GoogleWelcomeScreen
+          userName={userName}
+          onContinue={() => {
+            setShowGoogleWelcome(false);
+            setStep(1);
+          }}
+        />
+      </Suspense>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex flex-col">
