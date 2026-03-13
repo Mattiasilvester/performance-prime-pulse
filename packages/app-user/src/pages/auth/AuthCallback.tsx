@@ -59,8 +59,6 @@ export default function AuthCallback() {
             userToCheck.app_metadata?.provider === 'google' ||
             userToCheck.identities?.some((id: { provider?: string }) => id.provider === 'google')
           )
-          console.log('[AuthCallback] freshUser.app_metadata:', userToCheck.app_metadata)
-          console.log('[AuthCallback] isGoogleUser:', isGoogleUser)
           if (isGoogleUser) {
             navigate('/onboarding/google-welcome', { replace: true })
           } else {

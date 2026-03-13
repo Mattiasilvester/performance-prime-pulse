@@ -76,6 +76,7 @@ const AICoachWrapper = ({ session }: { session: Session | null }) => {
 const EXCLUDED_WIDGET_PATHS = [
   '/',
   '/onboarding',
+  '/onboarding/google-welcome',
   '/auth',
   '/auth/login',
   '/auth/register',
