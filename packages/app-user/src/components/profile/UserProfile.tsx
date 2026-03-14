@@ -3,6 +3,7 @@ import { Edit, MapPin, Calendar, Trophy, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { updateUserProfile, uploadAvatar, type UserProfile as UserProfileType } from '@/services/userService';
+import { useAuth } from '@/hooks/useAuth';
 import { useUserProfileContext } from '@/contexts/UserProfileContext';
 import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
 import { ProfileAvatar } from '@/components/shared/ProfileAvatar';
@@ -11,37 +12,39 @@ import { useToast } from '@/hooks/use-toast';
 
 export const UserProfile = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { profile, loading: profileLoading, refetch } = useUserProfileContext();
   const { rank } = useMedalSystemContext();
   const [stats, setStats] = useState<WorkoutStats>({ total_workouts: 0, total_hours: "0m" });
+  const [statsLoading, setStatsLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', surname: '', birthPlace: '' });
-  const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
+    if (!user?.id) return;
+    const loadStats = async () => {
       try {
-        if (profile) {
-          setForm({
-            name: profile.name,
-            surname: profile.surname,
-            birthPlace: profile.birth_place,
-          });
-        }
-
-        const statsData = await fetchWorkoutStats();
+        setStatsLoading(true);
+        const statsData = await fetchWorkoutStats(user.id);
         setStats(statsData);
-      } catch (error) {
-        console.error('Error loading profile data:', error);
+      } catch (err) {
+        console.error('Stats load error:', err);
       } finally {
-        setLoading(false);
+        setStatsLoading(false);
       }
     };
+    loadStats();
+  }, [user?.id]);
 
-    loadData();
+  useEffect(() => {
+    if (!profile) return;
+    setForm({
+      name: profile.name || '',
+      surname: profile.surname || '',
+      birthPlace: profile.birth_place || '',
+    });
   }, [profile]);
 
   const handleSave = async () => {
@@ -121,7 +124,7 @@ export const UserProfile = () => {
     input.click();
   };
 
-  if (loading || profileLoading) {
+  if (profileLoading) {
     return (
       <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-6">
         <div className="text-center text-[#8A8A96]">Caricamento profilo...</div>

@@ -7,11 +7,13 @@ export interface WorkoutStats {
   total_minutes?: number; // Minuti totali per calcoli interni
 }
 
-export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
+export const fetchWorkoutStats = async (userId?: string): Promise<WorkoutStats> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { total_workouts: 0, total_hours: '0h 0m' };
+    let uid = userId;
+    if (!uid) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { total_workouts: 0, total_hours: '0h 0m' };
+      uid = user.id;
     }
 
     // USA SEMPRE custom_workouts come fonte di verità (DATI REALI)
@@ -19,7 +21,7 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
     const { data: workouts, error } = await supabase
       .from('custom_workouts')
       .select('total_duration')
-      .eq('user_id', user.id)
+      .eq('user_id', uid)
       .eq('completed', true);
 
     if (error) {
@@ -39,7 +41,7 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
       const { error: syncError } = await supabase
         .from('user_workout_stats')
         .upsert({
-          user_id: user.id,
+          user_id: uid,
           total_workouts: totalWorkouts,
           total_hours: totalMinutes,
           updated_at: new Date().toISOString()

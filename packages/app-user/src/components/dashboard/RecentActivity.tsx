@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Dumbbell, Target, Clock, Award, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Activity {
   type: string;
@@ -14,17 +15,16 @@ interface Activity {
 }
 
 export const RecentActivity = () => {
+  const { user } = useAuth();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [allActivities, setAllActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
+    if (!user?.id) return;
     const loadRecentActivities = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
         const recentActivities: Activity[] = [];
 
         // Carica workout recenti (limite 3 per la card, tutti per la modale)
@@ -56,7 +56,7 @@ export const RecentActivity = () => {
           });
         });
 
-        // Carica obiettivi recenti (tutti per la modale)
+        // Carica obiettivi recenti
         const { data: objectives } = await supabase
           .from('user_objectives')
           .select('title, completed_at')
@@ -111,7 +111,7 @@ export const RecentActivity = () => {
     };
 
     loadRecentActivities();
-  }, []);
+  }, [user?.id]);
 
   const getIconStyle = (activity: Activity) => {
     const isObjective = activity.type === 'objective';
