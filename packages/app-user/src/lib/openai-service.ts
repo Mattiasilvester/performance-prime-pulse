@@ -46,10 +46,13 @@ interface OpenAIErrorResponse {
 type OpenAIApiResponse = OpenAIResponse | OpenAIErrorResponse;
 
 // ⚠️ DEPRECATO: Non usare più VITE_OPENAI_API_KEY direttamente
-// Usare /api/ai-chat endpoint invece
+// Chiamata a Supabase Edge Function ai-chat (OPENAI_API_KEY in Supabase secrets)
 // ⚠️ TEMPORANEO PER TEST: Limite aumentato a 9999
 // TODO: Ripristinare a 10 dopo i test
 const MONTHLY_LIMIT = 9999;
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? '';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 
 // Calcola costo
 const calculateCost = (promptTokens: number, completionTokens: number) => {
@@ -277,6 +280,16 @@ ${nomeUtente ? `- Chiama l'utente per nome (${nomeUtente}) quando è naturale fa
       systemPrompt += `\n\nCONTESTO UTENTE:\n${userContextString}\n\nIMPORTANTE: Personalizza le tue risposte in base ai dati dell'utente sopra. Usa il suo nome quando appropriato e adatta consigli/allenamenti al suo livello, obiettivi e attrezzatura disponibile.`;
     }
 
+    const onboardingCompleted = userContext?.onboarding_completed ?? false;
+    if (!onboardingCompleted) {
+      systemPrompt += `\n\nATTENZIONE - PROFILO INCOMPLETO:
+L'utente NON ha ancora completato il profilo.
+- Non hai informazioni precise su peso, altezza, obiettivi specifici, limitazioni fisiche.
+- Se l'utente ti fa domande generiche, rispondi ma alla FINE del messaggio aggiungi sempre (una sola volta per conversazione): "💡 Per ricevere consigli 100% personalizzati, completa il tuo profilo in Impostazioni → Il mio profilo!"
+- Se l'utente chiede un piano allenamento o nutrizionale, prima di generarlo chiedi: "Hai già completato il tuo profilo? Se sì posso personalizzarlo per te, altrimenti ti darò un piano standard."
+- Non fingere di conoscere dati che non hai.`;
+    }
+
     console.log('SYSTEM PROMPT:', systemPrompt.substring(0, 500));
 
     // Costruisci array messaggi: system + cronologia + nuovo messaggio
@@ -299,10 +312,11 @@ ${nomeUtente ? `- Chiama l'utente per nome (${nomeUtente}) quando è naturale fa
     let data: OpenAIApiResponse;
     
     try {
-      response = await fetch('/api/ai-chat', {
+      response = await fetch(`${SUPABASE_URL}/functions/v1/ai-chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           messages,
@@ -736,10 +750,11 @@ IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli t
     let data: OpenAIApiResponse;
     
     try {
-      response = await fetch('/api/ai-chat', {
+      response = await fetch(`${SUPABASE_URL}/functions/v1/ai-chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           messages,
@@ -820,10 +835,11 @@ ${workoutPlanSystemPrompt}
         let retryData: OpenAIApiResponse;
         
         try {
-          retryResponse = await fetch('/api/ai-chat', {
+          retryResponse = await fetch(`${SUPABASE_URL}/functions/v1/ai-chat`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
             },
             body: JSON.stringify({
               messages: retryMessages,
@@ -1167,9 +1183,12 @@ FORMATO RISPOSTA — rispondi SOLO con JSON valido, nessun testo prima o dopo:
     : 16000;
 
   try {
-    const response = await fetch('/api/ai-chat', {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
       body: JSON.stringify({
         messages: [
           { role: 'system', content: nutritionSystemPrompt },

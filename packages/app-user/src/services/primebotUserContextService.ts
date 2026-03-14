@@ -188,9 +188,14 @@ export async function getUserContext(userId: string): Promise<UserContext> {
       .limit(1)
       .maybeSingle();
     
-    // 4. Recupera profilo utente per nome
+    // 4. Recupera nome: onboarding → profilo (profiles) → auth user_metadata (Google OAuth)
     const userProfile = await fetchUserProfile();
-    const nome = onboardingData?.nome || userProfile?.name || 'Utente';
+    const { data: { user } } = await supabase.auth.getUser();
+    const googleName = user?.user_metadata?.full_name
+      || user?.user_metadata?.name
+      || user?.user_metadata?.display_name
+      || null;
+    const nome = onboardingData?.nome || userProfile?.name || googleName || 'Utente';
     
     // 3. Costruisci contesto con dati disponibili o default
     const context: UserContext = {
@@ -242,11 +247,19 @@ export async function getUserContext(userId: string): Promise<UserContext> {
     
     return context;
   } catch (error) {
-    console.error('❌ Errore recupero contesto utente:', error);
+    console.error('❌ Errore recupero contesto utente:', error instanceof Error ? error.message : error);
     
-    // Ritorna contesto di default se recupero fallisce
+    let fallbackNome = 'Utente';
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const googleName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
+      if (googleName) fallbackNome = googleName;
+    } catch {
+      // ignora: usiamo 'Utente'
+    }
+    
     return {
-      nome: 'Utente',
+      nome: fallbackNome,
       obiettivi: ['fitness generale'],
       livello_fitness: null,
       livello_fitness_it: 'principiante',
