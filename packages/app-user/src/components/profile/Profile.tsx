@@ -39,8 +39,7 @@ export const Profile = () => {
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#F0EDE8]">Il Tuo Profilo</h2>
-          <p className="text-[13px] text-[#8A8A96]">Monitora i tuoi progressi e risultati</p>
+          <p className="text-[#8A8A96]" style={{ fontSize: '15px', fontWeight: 400 }}>Monitora i tuoi progressi e risultati</p>
         </div>
       </div>
 

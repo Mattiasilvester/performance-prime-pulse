@@ -29,13 +29,28 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import { useTranslation } from '@/hooks/useTranslation';
-import { useUserProfile } from '@/hooks/useUserProfile';
+import { useUserProfileContext } from '@/contexts/UserProfileContext';
+import { ProfileAvatar } from '@/components/shared/ProfileAvatar';
+import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
+
+const PAGE_TITLES: Record<string, string> = {
+  '/profile': 'Il tuo Profilo',
+  '/workouts': 'Allenamento',
+  '/ai-coach': 'PrimeBot',
+  '/schedule': 'Appuntamenti',
+  '/professionals': 'Professionisti',
+  '/i-miei-piani': 'I miei piani',
+  '/diary': 'Diario',
+  '/timer': 'Timer',
+  '/subscriptions': 'Abbonamento',
+};
 
 export const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredItems, setFilteredItems] = useState<{ label: string; path: string }[]>([]);
-  const { profile: userProfile } = useUserProfile();
+  const { profile: userProfile } = useUserProfileContext();
+  const { rank } = useMedalSystemContext();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const { user } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotifications();
@@ -146,18 +161,60 @@ export const Header = () => {
     setSearchQuery('');
   };
 
+  const pageTitle = PAGE_TITLES[location.pathname];
+
+  const renderLeft = () => {
+    if (pageTitle) {
+      return (
+        <h1
+          style={{
+            fontSize: '20px',
+            fontWeight: 700,
+            color: '#F0EDE8',
+            fontFamily: 'Outfit, system-ui, sans-serif',
+            margin: 0,
+          }}
+        >
+          {pageTitle}
+        </h1>
+      );
+    }
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <ProfileAvatar size={52} showShimmer={true} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'nowrap' }}>
+          <span
+            style={{
+              fontSize: '20px',
+              color: '#8A8A96',
+              fontFamily: 'Outfit, system-ui, sans-serif',
+              lineHeight: 1.2,
+            }}
+          >
+            Ciao,
+          </span>
+          <span
+            style={{
+              fontSize: '20px',
+              fontWeight: 700,
+              color: rank.nameColor,
+              fontFamily: 'Outfit, system-ui, sans-serif',
+              lineHeight: 1.2,
+            }}
+          >
+            {userProfile?.name || 'atleta'}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 bg-background border-b border-[rgba(255,255,255,0.06)] z-50 px-5 py-3">
       <div className="container mx-auto px-0">
         <div className="flex items-center justify-between min-h-[2.5rem]">
-          {/* Brand: solo testo */}
-          <div className="flex flex-col min-w-0">
-            <h1 className="text-xl font-bold text-[#EEBA2B] leading-tight truncate" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
-              Performance Prime
-            </h1>
-            <p className="text-[11px] text-[#8A8A96] uppercase tracking-[1.5px] leading-tight truncate" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
-              Oltre ogni limite
-            </p>
+          <div className="flex items-center min-w-0">
+            {renderLeft()}
           </div>
 
           {/* User info and actions */}

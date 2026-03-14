@@ -10,7 +10,6 @@ const RecentActivity = lazy(() =>
 const WeeklyProgress = lazy(() =>
   import('./WeeklyProgress').then((module) => ({ default: module.WeeklyProgress }))
 );
-import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
@@ -18,15 +17,7 @@ import { useFeedback15Days } from '@/hooks/useFeedback15Days';
 import { useAuth } from '@/hooks/useAuth';
 import { checkMonthlyReset } from '@/services/monthlyStatsService';
 
-const getGreeting = () => {
-  const h = new Date().getHours();
-  if (h < 12) return 'Buongiorno';
-  if (h < 18) return 'Buon pomeriggio';
-  return 'Buonasera';
-};
-
 export const Dashboard = () => {
-  const { profile: userProfile } = useUserProfile();
   const navigate = useNavigate();
   const { user } = useAuth();
   useFeedback15Days(user?.id);
@@ -36,8 +27,6 @@ export const Dashboard = () => {
       checkMonthlyReset(user.id);
     }
   }, [user?.id]);
-
-  const userName = userProfile?.name || 'Utente';
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -49,12 +38,6 @@ export const Dashboard = () => {
       <Header />
       <div className="container mx-auto px-5 flex flex-col gap-6 pb-6 pt-0">
         <div data-tour="greeting" className="pt-6 pb-2 flex items-center justify-between gap-3 flex-wrap">
-          <div className="min-w-0 flex-1">
-            <h2 className="text-[26px] font-bold text-[#F0EDE8] leading-tight truncate" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
-              {getGreeting()}, {userName}
-            </h2>
-            <p className="text-sm text-[#8A8A96] mt-0.5">Pronto per superare i tuoi limiti?</p>
-          </div>
           <div className="flex items-center gap-2 shrink-0">
             <div
               className="flex items-center gap-1.5 rounded-full py-1.5 px-3 border border-[rgba(238,186,43,0.15)]"

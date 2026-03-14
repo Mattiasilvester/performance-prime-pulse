@@ -3,7 +3,7 @@ import { Zap, Target, Clock, Award } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { fetchWorkoutStats } from '@/services/workoutStatsService';
 import { supabase } from '@/integrations/supabase/client';
-import { useMedalSystem } from '@/hooks/useMedalSystem';
+import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
 import { ChallengeModal } from '@/components/medals/ChallengeModal';
 
 interface StatsData {
@@ -30,7 +30,7 @@ export const StatsOverview = () => {
     getMedalCardData,
     startKickoffChallenge,
     closeChallengeModal
-  } = useMedalSystem();
+  } = useMedalSystemContext();
 
   useEffect(() => {
     const loadStats = async () => {

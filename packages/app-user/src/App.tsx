@@ -4,6 +4,8 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AuthProvider } from '@/hooks/useAuth'
+import { UserProfileProvider } from '@/contexts/UserProfileContext'
+import { MedalSystemProvider } from '@/contexts/MedalSystemContext'
 import { NotificationProvider } from '@/hooks/useNotifications'
 import { PrimeBotProvider, usePrimeBot } from '@/contexts/PrimeBotContext'
 import { TourProvider } from '@/contexts/TourContext'
@@ -131,6 +133,8 @@ function App() {
     <ErrorBoundary>
       <MobileScrollFix />
       <AuthProvider>
+        <UserProfileProvider>
+          <MedalSystemProvider>
         <NotificationProvider>
           <PrimeBotProvider>
             <Router>
@@ -343,6 +347,8 @@ function App() {
             </Suspense>
           </PrimeBotProvider>
         </NotificationProvider>
+          </MedalSystemProvider>
+        </UserProfileProvider>
       </AuthProvider>
     </ErrorBoundary>
   )

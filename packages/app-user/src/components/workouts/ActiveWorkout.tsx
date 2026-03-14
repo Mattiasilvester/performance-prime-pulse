@@ -5,7 +5,7 @@ import { Clock, Dumbbell, Sparkles, Play, Pause, Timer, RotateCcw } from 'lucide
 import { ExerciseGifLink } from './ExerciseGifLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useMedalSystem } from '@/hooks/useMedalSystem';
+import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
 import { trackWorkoutForChallenge } from '@/utils/challengeTracking';
 import { updateWorkoutStats } from '@/services/workoutStatsService';
 import { completeWorkout as saveWorkoutToDiary } from '@/services/diaryService';
@@ -123,7 +123,7 @@ function getSetsCount(ex: WorkoutExerciseShape | undefined): number {
 
 export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onClose }: ActiveWorkoutProps) => {
   const { user } = useAuth();
-  const { recordWorkoutCompletion } = useMedalSystem();
+  const { recordWorkoutCompletion } = useMedalSystemContext();
   const navigate = useNavigate();
 
   const currentWorkout = customWorkout || generatedWorkout || workoutData[workoutId as keyof typeof workoutData];

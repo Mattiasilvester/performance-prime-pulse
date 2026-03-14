@@ -23,16 +23,27 @@ export function useFeedback15Days(userId: string | undefined) {
         
         // Se sono passati 15+ giorni, invia feedback
         if (daysSinceSignup >= 15) {
-          // Chiama webhook n8n
-          await fetch('https://gurfadigitalsolution.app.n8n.cloud/webhook/pp/feedback-15d', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_id: userId,
-              form_url: 'https://tally.so/r/nW4OxJ',
-              days_since_signup: daysSinceSignup
-            })
-          });
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          let fetchOk = false;
+          try {
+            await fetch('https://gurfadigitalsolution.app.n8n.cloud/webhook/pp/feedback-15d', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: userId,
+                form_url: 'https://tally.so/r/nW4OxJ',
+                days_since_signup: daysSinceSignup
+              }),
+              signal: controller.signal,
+            });
+            fetchOk = true;
+          } catch {
+            // silent fail
+          } finally {
+            clearTimeout(timeoutId);
+          }
+          if (!fetchOk) return;
           
           // Marca come inviato
           await supabase
@@ -45,12 +56,12 @@ export function useFeedback15Days(userId: string | undefined) {
       }
     };
     
-    // Check immediato al caricamento
-    checkAndSendFeedback();
+    const delayId = setTimeout(() => checkAndSendFeedback(), 2000);
+    const interval = setInterval(checkAndSendFeedback, 3600000);
     
-    // Check ogni ora nel caso l'utente tenga l'app aperta per giorni
-    const interval = setInterval(checkAndSendFeedback, 3600000); // 1 ora
-    
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(delayId);
+      clearInterval(interval);
+    };
   }, [userId]);
 }

@@ -45,13 +45,6 @@ export const Schedule = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col gap-6 px-5 pb-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#F0EDE8]">Calendario</h2>
-          <p className="text-[13px] text-[#8A8A96] mt-0.5">Gestisci allenamenti e appuntamenti</p>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-[#16161A] rounded-[18px] p-5 border border-[rgba(255,255,255,0.06)]">
           <Suspense fallback={<div className="text-[#8A8A96]">Caricamento calendario...</div>}>

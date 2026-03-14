@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, Timer, RotateCcw } from 'lucide-react';
 import { PushPermissionModal } from '@/components/notifications/PushPermissionModal';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
-import { useMedalSystem } from '@/hooks/useMedalSystem';
+import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
 import { trackWorkoutForChallenge } from '@/utils/challengeTracking';
 import { ChallengeNotification } from '@/components/ui/ChallengeNotification';
 import { ExerciseGifLink } from '@/components/workouts/ExerciseGifLink';
@@ -59,7 +59,7 @@ function formatTimer(s: number): string {
 const QuickWorkout = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { recordWorkoutCompletion } = useMedalSystem();
+  const { recordWorkoutCompletion } = useMedalSystemContext();
   const {
     canAskPermission,
     showPermissionModal,
