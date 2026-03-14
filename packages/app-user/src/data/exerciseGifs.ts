@@ -178,16 +178,25 @@ export function slugify(name: string): string {
 }
 
 /**
- * Restituisce l'URL della GIF dell'esercizio da Supabase Storage.
+ * Restituisce l'URL dell'immagine dell'esercizio (prova .png, il browser può usare onError per fallback).
  * Se VITE_SUPABASE_URL non è definito restituisce stringa vuota.
  */
-export function getExerciseGifUrl(exerciseName: string): string {
+export function getExerciseImageUrl(exerciseName: string): string {
   if (!GIF_BASE_URL) {
     return '';
   }
   const category = EXERCISE_CATEGORY[exerciseName] ?? 'forza';
   const slug = slugify(exerciseName);
-  return `${GIF_BASE_URL}/${category}/${slug}.gif`;
+  const base = `${GIF_BASE_URL}/${category}/${slug}`;
+  return `${base}.png`;
+}
+
+/**
+ * Restituisce l'URL della GIF/immagine dell'esercizio da Supabase Storage.
+ * Usa getExerciseImageUrl (estensione .png); per fallback .gif il componente può usare onError.
+ */
+export function getExerciseGifUrl(exerciseName: string): string {
+  return getExerciseImageUrl(exerciseName);
 }
 
 /** Alias di getExerciseGifUrl per retrocompatibilità */
