@@ -58,9 +58,33 @@ export const CHALLENGE_TYPES = {
 } as const;
 
 export const MEDAL_TYPES = {
+  FIRST_STEP: 'first_step',
   KICKOFF_CHAMPION: 'kickoff_champion',
+  IRON_WILL: 'iron_will',
+  EARLY_BIRD: 'early_bird',
+  NIGHT_OWL: 'night_owl',
+  SPEED_DEMON: 'speed_demon',
+  NUTRITION_START: 'nutrition_start',
+  PRIMEBOT_BUDDY: 'primebot_buddy',
+  PROFILE_COMPLETE: 'profile_complete',
   WEEKLY_WARRIOR: 'weekly_warrior',
-  CONSISTENCY_MASTER: 'consistency_master'
+  CONSISTENCY_MASTER: 'consistency_master',
+  CENTURY_CLUB: 'century_club',
+  NUTRITION_PRO: 'nutrition_pro',
+  PRIMEBOT_ADVISOR: 'primebot_advisor',
+  PAIN_FIGHTER: 'pain_fighter',
+  BOOKED_PRO: 'booked_pro',
+  MONTH_WARRIOR: 'month_warrior',
+  VERSATILE: 'versatile',
+  IRON_STREAK: 'iron_streak',
+  ELITE_CLUB: 'elite_club',
+  NUTRITION_MASTER: 'nutrition_master',
+  PRO_PARTNER: 'pro_partner',
+  YEAR_WARRIOR: 'year_warrior',
+  PRIMEBOT_MASTER: 'primebot_master',
+  NO_LIMITS: 'no_limits',
+  ALL_CATEGORIES: 'all_categories',
+  PRIME_LEGEND: 'prime_legend',
 } as const;
 
 // Configurazione sfide

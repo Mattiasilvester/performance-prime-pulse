@@ -20,6 +20,8 @@ export interface TrackingResult {
 
 const CHALLENGE_KEY = 'pp_challenge_7days';
 const MEDALS_KEY = 'pp_total_medals';
+/** Contatore totale workout completati (per medaglie first_step, iron_will, century_club). */
+const TOTAL_WORKOUTS_KEY = 'pp_total_workouts';
 
 export const trackWorkoutForChallenge = (): TrackingResult => {
   const challenge = JSON.parse(localStorage.getItem(CHALLENGE_KEY) || '{}');
@@ -35,7 +37,8 @@ export const trackWorkoutForChallenge = (): TrackingResult => {
       isCompleted: false,
       badgeEarned: false
     };
-    
+    const totalWorkouts = parseInt(localStorage.getItem(TOTAL_WORKOUTS_KEY) || '0');
+    localStorage.setItem(TOTAL_WORKOUTS_KEY, String(totalWorkouts + 1));
     localStorage.setItem(CHALLENGE_KEY, JSON.stringify(newChallenge));
     
     return { 
@@ -77,6 +80,8 @@ export const trackWorkoutForChallenge = (): TrackingResult => {
     if (!challenge.completedDates?.includes(today)) {
       challenge.workoutCount = (challenge.workoutCount || 0) + 1;
       challenge.completedDates = [...(challenge.completedDates || []), today];
+      const totalWorkouts = parseInt(localStorage.getItem(TOTAL_WORKOUTS_KEY) || '0');
+      localStorage.setItem(TOTAL_WORKOUTS_KEY, String(totalWorkouts + 1));
       
       // Controlla se sfida completata
       if (challenge.workoutCount >= 3) {
@@ -155,4 +160,9 @@ export const getChallengeStatus = (): ChallengeData => {
 
 export const getMedalsCount = (): number => {
   return parseInt(localStorage.getItem(MEDALS_KEY) || '0');
+};
+
+/** Restituisce il numero totale di workout completati (per sblocco medaglie first_step, iron_will, century_club). */
+export const getTotalWorkouts = (): number => {
+  return parseInt(localStorage.getItem(TOTAL_WORKOUTS_KEY) || '0');
 };

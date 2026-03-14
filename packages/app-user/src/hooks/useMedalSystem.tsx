@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MedalSystem, Challenge, Medal, ChallengeModalData, MedalCardData, MedalCardState, CHALLENGE_CONFIG } from '@/types/medalSystem';
-import { getChallengeStatus, getMedalsCount } from '@/utils/challengeTracking';
+import { getChallengeStatus, getMedalsCount, getTotalWorkouts } from '@/utils/challengeTracking';
 
 const MEDAL_SYSTEM_KEY = 'pp_medal_system';
 const WORKOUT_COMPLETED_KEY = 'pp_workout_completed';
@@ -24,18 +24,71 @@ export const useMedalSystem = () => {
     target: 0
   });
 
-  // Carica sistema medaglie da localStorage
+  // Sblocco automatico medaglie da totalWorkouts (first_step, iron_will, century_club)
+  const syncEarnedMedalsFromWorkouts = useCallback((system: MedalSystem): MedalSystem | null => {
+    const rawWorkouts = localStorage.getItem('pp_total_workouts');
+    if (!rawWorkouts || rawWorkouts === '0') {
+      try {
+        const challengeRaw = localStorage.getItem('pp_challenge_7days');
+        if (challengeRaw) {
+          const challenge = JSON.parse(challengeRaw);
+          if (typeof challenge.workoutCount === 'number' && challenge.workoutCount > 0) {
+            localStorage.setItem('pp_total_workouts', String(challenge.workoutCount));
+          }
+        }
+      } catch {}
+    }
+    const totalWorkouts = getTotalWorkouts();
+    const earnedIds = new Set(system.earnedMedals.map((m) => m.id));
+    const toAdd: Medal[] = [];
+    const now = new Date().toISOString();
+    if (totalWorkouts >= 1 && !earnedIds.has('first_step')) {
+      toAdd.push({ id: 'first_step', name: 'First Step', description: 'Primo allenamento completato', icon: '🏃', earnedDate: now, challengeType: 'workout_total', rarity: 'common' });
+    }
+    if (totalWorkouts >= 10 && !earnedIds.has('iron_will')) {
+      toAdd.push({ id: 'iron_will', name: 'Iron Will', description: '10 allenamenti totali', icon: '💪', earnedDate: now, challengeType: 'workout_total', rarity: 'common' });
+    }
+    if (totalWorkouts >= 100 && !earnedIds.has('century_club')) {
+      toAdd.push({ id: 'century_club', name: 'Century Club', description: '100 allenamenti totali', icon: '🎯', earnedDate: now, challengeType: 'workout_total', rarity: 'legendary' });
+    }
+    if (totalWorkouts >= 250 && !earnedIds.has('elite_club')) {
+      toAdd.push({ id: 'elite_club', name: 'Elite Club', description: '250 allenamenti totali', icon: '👑', earnedDate: now, challengeType: 'workout_total', rarity: 'legendary' });
+    }
+    const afterWorkouts = [...system.earnedMedals, ...toAdd];
+    const idsAfter = new Set(afterWorkouts.map((m) => (m.id.startsWith('kickoff_champion') ? 'kickoff_champion' : m.id)));
+    if (idsAfter.size >= 26 && !idsAfter.has('prime_legend')) {
+      toAdd.push({ id: 'prime_legend', name: 'Prime Legend', description: 'Tutte le medaglie sbloccate', icon: '⚜️', earnedDate: now, challengeType: 'all_medals', rarity: 'legendary' });
+    }
+    if (toAdd.length === 0) return null;
+    return {
+      ...system,
+      totalMedals: system.totalMedals + toAdd.length,
+      earnedMedals: [...system.earnedMedals, ...toAdd],
+      lastUpdated: now,
+    };
+  }, []);
+
+  // Carica sistema medaglie da localStorage e sync medaglie da totalWorkouts
   useEffect(() => {
     const saved = localStorage.getItem(MEDAL_SYSTEM_KEY);
+    let system: MedalSystem = {
+      totalMedals: 0,
+      currentChallenge: null,
+      earnedMedals: [],
+      lastUpdated: new Date().toISOString(),
+    };
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        setMedalSystem(parsed);
+        system = JSON.parse(saved);
       } catch (error) {
         console.error('Error loading medal system:', error);
       }
     }
-  }, []);
+    const synced = syncEarnedMedalsFromWorkouts(system);
+    const toSet = synced ?? system;
+    setMedalSystem(toSet);
+    if (synced) localStorage.setItem(MEDAL_SYSTEM_KEY, JSON.stringify(synced));
+  }, [syncEarnedMedalsFromWorkouts]);
 
   // Salva sistema medaglie in localStorage
   const saveMedalSystem = useCallback((system: MedalSystem) => {
