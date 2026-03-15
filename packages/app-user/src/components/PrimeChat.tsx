@@ -12,23 +12,34 @@ import {
 } from '@/services/primebotConversationService';
 import {
   executeAction,
+  saveWorkoutPlan,
   type ActionType,
 } from '@/services/primebotActionsService';
 import { 
   generateOnboardingSummaryMessage,
   updateOnboardingPreference,
-  parseModifyRequest
+  parseModifyRequest,
+  parseAndSaveLimitationsFromChat,
+  getAllergies,
+  getUserContext,
+  formatUserContextForPrompt,
+  updateAllergies,
+  getSmartLimitationsCheck,
 } from '@/services/primebotUserContextService';
 import usePainTracking from '@/hooks/usePainTracking';
 import { ActionButton } from '@/components/primebot/ActionButton';
 import { toast } from 'sonner';
-import { getStructuredWorkoutPlan } from '@/lib/openai-service';
+import { getStructuredWorkoutPlan, getStructuredNutritionPlan } from '@/lib/openai-service';
 import { type StructuredWorkoutPlan, type StructuredExercise } from '@/services/workoutPlanGenerator';
+import type { StructuredNutritionPlan } from '@/types/nutritionPlan';
 import { HealthDisclaimer } from '@/components/primebot/HealthDisclaimer';
+import { NutritionPlanCard } from '@/components/primebot/NutritionPlanCard';
 import { ExerciseGifLink } from '@/components/workouts/ExerciseGifLink';
+import { downloadWorkoutPlanPDF } from '@/utils/pdfExport';
 // ⭐ FIX BUG 3: Import per analisi dolore nel messaggio corrente
 import { detectBodyPartFromMessage } from '@/data/bodyPartExclusions';
 import { addPain } from '@/services/painTrackingService';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export interface ParsedAction {
   type: ActionType;
@@ -46,34 +57,166 @@ type Msg = {
     action: string; 
   };
   isDisclaimer?: boolean;
-  actions?: ParsedAction[]; // Azioni estratte dalla risposta AI
-  workoutPlan?: StructuredWorkoutPlan; // Piano allenamento strutturato
+  actions?: ParsedAction[];
+  workoutPlan?: StructuredWorkoutPlan;
+  nutritionPlan?: StructuredNutritionPlan;
+  nutritionPlanId?: string;
 };
 
 interface PrimeChatProps {
   isModal?: boolean;
 }
 
+/** Frasi che escludono la classificazione come richiesta di piano (domande/negazioni) */
+const PLAN_REQUEST_EXCLUSIONS = [
+  'non ',
+  ' non',
+  'senza ',
+  ' cos\'è',
+  'cos\'è ',
+  'cos\'è',
+  ' cosa è',
+  'cosa è ',
+  ' che cos\'è',
+  'che cos\'è ',
+  'come funziona',
+  'mi spieghi',
+  'spiegami',
+  'informazioni su',
+];
+
+function containsPlanExclusion(text: string): boolean {
+  const lower = text.toLowerCase();
+  return PLAN_REQUEST_EXCLUSIONS.some((ex) => lower.includes(ex));
+}
+
 /**
  * Rileva se la richiesta è per un piano di allenamento
  */
 function isWorkoutPlanRequest(text: string): boolean {
+  if (containsPlanExclusion(text)) return false;
   const keywords = [
     'piano',
     'programma',
     'scheda',
     'allenamento per',
     'creami',
+    'crearmi',
     'fammi',
     'genera',
     'crea un piano',
+    'crei un piano',
     'fammi un piano',
     'mi serve un piano',
     'voglio un piano',
+    'allenarmi',
   ];
-  
   const textLower = text.toLowerCase();
-  return keywords.some(keyword => textLower.includes(keyword));
+  return keywords.some((keyword) => textLower.includes(keyword));
+}
+
+function isWorkoutPlanRequestExplicit(text: string): boolean {
+  if (containsPlanExclusion(text)) return false;
+  const NUTRITION_SIGNALS = [
+    'nutrizionale', 'nutrizione', 'alimentare',
+    'alimentazione', 'dieta', 'pasti', 'mangiare',
+  ];
+  if (NUTRITION_SIGNALS.some((n) => text.toLowerCase().includes(n))) return false;
+  const keywords = [
+    'piano di allenamento',
+    'piano allenamento',
+    'scheda di allenamento',
+    'scheda allenamento',
+    'programma di allenamento',
+    'programma allenamento',
+    'piano workout',
+    'piano fitness',
+    'piano sportivo',
+    'piano di fitness',
+    'mi crei un piano di allenamento',
+    'mi crei un piano workout',
+    'mi crei un piano fitness',
+    'crea un piano di allenamento',
+    'crea un piano workout',
+    'fammi un piano di allenamento',
+    'fammi un piano workout',
+    'fammi un programma',
+    'voglio allenarmi',
+    'voglio iniziare ad allenarmi',
+    'puoi crearmi',
+    'ho bisogno di un piano',
+    'ho bisogno di una scheda',
+    'piano per allenarmi',
+    'voglio un piano di allenamento',
+    'voglio un piano workout',
+    'costruisci un piano',
+    'preparami un piano',
+    'dammi un piano',
+    'dammi un programma',
+    'una scheda',
+  ];
+  return keywords.some((k) => text.toLowerCase().includes(k));
+}
+
+function isNutritionPlanRequest(text: string): boolean {
+  if (containsPlanExclusion(text)) return false;
+  const keywords = [
+    'piano alimentare',
+    'piano nutrizionale',
+    'piano di nutrizione',
+    'piano dieta',
+    'piano alimentazione',
+    'piano di alimentazione',
+    'piano per mangiare',
+    'piano pasti',
+    'dieta personalizzata',
+    'schema alimentare',
+    'mi crei un piano alimentare',
+    'mi crei un piano nutrizionale',
+    'mi crei una dieta',
+    'crea un piano alimentare',
+    'creami un piano nutrizionale',
+    'creami un piano alimentare',
+    'creami una dieta',
+    'fammi un piano alimentare',
+    'fammi un piano nutrizionale',
+    'voglio un piano nutrizionale',
+    'voglio un piano alimentare',
+    'voglio una dieta',
+    'dammi un piano nutrizionale',
+    'preparami un piano alimentare',
+    'fammi una dieta',
+    'ho bisogno di una dieta',
+    'ho bisogno di un piano nutrizionale',
+    'ho bisogno di un piano alimentare',
+    'cosa devo mangiare',
+    'come devo mangiare',
+  ];
+  return keywords.some((k) => text.toLowerCase().includes(k));
+}
+
+function isGenericPlanRequest(text: string): boolean {
+  if (isWorkoutPlanRequestExplicit(text)) return false;
+  if (isNutritionPlanRequest(text)) return false;
+  return isWorkoutPlanRequest(text);
+}
+
+function parseAllergiesFromText(text: string): string[] {
+  const lower = text.toLowerCase();
+  const found: string[] = [];
+  const allergieKnown = [
+    'lattosio', 'glutine', 'nichel', 'arachidi', 'frutta secca',
+    'noci', 'mandorle', 'nocciole', 'uova', 'pesce', 'crostacei',
+    'molluschi', 'soia', 'sedano', 'senape', 'sesamo', 'lupini',
+    'latte', 'frumento', 'grano', 'orzo', 'segale', 'avena',
+    'anidride solforosa', 'solfiti', 'fructosio', 'fruttosio',
+    'istamina', 'sorbitolo',
+  ];
+  for (const allergia of allergieKnown) {
+    if (lower.includes(allergia)) found.push(allergia);
+  }
+  if (found.length === 0 && text.length > 3) found.push(text.trim());
+  return found;
 }
 
 /**
@@ -112,27 +255,56 @@ function parseActionsFromText(text: string): { cleanText: string; actions: Parse
   return { cleanText, actions };
 }
 
-// Funzione per formattare markdown senza librerie
+const headingStyle: React.CSSProperties = {
+  color: '#EEBA2B',
+  fontSize: '1rem',
+  fontWeight: 700,
+  margin: '12px 0 4px 0',
+};
+
+// Funzione per formattare markdown senza librerie (grassetto, corsivo, heading ### ## #)
 const renderFormattedMessage = (text: string) => {
   if (!text) return null;
-  
-  // Splitta per ** e processa
-  const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
-  
-  return parts.map((part, index) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      // Grassetto
-      return <strong key={index} className="font-bold text-yellow-400">
-        {part.slice(2, -2)}
-      </strong>;
-    } else if (part.startsWith('*') && part.endsWith('*')) {
-      // Corsivo
-      return <em key={index} className="italic">
-        {part.slice(1, -1)}
-      </em>;
+
+  // Normalizza fine riga (Windows \r\n o \r) così il match ^ $ funziona e lo split è corretto
+  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = normalized.split('\n');
+
+  return lines.map((line, lineIndex) => {
+    const trimmed = line.trim();
+    // Match # ## ### (e oltre): #+ seguito da spazi opzionali e contenuto
+    const h3Match = /^#+\s*(.+)$/.exec(trimmed);
+    if (h3Match) {
+      const headingText = h3Match[1].trim().replace(/\*\*/g, '').replace(/\*/g, '');
+      return (
+        <h3 key={lineIndex} style={headingStyle}>
+          {headingText}
+        </h3>
+      );
     }
-    // Testo normale
-    return <span key={index}>{part}</span>;
+    // Bold/italic per riga (come prima)
+    const parts = line.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+    return (
+      <div key={lineIndex}>
+        {parts.map((part, partIndex) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return (
+              <strong key={partIndex} className="font-bold text-yellow-400">
+                {part.slice(2, -2)}
+              </strong>
+            );
+          }
+          if (part.startsWith('*') && part.endsWith('*')) {
+            return (
+              <em key={partIndex} className="italic">
+                {part.slice(1, -1)}
+              </em>
+            );
+          }
+          return <span key={partIndex}>{part}</span>;
+        })}
+      </div>
+    );
   });
 };
 
@@ -150,7 +322,10 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   interface PendingPlanResponse {
-    plan: StructuredWorkoutPlan;
+    plan?: StructuredWorkoutPlan;
+    nutritionPlan?: StructuredNutritionPlan;
+    nutritionPlanId?: string;
+    planType: 'workout' | 'nutrition';
     hasExistingLimitations?: boolean;
     hasAnsweredBefore?: boolean;
     hasLimitations?: boolean;
@@ -198,6 +373,22 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   // ⭐ FIX BUG 3: Stato per gestire dolore rilevato nel messaggio corrente
   const [waitingForPainDetails, setWaitingForPainDetails] = useState(false);
   const [tempPainBodyPart, setTempPainBodyPart] = useState<string | null>(null);
+  const [quickRepliesVisible, setQuickRepliesVisible] = useState(true);
+
+  // P14: Cooldown pain check — zone già controllate in questa sessione (no repeat)
+  const [painZonesCheckedInSession, setPainZonesCheckedInSession] = useState<Set<string>>(new Set());
+
+  // --- Flusso piano (nuovo) ---
+  const [currentPlanType, setCurrentPlanType] = useState<'workout' | 'nutrition' | null>(null);
+  const [waitingForPlanTypeChoice, setWaitingForPlanTypeChoice] = useState(false);
+  const [waitingForWorkoutLimitations, setWaitingForWorkoutLimitations] = useState(false);
+  const [waitingForNutritionLimitations, setWaitingForNutritionLimitations] = useState(false);
+  const [waitingForWorkoutLimitationsConfirm, setWaitingForWorkoutLimitationsConfirm] = useState(false);
+  const [waitingForNutritionLimitationsConfirm, setWaitingForNutritionLimitationsConfirm] = useState(false);
+  const [waitingForWorkoutLimitationsUpdate, setWaitingForWorkoutLimitationsUpdate] = useState(false);
+  const [waitingForNutritionLimitationsUpdate, setWaitingForNutritionLimitationsUpdate] = useState(false);
+  const [waitingForNutritionDuration, setWaitingForNutritionDuration] = useState(false);
+  const [savedPlanRequest, setSavedPlanRequest] = useState<string | null>(null);
 
   // Helper function to add bot message
   const addBotMessage = useCallback((text: string) => {
@@ -370,6 +561,287 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     return false;
   }
 
+  function resetPlanFlowStates() {
+    setCurrentPlanType(null);
+    setWaitingForPlanTypeChoice(false);
+    setWaitingForWorkoutLimitations(false);
+    setWaitingForNutritionLimitations(false);
+    setWaitingForWorkoutLimitationsConfirm(false);
+    setWaitingForNutritionLimitationsConfirm(false);
+    setWaitingForWorkoutLimitationsUpdate(false);
+    setWaitingForNutritionLimitationsUpdate(false);
+    setWaitingForNutritionDuration(false);
+    setSavedPlanRequest(null);
+  }
+
+  function extractDurationFromText(text: string): number | null {
+    const lower = text.toLowerCase();
+    // 3 giorni
+    if (
+      lower.includes('3 giorni') ||
+      lower.includes('tre giorni')
+    ) return 3;
+    // Cap: massimo 1 settimana (mese/2 settimane → 7)
+    if (
+      lower.includes('mese') ||
+      lower.includes('mensile') ||
+      lower.includes('30 giorni') ||
+      lower.includes('30giorni') ||
+      lower.includes('due settimane') ||
+      lower.includes('2 settimane') ||
+      lower.includes('14 giorni')
+    ) return 7;
+    // 1 settimana
+    if (
+      lower.includes('settimanale') ||
+      lower.includes('una settimana') ||
+      lower.includes('1 settimana') ||
+      lower.includes('7 giorni') ||
+      lower.includes('settimana')
+    ) return 7;
+    return null;
+  }
+
+  function showNutritionDurationButtons() {
+    setMsgs(prev => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: 'bot' as const,
+        text: 'Perfetto! Quanti giorni vuoi che duri il tuo piano nutrizionale?',
+        actions: [
+          { type: 'plan_flow' as ActionType, label: '3 giorni', payload: { action: 'nutrition_duration', days: 3 } },
+          { type: 'plan_flow' as ActionType, label: '1 settimana', payload: { action: 'nutrition_duration', days: 7 } },
+        ],
+      },
+    ]);
+    setWaitingForNutritionDuration(true);
+  }
+
+  async function startWorkoutPlanFlow(originalRequest: string) {
+    setCurrentPlanType('workout');
+    setSavedPlanRequest(originalRequest);
+
+    // Carica stato limitazioni dal profilo
+    const limitationsCheck = userId && !userId.startsWith('guest-')
+      ? await getSmartLimitationsCheck(userId)
+      : null;
+
+    // CASO A — Ha limitazioni recenti (≤30gg): chiedi conferma
+    if (
+      limitationsCheck?.hasExistingLimitations &&
+      !limitationsCheck.needsToAsk &&
+      limitationsCheck.limitations
+    ) {
+      const zonesText = limitationsCheck.zones?.join(', ') ?? '';
+      const zonesLine = zonesText
+        ? `\nZone da evitare: **${zonesText}**`
+        : '';
+      setWaitingForWorkoutLimitationsConfirm(true);
+      setMsgs(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'bot' as const,
+        text: `Ho visto che hai indicato: **${limitationsCheck.limitations}**.${zonesLine}\n\nVuoi che tenga conto di queste limitazioni nel piano? 💪`,
+        actions: [
+          {
+            type: 'plan_flow' as ActionType,
+            label: '✅ Sì, procedi',
+            payload: { action: 'proceed_workout' },
+          },
+          {
+            type: 'plan_flow' as ActionType,
+            label: '✏️ No, sono cambiate',
+            payload: { action: 'update_workout_limitations' },
+          },
+        ],
+      }]);
+      return;
+    }
+
+    // CASO A2 — Ha limitazioni ma vecchie (>30gg): chiedi aggiornamento
+    if (
+      limitationsCheck?.hasExistingLimitations &&
+      limitationsCheck.needsToAsk &&
+      limitationsCheck.suggestedQuestion
+    ) {
+      setWaitingForWorkoutLimitations(true);
+      const questionText = limitationsCheck.suggestedQuestion;
+      setMsgs(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'bot' as const,
+        text: questionText,
+      }]);
+      return;
+    }
+
+    // CASO B — Ha risposto "no limitazioni" di recente: genera direttamente
+    if (
+      limitationsCheck?.hasAnsweredBefore &&
+      !limitationsCheck.hasExistingLimitations &&
+      !limitationsCheck.needsToAsk
+    ) {
+      await generateWorkoutPlanFromChat(originalRequest);
+      return;
+    }
+
+    // CASO C — Mai compilato o dati scaduti: flusso standard
+    setWaitingForWorkoutLimitations(true);
+    setMsgs(prev => [...prev, {
+      id: crypto.randomUUID(),
+      role: 'bot' as const,
+      text: 'Prima di creare il tuo piano di allenamento, hai dolori o limitazioni fisiche da considerare? (es. ginocchio, schiena, spalla)\n\nSe non hai problemi, scrivi "no" e procedo subito! 💪',
+    }]);
+  }
+
+  async function startNutritionPlanFlow(originalRequest: string) {
+    setCurrentPlanType('nutrition');
+    setSavedPlanRequest(originalRequest);
+    const allergie = userId && !userId.startsWith('guest-') ? await getAllergies(userId) : [];
+    if (allergie.length > 0) {
+      const allergieText = allergie.join(', ');
+      setWaitingForNutritionLimitationsConfirm(true);
+      setMsgs(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'bot' as const,
+        text: `Ho già salvato che sei intollerante/allergico a: **${allergieText}**.\n\nVuoi aggiornare queste informazioni o procedo con il piano usando i dati già salvati? 🥗`,
+        actions: [
+          { type: 'plan_flow' as ActionType, label: '✏️ Aggiorna', payload: { action: 'update_nutrition_limitations' } },
+          { type: 'plan_flow' as ActionType, label: '✅ Procedi con il piano', payload: { action: 'proceed_nutrition' } },
+        ],
+      }]);
+    } else {
+      setWaitingForNutritionLimitations(true);
+      setMsgs(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'bot' as const,
+        text: 'Prima di creare il tuo piano alimentare, hai allergie o intolleranze alimentari da considerare? (es. lattosio, glutine, nichel)\n\nSe non hai problemi, scrivi "no" e procedo subito! 🥗',
+      }]);
+    }
+  }
+
+  async function handlePlanFlowAction(payload: Record<string, unknown>) {
+    if (payload.action === 'nutrition_duration') {
+      const days = typeof payload.days === 'number' ? payload.days : 7;
+      setWaitingForNutritionDuration(false);
+      await generateNutritionPlanFromChat(savedPlanRequest || '', days);
+      return;
+    }
+    const action = payload.action as string;
+    switch (action) {
+      case 'choose_workout':
+        setWaitingForPlanTypeChoice(false);
+        await startWorkoutPlanFlow('Crea un piano di allenamento');
+        break;
+      case 'choose_nutrition':
+        setWaitingForPlanTypeChoice(false);
+        await startNutritionPlanFlow('Crea un piano alimentare');
+        break;
+      case 'proceed_workout':
+        setWaitingForWorkoutLimitationsConfirm(false);
+        await generateWorkoutPlanFromChat('Crea il piano con le limitazioni già salvate');
+        break;
+      case 'update_workout_limitations':
+        setWaitingForWorkoutLimitationsConfirm(false);
+        setWaitingForWorkoutLimitationsUpdate(true);
+        setMsgs(prev => [...prev, {
+          id: crypto.randomUUID(),
+          role: 'bot' as const,
+          text: 'Dimmi quali dolori o limitazioni vuoi aggiornare o aggiungere. (es. "ho anche dolore alla spalla destra") 💪',
+        }]);
+        break;
+      case 'proceed_nutrition':
+        setWaitingForNutritionLimitationsConfirm(false);
+        const detectedDaysProceed = extractDurationFromText(savedPlanRequest || '');
+        if (detectedDaysProceed !== null) {
+          await generateNutritionPlanFromChat(savedPlanRequest || '', detectedDaysProceed);
+        } else {
+          showNutritionDurationButtons();
+        }
+        return;
+      case 'update_nutrition_limitations':
+        setWaitingForNutritionLimitationsConfirm(false);
+        setWaitingForNutritionLimitationsUpdate(true);
+        setMsgs(prev => [...prev, {
+          id: crypto.randomUUID(),
+          role: 'bot' as const,
+          text: 'Dimmi quali allergie o intolleranze vuoi aggiornare o aggiungere. (es. "sono anche intollerante al glutine") 🥗',
+        }]);
+        break;
+    }
+  }
+
+  async function generateWorkoutPlanFromChat(request: string) {
+    setLoading(true);
+    const loadingMsgId = crypto.randomUUID();
+    setMsgs(prev => [...prev, {
+      id: loadingMsgId,
+      role: 'bot' as const,
+      text: '💪 Sto analizzando il tuo profilo e creando un piano di allenamento completamente personalizzato su di te... Questo richiede circa 20-30 secondi, ma ne varrà la pena! 🔥',
+    }]);
+    try {
+      let currentSessionId = sessionId;
+      if (!currentSessionId && userId) {
+        currentSessionId = await getOrCreateSessionId(userId);
+        setSessionId(currentSessionId);
+      }
+      const result = await getStructuredWorkoutPlan(request, userId ?? '', currentSessionId ?? undefined);
+      if (!result.success && result.message) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'bot' as const, text: result.message ?? 'Errore generazione piano.' }]);
+        return;
+      }
+      if (result.plan) {
+        setPendingPlan({
+          plan: result.plan,
+          planType: 'workout',
+          hasLimitations: result.hasExistingLimitations ?? false,
+        });
+        setShowPlanDisclaimer(true);
+      } else {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'bot' as const, text: result.message ?? 'Errore generazione piano.' }]);
+      }
+    } finally {
+      setMsgs(prev => prev.filter(m => m.id !== loadingMsgId));
+      setLoading(false);
+      resetPlanFlowStates();
+    }
+  }
+
+  async function generateNutritionPlanFromChat(request: string, durationDays: number = 7) {
+    setLoading(true);
+    const loadingMsgId = crypto.randomUUID();
+    setMsgs(prev => [...prev, {
+      id: loadingMsgId,
+      role: 'bot' as const,
+      text: '🥗 Sto analizzando i tuoi obiettivi, le tue preferenze alimentari e creando un piano nutrizionale su misura per te... Ci vogliono circa 20-30 secondi, ma il risultato sarà preciso e personalizzato! ✨',
+    }]);
+    try {
+      const uid = userId ?? '';
+      const allergie = uid && !uid.startsWith('guest-') ? await getAllergies(uid) : [];
+      const userCtx = uid ? await getUserContext(uid) : null;
+      const contextStr = userCtx ? formatUserContextForPrompt(userCtx) : undefined;
+      const result = await getStructuredNutritionPlan(request, uid, allergie, contextStr, sessionId ?? undefined, durationDays);
+      if (result.limitReached) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'bot' as const, text: result.message }]);
+        return;
+      }
+      if (result.plan) {
+        setPendingPlan({
+          nutritionPlan: result.plan,
+          nutritionPlanId: result.planId,
+          planType: 'nutrition',
+          hasLimitations: allergie.length > 0,
+        });
+        setShowPlanDisclaimer(true);
+      } else {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'bot' as const, text: result.message }]);
+      }
+    } finally {
+      setMsgs(prev => prev.filter(m => m.id !== loadingMsgId));
+      setLoading(false);
+      resetPlanFlowStates();
+    }
+  }
+
   async function send(text: string) {
     const trimmed = text.trim();
     
@@ -383,6 +855,34 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
       setSkipUserMessageAdd(false); // Reset per la prossima volta
     }
     
+    // ESCAPE UNIVERSALE: "annulla" resetta tutti gli stati (P6)
+    const isEscapeCommand = /^(annulla|esci|stop|basta|reset|ricomincia|torna alla chat)$/i.test(trimmed);
+
+    if (isEscapeCommand) {
+      setWaitingForPainResponse(false);
+      setWaitingForPainDetails(false);
+      setWaitingForPainPlanConfirmation(false);
+      setWaitingForPlanConfirmation(false);
+      setWaitingForModifyChoice(false);
+      setCurrentPainZone(null);
+      resetPlanFlowStates();
+
+      setMsgs(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'user',
+        text: trimmed
+      }]);
+
+      setMsgs(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'bot' as const,
+        text: 'Nessun problema! 😊 Torniamo alla chat normale. Come posso aiutarti?'
+      }]);
+
+      setInput('');
+      return;
+    }
+
     // === SISTEMA TRACKING DOLORI - INIZIO ===
     // ⭐ FIX BUG 6: Log di debug per tracciare stato
     console.log('🔍 BUG 6 DEBUG: waitingForPainResponse =', waitingForPainResponse, 'message =', trimmed);
@@ -574,6 +1074,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
                 // Mostra disclaimer
                 setPendingPlan({
                   plan: planResponse.plan,
+                  planType: 'workout',
                   hasLimitations: planResponse.hasExistingLimitations ?? false,
                   actions: [
                     {
@@ -745,6 +1246,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
               // Mostra disclaimer
               setPendingPlan({
                 plan: planResponse.plan,
+                planType: 'workout',
                 hasLimitations: planResponse.hasExistingLimitations ?? false,
                 actions: [
                   {
@@ -1037,6 +1539,165 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       } // chiusura else di wantsToProceed
     }
     // === FINE SISTEMA MODIFICA PREFERENZE IN CHAT ===
+
+    // ── FLUSSO PIANO: scelta tipo (richiesta generica) ──────────
+    if (waitingForPlanTypeChoice && trimmed) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      const lower = trimmed.toLowerCase();
+      if (lower.includes('allenamento') || lower.includes('workout') || lower.includes('fitness') || lower.includes('sport')) {
+        setWaitingForPlanTypeChoice(false);
+        await startWorkoutPlanFlow(trimmed);
+        return;
+      }
+      if (lower.includes('alimentare') || lower.includes('nutrizione') || lower.includes('nutrizionale') || lower.includes('dieta') || lower.includes('mangiare') || lower.includes('pasti')) {
+        setWaitingForPlanTypeChoice(false);
+        await startNutritionPlanFlow(trimmed);
+        return;
+      }
+      setMsgs(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'bot' as const,
+        text: 'Non ho capito il tipo di piano. Scegli una delle opzioni qui sotto:',
+        actions: [
+          { type: 'plan_flow' as ActionType, label: '🏋️ Piano Allenamento', payload: { action: 'choose_workout' } },
+          { type: 'plan_flow' as ActionType, label: '🥗 Piano Nutrizione', payload: { action: 'choose_nutrition' } },
+        ],
+      }]);
+      return;
+    }
+
+    // ── FLUSSO PIANO: attesa limitazioni workout ─────────────────
+    if (waitingForWorkoutLimitations && trimmed) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      setWaitingForWorkoutLimitations(false);
+      const noLimitations = /^(no|nessun|nessuno|niente|sto bene|ok|va bene)$/i.test(trimmed);
+      if (!noLimitations && trimmed.length > 2 && userId) {
+        await parseAndSaveLimitationsFromChat(userId, trimmed);
+      }
+      await generateWorkoutPlanFromChat(savedPlanRequest || trimmed);
+      return;
+    }
+
+    // ── FLUSSO PIANO: attesa allergie nutrition ──────────────────
+    if (waitingForNutritionLimitations && trimmed) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      setWaitingForNutritionLimitations(false);
+      const noAllergie = /^(no|nessun|nessuno|niente|sto bene|ok|va bene)$/i.test(trimmed);
+      if (!noAllergie && trimmed.length > 2 && userId) {
+        const nuoveAllergie = parseAllergiesFromText(trimmed);
+        if (nuoveAllergie.length > 0) await updateAllergies(userId, nuoveAllergie);
+      }
+      const detectedDaysAllergie = extractDurationFromText(savedPlanRequest || '');
+      if (detectedDaysAllergie !== null) {
+        await generateNutritionPlanFromChat(savedPlanRequest || '', detectedDaysAllergie);
+      } else {
+        showNutritionDurationButtons();
+      }
+      return;
+    }
+
+    // ── FLUSSO PIANO: aggiornamento limitazioni workout ──────────
+    if (waitingForWorkoutLimitationsUpdate && trimmed) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      setWaitingForWorkoutLimitationsUpdate(false);
+      if (userId) await parseAndSaveLimitationsFromChat(userId, trimmed);
+      addBotMessage('Ho aggiornato le tue limitazioni! Ora genero il piano... 💪');
+      await generateWorkoutPlanFromChat(trimmed);
+      return;
+    }
+
+    // ── FLUSSO PIANO: aggiornamento allergie nutrition ───────────
+    if (waitingForNutritionLimitationsUpdate && trimmed) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      setWaitingForNutritionLimitationsUpdate(false);
+      const nuoveAllergie = parseAllergiesFromText(trimmed);
+      if (nuoveAllergie.length > 0 && userId) {
+        await updateAllergies(userId, nuoveAllergie);
+        addBotMessage(`Ho aggiornato le tue allergie: **${nuoveAllergie.join(', ')}**. Ora genero il piano... 🥗`);
+      }
+      const detectedDaysUpdate = extractDurationFromText(savedPlanRequest || '');
+      if (detectedDaysUpdate !== null) {
+        await generateNutritionPlanFromChat(savedPlanRequest || '', detectedDaysUpdate);
+      } else {
+        showNutritionDurationButtons();
+      }
+      return;
+    }
+
+    // ── FLUSSO PIANO: attesa scelta durata nutrition ──────────────
+    if (waitingForNutritionDuration && trimmed) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      const lower = trimmed.toLowerCase();
+      const days = (lower.includes('3') || lower.includes('tre')) ? 3 : 7;
+      setWaitingForNutritionDuration(false);
+      await generateNutritionPlanFromChat(savedPlanRequest || trimmed, days);
+      return;
+    }
+    
+    // ── RILEVAMENTO TIPO PIANO ────────────────────────────────────
+    // 1. NUTRIZIONE — sempre prima per evitare falsi positivi workout
+    if (isNutritionPlanRequest(trimmed)) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      await startNutritionPlanFlow(trimmed);
+      return;
+    }
+    // 2. WORKOUT ESPLICITO
+    if (isWorkoutPlanRequestExplicit(trimmed)) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      await startWorkoutPlanFlow(trimmed);
+      return;
+    }
+    // 3. GENERICO — mostra scelta tra workout e nutrizione
+    if (isGenericPlanRequest(trimmed)) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      setWaitingForPlanTypeChoice(true);
+      setMsgs(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'bot' as const,
+        text: 'Che tipo di piano vuoi creare? 🎯',
+        actions: [
+          { type: 'plan_flow' as ActionType, label: '🏋️ Piano Allenamento', payload: { action: 'choose_workout' } },
+          { type: 'plan_flow' as ActionType, label: '🥗 Piano Nutrizione', payload: { action: 'choose_nutrition' } },
+        ],
+      }]);
+      return;
+    }
     
     // Check dolori PRIMA di generare piano
     const isPlanRequestForPainCheck = /piano|allenamento|workout|scheda|programma|esercizi|allena|creami/i.test(trimmed);
@@ -1096,53 +1757,65 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
     }
     
     // Controlla dolori esistenti nel database (logica originale)
-    if (isPlanRequestForPainCheck && pains.length > 0 && painCheckMessage && !waitingForPainResponse && !waitingForPainDetails) {
-      console.log('✅ ENTRO NEL BLOCCO CHECK DOLORI - Mostro painCheckMessage');
-      // Aggiungi messaggio utente alla chat
-      if (shouldAddUserMessage) {
-        setMsgs(prev => [...prev, { 
-          id: crypto.randomUUID(),
-          role: 'user', 
-          text: trimmed 
-        }]);
-        shouldAddUserMessage = false; // Evita duplicazione
-      }
-      setInput('');
-      
-      setWaitingForPainResponse(true);
-      // ⭐ FIX BUG 7: Setta sempre currentPainZone se c'è almeno un dolore
-      if (pains.length > 0) {
-        setCurrentPainZone(pains[0].zona);
-        console.log('🗑️ BUG 7 DEBUG: Setto currentPainZone =', pains[0].zona, '(dolori totali:', pains.length, ')');
-      }
-      
-      // Aggiungi messaggio bot con bottone per contattare professionista
-      const painMessageWithAction = `${painCheckMessage}
+    // Non mostrare pain check se il messaggio è una domanda su statistiche/stato/progressi
+    const isStatsOrGeneralQuestion = /streak|quanti|quante|totale|come\s+sto|come\s+va|stato|progressi|fatto\s+in\s+totale|obiettivi|ho\s+fatto|risultati/i.test(trimmed);
+
+    if (isWorkoutPlanRequest(trimmed) && pains.length > 0 && painCheckMessage && !waitingForPainResponse && !waitingForPainDetails && !isStatsOrGeneralQuestion) {
+      // P14: Non mostrare lo stesso pain check più di una volta per sessione
+      const currentPainZoneForCheck = pains[0]?.zona;
+      if (currentPainZoneForCheck && painZonesCheckedInSession.has(currentPainZoneForCheck)) {
+        // Zona già controllata in questa sessione, salta il pain check e lascia proseguire il flusso
+      } else {
+        if (currentPainZoneForCheck) {
+          setPainZonesCheckedInSession(prev => new Set([...prev, currentPainZoneForCheck]));
+        }
+        console.log('✅ ENTRO NEL BLOCCO CHECK DOLORI - Mostro painCheckMessage');
+        // Aggiungi messaggio utente alla chat
+        if (shouldAddUserMessage) {
+          setMsgs(prev => [...prev, { 
+            id: crypto.randomUUID(),
+            role: 'user', 
+            text: trimmed 
+          }]);
+          shouldAddUserMessage = false; // Evita duplicazione
+        }
+        setInput('');
+        
+        setWaitingForPainResponse(true);
+        // ⭐ FIX BUG 7: Setta sempre currentPainZone se c'è almeno un dolore
+        if (pains.length > 0) {
+          setCurrentPainZone(pains[0].zona);
+          console.log('🗑️ BUG 7 DEBUG: Setto currentPainZone =', pains[0].zona, '(dolori totali:', pains.length, ')');
+        }
+        
+        // Aggiungi messaggio bot con bottone per contattare professionista
+        const painMessageWithAction = `${painCheckMessage}
 
 
 💡 **Se preferisci, puoi contattare uno dei nostri professionisti per un consulto personalizzato.**`;
-      
-      setMsgs(prev => [...prev, {
-        id: crypto.randomUUID(),
-        role: 'bot' as const,
-        text: painMessageWithAction,
-        actions: [
-          {
-            type: 'navigate' as const,
-            label: '👨‍⚕️ Contatta un professionista',
-            payload: { path: '/professionals' }
-          }
-        ]
-      }]);
-      
-      return;
+        
+        setMsgs(prev => [...prev, {
+          id: crypto.randomUUID(),
+          role: 'bot' as const,
+          text: painMessageWithAction,
+          actions: [
+            {
+              type: 'navigate' as const,
+              label: '👨‍⚕️ Contatta un professionista',
+              payload: { path: '/professionals' }
+            }
+          ]
+        }]);
+        
+        return;
+      }
     }
     // === SISTEMA TRACKING DOLORI - FINE ===
     
     // === SISTEMA RIEPILOGO ONBOARDING - MOSTRA RIEPILOGO ===
     // Se è una richiesta piano E non stiamo aspettando conferma E non ci sono dolori da gestire
     // ⭐ FIX BUG 3: Aggiunto controllo waitingForPainDetails per evitare conflitti
-    if (isPlanRequestForPainCheck && !waitingForPlanConfirmation && !waitingForPainResponse && !waitingForPainDetails && !waitingForPainPlanConfirmation) {
+    if (isWorkoutPlanRequest(trimmed) && !waitingForPlanConfirmation && !waitingForPainResponse && !waitingForPainDetails && !waitingForPainPlanConfirmation) {
       // Se l'utente ha appena confermato (pendingPlanRequest è settato), salta il riepilogo
       if (pendingPlanRequest) {
         console.log('✅ Utente ha confermato, uso pendingPlanRequest per generare piano');
@@ -1271,6 +1944,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
           if (result.hasLimitations) {
             setPendingPlan({
               plan: planResponse.plan,
+              planType: 'workout',
               hasLimitations: result.hasLimitations, // Salva info limitazioni per il disclaimer
               actions: [
                 {
@@ -1346,15 +2020,13 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         return;
       }
       
-      // ⭐ FIX BUG 6: Controllo di sicurezza PRIMA del fallback
-      // Intercetta "passato" anche se waitingForPainResponse non è attivo ma c'è dolore recente
+      // ⭐ FIX BUG 6 + P4: Intercetta risposta dolore SOLO se in attesa O messaggio esplicito; non "ok"/"sì" generici
       if (pains.length > 0 && !waitingForPainResponse && !waitingForPainDetails && !waitingForPainPlanConfirmation) {
         const userMessageLower = trimmed.toLowerCase();
-        const isPainResponse = userMessageLower.includes('passato') || 
-                               userMessageLower.includes('meglio') || 
-                               userMessageLower.includes('guarito') ||
-                               (userMessageLower === 'sì' || userMessageLower === 'si' || userMessageLower === 'ok');
-        
+        const isExplicitPainResolution = /passato|guarito|meglio|non.*fa.*male|non.*duole|risolto/i.test(trimmed);
+        const isGenericAffirmation = /^(sì|si|ok|okay|va bene|certo|esatto)$/i.test(trimmed);
+        const isPainResponse = (waitingForPainResponse || isExplicitPainResolution) && !(isGenericAffirmation && !waitingForPainResponse);
+
         if (isPainResponse) {
           console.log('🛡️ FIX BUG 6: Intercettato "passato" anche se stato non attivo. pains.length =', pains.length);
           
@@ -1642,6 +2314,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             // POI: Imposta il piano in pending per mostrare il disclaimer DOPO il messaggio
             setPendingPlan({
               plan: planResponse.plan,
+              planType: 'workout',
               hasLimitations: planResponse.hasExistingLimitations ?? false,
               actions: [
                 {
@@ -1669,6 +2342,28 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             // NON ha limitazioni O non ha mai risposto prima → mostra piano direttamente senza disclaimer
             console.log('✅ DEBUG - NON ha limitazioni O non ha mai risposto - Mostro piano direttamente');
             console.log('✅ Utente NON ha limitazioni O non ha mai risposto, mostro piano direttamente');
+            const savePayload = {
+              name: planResponse.plan.name,
+              workout_type: planResponse.plan.workout_type,
+              exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
+                name: ex.name,
+                sets: ex.sets,
+                reps: ex.reps,
+                rest_seconds: ex.rest_seconds,
+                notes: ex.notes,
+              })),
+              duration: planResponse.plan.duration_minutes,
+            };
+            if (userId) {
+              saveWorkoutPlan(userId, savePayload).catch(() => {
+                toast.error('Salvataggio piano fallito. Usa "Salva questo piano" per riprovare.');
+              });
+            }
+            const goToMyPlansAction: ParsedAction = {
+              type: 'navigate' as const,
+              label: '📋 Vai a I miei piani',
+              payload: { path: '/i-miei-piani' },
+            };
             const botMessage: Msg = {
               id: crypto.randomUUID(),
               role: 'bot' as const,
@@ -1678,19 +2373,9 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                 {
                   type: 'save_workout',
                   label: 'Salva questo piano',
-                  payload: {
-                    name: planResponse.plan.name,
-                    workout_type: planResponse.plan.workout_type,
-                    exercises: planResponse.plan.exercises.map((ex: StructuredExercise) => ({
-                      name: ex.name,
-                      sets: ex.sets,
-                      reps: ex.reps,
-                      rest_seconds: ex.rest_seconds,
-                      notes: ex.notes,
-                    })),
-                    duration: planResponse.plan.duration_minutes,
-                  },
+                  payload: savePayload,
                 },
+                goToMyPlansAction,
               ],
             };
             setMsgs(m => [...m, botMessage]);
@@ -1996,7 +2681,26 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                           )}
                         </div>
                       )}
+                      <div className="mt-4 pt-4 border-t border-gray-600">
+                        <button
+                          type="button"
+                          onClick={() => downloadWorkoutPlanPDF(m.workoutPlan!)}
+                          className="flex items-center gap-2 rounded-lg bg-[#EEBA2B] px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-yellow-400"
+                        >
+                          📥 Scarica PDF
+                        </button>
+                      </div>
                     </div>
+                  )}
+
+                  {/* Card Piano Nutrizionale */}
+                  {m.role === 'bot' && m.nutritionPlan && (
+                    <NutritionPlanCard
+                      plan={m.nutritionPlan}
+                      planId={m.nutritionPlanId}
+                      userId={userId}
+                      onDelete={() => setMsgs((prev) => prev.filter((msg) => msg.id !== m.id))}
+                    />
                   )}
                   
                   {/* Bottoni azioni PrimeBot */}
@@ -2009,15 +2713,22 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                           label={action.label}
                           payload={action.payload}
                           onAction={async () => {
+                            if (action.type === 'plan_flow') {
+                              await handlePlanFlowAction(action.payload);
+                              return;
+                            }
                             const result = await executeAction(
-                              userId,
+                              userId ?? '',
                               action.type,
                               action.payload,
                               (path: string, state?: unknown) => navigate(path, { state })
                             );
-                            
                             if (result.success) {
-                              toast.success(result.message || 'Azione completata con successo!');
+                              if (action.type === 'navigate' && action.payload?.path === '/i-miei-piani') {
+                                toast.success('I miei piani', { description: 'Apertura dei tuoi piani...' });
+                              } else {
+                                toast.success(result.message || 'Azione completata con successo!');
+                              }
                             } else {
                               throw new Error(result.error || 'Errore durante l\'esecuzione');
                             }
@@ -2035,28 +2746,62 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             ))}
             
             {/* Health Disclaimer DOPO i messaggi (quando necessario) */}
-            {showPlanDisclaimer && pendingPlan && (
+            {showPlanDisclaimer && pendingPlan && (pendingPlan.plan || pendingPlan.nutritionPlan) && (
               <div className="max-w-[85%] mr-auto mb-4">
                 <HealthDisclaimer
-                  userId={userId}
-                  disclaimerType="workout_plan"
-                  onAccept={() => {
-                    // Quando accetta, mostra il piano
+                  userId={userId ?? ''}
+                  disclaimerType={pendingPlan.planType === 'nutrition' ? 'nutrition_plan' : 'workout_plan'}
+                  onAccept={async () => {
                     setShowPlanDisclaimer(false);
-                    const botMessage: Msg = {
-                      id: crypto.randomUUID(),
-                      role: 'bot' as const,
-                      text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
-                      workoutPlan: pendingPlan.plan,
-                      actions: pendingPlan.actions,
+                    if (pendingPlan.planType === 'workout' && pendingPlan.plan && userId) {
+                      try {
+                        await saveWorkoutPlan(userId, {
+                          name: pendingPlan.plan.name,
+                          workout_type: pendingPlan.plan.workout_type,
+                          exercises: pendingPlan.plan.exercises.map((ex: StructuredExercise) => ({
+                            name: ex.name,
+                            sets: ex.sets,
+                            reps: ex.reps,
+                            rest_seconds: ex.rest_seconds,
+                            notes: ex.notes,
+                          })),
+                          duration: pendingPlan.plan.duration_minutes,
+                        });
+                      } catch {
+                        toast.error('Piano non salvato. Puoi usare "Salva questo piano" per riprovare.');
+                      }
+                    }
+                    const goToMyPlansAction: ParsedAction = {
+                      type: 'navigate' as const,
+                      label: '📋 Vai a I miei piani',
+                      payload: { path: '/i-miei-piani' },
                     };
+                    const botMessage: Msg = pendingPlan.planType === 'nutrition' && pendingPlan.nutritionPlan
+                      ? {
+                          id: crypto.randomUUID(),
+                          role: 'bot' as const,
+                          text: 'Ecco il tuo piano alimentare personalizzato! 🥗',
+                          nutritionPlan: pendingPlan.nutritionPlan,
+                          nutritionPlanId: pendingPlan.nutritionPlanId,
+                          actions: [goToMyPlansAction],
+                        }
+                      : {
+                          id: crypto.randomUUID(),
+                          role: 'bot' as const,
+                          text: 'Ecco il tuo piano di allenamento personalizzato! 💪',
+                          workoutPlan: pendingPlan.plan,
+                          actions: [...(pendingPlan.actions ?? []), goToMyPlansAction],
+                        };
                     setMsgs(m => [...m, botMessage]);
                     setPendingPlan(null);
                   }}
-                  context={{
-                    plan_name: pendingPlan.plan.name,
-                    workout_type: pendingPlan.plan.workout_type,
-                  }}
+                  context={
+                    pendingPlan.planType === 'nutrition' && pendingPlan.nutritionPlan
+                      ? { plan_name: pendingPlan.nutritionPlan.nome, plan_type: 'nutrition' }
+                      : pendingPlan.plan
+                        ? { plan_name: pendingPlan.plan.name, workout_type: pendingPlan.plan.workout_type }
+                        : {}
+                  }
                   userHasLimitations={pendingPlan?.hasLimitations ?? false}
                 />
               </div>
@@ -2078,20 +2823,33 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         </div>
 
         {/* Area Bottom - Quick Replies + Input */}
-        <div className="flex-shrink-0 border-t border-[#DAA520]/30 bg-black">
+        <div className="flex-shrink-0 bg-black">
           {/* Quick Replies */}
-          <div className="p-4">
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {questionsToShow.map(q => (
-                <button
-                  key={q}
-                  onClick={() => { setInput(q); send(q); }}
-                  className="border border-[#DAA520] hover:bg-[#EEBA2B]/10 bg-gray-800 text-white text-sm px-3 py-2 rounded-xl transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
+          <div className="px-4 pb-4 pt-0">
+            <button
+              onClick={() => setQuickRepliesVisible(prev => !prev)}
+              className="w-full flex justify-center items-center min-h-[44px] py-1 text-[#8A8A96] border-t border-[#DAA520]/30 hover:text-white transition-colors"
+              aria-label={quickRepliesVisible ? 'Nascondi suggerimenti' : 'Mostra suggerimenti'}
+            >
+              {quickRepliesVisible ? (
+                <ChevronDown size={18} />
+              ) : (
+                <ChevronUp size={18} />
+              )}
+            </button>
+            {quickRepliesVisible && (
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {questionsToShow.map(q => (
+                  <button
+                    key={q}
+                    onClick={() => { setInput(q); send(q); }}
+                    className="border border-[#DAA520] hover:bg-[#EEBA2B]/10 bg-gray-800 text-white text-sm px-3 py-2 rounded-xl transition-colors"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
             
             {/* Input */}
             <div className="flex gap-2">

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { NewObjectiveCard } from '@/components/profile/NewObjectiveCard';
 import { countUserPlans, fetchUserPlans } from '@/services/planService';
 import { toast } from 'sonner';
@@ -56,6 +57,7 @@ const pickNumberOrString = (value: unknown): number | string | undefined => {
 };
 
 const QuickActions = () => {
+  const { user } = useAuth();
   const [isObjectiveModalOpen, setIsObjectiveModalOpen] = useState(false);
   const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
   const [isLoadingPlans, setIsLoadingPlans] = useState(true);
@@ -63,23 +65,18 @@ const QuickActions = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!user?.id) {
+      setSavedPlans([]);
+      setIsLoadingPlans(false);
+      return;
+    }
     const loadSavedPlans = async () => {
       try {
         setIsLoadingPlans(true);
-
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-        if (!currentUser) {
-          setSavedPlans([]);
-          setIsLoadingPlans(false);
-          return;
-        }
-
         const { data, error } = await supabase
           .from('workout_plans')
           .select('id, nome, tipo, luogo, obiettivo, durata, esercizi, is_active, saved_for_later, created_at, updated_at')
-          .eq('user_id', currentUser.id)
+          .eq('user_id', user.id)
           .eq('is_active', true)
           .order('created_at', { ascending: false });
 
@@ -87,7 +84,6 @@ const QuickActions = () => {
           console.error('Errore caricamento piani:', error);
           setSavedPlans([]);
         } else {
-          console.log('Piani caricati:', data);
           setSavedPlans(data);
         }
       } catch (error) {
@@ -99,7 +95,7 @@ const QuickActions = () => {
     };
 
     loadSavedPlans();
-  }, []);
+  }, [user?.id]);
 
   const handleNewObjectiveClick = () => {
     setIsObjectiveModalOpen(true);
@@ -169,7 +165,6 @@ const QuickActions = () => {
   };
 
   const handleStartPlan = (plan: SavedPlan) => {
-    console.log('Avvio piano:', plan);
     setShowPlanModal(false);
 
     const exercises = Array.isArray(plan.esercizi) ? plan.esercizi : [];
@@ -189,8 +184,7 @@ const QuickActions = () => {
   };
 
   const handlePlanCardClick = async () => {
-    // Naviga sempre alla pagina piani attivi
-    navigate('/piani-attivi');
+    navigate('/i-miei-piani');
   };
 
   const planCountLabel =
@@ -259,7 +253,7 @@ const QuickActions = () => {
           <Target className="w-5 h-5 shrink-0" style={{ color: iconColor }} />
         </div>
         <div className="text-center w-full min-w-0">
-          <p className="text-[9px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px] truncate w-full">Piano Personalizzato</p>
+          <p className="text-[9px] font-semibold text-[#8A8A96] uppercase tracking-[0.3px] truncate w-full">I miei piani</p>
           <p className="text-[9px] text-[#8A8A96]/80 mt-0.5 truncate w-full">{planCountLabel}</p>
         </div>
       </Button>

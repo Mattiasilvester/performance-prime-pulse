@@ -36,6 +36,18 @@ export interface UserContext {
   limitazioni_descrizione?: string | null;  // da limitazioni_fisiche in DB
   zone_da_proteggere?: string[] | null;     // da zone_evitare in DB
   note_mediche?: string | null;            // da condizioni_mediche in DB
+  allergie_alimentari?: string[] | null;   // da user_onboarding_responses
+  zone_dolori_dettagli?: string | null;    // dettagli dolori/zone sensibili (da Json in DB)
+
+  // Statistiche attività reale (user_workout_stats)
+  streak_giorni?: number | null;
+  ultimo_allenamento?: string | null;  // "YYYY-MM-DD"
+  totale_allenamenti?: number | null;
+
+  // Ultimo workout completato (custom_workouts)
+  ultimo_workout_nome?: string | null;
+  ultimo_workout_tipo?: string | null;
+  ultimo_workout_durata?: number | null;  // minuti
 }
 
 /**
@@ -140,6 +152,16 @@ const mapLocationsToWorkoutTypes = (
 };
 
 /**
+ * Converte zone_dolori_dettagli (Json da DB) in stringa per il contesto
+ */
+function formatZoneDoloriDettagli(v: unknown): string | null {
+  if (v == null) return null;
+  if (typeof v === 'string') return v;
+  if (typeof v === 'object') return JSON.stringify(v);
+  return String(v);
+}
+
+/**
  * Recupera il contesto completo dell'utente per PrimeBot
  */
 export async function getUserContext(userId: string): Promise<UserContext> {
@@ -148,10 +170,32 @@ export async function getUserContext(userId: string): Promise<UserContext> {
     
     // 1. Recupera dati onboarding
     const onboardingData = await onboardingService.loadOnboardingData(userId);
+
+    // 2. Query stats workout (user_workout_stats)
+    const { data: workoutStats } = await supabase
+      .from('user_workout_stats')
+      .select('current_streak_days, last_workout_date, total_workouts')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    // 3. Ultimo workout completato (custom_workouts)
+    const { data: ultimoWorkout } = await supabase
+      .from('custom_workouts')
+      .select('title, workout_type, total_duration')
+      .eq('user_id', userId)
+      .eq('completed', true)
+      .order('completed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
     
-    // 2. Recupera profilo utente per nome
+    // 4. Recupera nome: onboarding → profilo (profiles) → auth user_metadata (Google OAuth)
     const userProfile = await fetchUserProfile();
-    const nome = onboardingData?.nome || userProfile?.name || 'Utente';
+    const { data: { user } } = await supabase.auth.getUser();
+    const googleName = user?.user_metadata?.full_name
+      || user?.user_metadata?.name
+      || user?.user_metadata?.display_name
+      || null;
+    const nome = onboardingData?.nome || userProfile?.name || googleName || 'Utente';
     
     // 3. Costruisci contesto con dati disponibili o default
     const context: UserContext = {
@@ -180,6 +224,16 @@ export async function getUserContext(userId: string): Promise<UserContext> {
       limitazioni_descrizione: onboardingData?.limitazioni_fisiche ?? null,
       zone_da_proteggere: onboardingData?.zone_evitare ?? null,
       note_mediche: onboardingData?.condizioni_mediche ?? null,
+      allergie_alimentari: onboardingData?.allergie_alimentari ?? null,
+      zone_dolori_dettagli: formatZoneDoloriDettagli((onboardingData as unknown as Record<string, unknown>)?.zone_dolori_dettagli),
+
+      streak_giorni: workoutStats?.current_streak_days ?? null,
+      ultimo_allenamento: workoutStats?.last_workout_date ?? null,
+      totale_allenamenti: workoutStats?.total_workouts ?? null,
+
+      ultimo_workout_nome: ultimoWorkout?.title ?? null,
+      ultimo_workout_tipo: ultimoWorkout?.workout_type ?? null,
+      ultimo_workout_durata: ultimoWorkout?.total_duration ?? null,
     };
     
     console.log('✅ getUserContext: Contesto recuperato:', {
@@ -193,11 +247,19 @@ export async function getUserContext(userId: string): Promise<UserContext> {
     
     return context;
   } catch (error) {
-    console.error('❌ Errore recupero contesto utente:', error);
+    console.error('❌ Errore recupero contesto utente:', error instanceof Error ? error.message : error);
     
-    // Ritorna contesto di default se recupero fallisce
+    let fallbackNome = 'Utente';
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const googleName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
+      if (googleName) fallbackNome = googleName;
+    } catch {
+      // ignora: usiamo 'Utente'
+    }
+    
     return {
-      nome: 'Utente',
+      nome: fallbackNome,
       obiettivi: ['fitness generale'],
       livello_fitness: null,
       livello_fitness_it: 'principiante',
@@ -209,6 +271,14 @@ export async function getUserContext(userId: string): Promise<UserContext> {
       limitazioni_descrizione: null,
       zone_da_proteggere: null,
       note_mediche: null,
+      allergie_alimentari: null,
+      zone_dolori_dettagli: null,
+      streak_giorni: null,
+      ultimo_allenamento: null,
+      totale_allenamenti: null,
+      ultimo_workout_nome: null,
+      ultimo_workout_tipo: null,
+      ultimo_workout_durata: null,
     };
   }
 }
@@ -305,6 +375,17 @@ export function formatUserContextForPrompt(context: UserContext): string {
   if (context.livello_fitness_it) {
     parts.push(`Il suo livello di fitness è: **${context.livello_fitness_it}**.`);
   }
+
+  // Dati fisici (età, peso, altezza)
+  if (context.eta != null) {
+    parts.push(`Età: **${context.eta} anni**.`);
+  }
+  if (context.peso != null) {
+    parts.push(`Peso: **${context.peso} kg**.`);
+  }
+  if (context.altezza != null) {
+    parts.push(`Altezza: **${context.altezza} cm**.`);
+  }
   
   // Attrezzatura disponibile
   if (context.attrezzatura_disponibile.length > 0) {
@@ -335,7 +416,7 @@ export function formatUserContextForPrompt(context: UserContext): string {
 
   // Limitazioni fisiche
   if (context.ha_limitazioni && context.limitazioni_descrizione) {
-    parts.push(`⚠️ Ha limitazioni fisiche: ${context.limitazioni_descrizione}.`);
+    parts.push(`⚠️ Limitazioni e note personali: ${context.limitazioni_descrizione}.`);
   }
 
   // Zone da proteggere
@@ -346,6 +427,54 @@ export function formatUserContextForPrompt(context: UserContext): string {
   // Note mediche
   if (context.note_mediche) {
     parts.push(`🏥 Note mediche: ${context.note_mediche}.`);
+  }
+
+  // Allergie alimentari
+  if (context.allergie_alimentari && context.allergie_alimentari.length > 0) {
+    parts.push(`🥗 Allergie alimentari: **${context.allergie_alimentari.join(', ')}**. Non suggerire alimenti che le contengono.`);
+  }
+
+  // Dettagli dolori / zone sensibili
+  if (context.zone_dolori_dettagli) {
+    parts.push(`📍 Dettagli dolori o zone sensibili: ${context.zone_dolori_dettagli}.`);
+  }
+
+  // ATTIVITÀ RECENTE (solo se almeno un dato disponibile)
+  const attivita: string[] = [];
+  if (context.totale_allenamenti != null) {
+    attivita.push(`- Allenamenti totali completati: ${context.totale_allenamenti}`);
+  }
+  if (context.streak_giorni != null && context.streak_giorni > 0) {
+    attivita.push(`- Streak attuale: ${context.streak_giorni} giorni consecutivi`);
+  }
+  if (context.ultimo_allenamento) {
+    const oggi = new Date();
+    const ultimoData = new Date(context.ultimo_allenamento);
+    const diffMs = oggi.getTime() - ultimoData.getTime();
+    const diffGiorni = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffGiorni === 0) {
+      attivita.push(`- Ultimo allenamento: oggi`);
+    } else if (diffGiorni === 1) {
+      attivita.push(`- Ultimo allenamento: ieri`);
+    } else {
+      attivita.push(`- Ultimo allenamento: ${diffGiorni} giorni fa (${context.ultimo_allenamento})`);
+    }
+  }
+  if (context.ultimo_workout_nome) {
+    const durata = context.ultimo_workout_durata
+      ? ` (${context.ultimo_workout_durata} min)`
+      : '';
+    const tipo = context.ultimo_workout_tipo
+      ? ` — tipo: ${context.ultimo_workout_tipo}`
+      : '';
+    attivita.push(
+      `- Ultimo workout: "${context.ultimo_workout_nome}"${tipo}${durata}`
+    );
+  }
+  if (attivita.length > 0) {
+    parts.push('');
+    parts.push('ATTIVITÀ RECENTE:');
+    parts.push(...attivita);
   }
 
   return parts.join('\n');
@@ -381,24 +510,26 @@ export async function updateHealthLimitations(
   userId: string,
   hasLimitazioni: boolean,
   limitazioniFisiche?: string,
-  zoneEvitare?: string[]
+  zoneEvitare?: string[],
+  condizioniMediche?: string | null
 ): Promise<boolean> {
   try {
+    const updateData: Record<string, unknown> = {
+      user_id: userId,
+      ha_limitazioni: hasLimitazioni,
+      limitazioni_fisiche: limitazioniFisiche ?? null,
+      zone_evitare: zoneEvitare ?? [],
+      limitazioni_compilato_at: new Date().toISOString(),
+      last_modified_at: new Date().toISOString(),
+    };
+    if (condizioniMediche !== undefined) {
+      updateData.condizioni_mediche = condizioniMediche;
+    }
     const { error } = await supabase
       .from('user_onboarding_responses')
-      .upsert(
-        {
-          user_id: userId,
-          ha_limitazioni: hasLimitazioni,
-          limitazioni_fisiche: limitazioniFisiche || null,
-          zone_evitare: zoneEvitare || [],
-          limitazioni_compilato_at: new Date().toISOString(),
-          last_modified_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'user_id',
-        }
-      );
+      .upsert(updateData, {
+        onConflict: 'user_id',
+      });
 
     if (error) {
       console.error('❌ Errore aggiornamento limitazioni:', error);
@@ -599,10 +730,10 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     // Se ha_limitazioni è null, significa che non ha mai risposto, anche se limitazioni_compilato_at potrebbe essere presente per errore
     const hasAnsweredBefore = limitazioniCompilatoAt !== null && hasLimitazioni !== null;
     
-    // ⭐ FIX 1: Se ha_limitazioni = false, forza limitations/zones/medicalConditions a null
-    // Questo evita che dati residui nel database vengano passati all'AI
+    // ⭐ FIX 1: Se ha_limitazioni = false, forza limitations/zones a null (dati residui).
+    // medicalConditions restituite sempre (indipendenti dalle limitazioni fisiche).
     if (hasLimitazioni === false) {
-      console.log('🧹 FIX 1: ha_limitazioni = false, forzando limitations/zones/medicalConditions a null (ignoro dati residui)');
+      console.log('🧹 FIX 1: ha_limitazioni = false, forzando limitations/zones a null (medicalConditions restituite sempre se presenti)');
     }
     
     console.log('🔍 getSmartLimitationsCheck - risultato finale:', {
@@ -619,11 +750,11 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     
     return {
       hasExistingLimitations: hasLimitazioni === true,
-      // ⭐ FIX 1: Se ha_limitazioni = false, forza limitations/zones/medicalConditions a null
-      // Questo evita che dati residui nel database vengano passati all'AI
+      // ⭐ FIX 1: Se ha_limitazioni = false, forza limitations/zones a null (dati residui).
+      // medicalConditions restituite sempre: sono indipendenti dalle limitazioni fisiche.
       limitations: hasLimitazioni === true ? limitazioniFisiche : null,
       zones: hasLimitazioni === true ? zoneEvitare : null,
-      medicalConditions: hasLimitazioni === true ? condizioniMediche : null,
+      medicalConditions: condizioniMediche,
       lastUpdated: limitazioniCompilatoAt,
       daysSinceUpdate,
       needsToAsk,
@@ -842,7 +973,7 @@ export async function generateOnboardingSummaryMessage(userId: string): Promise<
 - **Luogo**: ${luoghi}
 - **Durata sessione**: ${tempo}
 - **Attrezzatura**: ${attrezzi}
-- **Limitazioni fisiche**: ${limitazioniText}
+- **Note personali e limitazioni**: ${limitazioniText}
 
 
 **Procedo con la creazione del piano o vuoi modificare qualcosa?**`;
@@ -943,6 +1074,55 @@ export async function updateOnboardingPreference(
   } catch (err) {
     console.error('❌ Errore updateOnboardingPreference:', err);
     return { success: false, message: 'Errore imprevisto. Riprova!' };
+  }
+}
+
+/**
+ * Aggiorna le allergie/intolleranze alimentari dell'utente
+ * in user_onboarding_responses. Fonte unica di verità per
+ * PrimeBot, Profilo PrimeBot e flusso piano nutrizionale.
+ */
+export async function updateAllergies(
+  userId: string,
+  allergie: string[]
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('user_onboarding_responses')
+      .upsert(
+        { user_id: userId, allergie_alimentari: allergie },
+        { onConflict: 'user_id' }
+      );
+
+    if (error) {
+      console.error('updateAllergies error:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('updateAllergies exception:', err);
+    return { success: false, error: 'Errore aggiornamento allergie' };
+  }
+}
+
+/**
+ * Legge le allergie attuali dell'utente da DB.
+ * Usata nel flusso piano nutrizione per mostrare
+ * "Ho già salvato che sei intollerante a X..."
+ */
+export async function getAllergies(userId: string): Promise<string[]> {
+  try {
+    const { data, error } = await supabase
+      .from('user_onboarding_responses')
+      .select('allergie_alimentari')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error || !data) return [];
+    return data.allergie_alimentari ?? [];
+  } catch {
+    return [];
   }
 }
 

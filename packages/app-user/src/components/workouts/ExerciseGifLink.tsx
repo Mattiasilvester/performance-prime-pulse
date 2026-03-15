@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, X, Target, FileText, AlertTriangle, Lightbulb, Wind, Clock, RefreshCw, BookOpen, ChevronDown } from 'lucide-react';
+import { Play, X, Target, FileText, AlertTriangle, Lightbulb, Wind, Clock, RefreshCw, BookOpen, ChevronDown, Dumbbell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { exerciseDescriptions } from '@/data/exerciseDescriptions';
 import { getExerciseGifUrlAsync } from '@/data/exerciseGifs';
@@ -179,7 +179,8 @@ export const ExerciseGifLink: React.FC<ExerciseGifLinkProps> = ({
 }) => {
   const [showGif, setShowGif] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [gifUrl, setGifUrl] = useState<string>('https://example.com/gifs/default-exercise.gif');
+  const [gifUrl, setGifUrl] = useState<string>('');
+  const [gifDisplayState, setGifDisplayState] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [isLoadingGif, setIsLoadingGif] = useState(false);
 
   // Ottiene i dettagli completi dell'esercizio
@@ -191,18 +192,23 @@ export const ExerciseGifLink: React.FC<ExerciseGifLinkProps> = ({
     return exerciseDescriptions[exerciseName] || 'Descrizione non disponibile per questo esercizio.';
   };
 
-  // Carica l'URL GIF quando il modal si apre
+  // Carica l'URL GIF quando il modal si apre; reset stato quando cambia URL
   useEffect(() => {
     if (showGif) {
+      setGifDisplayState('loading');
       setIsLoadingGif(true);
       getExerciseGifUrlAsync(exerciseName)
         .then(url => {
           setGifUrl(url);
           setIsLoadingGif(false);
+          if (!url) {
+            setGifDisplayState('error');
+          }
         })
         .catch(error => {
           console.error('Error loading GIF URL:', error);
-          setGifUrl('https://example.com/gifs/default-exercise.gif');
+          setGifUrl('');
+          setGifDisplayState('error');
           setIsLoadingGif(false);
         });
     }
@@ -271,28 +277,28 @@ export const ExerciseGifLink: React.FC<ExerciseGifLinkProps> = ({
               <div className="p-4 sm:p-6 space-y-6">
                 {/* Sezione GIF */}
                 <div>
-                  <div className="aspect-video bg-zinc-900 rounded-lg flex items-center justify-center relative border border-zinc-800">
-                    <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-black/80 flex items-center justify-center rounded-lg z-10">
-                      <div className="text-center text-white p-6">
-                        <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#EEBA2B] to-yellow-400 text-black px-6 py-3 rounded-full font-semibold text-sm shadow-lg mb-3">
-                          <div className="w-2 h-2 bg-black rounded-full animate-pulse"></div>
-                          <span>🎬 GIF in arrivo!</span>
-                          <div className="w-2 h-2 bg-black rounded-full animate-pulse"></div>
-                        </div>
-                        <p className="text-zinc-300 text-xs opacity-75">
-                          Stiamo creando video dimostrativi<br />professionali per ogni esercizio.
-                        </p>
+                  <div className="aspect-video bg-zinc-900 rounded-lg flex items-center justify-center relative border border-zinc-800 overflow-hidden">
+                    {/* URL vuoto o errore caricamento: placeholder */}
+                    {(gifDisplayState === 'error' || !gifUrl) && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-[#16161A] rounded-lg text-[#8A8A96] text-sm">
+                        <Dumbbell className="h-8 w-8 flex-shrink-0" />
+                        <span>Animazione non disponibile</span>
                       </div>
-                    </div>
-                    <img
-                      src={gifUrl}
-                      alt={`GIF dimostrativa per ${exerciseName}`}
-                      className="max-w-full max-h-full object-contain rounded-lg opacity-0"
-                      onError={() => {
-                        // Se l'immagine non carica, mantieni l'overlay
-                        setIsLoadingGif(false);
-                      }}
-                    />
+                    )}
+                    {/* Caricamento: skeleton */}
+                    {gifDisplayState === 'loading' && gifUrl && (
+                      <div className="absolute inset-0 z-10 bg-[#16161A] animate-pulse rounded-lg" />
+                    )}
+                    {/* Immagine caricata */}
+                    {gifUrl && (
+                      <img
+                        src={gifUrl}
+                        alt={`GIF dimostrativa per ${exerciseName}`}
+                        className={`max-w-full max-h-full object-contain rounded-lg ${gifDisplayState === 'loaded' ? 'opacity-100' : 'opacity-0 absolute'}`}
+                        onLoad={() => setGifDisplayState('loaded')}
+                        onError={() => setGifDisplayState('error')}
+                      />
+                    )}
                   </div>
                 </div>
 

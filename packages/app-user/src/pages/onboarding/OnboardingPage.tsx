@@ -110,7 +110,7 @@ export function OnboardingPage() {
       }
     }
   }, [isEditMode, currentStep, setStep]);
-  
+
   // PRIMA: Leggi step dalla query string e imposta nello store (priorità alta)
   // ✅ FIX CRITICO: Questo useEffect deve reagire SOLO ai cambiamenti dell'URL, NON ai cambiamenti dello store
   // Rimuoviamo currentStep dalle dipendenze per evitare loop infinito

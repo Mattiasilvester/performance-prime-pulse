@@ -3,42 +3,48 @@ import { Edit, MapPin, Calendar, Trophy, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { updateUserProfile, uploadAvatar, type UserProfile as UserProfileType } from '@/services/userService';
-import { useUserProfile } from '@/hooks/useUserProfile';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserProfileContext } from '@/contexts/UserProfileContext';
+import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
+import { ProfileAvatar } from '@/components/shared/ProfileAvatar';
 import { fetchWorkoutStats, WorkoutStats } from '@/services/workoutStatsService';
 import { useToast } from '@/hooks/use-toast';
 
 export const UserProfile = () => {
   const { toast } = useToast();
-  const { profile, loading: profileLoading, refetch } = useUserProfile();
+  const { user } = useAuth();
+  const { profile, loading: profileLoading, refetch } = useUserProfileContext();
+  const { rank } = useMedalSystemContext();
   const [stats, setStats] = useState<WorkoutStats>({ total_workouts: 0, total_hours: "0m" });
+  const [statsLoading, setStatsLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', surname: '', birthPlace: '' });
-  const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
+    if (!user?.id) return;
+    const loadStats = async () => {
       try {
-        if (profile) {
-          setForm({
-            name: profile.name,
-            surname: profile.surname,
-            birthPlace: profile.birth_place,
-          });
-        }
-
-        const statsData = await fetchWorkoutStats();
+        setStatsLoading(true);
+        const statsData = await fetchWorkoutStats(user.id);
         setStats(statsData);
-      } catch (error) {
-        console.error('Error loading profile data:', error);
+      } catch (err) {
+        console.error('Stats load error:', err);
       } finally {
-        setLoading(false);
+        setStatsLoading(false);
       }
     };
+    loadStats();
+  }, [user?.id]);
 
-    loadData();
+  useEffect(() => {
+    if (!profile) return;
+    setForm({
+      name: profile.name || '',
+      surname: profile.surname || '',
+      birthPlace: profile.birth_place || '',
+    });
   }, [profile]);
 
   const handleSave = async () => {
@@ -118,7 +124,7 @@ export const UserProfile = () => {
     input.click();
   };
 
-  if (loading || profileLoading) {
+  if (profileLoading) {
     return (
       <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-6">
         <div className="text-center text-[#8A8A96]">Caricamento profilo...</div>
@@ -134,39 +140,77 @@ export const UserProfile = () => {
     );
   }
 
-  const displayAvatar = profileImage ?? (profile.avatarUrl && (profile.avatarUrl.startsWith('http') || profile.avatarUrl.startsWith('data:image/')) ? profile.avatarUrl : null);
-  const initial = (profile.name?.[0] || '') + (profile.surname?.[0] || '') || '?';
-  const livello = 'Intermedio';
   const obiettivo = profile.bio || 'Salute';
 
   return (
     <div className="bg-[#16161A] border border-[rgba(255,255,255,0.06)] rounded-[14px] overflow-hidden p-6">
       <div className="flex flex-col items-center">
         <div className="relative">
-          <div
-            className="rounded-full flex items-center justify-center overflow-hidden shrink-0 border-2 border-[#0A0A0C] w-[88px] h-[88px]"
-            style={{ background: displayAvatar ? 'transparent' : 'linear-gradient(135deg, #EEBA2B 0%, #C99A1E 100%)' }}
-          >
-            {displayAvatar ? (
-              <img src={displayAvatar} alt="Profilo" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-[32px] font-bold text-[#0A0A0C]">{initial}</span>
-            )}
-          </div>
+          <ProfileAvatar size={96} showShimmer={true} />
           <button
             type="button"
             onClick={editing ? handleImageUpload : () => setEditing(true)}
+            style={{ display: 'none' }}
             className="absolute -bottom-0.5 -right-0.5 w-[30px] h-[30px] rounded-full bg-[#16161A] border-2 border-[#0A0A0C] flex items-center justify-center"
           >
             <Camera className="w-3.5 h-3.5 text-[#8A8A96]" />
           </button>
         </div>
-        <h3 className="text-[22px] font-bold text-[#F0EDE8] text-center mt-4">
+        <h3 className="text-[22px] font-bold text-center mt-4" style={{ color: rank.nameColor }}>
           {profile.name} {profile.surname}
         </h3>
-        <p className="text-[13px] text-[#8A8A96] text-center mt-1">
-          Livello {livello} · Obiettivo {obiettivo}
-        </p>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            marginTop: '6px',
+          }}
+        >
+          <span
+            style={{
+              fontSize: '10px',
+              fontWeight: 700,
+              color: '#8A8A96',
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase',
+            }}
+          >
+            livello:
+          </span>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '3px 10px',
+              borderRadius: '20px',
+              background: 'rgba(0,0,0,0.3)',
+              border: `1px solid ${rank.borderColor}`,
+            }}
+          >
+            <div
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: rank.borderColor,
+              }}
+            />
+            <span
+              style={{
+                fontSize: '10px',
+                fontWeight: 700,
+                color: rank.borderColor,
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              {rank.label}
+            </span>
+          </div>
+        </div>
         <div className="flex items-center justify-center gap-6 mt-6">
           <div className="flex flex-col items-center">
             <span className="text-[22px] font-bold text-[#F0EDE8]">{stats.total_workouts}</span>
@@ -235,6 +279,6 @@ export const UserProfile = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
   );
 };

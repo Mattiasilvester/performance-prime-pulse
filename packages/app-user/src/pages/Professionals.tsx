@@ -181,8 +181,7 @@ const Professionals: React.FC = () => {
       className="min-h-screen bg-background text-white"
     >
       <div className="px-5 pt-6 pb-4">
-        <h1 className="text-2xl font-bold text-[#F0EDE8]">Professionisti</h1>
-        <p className="text-[13px] text-[#8A8A96] mt-0.5">Trova il professionista perfetto per te</p>
+        <p className="text-[#8A8A96] mt-0.5" style={{ fontSize: '15px', fontWeight: 400 }}>Trova il professionista perfetto per te</p>
       </div>
 
       {matchMode === 'list' && (

@@ -1,68 +1,24 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, X, Play, Pause, RotateCcw, ArrowRight, Clock, Zap, Dumbbell, Heart, Flame, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ExerciseCard } from './ExerciseCard';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Clock, Dumbbell, Sparkles, Play, Pause, Timer, RotateCcw } from 'lucide-react';
 import { ExerciseGifLink } from './ExerciseGifLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useMedalSystem } from '@/hooks/useMedalSystem';
+import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
+import { checkAndUnlockMedals } from '@/services/medalCheckService';
 import { trackWorkoutForChallenge } from '@/utils/challengeTracking';
 import { updateWorkoutStats } from '@/services/workoutStatsService';
 import { completeWorkout as saveWorkoutToDiary } from '@/services/diaryService';
 import { toast } from 'sonner';
+import { parseTimeToSeconds, parseRestTime } from '@/utils/workoutUtils';
+import { ChallengeNotification } from '@/components/ui/ChallengeNotification';
+import { Button } from '@/components/ui/button';
 
-// Helper function per convertire stringhe tempo in numeri
-const parseTimeToSeconds = (timeStr: string | undefined | number): number => {
-  if (typeof timeStr === 'number') {
-    return timeStr;
-  }
-  
-  if (!timeStr || typeof timeStr !== 'string') {
-    return 30; // default se undefined o non stringa
-  }
-  
-  const str = timeStr.toString().toLowerCase().trim();
-  let totalSeconds = 0;
-  
-  // Match minuti e secondi
-  const minutesMatch = str.match(/(\d+)\s*m/);
-  const secondsMatch = str.match(/(\d+)\s*s/);
-  
-  if (minutesMatch) {
-    totalSeconds += parseInt(minutesMatch[1]) * 60;
-  }
-  
-  if (secondsMatch) {
-    totalSeconds += parseInt(secondsMatch[1]);
-  }
-  
-  // Se non trova né minuti né secondi, prova a parsare come numero
-  if (totalSeconds === 0) {
-    const numberMatch = str.match(/(\d+)/);
-    if (numberMatch) {
-      totalSeconds = parseInt(numberMatch[1]);
-    }
-  }
-  
-  return totalSeconds || 30; // Default 30 secondi
-};
-
-// Helper function per convertire secondi in formato MM:SS
-const formatTime = (seconds: number): string => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-};
-
-// Interface per stato timer di ogni esercizio
-interface ExerciseTimerState {
-  isActive: boolean;
-  isResting: boolean;
-  timeRemaining: number;
-  totalWorkTime: number;
-  totalRestTime: number;
-  isCompleted: boolean;
+function formatTimer(s: number): string {
+  const m = Math.floor(s / 60).toString().padStart(2, '0');
+  const sec = (s % 60).toString().padStart(2, '0');
+  return `${m}:${sec}`;
 }
 
 const workoutData = {
@@ -113,7 +69,6 @@ const workoutData = {
   },
 };
 
-/** Esercizio come usato nei workout (name, duration, rest, instructions, sets) */
 interface WorkoutExerciseShape {
   name: string;
   duration?: string | number;
@@ -122,7 +77,6 @@ interface WorkoutExerciseShape {
   sets?: number | string;
 }
 
-/** Workout generato/custom con meta opzionale */
 interface GeneratedWorkoutShape {
   name?: string;
   title?: string;
@@ -135,7 +89,6 @@ interface GeneratedWorkoutShape {
   total_duration?: number;
 }
 
-/** Tipo per lettura display: tutte le proprietà opzionali per compatibilità con workoutData e GeneratedWorkoutShape */
 type CurrentWorkoutDisplay = {
   name?: string;
   title?: string;
@@ -154,33 +107,26 @@ interface ActiveWorkoutProps {
   onClose: () => void;
 }
 
+function isTimedExercise(exercise: WorkoutExerciseShape | undefined): boolean {
+  const raw = exercise?.duration;
+  const duration = typeof raw === 'string' ? raw.toLowerCase() : raw !== undefined ? String(raw) : '';
+  return duration.includes('s') || duration.includes('sec');
+}
+
+function getSetsCount(ex: WorkoutExerciseShape | undefined): number {
+  if (ex == null) return 3;
+  const s = (ex as WorkoutExerciseShape).sets;
+  if (typeof s === 'number') return s;
+  if (s == null) return 3;
+  const n = parseInt(String(s), 10);
+  return Number.isNaN(n) ? 3 : n;
+}
+
 export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onClose }: ActiveWorkoutProps) => {
   const { user } = useAuth();
-  const { recordWorkoutCompletion } = useMedalSystem();
+  const { recordWorkoutCompletion, medalSystem, addEarnedMedals } = useMedalSystemContext();
   const navigate = useNavigate();
-  const [completedExercises, setCompletedExercises] = useState<number[]>([]);
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
-  const [workoutStarted, setWorkoutStarted] = useState(false);
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  
-  // Stati per la logica del Quick Workout
-  const [workoutState, setWorkoutState] = useState<'ready' | 'running' | 'paused' | 'rest' | 'completed'>('ready');
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [isRest, setIsRest] = useState(false);
-  const [totalProgress, setTotalProgress] = useState(0);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isRestTimerActive, setIsRestTimerActive] = useState(false);
-  const [restTimeLeft, setRestTimeLeft] = useState(0);
-  const [isRestTimerPaused, setIsRestTimerPaused] = useState(false);
 
-  // Refs per timer e audio
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  // Stati per i timer di ogni esercizio
-  const [exerciseTimers, setExerciseTimers] = useState<Record<number, ExerciseTimerState>>({});
-  
-  // Usa l'allenamento custom se disponibile, poi generato, altrimenti quello statico
   const currentWorkout = customWorkout || generatedWorkout || workoutData[workoutId as keyof typeof workoutData];
   const personalizedMeta = customWorkout?.meta ?? generatedWorkout?.meta ?? null;
   const currentDisplay = currentWorkout as CurrentWorkoutDisplay | null | undefined;
@@ -188,1141 +134,687 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
   const workoutType = personalizedMeta?.workoutType || currentDisplay?.workout_type || currentDisplay?.tipo || (currentDisplay as GeneratedWorkoutShape)?.type || 'Allenamento personalizzato';
   const workoutDuration = personalizedMeta?.duration || currentDisplay?.duration || (currentDisplay as GeneratedWorkoutShape)?.total_duration;
   const workoutExerciseCount = currentWorkout?.exercises?.length || 0;
+  const exercises = currentWorkout?.exercises ?? [];
 
-  // Funzione per suonare beep con gestione errori
-  const playBeep = (frequency: number = 800, duration: number = 200) => {
-    if (!audioContextRef.current) {
-      // Fallback: flash visivo
-      document.body.style.backgroundColor = '#ffd700';
-      setTimeout(() => {
-        document.body.style.backgroundColor = '';
-      }, 100);
-      return;
-    }
+  const [view, setView] = useState<'ready' | 'list'>('ready');
+  const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
+  const [completedSets, setCompletedSets] = useState<Record<number, Set<number>>>({});
+  const [timerSeconds, setTimerSeconds] = useState(90);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [challengeNotification, setChallengeNotification] = useState<{ message: string; type: 'success' | 'info' | 'warning' } | null>(null);
 
+  const [activeCardIndex, setActiveCardIndex] = useState<number | null>(null);
+  const [activeCardSeconds, setActiveCardSeconds] = useState(0);
+  const [activeCardPaused, setActiveCardPaused] = useState(false);
+
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cardIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const recoveryTimerBoxRef = useRef<HTMLDivElement | null>(null);
+  const [isRecoveryTimerExpandedVisible, setIsRecoveryTimerExpandedVisible] = useState(true);
+
+  const totalCount = exercises.length;
+  const completedCount = completedExercises.size;
+  const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const allCompleted = completedCount === totalCount && totalCount > 0;
+
+  const playBeep = useCallback((frequency: number = 800, duration: number = 200) => {
+    if (!audioContextRef.current) return;
     try {
-      // Resume audio context se sospeso
-      if (audioContextRef.current.state === 'suspended') {
-        audioContextRef.current.resume();
-      }
-
+      if (audioContextRef.current.state === 'suspended') audioContextRef.current.resume();
       const oscillator = audioContextRef.current.createOscillator();
       const gainNode = audioContextRef.current.createGain();
-      
       oscillator.connect(gainNode);
       gainNode.connect(audioContextRef.current.destination);
-      
       oscillator.frequency.value = frequency;
       oscillator.type = 'sine';
-      
       gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration / 1000);
-      
       oscillator.start(audioContextRef.current.currentTime);
       oscillator.stop(audioContextRef.current.currentTime + duration / 1000);
-    } catch (error: unknown) {
-      console.log('Errore riproduzione audio:', error);
-      // Fallback: flash visivo
-      document.body.style.backgroundColor = '#ffd700';
-      setTimeout(() => {
-        document.body.style.backgroundColor = '';
-      }, 100);
+    } catch {
+      // ignore
     }
-  };
+  }, []);
 
-  // Inizializza audio context con user interaction
   useEffect(() => {
     const initAudio = () => {
       try {
         audioContextRef.current = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
-        console.log('Audio context inizializzato');
-      } catch (error: unknown) {
-        console.log('Audio non supportato, useremo feedback visivo');
+      } catch {
+        // ignore
       }
     };
-
-    // Inizializza audio al primo user interaction
-    const handleUserInteraction = () => {
+    const handleInteraction = () => {
       initAudio();
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
     };
-
-    document.addEventListener('click', handleUserInteraction);
-    document.addEventListener('touchstart', handleUserInteraction);
-
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('touchstart', handleInteraction);
     return () => {
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
     };
   }, []);
 
-  // Nascondi header/footer/feedback quando la schermata di completamento è attiva
-  useEffect(() => {
-    if (workoutState !== 'completed') {
-      return;
-    }
-
-    const hideElements = () => {
-      const header = document.querySelector('header') as HTMLElement | null;
-      const footer = document.querySelector('.bottom-navigation') as HTMLElement | null;
-      const feedback = document.querySelector('.feedback-widget') as HTMLElement | null;
-      
-      if (header) {
-        header.style.display = 'none !important';
-        header.style.visibility = 'hidden !important';
-        header.style.opacity = '0 !important';
-        header.style.zIndex = '-999999 !important';
+  const startRecoveryTimer = useCallback(
+    (exerciseIndex: number) => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
       }
-      if (footer) {
-        footer.style.display = 'none !important';
-        footer.style.visibility = 'hidden !important';
-        footer.style.opacity = '0 !important';
-        footer.style.zIndex = '-999999 !important';
-      }
-      if (feedback) {
-        feedback.style.display = 'none !important';
-        feedback.style.visibility = 'hidden !important';
-        feedback.style.opacity = '0 !important';
-        feedback.style.zIndex = '-999999 !important';
-      }
-    };
-
-    hideElements();
-    const interval = setInterval(hideElements, 100);
-
-    return () => {
-      clearInterval(interval);
-      const header = document.querySelector('header') as HTMLElement | null;
-      const footer = document.querySelector('.bottom-navigation') as HTMLElement | null;
-      const feedback = document.querySelector('.feedback-widget') as HTMLElement | null;
-      
-      if (header) {
-        header.style.display = '';
-        header.style.visibility = '';
-        header.style.opacity = '';
-        header.style.zIndex = '';
-      }
-      if (footer) {
-        footer.style.display = '';
-        footer.style.visibility = '';
-        footer.style.opacity = '';
-        footer.style.zIndex = '';
-      }
-      if (feedback) {
-        feedback.style.display = '';
-        feedback.style.visibility = '';
-        feedback.style.opacity = '';
-        feedback.style.zIndex = '';
-      }
-    };
-  }, [workoutState]);
-
-  // Funzioni per gestione workout (copiate dal Quick Workout)
-  const startWorkout = () => {
-    setWorkoutState('running');
-    setCurrentExerciseIndex(0);
-    const firstExercise = currentWorkout.exercises?.[0];
-    if (firstExercise) {
-      setTimeLeft(parseTimeToSeconds(firstExercise.duration));
-    }
-    setTotalProgress(0);
-    setIsRest(false);
-  };
-
-  const nextExercise = () => {
-    if (currentExerciseIndex < (currentWorkout.exercises?.length || 0) - 1) {
-      const nextIndex = currentExerciseIndex + 1;
-      setCurrentExerciseIndex(nextIndex);
-      const nextExercise = currentWorkout.exercises?.[nextIndex];
-      if (nextExercise) {
-        setTimeLeft(parseTimeToSeconds(nextExercise.duration));
-      }
-      setIsRest(false);
-    } else {
-      // Workout completato
-      setWorkoutState('completed');
-      setCompletedExercises([...currentWorkout.exercises?.map((_, i) => i) || []]);
-      
-      // Aggiorna statistiche utente
-      if (user?.id) {
-        const workoutDuration = currentWorkout.exercises?.reduce((total: number, exercise: WorkoutExerciseShape) => {
-          return total + parseTimeToSeconds(exercise.duration);
-        }, 0) || 0;
-        
-        updateWorkoutStats(user.id, Math.round(workoutDuration / 60)); // Converti in minuti
-      }
-    }
-  };
-
-  const togglePause = () => {
-    if (workoutState === 'running') {
-      setWorkoutState('paused');
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    } else if (workoutState === 'paused') {
-      setWorkoutState('running');
-      startTimer();
-    }
-  };
-
-  const skipExercise = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    nextExercise();
-  };
-
-  // Timer principale
-  const startTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    
-    timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          // Esercizio finito
-          
-          const currentExercise = currentWorkout.exercises?.[currentExerciseIndex];
-          const restTime = currentExercise?.rest ? parseTimeToSeconds(currentExercise.rest) : 0;
-          
-          if (restTime > 0) {
-            // Inizia riposo
-            setIsRest(true);
-            setTimeLeft(restTime);
-            return restTime;
-          } else {
-            // Vai al prossimo esercizio
-            setTimeout(() => nextExercise(), 1000);
+      const ex = exercises[exerciseIndex];
+      const restSecs = ex ? parseRestTime(ex.rest) : 60;
+      setTimerSeconds(restSecs);
+      setTimerRunning(true);
+      playBeep(750, 150);
+      timerIntervalRef.current = setInterval(() => {
+        setTimerSeconds((prev) => {
+          if (prev <= 1) {
+            if (timerIntervalRef.current) {
+              clearInterval(timerIntervalRef.current);
+              timerIntervalRef.current = null;
+            }
+            setTimerRunning(false);
+            playBeep(750, 200);
+            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+            toast('Recupero finito — prossimo! 💪');
             return 0;
           }
+          if (prev <= 4 && prev > 1) playBeep(950, 100);
+          return prev - 1;
+        });
+      }, 1000);
+    },
+    [exercises, playBeep]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (cardIntervalRef.current) clearInterval(cardIntervalRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (view !== 'list' || !recoveryTimerBoxRef.current) return;
+    const el = recoveryTimerBoxRef.current;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsRecoveryTimerExpandedVisible(entry.isIntersecting),
+      { threshold: 0, rootMargin: '0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [view]);
+
+  const startCardTimer = useCallback((index: number) => {
+    const ex = exercises[index];
+    if (!ex || !isTimedExercise(ex)) return;
+    const secs = parseTimeToSeconds(ex.duration);
+    setActiveCardIndex(index);
+    setActiveCardSeconds(secs);
+    setActiveCardPaused(false);
+    playBeep(800, 200);
+    if (cardIntervalRef.current) clearInterval(cardIntervalRef.current);
+    cardIntervalRef.current = setInterval(() => {
+      setActiveCardSeconds((prev) => {
+        if (prev <= 1) {
+          if (cardIntervalRef.current) {
+            clearInterval(cardIntervalRef.current);
+            cardIntervalRef.current = null;
+          }
+          setActiveCardIndex(null);
+          setActiveCardSeconds(0);
+          playBeep(1000, 150);
+          if ('vibrate' in navigator) navigator.vibrate(50);
+          setCompletedExercises((s) => new Set(s).add(index));
+          startRecoveryTimer(index);
+          return 0;
         }
+        if (prev <= 4 && prev > 1) playBeep(950, 100);
         return prev - 1;
       });
     }, 1000);
-  };
+  }, [exercises, startRecoveryTimer, playBeep]);
 
-  // Formatta tempo per display
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Funzioni per gestire la sidebar
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
-
-  const navigateToExercise = (index: number) => {
-    if (index < (currentWorkout.exercises?.length || 0)) {
-      setCurrentExerciseIndex(index);
-      const exercise = currentWorkout.exercises?.[index];
-      if (exercise) {
-        setTimeLeft(parseTimeToSeconds(exercise.duration));
-      }
-      setIsRest(false);
-      closeSidebar();
+  const pauseCardTimer = useCallback(() => {
+    if (cardIntervalRef.current) {
+      clearInterval(cardIntervalRef.current);
+      cardIntervalRef.current = null;
     }
-  };
-
-  const getExerciseStatus = (index: number) => {
-    if (index < currentExerciseIndex) return 'completed';
-    if (index === currentExerciseIndex) return 'current';
-    return 'future';
-  };
-
-  const getExerciseStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return '✓';
-      case 'current': return '●';
-      default: return '○';
-    }
-  };
-
-
-  // Gestione timer automatico
-  useEffect(() => {
-    if (workoutState === 'running' && timeLeft > 0) {
-      startTimer();
-    } else if (workoutState === 'running' && timeLeft === 0 && !isRest) {
-      // Esercizio finito, inizia riposo o prossimo
-      const currentExercise = currentWorkout.exercises?.[currentExerciseIndex];
-      const restTime = currentExercise?.rest ? parseTimeToSeconds(currentExercise.rest) : 0;
-      if (restTime > 0) {
-        setIsRest(true);
-        setTimeLeft(restTime);
-      } else {
-        nextExercise();
-      }
-    } else if (workoutState === 'running' && timeLeft === 0 && isRest) {
-      // Riposo finito, prossimo esercizio
-      nextExercise();
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-    // Intentionally omit currentWorkout.exercises, nextExercise, startTimer to avoid re-run loops that would alter workout flow
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workoutState, timeLeft, isRest, currentExerciseIndex]);
-
-  useEffect(() => {
-    // Fix per viewport height su mobile
-    const handleResize = () => {
-      setViewportHeight(window.innerHeight);
-      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    
-    // Initial setup
-    handleResize();
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-    };
+    setActiveCardPaused(true);
   }, []);
 
-  // useEffect per gestire il countdown automatico dei timer
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setExerciseTimers(prev => {
-        const updated = { ...prev };
-        
-        Object.keys(updated).forEach(key => {
-          const index = parseInt(key);
-          const timer = updated[index];
-          
-          if (timer && timer.isActive && timer.timeRemaining > 0) {
-            updated[index] = {
-              ...timer,
-              timeRemaining: timer.timeRemaining - 1
-            };
-          } else if (timer && timer.isActive && timer.timeRemaining === 0) {
-            if (!timer.isResting) {
-              // Fine esercizio, inizia recupero
-              updated[index] = {
-                ...timer,
-                isResting: true,
-                timeRemaining: timer.totalRestTime
-              };
-            } else {
-              // Fine recupero, esercizio completato
-              updated[index] = {
-                ...timer,
-                isActive: false,
-                isCompleted: true
-              };
-              // Auto-completa l'esercizio
-              if (!completedExercises.includes(index)) {
-                setCompletedExercises(prev => [...prev, index]);
-              }
-            }
+  const resumeCardTimer = useCallback((index: number) => {
+    const ex = exercises[index];
+    if (!ex || activeCardIndex !== index) return;
+    setActiveCardPaused(false);
+    cardIntervalRef.current = setInterval(() => {
+      setActiveCardSeconds((prev) => {
+        if (prev <= 1) {
+          if (cardIntervalRef.current) {
+            clearInterval(cardIntervalRef.current);
+            cardIntervalRef.current = null;
           }
-        });
-        
-        return updated;
+          setActiveCardIndex(null);
+          setActiveCardSeconds(0);
+          playBeep(1000, 150);
+          if ('vibrate' in navigator) navigator.vibrate(50);
+          setCompletedExercises((s) => new Set(s).add(index));
+          startRecoveryTimer(index);
+          return 0;
+        }
+        if (prev <= 4 && prev > 1) playBeep(950, 100);
+        return prev - 1;
       });
     }, 1000);
+  }, [exercises, activeCardIndex, startRecoveryTimer, playBeep]);
 
-    return () => clearInterval(interval);
-  }, [completedExercises]);
-  
-  const missingWorkoutContent = (
-    <div className="text-white text-center">
-      <p>Allenamento non trovato</p>
-      <Button onClick={onClose} className="mt-4">Torna indietro</Button>
-    </div>
+  const skipCardTimer = useCallback((index: number) => {
+    if (cardIntervalRef.current) {
+      clearInterval(cardIntervalRef.current);
+      cardIntervalRef.current = null;
+    }
+    setActiveCardIndex(null);
+    setActiveCardSeconds(0);
+    setActiveCardPaused(false);
+    setCompletedExercises((s) => new Set(s).add(index));
+    const ex = exercises[index];
+    if (ex) startRecoveryTimer(index);
+  }, [exercises, startRecoveryTimer]);
+
+  const handleSetClick = useCallback(
+    (exerciseIndex: number, setIndex: number) => {
+      setCompletedSets((prev) => {
+        const next = { ...prev };
+        if (!next[exerciseIndex]) next[exerciseIndex] = new Set();
+        next[exerciseIndex] = new Set(next[exerciseIndex]).add(setIndex);
+        return next;
+      });
+      if ('vibrate' in navigator) navigator.vibrate(50);
+      const ex = exercises[exerciseIndex];
+      const totalSets = getSetsCount(ex as WorkoutExerciseShape);
+      const doneCount = (completedSets[exerciseIndex]?.size ?? 0) + 1;
+      const allSetsDone = doneCount >= totalSets;
+      if (allSetsDone) {
+        setCompletedExercises((prev) => new Set(prev).add(exerciseIndex));
+      }
+      startRecoveryTimer(exerciseIndex);
+    },
+    [exercises, completedSets, startRecoveryTimer]
   );
 
-  // Funzione per avviare il timer di un esercizio
-  const startExerciseTimer = (index: number, exercise: WorkoutExerciseShape) => {
-    const workTime = parseTimeToSeconds(exercise.duration);
-    const restTime = parseTimeToSeconds(exercise.rest);
-    
-    setExerciseTimers(prev => ({
-      ...prev,
-      [index]: {
-        isActive: true,
-        isResting: false,
-        timeRemaining: workTime,
-        totalWorkTime: workTime,
-        totalRestTime: restTime,
-        isCompleted: false
-      }
-    }));
-  };
-
-  // Funzione per pausare/riprendere il timer
-  const toggleTimer = (index: number) => {
-    setExerciseTimers(prev => ({
-      ...prev,
-      [index]: {
-        ...prev[index],
-        isActive: !prev[index]?.isActive
-      }
-    }));
-  };
-
-  // Funzione per resettare il timer
-  const resetTimer = (index: number, exercise: WorkoutExerciseShape) => {
-    const workTime = parseTimeToSeconds(exercise.duration);
-    const restTime = parseTimeToSeconds(exercise.rest);
-    
-    setExerciseTimers(prev => ({
-      ...prev,
-      [index]: {
-        isActive: false,
-        isResting: false,
-        timeRemaining: workTime,
-        totalWorkTime: workTime,
-        totalRestTime: restTime,
-        isCompleted: false
-      }
-    }));
-  };
-
-  // Funzione per completare l'allenamento e aggiornare le statistiche
-  const completeWorkout = async () => {
-    if (!user || !currentWorkout.exercises) return;
-
-    try {
-      // Ottieni utente corrente
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('Utente non autenticato');
-        return;
-      }
-      
-      // Calcola la durata totale per allenamenti preimpostati (tempi fissi)
-      const getPresetWorkoutDuration = (workoutName: string | undefined): number => {
-        if (!workoutName || typeof workoutName !== 'string') {
-          return 30; // Default se undefined o non stringa
-        }
-        
-        const name = workoutName.toLowerCase();
-        if (name.includes('cardio')) return 20;
-        if (name.includes('forza') || name.includes('strength')) return 45;
-        if (name.includes('hiit')) return 45;
-        if (name.includes('mobilità') || name.includes('mobility')) return 15;
-        // Fallback per altri allenamenti preimpostati
-        return 30;
-      };
-      
-      const totalMinutes = getPresetWorkoutDuration(currentWorkout?.name);
-
-      const workoutTitle = (currentWorkout as CurrentWorkoutDisplay)?.title || currentWorkout?.name || 'Allenamento da File';
-
-      const { data: workoutRecord, error: createError } = await supabase
-        .from('custom_workouts')
-        .insert({
-          user_id: user.id,
-          title: workoutTitle,
-          workout_type: 'personalizzato',
-          scheduled_date: new Date().toISOString().split('T')[0],
-          exercises: currentWorkout.exercises,
-          total_duration: Math.round(totalMinutes),
-          completed: true,
-          completed_at: new Date().toISOString()
-        })
-        .select('id, title, total_duration, completed, completed_at')
-        .maybeSingle();
-
-      if (createError) {
-        console.error('Errore creazione workout record:', createError);
-        toast.error('Errore nel salvataggio dell\'allenamento');
-        return;
-      }
-
-      if (!workoutRecord) return;
-
-      const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
-      await updateWorkoutMetrics(user.id, Math.round(totalMinutes));
-      window.dispatchEvent(new CustomEvent('workoutCompleted', {
-        detail: { workoutId: workoutRecord.id }
-      }));
-      
-      toast.success('Allenamento completato! Statistiche aggiornate.');
-    } catch (error: unknown) {
-      console.error('Errore durante il completamento:', error);
-    }
-  };
-
-  // Fix per il click del pulsante "TERMINA SESSIONE"
-  const handleTerminateSession = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (navigator.vibrate) {
-      navigator.vibrate([100, 50, 100]); // Pattern per terminazione
-    }
-
-    completeWorkout();
-    onClose();
-  };
-
-  // Salva su diario - integrazione completa
-  const saveToDiary = async () => {
-    if (!user?.id) {
-      toast.error('Utente non autenticato');
-      return;
-    }
-
-    try {
-      // ✅ FIX 1: Calcola durata in secondi
-      const totalSeconds = currentWorkout.exercises?.reduce((total, exercise) => {
-        const duration = parseTimeToSeconds(exercise.duration);
-        return total + duration;
-      }, 0) || 0;
-
-      // ✅ FIX 2: Converti in minuti e FORZA INTEGER
-      // Usa Math.floor per arrotondare per difetto
-      let durationMinutes = Math.floor(totalSeconds / 60);
-      
-      // Se 0 minuti ma ci sono esercizi, imposta almeno 1
-      if (durationMinutes === 0 && (currentWorkout.exercises?.length || 0) > 0) {
-        durationMinutes = 1;
-      }
-
-      // ✅ FIX 3: Assicurati che sia NUMBER INTEGER (non string)
-      const finalDurationMinutes = parseInt(durationMinutes.toString(), 10);
-
-      console.log('🔍 DEBUG Duration:', {
-        totalSeconds,
-        durationMinutes,
-        finalDurationMinutes,
-        type: typeof finalDurationMinutes,
-        exercisesCount: currentWorkout.exercises?.length || 0
+  const handleExerciseComplete = useCallback(
+    (exerciseIndex: number) => {
+      const ex = exercises[exerciseIndex];
+      const totalSets = getSetsCount(ex as WorkoutExerciseShape);
+      setCompletedSets((prev) => {
+        const next = { ...prev };
+        next[exerciseIndex] = new Set(Array.from({ length: totalSets }, (_, idx) => idx));
+        return next;
       });
+      setCompletedExercises((prev) => new Set(prev).add(exerciseIndex));
+      if ('vibrate' in navigator) navigator.vibrate(80);
+      startRecoveryTimer(exerciseIndex);
+    },
+    [exercises, startRecoveryTimer]
+  );
 
-      // Determina workout_source
-      let workoutSource: 'custom_workouts' | 'workout_plans' | 'quick' = 'quick';
-      if (customWorkout) {
-        workoutSource = 'custom_workouts';
-      } else if (generatedWorkout) {
-        workoutSource = 'workout_plans';
+  useEffect(() => {
+    exercises.forEach((ex, i) => {
+      const totalSets = getSetsCount(ex as WorkoutExerciseShape);
+      const done = completedSets[i];
+      if (done && done.size >= totalSets && !completedExercises.has(i)) {
+        setCompletedExercises((prev) => new Set(prev).add(i));
       }
+    });
+  }, [completedSets, exercises, completedExercises]);
 
-      // ✅ FIX 4: Prepara dati con INTEGER GARANTITO
-      const workoutData = {
-        workout_id: null, // Può essere null per workout senza ID
+  const handleResetTimer = useCallback(() => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    setTimerRunning(false);
+    setTimerSeconds(90);
+  }, []);
+
+  const handlePlayPauseTimer = useCallback(() => {
+    if (timerRunning) {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      setTimerRunning(false);
+    } else {
+      if (timerSeconds <= 0) return;
+      setTimerRunning(true);
+      timerIntervalRef.current = setInterval(() => {
+        setTimerSeconds((prev) => {
+          if (prev <= 1) {
+            if (timerIntervalRef.current) {
+              clearInterval(timerIntervalRef.current);
+              timerIntervalRef.current = null;
+            }
+            setTimerRunning(false);
+            playBeep(750, 200);
+            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+            toast('Recupero finito — prossimo! 💪');
+            return 0;
+          }
+          if (prev <= 4 && prev > 1) playBeep(950, 100);
+          return prev - 1;
+        });
+      }, 1000);
+    }
+  }, [timerRunning, timerSeconds, playBeep]);
+
+  const getPresetWorkoutDuration = (workoutName: string | undefined): number => {
+    if (!workoutName || typeof workoutName !== 'string') return 30;
+    const name = workoutName.toLowerCase();
+    if (name.includes('cardio')) return 20;
+    if (name.includes('forza') || name.includes('strength')) return 45;
+    if (name.includes('hiit')) return 45;
+    if (name.includes('mobilità') || name.includes('mobility')) return 15;
+    return 30;
+  };
+
+  const completeWorkoutFlow = useCallback(async () => {
+    if (!user?.id || !currentWorkout?.exercises || isSaving) return;
+    if ('vibrate' in navigator) navigator.vibrate([200, 100, 200, 100, 400]);
+    setIsSaving(true);
+
+    const totalSeconds = currentWorkout.exercises.reduce((acc, ex) => acc + parseTimeToSeconds(ex.duration), 0);
+    let durationMinutes = Math.max(1, Math.floor(totalSeconds / 60));
+    const workoutTitleForSave = (currentWorkout as CurrentWorkoutDisplay)?.title || currentWorkout?.name || 'Allenamento';
+    const fallbackMinutes = getPresetWorkoutDuration(currentWorkout?.name);
+    if (durationMinutes <= 0) durationMinutes = fallbackMinutes;
+
+    let workoutSource: 'custom_workouts' | 'workout_plans' | 'quick' = 'quick';
+    if (customWorkout) workoutSource = 'custom_workouts';
+    else if (generatedWorkout) workoutSource = 'workout_plans';
+
+    try {
+      await saveWorkoutToDiary({
+        workout_id: null,
         workout_source: workoutSource,
-        workout_name: workoutTitle || 'Allenamento Custom',
+        workout_name: workoutTitle || workoutTitleForSave,
         workout_type: workoutType?.toLowerCase() || 'personalizzato',
-        status: 'completed' as const,
-        duration_minutes: finalDurationMinutes, // ✅ INTEGER garantito
-        exercises_count: currentWorkout.exercises?.length || 0, // ✅ Già integer
-        exercises: currentWorkout.exercises?.map((ex: WorkoutExerciseShape, index: number) => ({
+        status: 'completed',
+        duration_minutes: durationMinutes,
+        exercises_count: currentWorkout.exercises.length,
+        exercises: currentWorkout.exercises.map((ex, index) => ({
           name: ex.name,
           duration: ex.duration,
           rest: ex.rest,
-          completed: completedExercises.includes(index),
-        })) || [],
+          completed: completedExercises.has(index),
+        })),
         completed_at: new Date().toISOString(),
         saved_at: new Date().toISOString(),
-      };
-
-      // ✅ AGGIUNGI QUESTO LOG DETTAGLIATO
-      console.log('🔍 FULL workoutData BEFORE save:', JSON.stringify(workoutData, null, 2));
-      console.log('🔍 Types check:', {
-        duration_minutes_type: typeof workoutData.duration_minutes,
-        duration_minutes_value: workoutData.duration_minutes,
-        exercises_count_type: typeof workoutData.exercises_count,
-        exercises_count_value: workoutData.exercises_count,
       });
-
-      // ✅ FIX 5: Salva nel diario
-      await saveWorkoutToDiary(workoutData);
-
-      console.log('✅ Workout salvato con successo');
-
-      // ✅ FIX 6: Toast SUCCESS
-      toast.success('✅ Salvato nel Diario!', {
-        description: 'Workout completato e salvato con successo',
-      });
-
-      // ✅ FIX 7: Navigate dopo 800ms (per vedere toast)
-      setTimeout(() => {
-        navigate('/diary');
-      }, 800);
-
-    } catch (error: unknown) {
-      console.error('❌ Full error object:', error);
-      console.error('❌ Error saving to diary:', error);
-      
-      // Toast ERRORE solo se fallisce veramente
-      toast.error('❌ Errore', {
-        description: 'Impossibile salvare nel diario',
-      });
-    }
-  };
-
-  // Se tutti gli esercizi sono completati, mostra la schermata di completamento
-
-  // Se il workout è in esecuzione, mostra la schermata di esecuzione (layout Quick Workout)
-  const currentExercise = currentWorkout.exercises?.[currentExerciseIndex];
-  const isTimedExercise = (exercise: WorkoutExerciseShape | undefined) => {
-    const raw = exercise?.duration;
-    const duration = typeof raw === 'string' ? raw.toLowerCase() : raw !== undefined ? String(raw) : '';
-    const hasSeconds = duration.includes('s') || duration.includes('sec');
-    console.log(`isTimedExercise("${exercise?.name || 'sconosciuto'}"): duration="${duration}", isTimed=${hasSeconds}`);
-    return hasSeconds;
-  };
-  const isTimed = isTimedExercise(currentExercise);
-  console.log('Esercizio corrente:', currentExercise?.name);
-  console.log('È esercizio a tempo?', isTimed);
-
-  const parseRestTime = (rest: string | number | undefined): number => {
-    if (rest === undefined || rest === null) return 60;
-    if (typeof rest === 'number') return rest;
-    const restLower = rest.toLowerCase().trim();
-    if (restLower.includes('s') || restLower.includes('sec')) {
-      const match = restLower.match(/(\d+)/);
-      return match ? parseInt(match[1]) : 60;
-    }
-    if (restLower.includes('min')) {
-      const match = restLower.match(/(\d+\.?\d*)/);
-      if (match) {
-        const minutes = parseFloat(match[1]);
-        return Math.round(minutes * 60);
-      }
-    }
-    const numMatch = restLower.match(/^(\d+)$/);
-    if (numMatch) {
-      return parseInt(numMatch[1]);
-    }
-    return 60;
-  };
-
-  const playRestStartSound = () => {
-    playBeep(750, 220);
-  };
-
-  const playRestTickSound = () => {
-    playBeep(950, 120);
-  };
-
-  const playRestEndSound = () => {
-    playBeep(1100, 220);
-    setTimeout(() => playBeep(1100, 220), 260);
-    setTimeout(() => playBeep(1300, 260), 520);
-  };
-
-  const handleStartRest = () => {
-    const restSeconds = parseRestTime(currentExercise?.rest);
-    console.log('Avvio recupero:', restSeconds, 'secondi');
-    setRestTimeLeft(restSeconds);
-    setIsRestTimerActive(true);
-    setIsRestTimerPaused(false);
-    playRestStartSound();
-  };
-
-  const toggleRestTimer = () => {
-    setIsRestTimerPaused(prev => !prev);
-  };
-
-  const handleSkipRest = () => {
-    setIsRestTimerActive(false);
-    setRestTimeLeft(0);
-    setIsRestTimerPaused(false);
-  };
-
-  const formatRestTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    if (mins > 0) {
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `0:${secs.toString().padStart(2, '0')}`;
-  };
-
-  useEffect(() => {
-    if (!isRestTimerActive || isRestTimerPaused || restTimeLeft <= 0) {
+    } catch (err) {
+      console.error('Errore salvataggio diary:', err);
+      toast.error('Errore nel salvataggio del diario. Riprova.');
+      setIsSaving(false);
       return;
     }
 
-    const timer = setInterval(() => {
-      setRestTimeLeft(prev => {
-        if (prev <= 3 && prev > 1) {
-          playRestTickSound();
-        }
-        if (prev <= 1) {
-          setIsRestTimerActive(false);
-          setIsRestTimerPaused(false);
-          playRestEndSound();
-          return 0;
-        }
-        return prev - 1;
+    recordWorkoutCompletion();
+    if (user?.id) {
+      const earnedIds = medalSystem.earnedMedals.map(m => m.id);
+      checkAndUnlockMedals(user.id, earnedIds).then(newMedals => {
+        if (newMedals.length > 0) addEarnedMedals(newMedals);
       });
-    }, 1000);
+    }
+    const challengeResult = trackWorkoutForChallenge();
+    if (challengeResult.message) {
+      const notifType = challengeResult.isCompleted ? 'success' : challengeResult.isNewChallenge ? 'info' : 'info';
+      setChallengeNotification({ message: challengeResult.message, type: notifType });
+      setTimeout(() => setChallengeNotification(null), 5000);
+    }
 
-    return () => clearInterval(timer);
-    // playRestEndSound/playRestTickSound are stable; adding them would not change behavior
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRestTimerActive, isRestTimerPaused, restTimeLeft]);
+    try {
+      await supabase.from('custom_workouts').insert({
+        user_id: user.id,
+        title: workoutTitleForSave,
+        workout_type: 'personalizzato',
+        scheduled_date: new Date().toISOString().split('T')[0],
+        exercises: currentWorkout.exercises,
+        total_duration: durationMinutes,
+        completed: true,
+        completed_at: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error('Errore custom_workouts:', err);
+      toast('Allenamento salvato; statistiche potrebbero aggiornarsi in ritardo.');
+    }
 
-  useEffect(() => {
-    setIsRestTimerActive(false);
-    setRestTimeLeft(0);
-    setIsRestTimerPaused(false);
-  }, [currentExerciseIndex]);
+    try {
+      const { updateWorkoutMetrics } = await import('@/services/updateWorkoutMetrics');
+      await updateWorkoutMetrics(user.id, durationMinutes);
+    } catch {
+      // ignore
+    }
+    updateWorkoutStats(user.id, durationMinutes);
+    window.dispatchEvent(new CustomEvent('workoutCompleted', { detail: { workoutId: workoutId, durationMinutes } }));
+
+    toast.success('🏆 Allenamento completato! Ottimo lavoro!');
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      navigate('/diary', { state: { justCompleted: true, workoutName: workoutTitle || workoutTitleForSave } });
+    }, 800);
+    setIsSaving(false);
+  }, [user, currentWorkout, customWorkout, generatedWorkout, workoutTitle, workoutType, workoutId, completedExercises, isSaving, recordWorkoutCompletion, navigate, medalSystem, addEarnedMedals]);
 
   if (!currentWorkout) {
-    return missingWorkoutContent;
+    return (
+      <div className="min-h-screen bg-[#0A0A0C] flex items-center justify-center px-4" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
+        <div className="text-white text-center">
+          <p>Allenamento non trovato</p>
+          <Button onClick={onClose} className="mt-4 bg-[#EEBA2B] text-black hover:opacity-90">Torna indietro</Button>
+        </div>
+      </div>
+    );
   }
 
-  if (workoutState === 'running' || workoutState === 'paused' || workoutState === 'rest') {
-    const totalProgress = ((currentExerciseIndex + 1) / (currentWorkout.exercises?.length || 1)) * 100;
-    
+  if (view === 'ready') {
     return (
-      <div className="fixed inset-0 bg-black flex flex-col" style={{ zIndex: 99999 }}>
-        {/* Header con progresso */}
-        <div className="flex-shrink-0 px-4 py-6">
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-pp-gold/80 text-sm font-medium">
-              Esercizio {currentExerciseIndex + 1} di {currentWorkout.exercises?.length || 0}
-            </p>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => {
-                  // Ferma il timer
-                  if (timerRef.current) {
-                    clearInterval(timerRef.current);
-                    timerRef.current = null;
-                  }
-                  // Reset degli stati
-                  setWorkoutState('ready');
-                  setWorkoutStarted(false);
-                  setCurrentExerciseIndex(0);
-                  setTimeLeft(0);
-                  setIsRest(false);
-                  setTotalProgress(0);
-                }}
-                className="text-pp-gold/80 hover:text-pp-gold text-sm font-medium transition-colors duration-200"
-              >
-                ← Indietro
-              </button>
-              <button
-                onClick={toggleSidebar}
-                className="text-pp-gold/80 hover:text-pp-gold p-2 rounded-lg hover:bg-pp-gold/10 transition-colors duration-200"
-                title="Lista esercizi"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+      <div
+        className="relative min-h-[calc(100vh-6rem-5rem)] flex flex-col justify-center items-center px-6 bg-[#0A0A0C]"
+        style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}
+      >
+        <div className="text-center space-y-6 max-w-lg w-full">
+          <button type="button" onClick={onClose} className="text-[#8A8A96] hover:text-white text-sm absolute top-4 left-4 z-10">
+            ← Torna indietro
+          </button>
+          <div className="flex justify-center">
+            <div className="w-32 h-32 rounded-full flex items-center justify-center" style={{ background: 'rgba(238,186,43,0.2)' }}>
+              <Clock className="w-16 h-16 text-[#EEBA2B]" />
             </div>
-      </div>
-
-          {/* Barra progresso */}
-          <div className="w-full bg-gray-700 rounded-full h-3 mb-6">
-            <div 
-              className="bg-pp-gold h-3 rounded-full transition-all duration-300"
-              style={{ width: `${totalProgress}%` }}
-            ></div>
           </div>
-
-          {/* Lista esercizi con stato */}
-          <div className="flex flex-wrap gap-1 justify-center max-w-full overflow-x-auto px-2">
-          {currentWorkout.exercises?.map((exercise: WorkoutExerciseShape, index: number) => {
-              const isCompleted = index < currentExerciseIndex;
-              const isCurrent = index === currentExerciseIndex;
-            
-            return (
-                <div
-                  key={exercise.name}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200 flex-shrink-0 ${
-                    isCompleted 
-                      ? 'bg-green-500 text-white' 
-                      : isCurrent 
-                      ? 'bg-pp-gold text-black' 
-                      : 'bg-gray-600 text-gray-400'
-                  }`}
-                  title={`${index + 1}. ${exercise.name}`}
-                >
-                  {isCompleted ? '✓' : index + 1}
-                </div>
-              );
-            })}
+          {(personalizedMeta as { startCustomWorkout?: string } | null)?.startCustomWorkout === 'personalized' && (
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#EEBA2B]/40" style={{ background: 'rgba(238,186,43,0.2)' }}>
+                <Sparkles className="w-4 h-4 text-[#EEBA2B]" />
+                <span className="text-[#EEBA2B] font-semibold text-sm">Piano Personalizzato</span>
+              </div>
+            </div>
+          )}
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">{workoutTitle}</h1>
+            <p className="text-xl text-[#8A8A96]">{workoutType}</p>
+          </div>
+          <div className="rounded-xl p-5 border border-[#EEBA2B]/30" style={{ background: 'rgba(238,186,43,0.1)' }}>
+            <h2 className="text-2xl font-bold text-[#EEBA2B] mb-3">💪 Circuito Completo</h2>
+            <div className="space-y-2 text-base text-[#8A8A96]">
+              <div className="flex items-center gap-2">
+                <Dumbbell className="w-5 h-5 text-[#EEBA2B]" />
+                <span>{workoutExerciseCount} esercizi</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-[#EEBA2B]" />
+                <span>{workoutDuration ? `~${workoutDuration} minuti` : 'Durata variabile'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[#EEBA2B]">🔥</span>
+                <span>Timer in card e recupero in alto</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[#EEBA2B]">🎧</span>
+                <span>Feedback audio e notifiche</span>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={() => setView('list')}
+              className="w-full rounded-xl py-5 px-6 text-xl font-bold text-black transition-colors"
+              style={{ backgroundColor: '#EEBA2B' }}
+            >
+              Inizia Workout
+            </button>
+            <button type="button" onClick={onClose} className="w-full rounded-lg py-4 px-6 text-lg font-semibold text-white bg-white/10 hover:bg-white/15 transition-colors">
+              Torna indietro
+            </button>
           </div>
         </div>
-        
-        {/* Contenuto principale - usa tutto lo spazio disponibile */}
-        <div className="flex-1 flex flex-col justify-center items-center px-4 py-4">
-          <div className="text-center space-y-12 w-full max-w-md mx-auto">
-            {/* Nome esercizio */}
-            <div className="space-y-4">
-              <div className="flex flex-col items-center gap-4">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-pp-gold leading-tight text-center px-4">
-                  {currentExercise?.name || 'Esercizio'}
-                </h2>
-                <ExerciseGifLink 
-                  exerciseName={currentExercise?.name || 'Esercizio'}
-                  buttonClassName="bg-pp-gold hover:bg-pp-gold/80 text-black px-4 py-2 rounded-lg font-semibold transition-colors duration-200 flex items-center"
-                />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0C] pb-32" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
+      <header className="fixed top-0 left-0 right-0 z-40 border-b border-white/7 bg-[#0A0A0C]/95 backdrop-blur-md">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors"
+            aria-label="Indietro"
+          >
+            ←
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] text-[#8A8A96] truncate">{workoutTitle}</p>
+            <h1 className="text-lg font-bold text-white truncate">{workoutType}</h1>
+          </div>
+          <span
+            className="shrink-0 rounded-full border px-3 py-1 text-[11px] font-bold text-[#EEBA2B]"
+            style={{ background: 'rgba(238,186,43,0.15)', borderColor: 'rgba(238,186,43,0.25)' }}
+          >
+            {totalCount} esercizi
+          </span>
+        </div>
+        <div className="px-4 pb-3">
+          <div className="flex items-center justify-between text-[11px] text-[#8A8A96] mb-1">
+            <span>{completedCount} di {totalCount} completati</span>
+            <span>{progressPct}%</span>
+          </div>
+          <div className="h-[4px] w-full rounded-full bg-white/7 overflow-hidden transition-all duration-300">
+            <div className="h-full rounded-full bg-[#EEBA2B] transition-all duration-300" style={{ width: `${progressPct}%` }} />
+          </div>
+        </div>
+      </header>
+
+      <main className="-mt-[20px] pt-0 pb-28 px-4">
+        <AnimatePresence>
+          {!isRecoveryTimerExpandedVisible && (
+            <motion.div
+              key="recovery-timer-pill"
+              initial={{ opacity: 0, y: -20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.8 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="fixed left-0 right-0 top-[100px] z-50 flex justify-center px-4 tabular-nums"
+            >
+              <div
+                className="flex items-center gap-3 rounded-full"
+                style={{
+                  fontFamily: 'Outfit, system-ui, sans-serif',
+                  background: '#1E1E24',
+                  border: '1px solid rgba(238,186,43,0.5)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                  padding: '12px 22px',
+                  minHeight: 52,
+                  borderRadius: 9999,
+                }}
+              >
+                <span className="text-[14px] font-semibold text-[#8A8A96]">Recupero</span>
+                <span className="text-[20px] font-semibold text-[#EEBA2B] tabular-nums" style={{ fontWeight: 600 }}>{formatTimer(timerSeconds)}</span>
+                <button
+                  type="button"
+                  onClick={handlePlayPauseTimer}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#16161A] text-[#EEBA2B] transition-colors hover:bg-white/10"
+                  aria-label={timerRunning ? 'Pausa' : 'Play'}
+                >
+                  {timerRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                </button>
               </div>
-              <p className="text-lg sm:text-xl md:text-2xl text-pp-gold/80 leading-relaxed">
-                {(currentExercise as WorkoutExerciseShape | undefined)?.instructions || 'Esegui l\'esercizio'}
-              </p>
-            </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-            {/* Timer gigante */}
-            <div className="text-center py-8">
-              {isTimed ? (
-                <div className="text-7xl sm:text-8xl md:text-9xl font-mono font-bold text-pp-gold">
-                  {isRest ? 'RIPOSO' : formatTime(timeLeft)}
+        <div ref={recoveryTimerBoxRef} className="mb-3 rounded-[14px] border border-white/7 bg-[#1E1E24] p-4">
+          <p className="mb-1 text-xs text-[#8A8A96] flex items-center gap-1.5"><Timer size={12} /> Timer recupero</p>
+          <p className="text-[28px] font-bold text-[#EEBA2B] font-variant-numeric tabular-nums">{formatTimer(timerSeconds)}</p>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={handleResetTimer}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-white/7 bg-white/5 text-white"
+              aria-label="Reset"
+            >
+              <RotateCcw size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={handlePlayPauseTimer}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-[#EEBA2B] bg-[#EEBA2B] text-black font-bold"
+              aria-label={timerRunning ? 'Pausa' : 'Play'}
+            >
+              {timerRunning ? <Pause size={18} /> : <Play size={18} />}
+            </button>
+          </div>
+        </div>
+
+        {exercises.map((ex, i) => {
+          const isCompleted = completedExercises.has(i);
+          const timed = isTimedExercise(ex);
+          const setsCount = getSetsCount(ex as WorkoutExerciseShape);
+          const doneSets = completedSets[i];
+          const isCardTimerActive = activeCardIndex === i;
+
+          return (
+            <div
+              key={ex.name + i}
+              className={`mb-3 rounded-[14px] border p-4 transition-colors ${
+                isCompleted ? 'border-green-500/30 bg-green-500/5' : 'border-white/7 bg-[#16161A]'
+              }`}
+            >
+              <div className="flex items-center gap-3 flex-wrap">
+                <div
+                  className={`flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold ${
+                    isCompleted ? 'border-green-500 bg-green-500/15 text-green-500' : 'border-white/7 text-[#8A8A96]'
+                  }`}
+                >
+                  {isCompleted ? '✓' : i + 1}
                 </div>
+                <div className="min-w-0 flex-1 flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-bold text-white">{ex.name}</p>
+                  <ExerciseGifLink
+                    exerciseName={ex.name}
+                    buttonClassName="text-[#EEBA2B] hover:text-[#EEBA2B]/80 hover:bg-[#EEBA2B]/10 p-1.5 h-auto min-w-0 rounded-lg text-xs font-medium flex items-center"
+                  />
+                </div>
+              </div>
+              {timed ? (
+                <p className="text-xs text-[#8A8A96] mt-1 ml-[46px]">
+                  {String(ex.duration ?? '30s')} · {String(ex.rest ?? '0')} recupero
+                </p>
               ) : (
-                <div className="space-y-6">
-                  <div className="bg-pp-gold/10 border-2 border-pp-gold/30 rounded-xl px-4 py-3 sm:px-6 sm:py-4">
-                    <div className="flex items-center justify-between gap-2 sm:gap-4 text-center">
-                      <div className="flex-1">
-                        <div className="text-gray-400 text-xs sm:text-sm uppercase tracking-wider mb-1">
-                          Serie
-                        </div>
-                        <div className="text-pp-gold text-2xl sm:text-3xl font-bold">
-                          {(currentExercise as WorkoutExerciseShape | undefined)?.sets ?? 4}
-                        </div>
-                      </div>
-                      <div className="w-px h-10 sm:h-12 bg-pp-gold/30" />
-                      <div className="flex-1">
-                        <div className="text-gray-400 text-xs sm:text-sm uppercase tracking-wider mb-1">
-                          Ripetizioni
-                        </div>
-                        <div className="text-pp-gold text-2xl sm:text-3xl font-bold">
-                          {currentExercise?.duration || '10-12'}
-                        </div>
-                      </div>
-                      <div className="w-px h-10 sm:h-12 bg-pp-gold/30" />
-                      <div className="flex-1">
-                        <div className="text-gray-400 text-xs sm:text-sm uppercase tracking-wider mb-1">
-                          Riposo
-                        </div>
-                        <div className="text-pp-gold text-2xl sm:text-3xl font-bold">
-                          {currentExercise?.rest || '60s'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <p className="text-xs text-[#8A8A96] mt-1 ml-[46px]">
+                  {setsCount} serie × {String(ex.duration ?? '10-12')} rip · {String(ex.rest ?? '60s')} recupero
+                </p>
+              )}
 
-                  {!isRestTimerActive ? (
-                    <Button
-                      onClick={handleStartRest}
-                      className="w-full bg-pp-gold hover:bg-pp-gold/90 text-black font-bold h-16 text-lg rounded-xl flex items-center justify-center gap-3"
+              {!isCompleted && timed && (
+                <div className="mt-3 ml-0">
+                  {!isCardTimerActive ? (
+                    <button
+                      type="button"
+                      onClick={() => startCardTimer(i)}
+                      className="rounded-[8px] border border-[#EEBA2B]/50 bg-[#EEBA2B]/10 text-[#EEBA2B] px-3 py-2 text-[11px] font-semibold transition-colors hover:bg-[#EEBA2B]/20"
                     >
-                      <Clock className="w-6 h-6" />
-                      Avvia Recupero
-                    </Button>
+                      Inizia
+                    </button>
                   ) : (
-                    <div className="bg-black/50 border-2 border-pp-gold rounded-2xl p-6">
-                      <div className="text-center mb-4">
-                        <div className="text-gray-400 text-sm uppercase tracking-wider mb-2">
-                          Recupero
-                        </div>
-                        <div className="text-pp-gold text-6xl font-bold tabular-nums">
-                          {formatRestTime(restTimeLeft)}
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button
-                          onClick={toggleRestTimer}
-                          className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20 h-12 rounded-xl"
+                    <div className="rounded-[10px] border border-[#EEBA2B]/30 bg-[#16161A] p-3 space-y-2">
+                      <p className="text-[22px] font-bold text-[#EEBA2B] font-variant-numeric tabular-nums">{formatTimer(activeCardSeconds)}</p>
+                      <div className="flex gap-2">
+                        {activeCardPaused ? (
+                          <button
+                            type="button"
+                            onClick={() => resumeCardTimer(i)}
+                            className="flex-1 rounded-[8px] border border-[#EEBA2B] bg-[#EEBA2B] text-black py-1.5 text-[11px] font-semibold flex items-center justify-center gap-1"
+                          >
+                            <Play className="w-4 h-4" /> Riprendi
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={pauseCardTimer}
+                            className="flex-1 rounded-[8px] border border-white/7 bg-white/5 text-white py-1.5 text-[11px] font-semibold flex items-center justify-center gap-1"
+                          >
+                            <Pause className="w-4 h-4" /> Pausa
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => skipCardTimer(i)}
+                          className="flex-1 rounded-[8px] border border-red-500/50 text-red-400 py-1.5 text-[11px] font-semibold"
                         >
-                          {isRestTimerPaused ? (
-                            <>
-                              <Play className="w-5 h-5 mr-2" />
-                              Riprendi
-                            </>
-                          ) : (
-                            <>
-                              <Pause className="w-5 h-5 mr-2" />
-                              Pausa
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          onClick={handleSkipRest}
-                          variant="outline"
-                          className="flex-1 border-red-500/50 text-red-400 hover:bg-red-500/10 h-12 rounded-xl"
-                        >
-                          <X className="w-5 h-5 mr-2" />
-                          Salta Recupero
-                        </Button>
+                          Salta
+                        </button>
                       </div>
                     </div>
                   )}
                 </div>
               )}
-            </div>
-          </div>
-        </div>
 
-        {/* Controlli bottom */}
-        <div className="flex-shrink-0 px-4 py-4">
-          <div className="flex gap-3 max-w-md mx-auto">
-            {isTimed ? (
-              <>
-                <button
-                  onClick={togglePause}
-                  className="flex-1 bg-pp-gold hover:bg-pp-gold/90 text-black font-bold py-4 px-6 rounded-xl transition-colors duration-200 text-lg"
-                >
-                  {workoutState === 'paused' ? 'Riprendi' : 'Pausa'}
-                </button>
-                <button
-                  onClick={skipExercise}
-                  className="flex-1 bg-white hover:bg-white/90 text-black font-bold py-4 px-6 rounded-xl transition-all duration-200 text-lg"
-                >
-                  Successivo
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={skipExercise}
-                className="w-full bg-white hover:bg-white/90 text-black font-bold py-4 px-6 rounded-xl transition-all duration-200 text-lg"
-              >
-                Successivo
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        {sidebarOpen && (
-          <>
-            {/* Overlay */}
-            <div 
-              className="fixed inset-0 bg-black/50 z-[60]"
-              onClick={closeSidebar}
-            />
-            
-            {/* Sidebar */}
-            <div className="fixed top-0 right-0 min-h-full w-64 md:w-80 bg-gray-900 border-l border-pp-gold/20 z-[70] transform transition-transform duration-300 ease-in-out">
-              <div className="h-full flex flex-col overflow-y-auto">
-                {/* Header Sidebar */}
-                <div className="flex items-center justify-between p-4 border-b border-pp-gold/20">
-                  <h3 className="text-lg font-bold text-pp-gold">
-                    Esercizi ({currentExerciseIndex + 1}/{currentWorkout.exercises?.length || 0})
-                  </h3>
-                  <button
-                    onClick={closeSidebar}
-                    className="text-pp-gold/80 hover:text-pp-gold p-1 rounded-lg hover:bg-pp-gold/10 transition-colors duration-200"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Lista Esercizi */}
-                <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-2">
-                  {currentWorkout.exercises?.map((exercise: WorkoutExerciseShape, index: number) => {
-                    const status = getExerciseStatus(index);
-                    const statusIcon = getExerciseStatusIcon(status);
-                    const isCurrent = index === currentExerciseIndex;
-                    
+              {!isCompleted && !timed && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {Array.from({ length: setsCount }, (_, n) => {
+                    const done = doneSets?.has(n) ?? false;
                     return (
                       <button
-                        key={exercise.name || index}
-                        onClick={() => navigateToExercise(index)}
-                        className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
-                          isCurrent
-                            ? 'bg-pp-gold/20 border border-pp-gold/40 text-pp-gold'
-                            : status === 'completed'
-                            ? 'bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20'
-                            : 'bg-gray-700/50 border border-gray-600/30 text-gray-300 hover:bg-gray-700/70'
+                        key={n}
+                        type="button"
+                        onClick={() => handleSetClick(i, n)}
+                        className={`rounded-[8px] border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+                          done ? 'border-green-500/30 bg-green-500/15 text-green-500' : 'border-white/7 bg-transparent text-[#8A8A96] hover:border-white/15'
                         }`}
                       >
-                        <div className="flex items-center space-x-3">
-                          <span className="text-lg">{statusIcon}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm font-medium text-pp-gold/60">
-                                {index + 1}.
-                              </span>
-                              <span className="font-semibold truncate">
-                                {exercise.name || `Esercizio ${index + 1}`}
-                              </span>
-                            </div>
-                            <div className="text-xs text-pp-gold/60 mt-1">
-                              {exercise.duration || '30s'} {exercise.rest && `+ ${exercise.rest}s riposo`}
-                            </div>
-                          </div>
-                        </div>
+                        Serie {n + 1}
                       </button>
                     );
                   })}
-                    </div>
-
-                {/* Footer Sidebar */}
-                <div className="p-4 border-t border-pp-gold/20">
-                  <div className="text-xs text-pp-gold/60 text-center">
-                    Tocca un esercizio per saltarci
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleExerciseComplete(i)}
+                    className="rounded-[8px] border border-white/7 bg-transparent text-[#8A8A96] hover:border-white/15 px-3 py-1.5 text-[11px] font-semibold transition-colors"
+                  >
+                    Completato
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
-          </>
-        )}
-              </div>
-            );
-  }
+          );
+        })}
+      </main>
 
-  // Se il workout è completato, mostra la schermata di completamento
-  if (workoutState === 'completed') {
-    return (
-      <div className="fixed inset-0 bg-black flex flex-col" style={{ zIndex: 99999 }}>
-        {/* Header minimale */}
-        <div className="flex-shrink-0 p-4">
-          <button
-            onClick={onClose}
-            className="text-pp-gold/80 hover:text-pp-gold text-sm"
-          >
-            ← Torna alla Dashboard
-          </button>
-        </div>
-
-        {/* Contenuto centrato */}
-        <div className="flex-1 flex flex-col justify-center items-center px-6">
-          <div className="text-center space-y-8 max-w-md w-full">
-            <div className="flex justify-center">
-              <div className="w-32 h-32 bg-green-500/20 rounded-full flex items-center justify-center">
-                <svg className="w-16 h-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-            
-            <div>
-              <h1 className="text-4xl font-bold text-pp-gold mb-2">Complimenti!</h1>
-              <p className="text-xl text-pp-gold/80">Workout completato con successo</p>
-            </div>
-            
-            <div className="space-y-4">
-              <button
-                onClick={handleTerminateSession}
-                className="w-full bg-pp-gold hover:bg-pp-gold/90 text-black font-bold py-4 px-6 rounded-xl transition-colors duration-200 text-lg"
-              >
-                Segna Completato
-              </button>
-              <button
-                onClick={saveToDiary}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-colors duration-200 text-lg"
-              >
-                Salva su Diario
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Layout identico al Quick Workout (schermata di preparazione)
-  // Mostra solo quando workoutState è 'ready' e workoutStarted è false
-  if (workoutState === 'ready' && !workoutStarted) {
-    return (
-    <div className="fixed inset-0 bg-black flex flex-col" style={{ zIndex: 99999 }}>
-      {/* Header minimale */}
-      <div className="flex-shrink-0 p-4">
+      <div className="fixed left-4 right-4 bottom-[80px] z-30">
         <button
-          onClick={onClose}
-          className="text-pp-gold/80 hover:text-pp-gold text-sm mt-1"
+          type="button"
+          disabled={!allCompleted || isSaving}
+          onClick={completeWorkoutFlow}
+          className={`w-full rounded-[14px] py-4 text-base font-bold transition-colors ${
+            isSaving ? 'cursor-wait bg-white/10 text-[#4a4a52]' : allCompleted ? 'cursor-pointer bg-[#EEBA2B] text-black hover:opacity-90' : 'cursor-not-allowed bg-white/10 text-[#4a4a52]'
+          }`}
         >
-          ← Torna indietro
+          {isSaving ? 'Salvataggio...' : '🏆 Completa allenamento'}
         </button>
       </div>
-      
-      {/* Contenuto centrato */}
-      <div className="flex-1 flex flex-col justify-center items-center px-6">
-        <div className="text-center space-y-6 max-w-lg w-full">
-          <div className="flex justify-center">
-            <div className="w-32 h-32 bg-pp-gold/20 rounded-full flex items-center justify-center">
-              <Clock className="w-16 h-16 text-pp-gold" />
-            </div>
-          </div>
 
-          {(personalizedMeta as { startCustomWorkout?: string } | null)?.startCustomWorkout === 'personalized' && (
-            <div className="flex justify-center">
-              <div className="inline-flex items-center gap-2 bg-pp-gold/20 px-4 py-2 rounded-full border border-pp-gold/40">
-                <Sparkles className="w-4 h-4 text-pp-gold" />
-                <span className="text-pp-gold font-semibold text-sm">Piano Personalizzato</span>
-              </div>
-            </div>
-          )}
-
-          <div>
-            <h1 className="text-4xl font-bold text-pp-gold mb-2">{workoutTitle}</h1>
-            <p className="text-xl text-pp-gold/80">{workoutType}</p>
-          </div>
-
-          <div className="bg-pp-gold/10 border border-pp-gold/30 rounded-xl p-5">
-            <h2 className="text-2xl font-bold text-pp-gold mb-3">💪 Circuito Completo</h2>
-            <div className="space-y-2 text-base text-pp-gold/80">
-              <div className="flex items-center gap-2">
-                <Dumbbell className="w-5 h-5 text-pp-gold" />
-                <span>{workoutExerciseCount} esercizi personalizzati</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-pp-gold" />
-                <span>{workoutDuration ? `~${workoutDuration} minuti` : 'Durata variabile'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-pp-gold">🔥</span>
-                <span>Riscaldamento guidato</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-pp-gold">⚡</span>
-                <span>Esercizi intensi con timer automatico</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-pp-gold">🎧</span>
-                <span>Feedback audio e notifiche</span>
-              </div>
-            </div>
-          </div>
-
-              <div className="space-y-4">
-                <button
-                  onClick={startWorkout}
-                  className="w-full bg-pp-gold hover:bg-pp-gold/90 text-black font-bold py-5 px-6 rounded-xl transition-colors duration-200 text-xl"
-                >
-                  Inizia Workout
-                </button>
-                <button
-                  onClick={onClose}
-                  className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200 text-lg mt-2"
-                >
-                  Torna indietro
-                </button>
-              </div>
-        </div>
-      </div>
-    </div>
-    );
-  }
-
-  // Fallback - non dovrebbe mai arrivare qui
-  return (
-    <div className="h-full bg-black flex items-center justify-center">
-      <div className="text-white text-center">
-        <h2 className="text-2xl font-bold mb-4">Errore</h2>
-        <p>Stato del workout non riconosciuto</p>
-      </div>
+      {challengeNotification && (
+        <ChallengeNotification
+          message={challengeNotification.message}
+          type={challengeNotification.type}
+          onClose={() => setChallengeNotification(null)}
+        />
+      )}
     </div>
   );
 };

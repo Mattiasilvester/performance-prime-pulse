@@ -8,7 +8,11 @@ import { cn } from '@/lib/utils';
 
 interface HealthDisclaimerProps {
   userId: string;
-  disclaimerType: 'workout_plan' | 'onboarding' | 'primebot_question';
+  disclaimerType:
+    | 'workout_plan'
+    | 'nutrition_plan'
+    | 'onboarding'
+    | 'primebot_question';
   onAccept: () => void; // Callback quando utente accetta
   context?: Record<string, unknown>; // Info aggiuntive per audit
   userHasLimitations?: boolean; // Se true, mostra versione più enfatizzata
@@ -23,6 +27,10 @@ di consultare un medico, fisioterapista o personal trainer certificato prima di
 iniziare qualsiasi programma di allenamento.`;
 
 const DISCLAIMER_TEXT_COMPACT = `I programmi di allenamento sono suggerimenti e NON sostituiscono il parere di un professionista qualificato. Consulta un medico o trainer certificato se hai dolori, infortuni o condizioni mediche.`;
+
+const DISCLAIMER_TEXT_NUTRITION = `I piani alimentari generati da PrimeBot sono suggerimenti informativi basati sulle informazioni fornite e non sostituiscono il parere di un nutrizionista, dietologo o medico specializzato. Prima di seguire qualsiasi piano alimentare, specialmente in presenza di patologie, consulta un professionista della salute qualificato. Performance Prime non si assume responsabilità per eventuali conseguenze derivanti dall'applicazione di questi suggerimenti.`;
+
+const DISCLAIMER_TEXT_NUTRITION_COMPACT = `Il piano alimentare è un suggerimento informativo e non sostituisce il parere di un nutrizionista o medico.`;
 
 /**
  * Componente HealthDisclaimer - Disclaimer salute per piani allenamento
@@ -86,7 +94,10 @@ export function HealthDisclaimer({
   };
 
   const IconComponent = userHasLimitations ? AlertTriangle : Shield;
-  const textToShow = compact ? DISCLAIMER_TEXT_COMPACT : DISCLAIMER_TEXT;
+  const isNutrition = disclaimerType === 'nutrition_plan';
+  const textToShow = isNutrition
+    ? (compact ? DISCLAIMER_TEXT_NUTRITION_COMPACT : DISCLAIMER_TEXT_NUTRITION)
+    : (compact ? DISCLAIMER_TEXT_COMPACT : DISCLAIMER_TEXT);
 
   if (compact) {
     return (

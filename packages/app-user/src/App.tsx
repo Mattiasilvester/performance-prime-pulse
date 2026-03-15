@@ -4,6 +4,8 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AuthProvider } from '@/hooks/useAuth'
+import { UserProfileProvider } from '@/contexts/UserProfileContext'
+import { MedalSystemProvider } from '@/contexts/MedalSystemContext'
 import { NotificationProvider } from '@/hooks/useNotifications'
 import { PrimeBotProvider, usePrimeBot } from '@/contexts/PrimeBotContext'
 import { TourProvider } from '@/contexts/TourContext'
@@ -19,7 +21,9 @@ import { PageSkeleton } from '@/components/ui/PageSkeleton'
 
 import { NewLandingPage } from '@/pages/landing/NewLandingPage'
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage'
+import GoogleWelcomePage from '@/pages/onboarding/GoogleWelcomePage'
 import LoginPage from '@/pages/auth/LoginPage'
+import AuthCallback from '@/pages/auth/AuthCallback'
 import ResetPassword from '@/pages/ResetPassword'
 
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
@@ -49,6 +53,10 @@ const Help = lazy(() => import('@/pages/settings/Help'))
 const PlansPage = lazy(() => import('@/pages/piani/PlansPage'))
 const PlanCreationPage = lazy(() => import('@/pages/piani/PlanCreationPage'))
 const ActivePlansPage = lazy(() => import('@/pages/piani/ActivePlansPage').then(m => ({ default: m.ActivePlansPage })))
+const IMieiPiani = lazy(() => import('@/pages/IMieiPiani'))
+const EsecuzioneWorkout = lazy(() => import('@/pages/EsecuzioneWorkout'))
+const DietaDelGiorno = lazy(() => import('@/pages/DietaDelGiorno'))
+const ActiveWorkoutPage = lazy(() => import('@/pages/ActiveWorkoutPage'))
 
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
@@ -70,6 +78,7 @@ const AICoachWrapper = ({ session }: { session: Session | null }) => {
 const EXCLUDED_WIDGET_PATHS = [
   '/',
   '/onboarding',
+  '/onboarding/google-welcome',
   '/auth',
   '/auth/login',
   '/auth/register',
@@ -77,7 +86,9 @@ const EXCLUDED_WIDGET_PATHS = [
   '/terms-and-conditions',
   '/privacy-policy',
   '/workout/quick',
+  '/workout/active',
   '/timer',
+  '/ai-coach',   // widget nascosto quando chat è aperta
 ]
 
 function ConditionalPrimeBotWidget() {
@@ -123,6 +134,8 @@ function App() {
     <ErrorBoundary>
       <MobileScrollFix />
       <AuthProvider>
+        <UserProfileProvider>
+          <MedalSystemProvider>
         <NotificationProvider>
           <PrimeBotProvider>
             <Router>
@@ -132,11 +145,9 @@ function App() {
                   <Routes>
                   <Route path="/" element={<NewLandingPage />} />
                   <Route path="/onboarding" element={<OnboardingPage />} />
+                  <Route path="/onboarding/google-welcome" element={<GoogleWelcomePage />} />
                   <Route path="/auth/login" element={session ? <Navigate to="/dashboard" /> : <LoginPage />} />
-                  <Route
-                  path="/auth"
-                  element={session ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth/login" replace />}
-                />
+                  <Route path="/auth" element={<LoginPage />} />
                   <Route path="/auth/register" element={
                     session ? <Navigate to="/dashboard" /> : (
                       <Suspense fallback={<PageSkeleton />}>
@@ -145,6 +156,7 @@ function App() {
                     )
                   } />
                   <Route path="/auth/reset-password" element={<ResetPassword />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/terms-and-conditions" element={<Suspense fallback={<PageSkeleton />}><TermsAndConditions /></Suspense>} />
                   <Route path="/privacy-policy" element={<Suspense fallback={<PageSkeleton />}><MainPrivacyPolicy /></Suspense>} />
 
@@ -154,8 +166,7 @@ function App() {
                       <div className="min-h-screen pt-24 pb-20">
                         <Suspense fallback={<PageSkeleton variant="dashboard" />}><Dashboard /></Suspense>
                       </div>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/workouts" element={
                     <ProtectedRoute session={session}>
@@ -163,34 +174,43 @@ function App() {
                       <div className="min-h-screen pt-24 pb-20">
                         <Suspense fallback={<PageSkeleton variant="dashboard" />}><Workouts /></Suspense>
                       </div>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/diary" element={
                     <ProtectedRoute session={session}>
                       <Header />
                       <Suspense fallback={<PageSkeleton variant="dashboard" />}><DiaryPage /></Suspense>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/diary/notes" element={
                     <ProtectedRoute session={session}>
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><DiaryNotesPage /></Suspense>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/workout/quick" element={
                     <ProtectedRoute session={session}>
-                      <Suspense fallback={<PageSkeleton />}><QuickWorkout /></Suspense>
+                      <Header />
+                      <div className="min-h-screen pt-24 pb-20">
+                        <Suspense fallback={<PageSkeleton />}><QuickWorkout /></Suspense>
+                      </div>
+                      <BottomNavigation />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/workout/active" element={
+                    <ProtectedRoute session={session}>
+                      <Header />
+                      <div className="min-h-screen pt-24 pb-20">
+                        <Suspense fallback={<PageSkeleton />}><ActiveWorkoutPage /></Suspense>
+                      </div>
+                      <BottomNavigation />
                     </ProtectedRoute>
                   } />
                   <Route path="/timer" element={
                     <ProtectedRoute session={session}>
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Timer /></Suspense>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/schedule" element={
                     <ProtectedRoute session={session}>
@@ -198,16 +218,14 @@ function App() {
                       <div className="min-h-screen pt-24 pb-20">
                         <Suspense fallback={<PageSkeleton />}><Schedule /></Suspense>
                       </div>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/ai-coach" element={<AICoachWrapper session={session} />} />
                   <Route path="/subscriptions" element={
                     <ProtectedRoute session={session}>
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Subscriptions /></Suspense>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/professionals" element={
                     <ProtectedRoute session={session}>
@@ -215,8 +233,7 @@ function App() {
                       <div className="min-h-screen pt-24 pb-20">
                         <Suspense fallback={<PageSkeleton />}><Professionals /></Suspense>
                       </div>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/professionals/:id" element={
                     <ProtectedRoute session={session}>
@@ -224,8 +241,7 @@ function App() {
                       <div className="min-h-screen pt-24 pb-20">
                         <Suspense fallback={<PageSkeleton />}><ProfessionalDetail /></Suspense>
                       </div>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/profile" element={
                     <ProtectedRoute session={session}>
@@ -233,8 +249,7 @@ function App() {
                       <div className="min-h-screen pt-24 pb-20">
                         <Suspense fallback={<PageSkeleton />}><Profile /></Suspense>
                       </div>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/piani" element={
                     <ProtectedRoute session={session}>
@@ -242,8 +257,7 @@ function App() {
                       <div className="min-h-screen pt-24 pb-20">
                         <Suspense fallback={<PageSkeleton variant="dashboard" />}><PlansPage /></Suspense>
                       </div>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/piani/nuovo" element={
                     <ProtectedRoute session={session}>
@@ -251,8 +265,7 @@ function App() {
                       <div className="min-h-screen pt-24 pb-20">
                         <Suspense fallback={<PageSkeleton />}><PlanCreationPage /></Suspense>
                       </div>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/piani-attivi" element={
                     <ProtectedRoute session={session}>
@@ -260,50 +273,67 @@ function App() {
                       <div className="min-h-screen pt-24 pb-20">
                         <Suspense fallback={<PageSkeleton />}><ActivePlansPage /></Suspense>
                       </div>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
+                  } />
+                  <Route path="/i-miei-piani" element={
+                    <ProtectedRoute session={session}>
+                      <Header />
+                      <div className="min-h-screen pt-24 pb-20">
+                        <Suspense fallback={<PageSkeleton />}><IMieiPiani /></Suspense>
+                      </div>
+                      <BottomNavigation />                    </ProtectedRoute>
+                  } />
+                  <Route path="/esecuzione-workout" element={
+                    <ProtectedRoute session={session}>
+                      <Header />
+                      <div className="min-h-screen pt-24 pb-20">
+                        <Suspense fallback={<PageSkeleton />}><EsecuzioneWorkout /></Suspense>
+                      </div>
+                      <BottomNavigation />                    </ProtectedRoute>
+                  } />
+                  <Route path="/dieta-del-giorno" element={
+                    <ProtectedRoute session={session}>
+                      <Header />
+                      <div className="min-h-screen pt-24 pb-20">
+                        <Suspense fallback={<PageSkeleton />}><DietaDelGiorno /></Suspense>
+                      </div>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/settings/personal-info" element={
                     <ProtectedRoute session={session}>
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><PersonalInfo /></Suspense>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/settings/security" element={
                     <ProtectedRoute session={session}>
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Security /></Suspense>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/settings/notifications" element={
                     <ProtectedRoute session={session}>
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Notifications /></Suspense>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/settings/language" element={
                     <ProtectedRoute session={session}>
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Language /></Suspense>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/settings/privacy" element={
                     <ProtectedRoute session={session}>
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Privacy /></Suspense>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
                   <Route path="/settings/help" element={
                     <ProtectedRoute session={session}>
                       <Header />
                       <Suspense fallback={<PageSkeleton />}><Help /></Suspense>
-                      <BottomNavigation />
-                    </ProtectedRoute>
+                      <BottomNavigation />                    </ProtectedRoute>
                   } />
 
                   <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
@@ -314,10 +344,22 @@ function App() {
             </Router>
             <Toaster />
             <Suspense fallback={null}>
-              <SonnerToaster position="top-center" />
+              <SonnerToaster
+                theme="light"
+                position="top-center"
+                toastOptions={{
+                  style: {
+                    background: '#ffffff',
+                    color: '#000000',
+                    border: '1px solid #e5e5e5',
+                  },
+                }}
+              />
             </Suspense>
           </PrimeBotProvider>
         </NotificationProvider>
+          </MedalSystemProvider>
+        </UserProfileProvider>
       </AuthProvider>
     </ErrorBoundary>
   )

@@ -1,3 +1,10 @@
+/**
+ * PUSH NOTIFICATION SERVICE — Sospeso per app-user
+ * Questo service è progettato per professional_id (app-pro).
+ * Per app-user (atleti) serve un sistema separato con user_id.
+ * TODO: reimplementare per atleti in fase futura.
+ * Il file è mantenuto come riferimento per la futura implementazione.
+ */
 // Servizio per gestire notifiche push professionali
 import { supabase } from '@/integrations/supabase/client';
 

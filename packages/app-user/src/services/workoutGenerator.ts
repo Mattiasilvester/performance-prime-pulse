@@ -28,7 +28,7 @@ const WORKOUT_RULES = {
   CARDIO: {
     minExercises: { PRINCIPIANTE: 8, INTERMEDIO: 10, AVANZATO: 12 },
     maxExercises: { PRINCIPIANTE: 10, INTERMEDIO: 12, AVANZATO: 15 },
-    exerciseDuration: { PRINCIPIANTE: 180, INTERMEDIO: 240, AVANZATO: 300 },
+    exerciseDuration: { PRINCIPIANTE: 40, INTERMEDIO: 50, AVANZATO: 60 },
     restBetweenExercises: { PRINCIPIANTE: 60, INTERMEDIO: 45, AVANZATO: 30 },
     sets: { PRINCIPIANTE: 1, INTERMEDIO: 1, AVANZATO: 1 }
   },
@@ -154,7 +154,7 @@ const detailedExerciseDatabase = {
     { name: 'Dip alla Sedia', muscleGroup: 'Braccia', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Curl con Manubri', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
     { name: 'French Press', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Intermedio' },
-    { name: 'Hammer Curl', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
+    { name: 'Curl a Martello', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
     { name: 'Curl Concentrato', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Intermedio' },
     { name: 'Curl a Martello', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
     { name: 'Curl Alternato', muscleGroup: 'Braccia', equipment: 'Manubri', level: 'Principiante' },
@@ -191,7 +191,7 @@ const detailedExerciseDatabase = {
     { name: 'Plank', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Side Plank', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Russian Twist', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
-    { name: 'Mountain Climbers', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
+    { name: 'Scalatori', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Crunch', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' },
     { name: 'Leg Raises', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Intermedio' },
     { name: 'Dead Bug', muscleGroup: 'Core', equipment: 'Corpo libero', level: 'Principiante' },
@@ -210,19 +210,19 @@ const detailedExerciseDatabase = {
     // INTERMEDIO
     { name: 'Jump Squats', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Burpees', level: 'Intermedio', duration: '15-20 min' },
-    { name: 'Mountain Climbers', level: 'Intermedio', duration: '15-20 min' },
+    { name: 'Scalatori', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Plank Jacks', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Jump Squats', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Thrusters', level: 'Intermedio', duration: '15-20 min' },
     { name: 'Jump Lunges', level: 'Intermedio', duration: '15-20 min' },
-    { name: 'Mountain Climbers', level: 'Intermedio', duration: '15-20 min' },
+    { name: 'Scalatori', level: 'Intermedio', duration: '15-20 min' },
     
     // AVANZATO
     { name: 'Burpees Esplosivi', level: 'Avanzato', duration: '25-30 min' },
     { name: 'Star Jumps', level: 'Avanzato', duration: '25-30 min' },
     { name: 'Skater Veloci', level: 'Avanzato', duration: '25-30 min' },
     { name: 'Power Punches', level: 'Avanzato', duration: '25-30 min' },
-    { name: 'Explosive Push-up', level: 'Avanzato', duration: '25-30 min' },
+    { name: 'Flessioni Esplosive', level: 'Avanzato', duration: '25-30 min' },
     { name: 'Quick Feet', level: 'Avanzato', duration: '25-30 min' },
     { name: 'Arm Circles', level: 'Avanzato', duration: '25-30 min' }
   ]
@@ -231,7 +231,7 @@ const detailedExerciseDatabase = {
 const exerciseDatabase = {
   cardio: {
     exercises: [
-      'Jumping Jacks', 'Saltelli Laterali', 'Burpees', 'Mountain Climbers',
+      'Jumping Jacks', 'Saltelli Laterali', 'Burpees', 'Scalatori',
       'Corsa sul Posto', 'Jump Squats', 'Plank Jacks', 'Saltelli da Pattinatore',
       'Movimento Incrociato', 'Calci ai Glutei', 'Passi Laterali', 'Jump Squats',
       'Box Steps', 'Camminata dell\'Orso', 'Saltelli a Rana', 'High Knees'
@@ -246,7 +246,7 @@ const exerciseDatabase = {
     exercises: [
       'Flessioni', 'Plank', 'Pike Push-up', 'Dip alle Parallele',
       'Squat', 'Affondi', 'Sedia al Muro', 'Glute Bridge',
-      'Superman', 'Controllo Core', 'Russian Twist', 'Stacco su Una Gamba',
+      'Superman', 'Core Hold', 'Russian Twist', 'Stacco su Una Gamba',
       'Dip alla Sedia', 'Calf Raises', 'Side Plank', 'Apertura Inversa'
     ],
     durations: {
@@ -258,8 +258,8 @@ const exerciseDatabase = {
   hiit: {
     exercises: [
       'Corsa sul Posto', 'Jump Squats', 'Burpees Esplosivi', 'Saltelli Laterali',
-      'Mountain Climbers', 'Plank Jacks', 'Jump Squats', 'Thrusters',
-      'Passi Veloce', 'Explosive Push-up', 'Jump Lunges', 'Star Jumps',
+      'Scalatori', 'Plank Jacks', 'Jump Squats', 'Thrusters',
+      'Quick Feet', 'Flessioni Esplosive', 'Jump Lunges', 'Star Jumps',
       'Skater Veloci', 'Power Punches', 'Quick Feet', 'Arm Circles'
     ],
     durations: {
@@ -272,8 +272,8 @@ const exerciseDatabase = {
     exercises: [
       'Cat-Cow', 'Hip Circles', 'Shoulder Rolls', 'Leg Swings',
       'Arm Circles', 'Neck Rotations', 'Ankle Circles', 'Torso Twists',
-      'Forward Fold', 'Stretch Quadricipiti', 'Chest Opener', 'Side Bend Stretch',
-      'Forward Fold', 'Child\'s Pose', 'Cobra Pose', 'Hip Flexor Stretch'
+      'Piegamento in Avanti', 'Stretch Quadricipiti', 'Chest Opener', 'Side Bend Stretch',
+      'Piegamento in Avanti', 'Posizione del Bambino', 'Posizione del Cobra', 'Hip Flexor Stretch'
     ],
     durations: {
       short: { work: '45s', rest: '10s' },

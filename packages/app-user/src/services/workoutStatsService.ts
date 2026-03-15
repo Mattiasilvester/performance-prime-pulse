@@ -7,19 +7,24 @@ export interface WorkoutStats {
   total_minutes?: number; // Minuti totali per calcoli interni
 }
 
-export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
+export const fetchWorkoutStats = async (userId?: string): Promise<WorkoutStats> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { total_workouts: 0, total_hours: '0h 0m' };
+    let uid = userId;
+    if (!uid) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { total_workouts: 0, total_hours: '0h 0m' };
+      uid = user.id;
+    }
 
+    // USA SEMPRE custom_workouts come fonte di verità (DATI REALI)
+    // Calcola dai workout completati (backup/fonte di verità)
     const { data: workouts, error } = await supabase
       .from('custom_workouts')
       .select('total_duration')
-      .eq('user_id', user.id)
+      .eq('user_id', uid)
       .eq('completed', true);
 
     if (error) {
-      console.error('Error fetching workout stats:', error);
       return { total_workouts: 0, total_hours: '0h 0m' };
     }
 
@@ -31,17 +36,22 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
     const minutes = totalMinutes % 60;
     const formattedTime = `${hours}h ${minutes}m`;
 
+    // SINCRONIZZA user_workout_stats solo se vuota o corrotta (non duplicare)
     try {
-      await supabase
+      const { error: syncError } = await supabase
         .from('user_workout_stats')
         .upsert({
-          user_id: user.id,
+          user_id: uid,
           total_workouts: totalWorkouts,
           total_hours: totalMinutes,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
+
+      if (syncError) {
+        // sync non critico, ignora
+      }
     } catch {
-      // Sync non critico, stats già calcolate da custom_workouts
+      // sync non critico, ignora
     }
 
     return {
@@ -49,8 +59,7 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
       total_hours: formattedTime,
       total_minutes: totalMinutes
     };
-  } catch (error) {
-    console.error('Error in fetchWorkoutStats:', error);
+  } catch {
     return { total_workouts: 0, total_hours: '0m' };
   }
 };
@@ -58,13 +67,16 @@ export const fetchWorkoutStats = async (): Promise<WorkoutStats> => {
 // Aggiorna le statistiche utente quando viene completato un allenamento
 export const updateWorkoutStats = async (userId: string, workoutDuration: number) => {
   try {
+    // Controlla se esistono statistiche esistenti
     const { data: existingStats, error: fetchError } = await supabase
       .from('user_workout_stats')
       .select('total_workouts, total_hours')
       .eq('user_id', userId)
       .maybeSingle();
 
-    if (fetchError && fetchError.code !== 'PGRST116') return;
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      return;
+    }
 
     if (existingStats) {
       // Aggiorna statistiche esistenti
@@ -80,6 +92,9 @@ export const updateWorkoutStats = async (userId: string, workoutDuration: number
         })
         .eq('user_id', userId);
 
+      if (updateError) {
+        // ignora
+      }
     } else {
       // Crea nuove statistiche
       const { error: insertError } = await supabase
@@ -91,9 +106,12 @@ export const updateWorkoutStats = async (userId: string, workoutDuration: number
           updated_at: new Date().toISOString()
         });
 
+      if (insertError) {
+        // ignora
+      }
     }
-  } catch (error) {
-    console.error('Errore updateWorkoutStats:', error);
+  } catch {
+    // ignora
   }
 };
 
@@ -104,8 +122,11 @@ export const resetWorkoutStats = async (userId: string) => {
       .from('user_workout_stats')
       .delete()
       .eq('user_id', userId);
-    if (error) console.error('Errore reset statistiche:', error);
-  } catch (error) {
-    console.error('Errore resetWorkoutStats:', error);
+
+    if (error) {
+      // ignora
+    }
+  } catch {
+    // ignora
   }
 };

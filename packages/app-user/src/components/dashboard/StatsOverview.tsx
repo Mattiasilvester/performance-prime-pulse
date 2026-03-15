@@ -3,7 +3,8 @@ import { Zap, Target, Clock, Award } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { fetchWorkoutStats } from '@/services/workoutStatsService';
 import { supabase } from '@/integrations/supabase/client';
-import { useMedalSystem } from '@/hooks/useMedalSystem';
+import { useAuth } from '@/hooks/useAuth';
+import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
 import { ChallengeModal } from '@/components/medals/ChallengeModal';
 
 interface StatsData {
@@ -15,6 +16,7 @@ interface StatsData {
 }
 
 export const StatsOverview = () => {
+  const { user } = useAuth();
   const [stats, setStats] = useState<StatsData>({
     totalWorkouts: 0,
     totalHours: '0h 0m',
@@ -30,32 +32,25 @@ export const StatsOverview = () => {
     getMedalCardData,
     startKickoffChallenge,
     closeChallengeModal
-  } = useMedalSystem();
+  } = useMedalSystemContext();
 
   useEffect(() => {
+    if (!user?.id) return;
     const loadStats = async () => {
       try {
-        // Carica statistiche workout
-        const workoutStats = await fetchWorkoutStats();
-        
-        // Carica obiettivi
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: objectives } = await supabase
-            .from('user_objectives')
-            .select('completed')
-            .eq('user_id', user.id);
-          
-          const totalObjectives = objectives?.length || 0;
-          const completedObjectives = objectives?.filter(obj => obj.completed).length || 0;
-          
-          setStats({
-            totalWorkouts: workoutStats.total_workouts,
-            totalHours: workoutStats.total_hours,
-            totalObjectives,
-            completedObjectives
-          });
-        }
+        const workoutStats = await fetchWorkoutStats(user.id);
+        const { data: objectives } = await supabase
+          .from('user_objectives')
+          .select('completed')
+          .eq('user_id', user.id);
+        const totalObjectives = objectives?.length || 0;
+        const completedObjectives = objectives?.filter(obj => obj.completed).length || 0;
+        setStats({
+          totalWorkouts: workoutStats.total_workouts,
+          totalHours: workoutStats.total_hours,
+          totalObjectives,
+          completedObjectives
+        });
       } catch (error) {
         console.error('Error loading stats:', error);
       } finally {
@@ -75,7 +70,7 @@ export const StatsOverview = () => {
     return () => {
       window.removeEventListener('workoutCompleted', handleWorkoutCompleted);
     };
-  }, []);
+  }, [user?.id]);
 
   // Ottieni dati card medaglie dinamici
   const medalCardData = getMedalCardData();

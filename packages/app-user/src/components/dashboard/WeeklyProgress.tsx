@@ -1,6 +1,7 @@
 
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 // import { RefreshCw } from 'lucide-react'; // Rimosso - non più necessario
 
 const WeeklyProgressChart = lazy(() => import('./WeeklyProgressChart'));
@@ -11,17 +12,19 @@ export interface WeeklyData {
 }
 
 export const WeeklyProgress = () => {
+  const { user } = useAuth();
   const [data, setData] = useState<WeeklyData[]>([]);
   const [totalWeeklyWorkouts, setTotalWeeklyWorkouts] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
     const loadWeeklyData = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
         // Calcola l'inizio della settimana corrente (lunedì)
         const now = new Date();
         const startOfWeek = new Date(now);
@@ -113,12 +116,12 @@ export const WeeklyProgress = () => {
     }, 10000);
 
     window.addEventListener('workoutCompleted', handleWorkoutCompleted);
-    
+
     return () => {
       window.removeEventListener('workoutCompleted', handleWorkoutCompleted);
       clearInterval(refreshInterval);
     };
-  }, [refreshKey]);
+  }, [user?.id, refreshKey]);
 
   // Funzione per refresh manuale rimossa - non più necessaria
 

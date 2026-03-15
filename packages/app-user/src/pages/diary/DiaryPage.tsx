@@ -38,6 +38,11 @@ const DiaryPage = () => {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedEntryForDetails, setSelectedEntryForDetails] = useState<WorkoutDiary | null>(null);
 
+  // Scroll al top al mount (es. dopo navigate da EsecuzioneWorkout)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Load entries
   useEffect(() => {
     loadEntries();

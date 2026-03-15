@@ -305,9 +305,9 @@ export const exerciseDetails: ExerciseDetailsDatabase = {
     }
   },
 
-  'Explosive Push-up': {
+  'Flessioni Esplosive': {
     id: 'explosive-push-up',
-    name: 'Explosive Push-up',
+    name: 'Flessioni Esplosive',
     category: 'FORZA',
     subcategory: 'PETTO',
     equipment: 'Corpo libero',
@@ -2851,54 +2851,6 @@ export const exerciseDetails: ExerciseDetailsDatabase = {
     }
   },
 
-  'Hammer Curl': {
-    id: 'hammer-curl',
-    name: 'Curl a Martello',
-    category: 'FORZA',
-    subcategory: 'BRACCIA',
-    equipment: 'Manubri',
-    difficulty: 'Intermedio',
-    
-    muscles: {
-      primary: ['Brachiale', 'Brachioradiale'],
-      secondary: ['Bicipite brachiale', 'Deltoidi anteriori', 'Avambracci']
-    },
-    
-    execution: {
-      setup: 'In piedi con i piedi alla larghezza delle spalle. Tieni un manubrio in ogni mano lungo i fianchi. Braccia distese, palmi rivolti verso le cosce (presa neutra).',
-      steps: [
-        'Contrai i muscoli dell\'avambraccio sollevando i manubri verso le spalle',
-        'Mantieni i gomiti fermi e vicini al corpo durante tutto il movimento',
-        'Mantieni i palmi rivolti verso le cosce durante tutto il movimento',
-        'Porta i manubri fino a quando i muscoli sono completamente contratti',
-        'Mantieni il core contratto e la schiena dritta',
-        'Scendi controllando il movimento tornando alla posizione iniziale'
-      ],
-      breathing: 'Inspira durante la discesa, espira durante la salita',
-      tempo: '2 secondi salita, 1 secondo pausa, 2-3 secondi discesa'
-    },
-    
-    commonMistakes: [
-      'Ruotare i polsi durante il movimento',
-      'Muovere i gomiti durante il movimento',
-      'Usare slancio del corpo per sollevare i pesi',
-      'Non scendere completamente (movimento parziale)',
-      'Inarcare la schiena durante la salita'
-    ],
-    
-    tips: [
-      'Mantieni sempre i palmi rivolti verso le cosce (presa neutra)',
-      'Concentrati sulla contrazione del brachiale e del brachioradiale',
-      'Perfetto per sviluppare i muscoli dell\'avambraccio',
-      'Scendi lentamente per massimizzare la tensione muscolare'
-    ],
-    
-    variations: {
-      easier: 'Curl a martello seduto o con pesi più leggeri',
-      harder: 'Curl a martello alternato o con fermata isometrica'
-    }
-  },
-
   'Curl Concentrato': {
     id: 'curl-concentrato',
     name: 'Curl Concentrato',
@@ -4196,9 +4148,9 @@ export const exerciseDetails: ExerciseDetailsDatabase = {
     }
   },
 
-  'Wall Sit': {
+  'Sedia al Muro': {
     id: 'wall-sit',
-    name: 'Wall Sit',
+    name: 'Sedia al Muro',
     category: 'FORZA',
     subcategory: 'GAMBE',
     equipment: 'Corpo libero',
@@ -6599,57 +6551,9 @@ export const exerciseDetails: ExerciseDetailsDatabase = {
     }
   },
 
-  'Fast Feet': {
-    id: 'fast-feet',
-    name: 'Fast Feet',
-    category: 'HIIT',
-    subcategory: 'HIIT',
-    equipment: 'Corpo libero',
-    difficulty: 'Intermedio',
-    
-    muscles: {
-      primary: ['Quadricipiti', 'Polpacci', 'Cardiovascolare'],
-      secondary: ['Glutei', 'Core', 'Femorali']
-    },
-    
-    execution: {
-      setup: 'In piedi con i piedi alla larghezza delle anche. Braccia piegate come durante la corsa. Core contratto.',
-      steps: [
-        'Inizia a muovere i piedi rapidamente sul posto',
-        'Solleva alternativamente i piedi da terra mantenendo un ritmo velocissimo',
-        'Mantieni le ginocchia leggermente piegate durante tutto il movimento',
-        'Muovi le braccia in coordinazione con le gambe',
-        'Mantieni un ritmo esplosivo e costante',
-        'Ripeti il movimento mantenendo la massima velocità possibile'
-      ],
-      breathing: 'Respirazione ritmica: inspira ed espira in modo costante',
-      tempo: 'Massima velocità: 20 sec lavoro, 10 sec riposo x 8 (protocollo Tabata)'
-    },
-    
-    commonMistakes: [
-      'Movimento troppo lento compromettendo l\'intensità HIIT',
-      'Non mantenere un ritmo costante',
-      'Trattenere il respiro durante l\'esecuzione',
-      'Non coordinare braccia e gambe',
-      'Perdere l\'equilibrio durante il movimento'
-    ],
-    
-    tips: [
-      'Richiede riscaldamento adeguato prima di iniziare',
-      'Mantieni la forma corretta anche sotto fatica',
-      'Concentrati sulla massima velocità durante gli intervalli di lavoro',
-      'Perfetto per protocolli HIIT ad alta intensità'
-    ],
-    
-    variations: {
-      easier: 'Fast feet a basso impatto o fast feet più lenti',
-      harder: 'Fast feet esplosivi o fast feet con salto'
-    }
-  },
-
-  'Battle Rope Waves': {
+  'Onde con le Braccia': {
     id: 'battle-rope-waves',
-    name: 'Battle Rope Waves',
+    name: 'Onde con le Braccia',
     category: 'HIIT',
     subcategory: 'HIIT',
     equipment: 'Battle Ropes',
@@ -7608,9 +7512,9 @@ export const exerciseDetails: ExerciseDetailsDatabase = {
     }
   },
 
-  'Forward Fold': {
+  'Piegamento in Avanti': {
     id: 'forward-fold',
-    name: 'Forward Fold',
+    name: 'Piegamento in Avanti',
     category: 'MOBILITÀ',
     subcategory: 'MOBILITÀ',
     equipment: 'Corpo libero',
@@ -7656,9 +7560,9 @@ export const exerciseDetails: ExerciseDetailsDatabase = {
     }
   },
 
-  'Cobra Pose': {
+  'Posizione del Cobra': {
     id: 'cobra-pose',
-    name: 'Cobra Pose',
+    name: 'Posizione del Cobra',
     category: 'MOBILITÀ',
     subcategory: 'MOBILITÀ',
     equipment: 'Tappetino',
