@@ -115,6 +115,11 @@ function isWorkoutPlanRequest(text: string): boolean {
 
 function isWorkoutPlanRequestExplicit(text: string): boolean {
   if (containsPlanExclusion(text)) return false;
+  const NUTRITION_SIGNALS = [
+    'nutrizionale', 'nutrizione', 'alimentare',
+    'alimentazione', 'dieta', 'pasti', 'mangiare',
+  ];
+  if (NUTRITION_SIGNALS.some((n) => text.toLowerCase().includes(n))) return false;
   const keywords = [
     'piano di allenamento',
     'piano allenamento',
@@ -126,18 +131,22 @@ function isWorkoutPlanRequestExplicit(text: string): boolean {
     'piano fitness',
     'piano sportivo',
     'piano di fitness',
-    'mi crei un piano',
-    'crea un piano',
-    'fammi un piano',
+    'mi crei un piano di allenamento',
+    'mi crei un piano workout',
+    'mi crei un piano fitness',
+    'crea un piano di allenamento',
+    'crea un piano workout',
+    'fammi un piano di allenamento',
+    'fammi un piano workout',
     'fammi un programma',
     'voglio allenarmi',
     'voglio iniziare ad allenarmi',
     'puoi crearmi',
     'ho bisogno di un piano',
     'ho bisogno di una scheda',
-    'programma di allenamento',
     'piano per allenarmi',
-    'voglio un piano',
+    'voglio un piano di allenamento',
+    'voglio un piano workout',
     'costruisci un piano',
     'preparami un piano',
     'dammi un piano',
@@ -161,13 +170,25 @@ function isNutritionPlanRequest(text: string): boolean {
     'dieta personalizzata',
     'schema alimentare',
     'mi crei un piano alimentare',
+    'mi crei un piano nutrizionale',
+    'mi crei una dieta',
     'crea un piano alimentare',
+    'creami un piano nutrizionale',
+    'creami un piano alimentare',
+    'creami una dieta',
     'fammi un piano alimentare',
-    'cosa devo mangiare',
-    'come devo mangiare',
+    'fammi un piano nutrizionale',
+    'voglio un piano nutrizionale',
+    'voglio un piano alimentare',
     'voglio una dieta',
+    'dammi un piano nutrizionale',
+    'preparami un piano alimentare',
     'fammi una dieta',
     'ho bisogno di una dieta',
+    'ho bisogno di un piano nutrizionale',
+    'ho bisogno di un piano alimentare',
+    'cosa devo mangiare',
+    'come devo mangiare',
   ];
   return keywords.some((k) => text.toLowerCase().includes(k));
 }
@@ -1548,15 +1569,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
     }
     
     // ── RILEVAMENTO TIPO PIANO ────────────────────────────────────
-    if (isWorkoutPlanRequestExplicit(trimmed)) {
-      if (shouldAddUserMessage) {
-        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
-        shouldAddUserMessage = false;
-      }
-      setInput('');
-      await startWorkoutPlanFlow(trimmed);
-      return;
-    }
+    // 1. NUTRIZIONE — sempre prima per evitare falsi positivi workout
     if (isNutritionPlanRequest(trimmed)) {
       if (shouldAddUserMessage) {
         setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
@@ -1566,6 +1579,17 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       await startNutritionPlanFlow(trimmed);
       return;
     }
+    // 2. WORKOUT ESPLICITO
+    if (isWorkoutPlanRequestExplicit(trimmed)) {
+      if (shouldAddUserMessage) {
+        setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
+        shouldAddUserMessage = false;
+      }
+      setInput('');
+      await startWorkoutPlanFlow(trimmed);
+      return;
+    }
+    // 3. GENERICO — mostra scelta tra workout e nutrizione
     if (isGenericPlanRequest(trimmed)) {
       if (shouldAddUserMessage) {
         setMsgs(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: trimmed }]);
