@@ -24,6 +24,7 @@ import {
   getUserContext,
   formatUserContextForPrompt,
   updateAllergies,
+  getSmartLimitationsCheck,
 } from '@/services/primebotUserContextService';
 import usePainTracking from '@/hooks/usePainTracking';
 import { ActionButton } from '@/components/primebot/ActionButton';
@@ -620,27 +621,76 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   async function startWorkoutPlanFlow(originalRequest: string) {
     setCurrentPlanType('workout');
     setSavedPlanRequest(originalRequest);
-    const painZones = pains.map(p => p.zona);
-    if (painZones.length > 0) {
-      const zonesText = painZones.join(', ');
+
+    // Carica stato limitazioni dal profilo
+    const limitationsCheck = userId && !userId.startsWith('guest-')
+      ? await getSmartLimitationsCheck(userId)
+      : null;
+
+    // CASO A — Ha limitazioni recenti (≤30gg): chiedi conferma
+    if (
+      limitationsCheck?.hasExistingLimitations &&
+      !limitationsCheck.needsToAsk &&
+      limitationsCheck.limitations
+    ) {
+      const zonesText = limitationsCheck.zones?.join(', ') ?? '';
+      const zonesLine = zonesText
+        ? `\nZone da evitare: **${zonesText}**`
+        : '';
       setWaitingForWorkoutLimitationsConfirm(true);
       setMsgs(prev => [...prev, {
         id: crypto.randomUUID(),
         role: 'bot' as const,
-        text: `Ho già salvato che hai dolore/limitazioni a: **${zonesText}**.\n\nVuoi aggiornare queste informazioni o procedo con il piano usando i dati già salvati? 💪`,
+        text: `Ho visto che hai indicato: **${limitationsCheck.limitations}**.${zonesLine}\n\nVuoi che tenga conto di queste limitazioni nel piano? 💪`,
         actions: [
-          { type: 'plan_flow' as ActionType, label: '✏️ Aggiorna', payload: { action: 'update_workout_limitations' } },
-          { type: 'plan_flow' as ActionType, label: '✅ Procedi con il piano', payload: { action: 'proceed_workout' } },
+          {
+            type: 'plan_flow' as ActionType,
+            label: '✅ Sì, procedi',
+            payload: { action: 'proceed_workout' },
+          },
+          {
+            type: 'plan_flow' as ActionType,
+            label: '✏️ No, sono cambiate',
+            payload: { action: 'update_workout_limitations' },
+          },
         ],
       }]);
-    } else {
+      return;
+    }
+
+    // CASO A2 — Ha limitazioni ma vecchie (>30gg): chiedi aggiornamento
+    if (
+      limitationsCheck?.hasExistingLimitations &&
+      limitationsCheck.needsToAsk &&
+      limitationsCheck.suggestedQuestion
+    ) {
       setWaitingForWorkoutLimitations(true);
+      const questionText = limitationsCheck.suggestedQuestion;
       setMsgs(prev => [...prev, {
         id: crypto.randomUUID(),
         role: 'bot' as const,
-        text: 'Prima di creare il tuo piano di allenamento, hai dolori o limitazioni fisiche da considerare? (es. ginocchio, schiena, spalla)\n\nSe non hai problemi, scrivi "no" e procedo subito! 💪',
+        text: questionText,
       }]);
+      return;
     }
+
+    // CASO B — Ha risposto "no limitazioni" di recente: genera direttamente
+    if (
+      limitationsCheck?.hasAnsweredBefore &&
+      !limitationsCheck.hasExistingLimitations &&
+      !limitationsCheck.needsToAsk
+    ) {
+      await generateWorkoutPlanFromChat(originalRequest);
+      return;
+    }
+
+    // CASO C — Mai compilato o dati scaduti: flusso standard
+    setWaitingForWorkoutLimitations(true);
+    setMsgs(prev => [...prev, {
+      id: crypto.randomUUID(),
+      role: 'bot' as const,
+      text: 'Prima di creare il tuo piano di allenamento, hai dolori o limitazioni fisiche da considerare? (es. ginocchio, schiena, spalla)\n\nSe non hai problemi, scrivi "no" e procedo subito! 💪',
+    }]);
   }
 
   async function startNutritionPlanFlow(originalRequest: string) {
