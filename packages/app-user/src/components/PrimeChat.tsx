@@ -38,6 +38,7 @@ import { downloadWorkoutPlanPDF } from '@/utils/pdfExport';
 // ⭐ FIX BUG 3: Import per analisi dolore nel messaggio corrente
 import { detectBodyPartFromMessage } from '@/data/bodyPartExclusions';
 import { addPain } from '@/services/painTrackingService';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export interface ParsedAction {
   type: ActionType;
@@ -371,6 +372,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   // ⭐ FIX BUG 3: Stato per gestire dolore rilevato nel messaggio corrente
   const [waitingForPainDetails, setWaitingForPainDetails] = useState(false);
   const [tempPainBodyPart, setTempPainBodyPart] = useState<string | null>(null);
+  const [quickRepliesVisible, setQuickRepliesVisible] = useState(true);
 
   // P14: Cooldown pain check — zone già controllate in questa sessione (no repeat)
   const [painZonesCheckedInSession, setPainZonesCheckedInSession] = useState<Set<string>>(new Set());
@@ -2771,20 +2773,33 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         </div>
 
         {/* Area Bottom - Quick Replies + Input */}
-        <div className="flex-shrink-0 border-t border-[#DAA520]/30 bg-black">
+        <div className="flex-shrink-0 bg-black">
           {/* Quick Replies */}
-          <div className="p-4">
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {questionsToShow.map(q => (
-                <button
-                  key={q}
-                  onClick={() => { setInput(q); send(q); }}
-                  className="border border-[#DAA520] hover:bg-[#EEBA2B]/10 bg-gray-800 text-white text-sm px-3 py-2 rounded-xl transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
+          <div className="px-4 pb-4 pt-0">
+            <button
+              onClick={() => setQuickRepliesVisible(prev => !prev)}
+              className="w-full flex justify-center items-center min-h-[44px] py-1 text-[#8A8A96] border-t border-[#DAA520]/30 hover:text-white transition-colors"
+              aria-label={quickRepliesVisible ? 'Nascondi suggerimenti' : 'Mostra suggerimenti'}
+            >
+              {quickRepliesVisible ? (
+                <ChevronDown size={18} />
+              ) : (
+                <ChevronUp size={18} />
+              )}
+            </button>
+            {quickRepliesVisible && (
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {questionsToShow.map(q => (
+                  <button
+                    key={q}
+                    onClick={() => { setInput(q); send(q); }}
+                    className="border border-[#DAA520] hover:bg-[#EEBA2B]/10 bg-gray-800 text-white text-sm px-3 py-2 rounded-xl transition-colors"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
             
             {/* Input */}
             <div className="flex gap-2">

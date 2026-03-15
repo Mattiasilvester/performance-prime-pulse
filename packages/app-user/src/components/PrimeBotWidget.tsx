@@ -19,6 +19,7 @@ const EXCLUDED_PATHS = [
   '/privacy-policy',
   '/workout/quick',
   '/timer',
+  '/ai-coach',
 ];
 
 const BUBBLE_ACTIONS = [

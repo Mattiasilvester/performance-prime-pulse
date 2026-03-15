@@ -88,6 +88,7 @@ const EXCLUDED_WIDGET_PATHS = [
   '/workout/quick',
   '/workout/active',
   '/timer',
+  '/ai-coach',   // widget nascosto quando chat è aperta
 ]
 
 function ConditionalPrimeBotWidget() {
