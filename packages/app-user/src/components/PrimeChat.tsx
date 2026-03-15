@@ -571,6 +571,34 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     setSavedPlanRequest(null);
   }
 
+  function extractDurationFromText(text: string): number | null {
+    const lower = text.toLowerCase();
+    // 3 giorni
+    if (
+      lower.includes('3 giorni') ||
+      lower.includes('tre giorni')
+    ) return 3;
+    // Cap: massimo 1 settimana (mese/2 settimane → 7)
+    if (
+      lower.includes('mese') ||
+      lower.includes('mensile') ||
+      lower.includes('30 giorni') ||
+      lower.includes('30giorni') ||
+      lower.includes('due settimane') ||
+      lower.includes('2 settimane') ||
+      lower.includes('14 giorni')
+    ) return 7;
+    // 1 settimana
+    if (
+      lower.includes('settimanale') ||
+      lower.includes('una settimana') ||
+      lower.includes('1 settimana') ||
+      lower.includes('7 giorni') ||
+      lower.includes('settimana')
+    ) return 7;
+    return null;
+  }
+
   function showNutritionDurationButtons() {
     setMsgs(prev => [
       ...prev,
@@ -581,8 +609,6 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         actions: [
           { type: 'plan_flow' as ActionType, label: '3 giorni', payload: { action: 'nutrition_duration', days: 3 } },
           { type: 'plan_flow' as ActionType, label: '1 settimana', payload: { action: 'nutrition_duration', days: 7 } },
-          { type: 'plan_flow' as ActionType, label: '2 settimane', payload: { action: 'nutrition_duration', days: 14 } },
-          { type: 'plan_flow' as ActionType, label: '1 mese', payload: { action: 'nutrition_duration', days: 30 } },
         ],
       },
     ]);
@@ -673,7 +699,12 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
         break;
       case 'proceed_nutrition':
         setWaitingForNutritionLimitationsConfirm(false);
-        showNutritionDurationButtons();
+        const detectedDaysProceed = extractDurationFromText(savedPlanRequest || '');
+        if (detectedDaysProceed !== null) {
+          await generateNutritionPlanFromChat(savedPlanRequest || '', detectedDaysProceed);
+        } else {
+          showNutritionDurationButtons();
+        }
         return;
       case 'update_nutrition_limitations':
         setWaitingForNutritionLimitationsConfirm(false);
@@ -1516,7 +1547,12 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         const nuoveAllergie = parseAllergiesFromText(trimmed);
         if (nuoveAllergie.length > 0) await updateAllergies(userId, nuoveAllergie);
       }
-      showNutritionDurationButtons();
+      const detectedDaysAllergie = extractDurationFromText(savedPlanRequest || '');
+      if (detectedDaysAllergie !== null) {
+        await generateNutritionPlanFromChat(savedPlanRequest || '', detectedDaysAllergie);
+      } else {
+        showNutritionDurationButtons();
+      }
       return;
     }
 
@@ -1547,7 +1583,12 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         await updateAllergies(userId, nuoveAllergie);
         addBotMessage(`Ho aggiornato le tue allergie: **${nuoveAllergie.join(', ')}**. Ora genero il piano... 🥗`);
       }
-      showNutritionDurationButtons();
+      const detectedDaysUpdate = extractDurationFromText(savedPlanRequest || '');
+      if (detectedDaysUpdate !== null) {
+        await generateNutritionPlanFromChat(savedPlanRequest || '', detectedDaysUpdate);
+      } else {
+        showNutritionDurationButtons();
+      }
       return;
     }
 
@@ -1559,10 +1600,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       }
       setInput('');
       const lower = trimmed.toLowerCase();
-      let days = 7;
-      if (lower.includes('3') || lower.includes('tre')) days = 3;
-      else if (lower.includes('14') || lower.includes('due settimane')) days = 14;
-      else if (lower.includes('30') || lower.includes('mese')) days = 30;
+      const days = (lower.includes('3') || lower.includes('tre')) ? 3 : 7;
       setWaitingForNutritionDuration(false);
       await generateNutritionPlanFromChat(savedPlanRequest || trimmed, days);
       return;

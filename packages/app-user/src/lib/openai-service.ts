@@ -1247,10 +1247,7 @@ FORMATO RISPOSTA — rispondi SOLO con JSON valido, nessun testo prima o dopo:
   "note_finali": "Consulta un nutrizionista..."
 }`;
 
-  const maxTokens = durationDays <= 3 ? 4000
-    : durationDays <= 7 ? 6000
-    : durationDays <= 14 ? 10000
-    : 16000;
+  const maxTokens = durationDays <= 3 ? 3000 : 4500;
 
   try {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-chat`, {
