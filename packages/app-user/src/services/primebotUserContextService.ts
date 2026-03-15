@@ -510,24 +510,26 @@ export async function updateHealthLimitations(
   userId: string,
   hasLimitazioni: boolean,
   limitazioniFisiche?: string,
-  zoneEvitare?: string[]
+  zoneEvitare?: string[],
+  condizioniMediche?: string | null
 ): Promise<boolean> {
   try {
+    const updateData: Record<string, unknown> = {
+      user_id: userId,
+      ha_limitazioni: hasLimitazioni,
+      limitazioni_fisiche: limitazioniFisiche ?? null,
+      zone_evitare: zoneEvitare ?? [],
+      limitazioni_compilato_at: new Date().toISOString(),
+      last_modified_at: new Date().toISOString(),
+    };
+    if (condizioniMediche !== undefined) {
+      updateData.condizioni_mediche = condizioniMediche;
+    }
     const { error } = await supabase
       .from('user_onboarding_responses')
-      .upsert(
-        {
-          user_id: userId,
-          ha_limitazioni: hasLimitazioni,
-          limitazioni_fisiche: limitazioniFisiche || null,
-          zone_evitare: zoneEvitare || [],
-          limitazioni_compilato_at: new Date().toISOString(),
-          last_modified_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'user_id',
-        }
-      );
+      .upsert(updateData, {
+        onConflict: 'user_id',
+      });
 
     if (error) {
       console.error('❌ Errore aggiornamento limitazioni:', error);

@@ -2,6 +2,7 @@ import { useLayoutEffect, useState } from 'react';
 import { UserProfile } from './UserProfile';
 import { AchievementsBoard } from './AchievementsBoard';
 import { ProgressHistory } from './ProgressHistory';
+import { PrimeBotProfile } from './PrimeBotProfile';
 import { Settings } from './Settings';
 
 export const Profile = () => {
@@ -48,6 +49,7 @@ export const Profile = () => {
           <UserProfile />
           <AchievementsBoard />
           <ProgressHistory />
+          <PrimeBotProfile />
         </div>
         <div>
           <Settings />

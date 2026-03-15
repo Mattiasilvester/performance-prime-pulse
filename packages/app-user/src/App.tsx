@@ -343,7 +343,17 @@ function App() {
             </Router>
             <Toaster />
             <Suspense fallback={null}>
-              <SonnerToaster position="top-center" />
+              <SonnerToaster
+                theme="light"
+                position="top-center"
+                toastOptions={{
+                  style: {
+                    background: '#ffffff',
+                    color: '#000000',
+                    border: '1px solid #e5e5e5',
+                  },
+                }}
+              />
             </Suspense>
           </PrimeBotProvider>
         </NotificationProvider>
