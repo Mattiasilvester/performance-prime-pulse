@@ -284,12 +284,30 @@ export const useMedalSystem = () => {
     }
   }, [shouldShowChallengeModal]);
 
+  const addEarnedMedals = useCallback((medals: Medal[]) => {
+    if (medals.length === 0) return;
+    setMedalSystem(prev => {
+      const existingIds = new Set(prev.earnedMedals.map(m => m.id));
+      const toAdd = medals.filter(m => !existingIds.has(m.id));
+      if (toAdd.length === 0) return prev;
+      const updated = {
+        ...prev,
+        earnedMedals: [...prev.earnedMedals, ...toAdd],
+        totalMedals: prev.earnedMedals.length + toAdd.length,
+        lastUpdated: new Date().toISOString(),
+      };
+      saveMedalSystem(updated);
+      return updated;
+    });
+  }, []);
+
   return {
     medalSystem,
     challengeModal,
     getMedalCardData,
     startKickoffChallenge,
     recordWorkoutCompletion,
-    closeChallengeModal
+    closeChallengeModal,
+    addEarnedMedals,
   };
 };

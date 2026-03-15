@@ -6,6 +6,7 @@ import { Play, Pause, Timer, RotateCcw } from 'lucide-react';
 import { PushPermissionModal } from '@/components/notifications/PushPermissionModal';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
+import { checkAndUnlockMedals } from '@/services/medalCheckService';
 import { trackWorkoutForChallenge } from '@/utils/challengeTracking';
 import { ChallengeNotification } from '@/components/ui/ChallengeNotification';
 import { ExerciseGifLink } from '@/components/workouts/ExerciseGifLink';
@@ -59,7 +60,7 @@ function formatTimer(s: number): string {
 const QuickWorkout = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { recordWorkoutCompletion } = useMedalSystemContext();
+  const { recordWorkoutCompletion, medalSystem, addEarnedMedals } = useMedalSystemContext();
   const {
     canAskPermission,
     showPermissionModal,
@@ -429,6 +430,12 @@ const QuickWorkout = () => {
     }
 
     recordWorkoutCompletion();
+    if (user?.id) {
+      const earnedIds = medalSystem.earnedMedals.map(m => m.id);
+      checkAndUnlockMedals(user.id, earnedIds).then(newMedals => {
+        if (newMedals.length > 0) addEarnedMedals(newMedals);
+      });
+    }
     const challengeResult = trackWorkoutForChallenge();
     if (challengeResult.message) {
       const notificationType = challengeResult.isCompleted ? 'success' : challengeResult.isNewChallenge ? 'info' : 'info';

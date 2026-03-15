@@ -6,6 +6,7 @@ import { ExerciseGifLink } from './ExerciseGifLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
+import { checkAndUnlockMedals } from '@/services/medalCheckService';
 import { trackWorkoutForChallenge } from '@/utils/challengeTracking';
 import { updateWorkoutStats } from '@/services/workoutStatsService';
 import { completeWorkout as saveWorkoutToDiary } from '@/services/diaryService';
@@ -123,7 +124,7 @@ function getSetsCount(ex: WorkoutExerciseShape | undefined): number {
 
 export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onClose }: ActiveWorkoutProps) => {
   const { user } = useAuth();
-  const { recordWorkoutCompletion } = useMedalSystemContext();
+  const { recordWorkoutCompletion, medalSystem, addEarnedMedals } = useMedalSystemContext();
   const navigate = useNavigate();
 
   const currentWorkout = customWorkout || generatedWorkout || workoutData[workoutId as keyof typeof workoutData];
@@ -461,6 +462,12 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
     }
 
     recordWorkoutCompletion();
+    if (user?.id) {
+      const earnedIds = medalSystem.earnedMedals.map(m => m.id);
+      checkAndUnlockMedals(user.id, earnedIds).then(newMedals => {
+        if (newMedals.length > 0) addEarnedMedals(newMedals);
+      });
+    }
     const challengeResult = trackWorkoutForChallenge();
     if (challengeResult.message) {
       const notifType = challengeResult.isCompleted ? 'success' : challengeResult.isNewChallenge ? 'info' : 'info';
@@ -499,7 +506,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
       navigate('/diary', { state: { justCompleted: true, workoutName: workoutTitle || workoutTitleForSave } });
     }, 800);
     setIsSaving(false);
-  }, [user, currentWorkout, customWorkout, generatedWorkout, workoutTitle, workoutType, workoutId, completedExercises, isSaving, recordWorkoutCompletion, navigate]);
+  }, [user, currentWorkout, customWorkout, generatedWorkout, workoutTitle, workoutType, workoutId, completedExercises, isSaving, recordWorkoutCompletion, navigate, medalSystem, addEarnedMedals]);
 
   if (!currentWorkout) {
     return (

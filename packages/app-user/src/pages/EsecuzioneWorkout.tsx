@@ -7,6 +7,8 @@ import type { DayExercise } from '@/utils/workoutUtils';
 import { completeWorkout } from '@/services/diaryService';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
+import { checkAndUnlockMedals } from '@/services/medalCheckService';
 
 interface EsecuzioneWorkoutState {
   plan: WorkoutPlan;
@@ -41,6 +43,7 @@ export default function EsecuzioneWorkout() {
   const [isSaving, setIsSaving] = useState(false);
 
   const { user } = useAuth();
+  const { medalSystem, addEarnedMedals } = useMedalSystemContext();
 
   const isExerciseFullyCompleted = useCallback(
     (exerciseIndex: number, totalSets: number): boolean => {
@@ -271,6 +274,13 @@ export default function EsecuzioneWorkout() {
       toast.error('Errore nel salvataggio. Riprova.');
       setIsSaving(false);
       return;
+    }
+
+    if (user?.id) {
+      const earnedIds = medalSystem.earnedMedals.map(m => m.id);
+      checkAndUnlockMedals(user.id, earnedIds).then(newMedals => {
+        if (newMedals.length > 0) addEarnedMedals(newMedals);
+      });
     }
 
     try {
