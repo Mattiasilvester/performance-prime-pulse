@@ -730,10 +730,10 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     // Se ha_limitazioni è null, significa che non ha mai risposto, anche se limitazioni_compilato_at potrebbe essere presente per errore
     const hasAnsweredBefore = limitazioniCompilatoAt !== null && hasLimitazioni !== null;
     
-    // ⭐ FIX 1: Se ha_limitazioni = false, forza limitations/zones/medicalConditions a null
-    // Questo evita che dati residui nel database vengano passati all'AI
+    // ⭐ FIX 1: Se ha_limitazioni = false, forza limitations/zones a null (dati residui).
+    // medicalConditions restituite sempre (indipendenti dalle limitazioni fisiche).
     if (hasLimitazioni === false) {
-      console.log('🧹 FIX 1: ha_limitazioni = false, forzando limitations/zones/medicalConditions a null (ignoro dati residui)');
+      console.log('🧹 FIX 1: ha_limitazioni = false, forzando limitations/zones a null (medicalConditions restituite sempre se presenti)');
     }
     
     console.log('🔍 getSmartLimitationsCheck - risultato finale:', {
@@ -750,11 +750,11 @@ export async function getSmartLimitationsCheck(userId: string): Promise<SmartLim
     
     return {
       hasExistingLimitations: hasLimitazioni === true,
-      // ⭐ FIX 1: Se ha_limitazioni = false, forza limitations/zones/medicalConditions a null
-      // Questo evita che dati residui nel database vengano passati all'AI
+      // ⭐ FIX 1: Se ha_limitazioni = false, forza limitations/zones a null (dati residui).
+      // medicalConditions restituite sempre: sono indipendenti dalle limitazioni fisiche.
       limitations: hasLimitazioni === true ? limitazioniFisiche : null,
       zones: hasLimitazioni === true ? zoneEvitare : null,
-      medicalConditions: hasLimitazioni === true ? condizioniMediche : null,
+      medicalConditions: condizioniMediche,
       lastUpdated: limitazioniCompilatoAt,
       daysSinceUpdate,
       needsToAsk,

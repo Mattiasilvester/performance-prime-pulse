@@ -562,12 +562,32 @@ L'utente non ha indicato limitazioni fisiche. Puoi proporre qualsiasi esercizio 
 `;
     }
 
+    // Sezione condizioni mediche — indipendente dalle limitazioni fisiche
+    let medicalSection = '';
+    if (limitationsCheck.medicalConditions) {
+      medicalSection = `
+
+⚠️ CONDIZIONI MEDICHE DICHIARATE:
+L'utente ha dichiarato: "${limitationsCheck.medicalConditions}"
+
+REGOLE OBBLIGATORIE:
+- Adatta TUTTI gli esercizi tenendo conto di questa condizione
+- Escludi esercizi controindicati per questa condizione
+  (es. per ipertensione: no HIIT, no sforzi isometrici prolungati,
+  no esercizi che aumentano bruscamente la pressione)
+`;
+    }
+
+    const MEDICAL_SAFETY_NOTE_WORKOUT = limitationsCheck.medicalConditions
+      ? `Nota di sicurezza: Piano adattato per: ${limitationsCheck.medicalConditions}. Consulta sempre il tuo medico prima di iniziare qualsiasi programma di allenamento.`
+      : null;
+
     // System Prompt SPECIFICO per piani strutturati con VARIAZIONE OBBLIGATORIA
     const workoutPlanSystemPrompt = `IMPORTANTE: Rispondi SEMPRE e SOLO in italiano. Mai usare inglese. Tutti i nomi degli esercizi devono essere in italiano. Il JSON deve contenere solo testo italiano.
 
 Sei PrimeBot, esperto di Performance Prime. L'utente ha richiesto un piano di allenamento.
 
-${limitationsSection}
+${limitationsSection}${medicalSection}
 
 REGOLA CRITICA - VARIAZIONE SERIE/RIPETIZIONI:
 ⚠️ NON puoi creare un piano dove tutti gli esercizi hanno le stesse serie e ripetizioni!
@@ -701,6 +721,14 @@ IMPORTANTE: Se l'utente ha limitazioni fisiche, il JSON DEVE includere:
 IMPORTANTE: Il campo "safetyNotes" deve contenere SOLO testo plain senza caratteri speciali, senza &, senza *, senza markdown di nessun tipo.
 Esempio corretto: "Nota di sicurezza: Piano adattato..."
 Esempio SBAGLIATO: "& &p **Nota di sicurezza**..."
+` : ''}
+${MEDICAL_SAFETY_NOTE_WORKOUT ? `
+IMPORTANTE - CONDIZIONI MEDICHE:
+Il campo "safetyNotes" del JSON deve contenere
+ESATTAMENTE questo testo (copia verbatim):
+"${MEDICAL_SAFETY_NOTE_WORKOUT}"
+Non aggiungere altro testo in safetyNotes.
+Non usare markdown, asterischi o caratteri speciali.
 ` : ''}
 
 ⚠️ IMPORTANTE:
@@ -956,6 +984,16 @@ ${workoutPlanSystemPrompt}
       console.log('🛡️ PROBLEMA 2 FIX: Safety note generata:', plan.safetyNotes);
     }
 
+    // Post-processing condizioni mediche
+    // Solo se NON ci sono già limitazioni fisiche che hanno già impostato safetyNotes nel blocco precedente
+    if (
+      limitationsCheck.medicalConditions &&
+      !limitationsCheck.hasExistingLimitations &&
+      plan
+    ) {
+      plan.safetyNotes = MEDICAL_SAFETY_NOTE_WORKOUT!;
+    }
+
     // ============================================
     // 🛡️ FORZA ESERCIZI SICURI SE C'È UNA LIMITAZIONE
     // ============================================
@@ -1110,17 +1148,49 @@ export async function getStructuredNutritionPlan(
     };
   }
 
+  const { getSmartLimitationsCheck } = await import('@/services/primebotUserContextService');
+  const limitationsCheck = await getSmartLimitationsCheck(userId);
+
+  const MEDICAL_SAFETY_NOTE_NUTRITION = limitationsCheck.medicalConditions
+    ? `Nota di sicurezza: Piano adattato per: ${limitationsCheck.medicalConditions}. Consulta sempre il tuo medico o nutrizionista prima di seguire questo piano alimentare.`
+    : null;
+
   const allergieSection = allergie.length > 0
     ? `ALLERGIE E INTOLLERANZE DA ESCLUDERE TASSATIVAMENTE:\n${allergie.map(a => `- ${a}`).join('\n')}\nNon includere MAI alimenti che contengono questi ingredienti.`
     : 'Nessuna allergia o intolleranza segnalata.';
 
   const contextSection = userContext ? `\nCONTESTO UTENTE:\n${userContext}` : '';
 
+  let medicalSection = '';
+  if (limitationsCheck.medicalConditions) {
+    medicalSection = `
+
+⚠️ CONDIZIONI MEDICHE DICHIARATE:
+L'utente ha dichiarato: "${limitationsCheck.medicalConditions}"
+
+REGOLE OBBLIGATORIE:
+- Adatta il piano nutrizionale tenendo conto
+  di questa condizione medica
+- Escludi alimenti o pattern alimentari
+  controindicati per questa condizione
+  (es. per diabete: no zuccheri semplici in eccesso;
+   per ipertensione: limita sodio)
+${MEDICAL_SAFETY_NOTE_NUTRITION ? `
+IMPORTANTE - CONDIZIONI MEDICHE:
+Il campo "note_finali" del JSON deve contenere
+ESATTAMENTE questo testo (copia verbatim):
+"${MEDICAL_SAFETY_NOTE_NUTRITION}"
+Non aggiungere altro testo in note_finali oltre a questo.
+Non usare markdown, asterischi o caratteri speciali.
+` : ''}
+`;
+  }
+
   const nutritionSystemPrompt = `Sei PrimeBot, esperto nutrizionista AI di Performance Prime.
 L'utente ha richiesto un piano alimentare personalizzato.
 
 ${allergieSection}
-${contextSection}
+${contextSection}${medicalSection}
 
 ISTRUZIONI:
 - Crea un piano nutrizionale da ${durationDays} giorni. L'array "giorni" nel JSON deve contenere esattamente ${durationDays} elementi (Giorno 1, Giorno 2, ...).
@@ -1218,6 +1288,11 @@ FORMATO RISPOSTA — rispondi SOLO con JSON valido, nessun testo prima o dopo:
     }
 
     const plan = JSON.parse(jsonMatch[0]) as StructuredNutritionPlan;
+
+    // Post-processing condizioni mediche per piano nutrizionale
+    if (limitationsCheck.medicalConditions && plan) {
+      plan.note_finali = MEDICAL_SAFETY_NOTE_NUTRITION!;
+    }
 
     const { data: insertData, error: insertError } = await supabase
       .from('nutrition_plans')
