@@ -5,6 +5,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { fetchUserPlans } from '@/services/planService';
 import { fetchUserNutritionPlans } from '@/services/nutritionPlanService';
+import { getFeedbackByUser } from '@/services/planFeedbackService';
+import type { Vote } from '@/services/planFeedbackService';
 import type { WorkoutPlan } from '@/types/plan';
 import type { NutritionPlanRecord } from '@/types/nutritionPlan';
 import { WorkoutPlanCard } from '@/components/plans/WorkoutPlanCard';
@@ -22,6 +24,14 @@ export default function IMieiPiani() {
   const [nutritionPlans, setNutritionPlans] = useState<NutritionPlanRecord[]>([]);
   const [loadingWorkout, setLoadingWorkout] = useState(true);
   const [loadingNutrition, setLoadingNutrition] = useState(true);
+  const [feedbackMap, setFeedbackMap] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!user?.id) return;
+    getFeedbackByUser(user.id)
+      .then((map) => setFeedbackMap(map))
+      .catch(() => {});
+  }, [user?.id]);
 
   useEffect(() => {
     if (location.pathname !== '/i-miei-piani') return;
@@ -197,6 +207,7 @@ export default function IMieiPiani() {
                       plan={plan}
                       onDelete={handleWorkoutDelete}
                       onUpdate={handleWorkoutUpdate}
+                      initialVote={(feedbackMap[`${plan.id}:workout`] as Vote) ?? null}
                     />
                   </motion.div>
                 ))}
@@ -245,6 +256,7 @@ export default function IMieiPiani() {
                     userId={user.id}
                     onDelete={handleNutritionDelete}
                     onUpdate={handleNutritionUpdate}
+                    initialVote={(feedbackMap[`${plan.id}:nutrition`] as Vote) ?? null}
                   />
                 </motion.div>
               ))}

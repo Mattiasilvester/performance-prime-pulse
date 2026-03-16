@@ -34,6 +34,7 @@ import { type StructuredWorkoutPlan, type StructuredExercise } from '@/services/
 import type { StructuredNutritionPlan } from '@/types/nutritionPlan';
 import { HealthDisclaimer } from '@/components/primebot/HealthDisclaimer';
 import { NutritionPlanCard } from '@/components/primebot/NutritionPlanCard';
+import WorkoutPlanCard from '@/components/primebot/WorkoutPlanCard';
 import { ExerciseGifLink } from '@/components/workouts/ExerciseGifLink';
 import { downloadWorkoutPlanPDF } from '@/utils/pdfExport';
 // ⭐ FIX BUG 3: Import per analisi dolore nel messaggio corrente
@@ -61,6 +62,7 @@ type Msg = {
   workoutPlan?: StructuredWorkoutPlan;
   nutritionPlan?: StructuredNutritionPlan;
   nutritionPlanId?: string;
+  workoutPlanId?: string;
 };
 
 interface PrimeChatProps {
@@ -325,6 +327,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     plan?: StructuredWorkoutPlan;
     nutritionPlan?: StructuredNutritionPlan;
     nutritionPlanId?: string;
+    workoutPlanId?: string;
     planType: 'workout' | 'nutrition';
     hasExistingLimitations?: boolean;
     hasAnsweredBefore?: boolean;
@@ -2354,10 +2357,22 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
               })),
               duration: planResponse.plan.duration_minutes,
             };
+            const msgId = crypto.randomUUID();
             if (userId) {
-              saveWorkoutPlan(userId, savePayload).catch(() => {
-                toast.error('Salvataggio piano fallito. Usa "Salva questo piano" per riprovare.');
-              });
+              saveWorkoutPlan(userId, savePayload)
+                .then(result => {
+                  const planId = (result.data as { id: string } | undefined)?.id;
+                  if (planId) {
+                    setMsgs(prev => prev.map(msg =>
+                      msg.id === msgId
+                        ? { ...msg, workoutPlanId: planId }
+                        : msg
+                    ));
+                  }
+                })
+                .catch(() => {
+                  toast.error('Errore nel salvataggio del piano');
+                });
             }
             const goToMyPlansAction: ParsedAction = {
               type: 'navigate' as const,
@@ -2365,7 +2380,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
               payload: { path: '/i-miei-piani' },
             };
             const botMessage: Msg = {
-              id: crypto.randomUUID(),
+              id: msgId,
               role: 'bot' as const,
               text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
               workoutPlan: planResponse.plan,
@@ -2598,99 +2613,11 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                   
                   {/* Card Piano Allenamento */}
                   {m.role === 'bot' && m.workoutPlan && (
-                    <div className="mt-4 bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-[#EEBA2B] rounded-xl p-4">
-                      <h3 className="text-xl font-bold text-[#EEBA2B] mb-2">
-                        {m.workoutPlan.name}
-                      </h3>
-                      {m.workoutPlan.description && (
-                        <p className="text-gray-300 text-sm mb-3">{m.workoutPlan.description}</p>
-                      )}
-                      
-                      {/* Consigli Terapeutici - Mostra PRIMA degli esercizi se presenti */}
-                      {m.workoutPlan.therapeuticAdvice && m.workoutPlan.therapeuticAdvice.length > 0 && (
-                        <div className="bg-amber-900/30 border border-amber-500/50 rounded-lg p-4 mb-4">
-                          <h4 className="text-amber-400 font-semibold mb-2 flex items-center gap-2">
-                            💡 Consigli per il tuo dolore
-                          </h4>
-                          <ul className="space-y-2 text-sm text-gray-300">
-                            {m.workoutPlan.therapeuticAdvice.map((advice: string, index: number) => (
-                              <li key={index} className="flex items-start gap-2">
-                                <span className="text-amber-400 mt-0.5">•</span>
-                                <span>{advice}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {/* Note di Sicurezza */}
-                      {m.workoutPlan.safetyNotes && (
-                        <div className="bg-blue-900/30 border border-blue-500/50 rounded-lg p-3 mb-4">
-                          <p className="text-blue-300 text-sm">
-                            <span className="font-semibold">ℹ️ Nota di sicurezza:</span> {m.workoutPlan.safetyNotes}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {/* Info Piano */}
-                      <div className="flex gap-4 mb-4 text-sm text-gray-400">
-                        <span>⏱️ {m.workoutPlan.duration_minutes} min</span>
-                        <span>💪 {m.workoutPlan.exercises.length} esercizi</span>
-                        <span>📊 {m.workoutPlan.difficulty}</span>
-                      </div>
-                      
-                      {/* Lista Esercizi */}
-                      <div className="space-y-2 mb-4">
-                        {m.workoutPlan.exercises.map((ex, idx) => (
-                          <div key={idx} className="bg-gray-700/50 rounded-lg p-3 flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-white font-medium">{ex.name}</span>
-                              </div>
-                              <div className="text-gray-300 text-sm">
-                                <span className="font-semibold text-[#EEBA2B]">{ex.sets}x{ex.reps}</span>
-                                {' • '}
-                                <span>Recupero: {ex.rest_seconds}s</span>
-                              </div>
-                              {ex.notes && (
-                                <p className="text-gray-400 text-xs mt-1 italic">{ex.notes}</p>
-                              )}
-                            </div>
-                            {/* Bottone GIF a destra */}
-                            <div className="ml-3 flex-shrink-0">
-                              <ExerciseGifLink exerciseName={ex.name} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Warmup e Cooldown */}
-                      {(m.workoutPlan.warmup || m.workoutPlan.cooldown) && (
-                        <div className="space-y-2 mb-4 text-sm">
-                          {m.workoutPlan.warmup && (
-                            <div className="bg-blue-900/30 rounded-lg p-2">
-                              <span className="text-blue-300 font-semibold">🔥 Warmup:</span>
-                              <p className="text-gray-300 mt-1">{m.workoutPlan.warmup}</p>
-                            </div>
-                          )}
-                          {m.workoutPlan.cooldown && (
-                            <div className="bg-green-900/30 rounded-lg p-2">
-                              <span className="text-green-300 font-semibold">🧘 Cooldown:</span>
-                              <p className="text-gray-300 mt-1">{m.workoutPlan.cooldown}</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      <div className="mt-4 pt-4 border-t border-gray-600">
-                        <button
-                          type="button"
-                          onClick={() => downloadWorkoutPlanPDF(m.workoutPlan!)}
-                          className="flex items-center gap-2 rounded-lg bg-[#EEBA2B] px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-yellow-400"
-                        >
-                          📥 Scarica PDF
-                        </button>
-                      </div>
-                    </div>
+                    <WorkoutPlanCard
+                      plan={m.workoutPlan}
+                      planId={m.workoutPlanId}
+                      userId={userId ?? ''}
+                    />
                   )}
 
                   {/* Card Piano Nutrizionale */}
@@ -2753,9 +2680,10 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                   disclaimerType={pendingPlan.planType === 'nutrition' ? 'nutrition_plan' : 'workout_plan'}
                   onAccept={async () => {
                     setShowPlanDisclaimer(false);
+                    let saveResult: Awaited<ReturnType<typeof saveWorkoutPlan>> | undefined;
                     if (pendingPlan.planType === 'workout' && pendingPlan.plan && userId) {
                       try {
-                        await saveWorkoutPlan(userId, {
+                        saveResult = await saveWorkoutPlan(userId, {
                           name: pendingPlan.plan.name,
                           workout_type: pendingPlan.plan.workout_type,
                           exercises: pendingPlan.plan.exercises.map((ex: StructuredExercise) => ({
@@ -2790,6 +2718,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                           role: 'bot' as const,
                           text: 'Ecco il tuo piano di allenamento personalizzato! 💪',
                           workoutPlan: pendingPlan.plan,
+                          workoutPlanId: (saveResult?.data as { id: string } | undefined)?.id,
                           actions: [...(pendingPlan.actions ?? []), goToMyPlansAction],
                         };
                     setMsgs(m => [...m, botMessage]);

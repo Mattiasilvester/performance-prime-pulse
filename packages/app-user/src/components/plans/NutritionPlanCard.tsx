@@ -5,22 +5,36 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import type { NutritionPlanRecord } from '@/types/nutritionPlan';
 import type { NutritionMeal } from '@/types/nutritionPlan';
+import { toast } from 'sonner';
 import { downloadNutritionPlanPDF } from '@/utils/pdfExport';
+import PlanFeedbackButtons from '@/components/plans/PlanFeedbackButtons';
+import { deleteFeedback, type Vote } from '@/services/planFeedbackService';
 
 interface NutritionPlanCardProps {
   plan: NutritionPlanRecord;
   userId: string;
   onDelete?: (id: string) => void;
   onUpdate?: (updated: NutritionPlanRecord) => void;
+  initialVote?: Vote | null;
 }
 
-export function NutritionPlanCard({ plan, userId, onDelete, onUpdate }: NutritionPlanCardProps) {
+export function NutritionPlanCard({ plan, userId, onDelete, onUpdate, initialVote }: NutritionPlanCardProps) {
   const navigate = useNavigate();
+  const [feedbackVote, setFeedbackVote] = useState<Vote | null>(initialVote ?? null);
   const [expandedDay, setExpandedDay] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(plan.name ?? plan.contenuto?.nome ?? '');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+
+  const handleResetVote = async () => {
+    try {
+      await deleteFeedback(plan.id, userId);
+      setFeedbackVote(null);
+    } catch {
+      toast.error('Errore nel reset del voto');
+    }
+  };
 
   const giorni = plan.contenuto?.giorni ?? [];
   const giorniCount = giorni.length;
@@ -336,6 +350,31 @@ export function NutritionPlanCard({ plan, userId, onDelete, onUpdate }: Nutritio
                   : ''}
               </p>
               <div className="flex items-center gap-2">
+                {feedbackVote !== null && (
+                  <button
+                    type="button"
+                    onClick={handleResetVote}
+                    title="Cambia voto"
+                    aria-label={
+                      feedbackVote === 1
+                        ? 'Hai trovato utile questo piano. Clicca per cambiare voto'
+                        : 'Hai trovato questo piano da migliorare. Clicca per cambiare voto'
+                    }
+                    style={{
+                      background: '#1e1e24',
+                      border: '1px solid #2a2a2e',
+                      borderRadius: 10,
+                      padding: '8px 10px',
+                      fontSize: 16,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {feedbackVote === 1 ? '👍' : '👎'}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleDownloadPDF}
@@ -405,6 +444,31 @@ export function NutritionPlanCard({ plan, userId, onDelete, onUpdate }: Nutritio
               : ''}
           </p>
           <div className="flex items-center gap-2">
+            {feedbackVote !== null && (
+              <button
+                type="button"
+                onClick={handleResetVote}
+                title="Cambia voto"
+                aria-label={
+                  feedbackVote === 1
+                    ? 'Hai trovato utile questo piano. Clicca per cambiare voto'
+                    : 'Hai trovato questo piano da migliorare. Clicca per cambiare voto'
+                }
+                style={{
+                  background: '#1e1e24',
+                  border: '1px solid #2a2a2e',
+                  borderRadius: 10,
+                  padding: '8px 10px',
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {feedbackVote === 1 ? '👍' : '👎'}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleDownloadPDF}
@@ -455,6 +519,16 @@ export function NutritionPlanCard({ plan, userId, onDelete, onUpdate }: Nutritio
             </button>
           </div>
         </div>
+      )}
+
+      {feedbackVote === null && (
+        <PlanFeedbackButtons
+          planId={plan.id}
+          userId={userId}
+          planType="nutrition"
+          initialVote={null}
+          onVote={(vote) => setFeedbackVote(vote)}
+        />
       )}
     </div>
   );

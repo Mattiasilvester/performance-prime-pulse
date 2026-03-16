@@ -1,0 +1,2 @@
+ALTER TABLE plan_feedback
+  ADD COLUMN IF NOT EXISTS notes TEXT NULL;

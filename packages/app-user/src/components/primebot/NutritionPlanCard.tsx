@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -9,6 +9,8 @@ import type { StructuredNutritionPlan } from '@/types/nutritionPlan';
 import { downloadNutritionPlanPDF } from '@/utils/pdfExport';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import PlanFeedbackButtons from '@/components/plans/PlanFeedbackButtons';
+import { getFeedback, deleteFeedback, type Vote } from '@/services/planFeedbackService';
 
 export interface NutritionPlanCardProps {
   plan: StructuredNutritionPlan;
@@ -23,8 +25,30 @@ export function NutritionPlanCard({
   userId,
   onDelete,
 }: NutritionPlanCardProps) {
+  const [feedbackVote, setFeedbackVote] = useState<Vote | null>(null);
+  const [feedbackFetched, setFeedbackFetched] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const defaultOpen = plan.giorni?.length ? `day-0` : undefined;
+
+  useEffect(() => {
+    if (!planId || !userId || feedbackFetched) return;
+    getFeedback(planId, userId)
+      .then((result) => {
+        setFeedbackVote(result?.vote ?? null);
+        setFeedbackFetched(true);
+      })
+      .catch(() => setFeedbackFetched(true));
+  }, [planId, userId, feedbackFetched]);
+
+  const handleResetVote = async () => {
+    if (!planId) return;
+    try {
+      await deleteFeedback(planId, userId);
+      setFeedbackVote(null);
+    } catch {
+      toast.error('Errore nel reset del voto');
+    }
+  };
 
   const handleDownloadPDF = () => {
     downloadNutritionPlanPDF(plan);
@@ -144,7 +168,32 @@ export function NutritionPlanCard({
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap gap-2 border-t border-gray-600 pt-4">
+      <div className="mt-4 flex flex-wrap gap-2 border-t border-gray-600 pt-4 items-center">
+        {feedbackVote !== null && (
+          <button
+            type="button"
+            onClick={handleResetVote}
+            title="Cambia voto"
+            aria-label={
+              feedbackVote === 1
+                ? 'Hai trovato utile questo piano. Clicca per cambiare voto'
+                : 'Hai trovato questo piano da migliorare. Clicca per cambiare voto'
+            }
+            style={{
+              background: '#1e1e24',
+              border: '1px solid #2a2a2e',
+              borderRadius: 10,
+              padding: '8px 10px',
+              fontSize: 16,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {feedbackVote === 1 ? '👍' : '👎'}
+          </button>
+        )}
         <button
           type="button"
           onClick={handleDownloadPDF}
@@ -161,6 +210,14 @@ export function NutritionPlanCard({
           🗑️ Elimina piano
         </button>
       </div>
+      {planId && feedbackVote === null && (
+        <PlanFeedbackButtons
+          planId={planId}
+          userId={userId}
+          planType="nutrition"
+          onVote={(vote) => setFeedbackVote(vote)}
+        />
+      )}
     </div>
   );
 }
