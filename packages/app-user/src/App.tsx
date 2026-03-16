@@ -1,11 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { useEffect, useState, lazy, Suspense } from 'react'
+import { useEffect, useRef, useState, lazy, Suspense } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { AuthProvider } from '@/hooks/useAuth'
 import { UserProfileProvider } from '@/contexts/UserProfileContext'
-import { MedalSystemProvider } from '@/contexts/MedalSystemContext'
+import { MedalSystemProvider, useMedalSystemContext } from '@/contexts/MedalSystemContext'
+import MedalUnlockModal from '@/components/medals/MedalUnlockModal'
 import { NotificationProvider } from '@/hooks/useNotifications'
 import { PrimeBotProvider, usePrimeBot } from '@/contexts/PrimeBotContext'
 import { TourProvider } from '@/contexts/TourContext'
@@ -59,6 +61,45 @@ const DietaDelGiorno = lazy(() => import('@/pages/DietaDelGiorno'))
 const ActiveWorkoutPage = lazy(() => import('@/pages/ActiveWorkoutPage'))
 
 const NotFound = lazy(() => import('@/pages/NotFound'))
+
+function MedalCelebration() {
+  const { pendingUnlocks, dismissCurrentMedal } =
+    useMedalSystemContext()
+
+  const totalRef = useRef(0)
+
+  if (pendingUnlocks.length > totalRef.current) {
+    totalRef.current = pendingUnlocks.length
+  }
+  if (pendingUnlocks.length === 0) {
+    totalRef.current = 0
+  }
+
+  useEffect(() => {
+    if (pendingUnlocks.length > totalRef.current) {
+      totalRef.current = pendingUnlocks.length
+    }
+    if (pendingUnlocks.length === 0) {
+      totalRef.current = 0
+    }
+  }, [pendingUnlocks.length])
+
+  if (pendingUnlocks.length === 0) return null
+
+  const currentIndex = totalRef.current - pendingUnlocks.length
+
+  return (
+    <AnimatePresence mode="wait">
+      <MedalUnlockModal
+        key={pendingUnlocks[0].id}
+        medal={pendingUnlocks[0]}
+        totalPending={totalRef.current}
+        currentIndex={currentIndex}
+        onDismiss={dismissCurrentMedal}
+      />
+    </AnimatePresence>
+  )
+}
 
 const AICoachWrapper = ({ session }: { session: Session | null }) => {
   const { isFullscreen } = usePrimeBot()
@@ -136,6 +177,7 @@ function App() {
       <AuthProvider>
         <UserProfileProvider>
           <MedalSystemProvider>
+            <>
         <NotificationProvider>
           <PrimeBotProvider>
             <Router>
@@ -358,6 +400,8 @@ function App() {
             </Suspense>
           </PrimeBotProvider>
         </NotificationProvider>
+              <MedalCelebration />
+            </>
           </MedalSystemProvider>
         </UserProfileProvider>
       </AuthProvider>
