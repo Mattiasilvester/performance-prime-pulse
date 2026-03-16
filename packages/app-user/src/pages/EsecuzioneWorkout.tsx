@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import type { WorkoutPlan } from '@/types/plan';
 import { getDayExercises, parseRestTime } from '@/utils/workoutUtils';
 import type { DayExercise } from '@/utils/workoutUtils';
-import { completeWorkout } from '@/services/diaryService';
+import { completeWorkout, getUserHasLimitations } from '@/services/diaryService';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
@@ -254,6 +254,8 @@ export default function EsecuzioneWorkout() {
 
     const dayExercises = exercises;
 
+    const hasLimitations = await getUserHasLimitations(user.id);
+
     try {
       await completeWorkout({
         workout_id: plan.id,
@@ -268,6 +270,7 @@ export default function EsecuzioneWorkout() {
         exercises: dayExercises as unknown[],
         completed_at: new Date().toISOString(),
         saved_at: new Date().toISOString(),
+        has_limitations: hasLimitations,
       });
     } catch (err) {
       console.error('Errore salvataggio workout_diary:', err);

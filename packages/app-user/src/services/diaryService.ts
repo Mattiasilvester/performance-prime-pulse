@@ -35,6 +35,7 @@ export interface WorkoutDiaryInsert {
   saved_at?: string;
   notes?: string | null;
   photo_urls?: string[];
+  has_limitations?: boolean;
 }
 
 export interface WorkoutDiaryUpdate {
@@ -157,6 +158,7 @@ export const completeWorkout = async (
     status: 'completed',
     completed_at: new Date().toISOString(),
     saved_at: new Date().toISOString(),
+    has_limitations: workoutData.has_limitations ?? false,
   };
 
   console.log('📤 Supabase INSERT data (before):', JSON.stringify(insertData, null, 2));
@@ -428,4 +430,23 @@ export const formatDateShort = (dateStr: string): string => {
     year: 'numeric'
   });
 };
+
+/**
+ * Legge se l'utente ha limitazioni fisiche attive (per tracciamento medaglie).
+ * Ritorna sempre boolean; in caso di errore ritorna false per non bloccare il completamento workout.
+ */
+export async function getUserHasLimitations(userId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('user_onboarding_responses')
+      .select('ha_limitazioni')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) return false;
+    return data?.ha_limitazioni === true;
+  } catch {
+    return false;
+  }
+}
 
