@@ -201,6 +201,34 @@ export async function checkAndUnlockMedals(
       }
     }
 
+    // ── QUERY: bookings (client completed) ─────────────────
+    const { data: bookingsData } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('status', 'completed');
+
+    const bookingsCount = bookingsData?.length ?? 0;
+
+    if (!earned.has('booked_pro') && bookingsCount >= 1) {
+      newMedals.push(makeMedal(
+        'booked_pro',
+        'Booked Pro',
+        'Prima prenotazione con un professionista',
+        '📅',
+        'rare'
+      ));
+    }
+    if (!earned.has('pro_partner') && bookingsCount >= 10) {
+      newMedals.push(makeMedal(
+        'pro_partner',
+        'Pro Partner',
+        '10 prenotazioni con professionisti',
+        '🤝',
+        'epic'
+      ));
+    }
+
     // ── QUERY 3: nutrition_plans ──────────────────────────
     const { count: nutritionCount } = await supabase
       .from('nutrition_plans')
