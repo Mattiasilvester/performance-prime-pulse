@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, Pause } from 'lucide-react';
 import { toast } from 'sonner';
 import type { WorkoutPlan } from '@/types/plan';
 import { getDayExercises, parseRestTime } from '@/utils/workoutUtils';
@@ -41,6 +43,9 @@ export default function EsecuzioneWorkout() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const sessionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const recoveryTimerBoxRef = useRef<HTMLDivElement | null>(null);
+  const [isRecoveryTimerExpandedVisible, setIsRecoveryTimerExpandedVisible] = useState(true);
 
   const { user } = useAuth();
   const { medalSystem, addEarnedMedals } = useMedalSystemContext();
@@ -182,6 +187,17 @@ export default function EsecuzioneWorkout() {
       setTimerRunning(false);
     }
   }, [completedSets, exercises, isExerciseFullyCompleted, completedExercises]);
+
+  useEffect(() => {
+    if (!recoveryTimerBoxRef.current) return;
+    const el = recoveryTimerBoxRef.current;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsRecoveryTimerExpandedVisible(entry.isIntersecting),
+      { threshold: 0, rootMargin: '0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const initialTimerSet = useRef(false);
   useEffect(() => {
@@ -368,7 +384,51 @@ export default function EsecuzioneWorkout() {
       </header>
 
       <main className="-mt-[20px] pt-0 pb-[120px] px-4">
-        <div className="mb-3 rounded-[14px] border border-white/7 bg-[#1E1E24] p-4">
+        <AnimatePresence>
+          {!isRecoveryTimerExpandedVisible && (
+            <motion.div
+              key="recovery-timer-pill"
+              initial={{ opacity: 0, y: -20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.8 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="fixed left-0 right-0 top-[100px] z-50 flex justify-center px-4 tabular-nums"
+            >
+              <div
+                className="flex items-center gap-3 rounded-full"
+                style={{
+                  fontFamily: 'Outfit, system-ui, sans-serif',
+                  background: '#1E1E24',
+                  border: '1px solid rgba(238,186,43,0.5)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                  padding: '12px 22px',
+                  minHeight: 52,
+                  borderRadius: 9999,
+                }}
+              >
+                <span className="text-[14px] font-semibold text-[#8A8A96]">
+                  Recupero
+                </span>
+                <span
+                  className="text-[20px] font-semibold text-[#EEBA2B] tabular-nums"
+                  style={{ fontWeight: 600 }}
+                >
+                  {formatTimer(timerSeconds)}
+                </span>
+                <button
+                  type="button"
+                  onClick={handlePlayPauseTimer}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#16161A] text-[#EEBA2B] transition-colors hover:bg-white/10"
+                  aria-label={timerRunning ? 'Pausa' : 'Play'}
+                >
+                  {timerRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div ref={recoveryTimerBoxRef} className="mb-3 rounded-[14px] border border-white/7 bg-[#1E1E24] p-4">
           <p className="mb-1 text-xs text-[#8A8A96]">⏱ Timer recupero</p>
           <p className="text-[28px] font-bold text-[#EEBA2B] font-variant-numeric tabular-nums">
             {formatTimer(timerSeconds)}
