@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import PrimeChat from '../PrimeChat';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Target, X } from 'lucide-react';
+import PrimeBotAvatar from '@/components/ui/PrimeBotAvatar';
 
 interface AICoachPrimeProps {
   onRequestPlan: () => void;
@@ -87,11 +87,17 @@ export const AICoachPrime: React.FC<AICoachPrimeProps> = ({ onRequestPlan, chatI
           {/* Header con logo e titolo */}
           <div className="flex items-center justify-between p-6 border-b border-[#EEBA2B]/30">
             <div className="flex items-center space-x-4">
-              {/* Logo fulmine */}
-              <div className="w-12 h-12 bg-[#EEBA2B] rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                </svg>
+              {/* Logo PrimeBot */}
+              <div style={{
+                width: 36,
+                height: 36,
+                background: '#EEBA2B',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <PrimeBotAvatar size={22} />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-[#EEBA2B]">PrimeBot</h1>

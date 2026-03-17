@@ -377,6 +377,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [waitingForPainDetails, setWaitingForPainDetails] = useState(false);
   const [tempPainBodyPart, setTempPainBodyPart] = useState<string | null>(null);
   const [quickRepliesVisible, setQuickRepliesVisible] = useState(true);
+  const [disclaimerCollapsed, setDisclaimerCollapsed] = useState(false);
 
   // P14: Cooldown pain check — zone già controllate in questa sessione (no repeat)
   const [painZonesCheckedInSession, setPainZonesCheckedInSession] = useState<Set<string>>(new Set());
@@ -2474,9 +2475,18 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       <div className={`w-full h-full flex flex-col rounded-2xl border border-[#DAA520] bg-black text-white ${hasStartedChat ? 'min-h-[700px]' : 'min-h-[600px] mb-4 pb-2'}`}>
         {/* Landing Page */}
         <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-8">
-          {/* Icona fulmine gialla in cerchio */}
-          <div className="w-24 h-24 bg-[#EEBA2B] rounded-full flex items-center justify-center">
-            <svg className="w-12 h-12 text-black" fill="currentColor" viewBox="0 0 24 24">
+          {/* Icona fulmine in cerchio giallo */}
+          <div style={{
+            width: 112,
+            height: 112,
+            background: '#EEBA2B',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px'
+          }}>
+            <svg className="text-black" fill="currentColor" viewBox="0 0 24 24" style={{ width: 56, height: 56 }}>
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
             </svg>
           </div>
@@ -2532,22 +2542,27 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             Inizia Chat con PrimeBot
           </button>
           
-          {/* 3 Card Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl">
-            <div className="bg-gray-800 border border-gray-600 rounded-xl p-4 text-center">
+          {/* 4 Card Features */}
+          <div className="grid grid-cols-2 gap-3 w-full max-w-2xl">
+            <div className="bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
               <div className="text-2xl mb-2">💪</div>
-              <h3 className="font-semibold text-[#EEBA2B] mb-1">Allenamenti</h3>
-              <p className="text-sm text-gray-400">Workout personalizzati</p>
+              <h3 className="text-[#EEBA2B] text-xs font-semibold">Allenamenti</h3>
+              <p className="text-[#8A8A96] text-[10px] mt-1">Workout personalizzati</p>
             </div>
-            <div className="bg-gray-800 border border-gray-600 rounded-xl p-4 text-center">
+            <div className="bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
               <div className="text-2xl mb-2">🎯</div>
-              <h3 className="font-semibold text-[#EEBA2B] mb-1">Obiettivi</h3>
-              <p className="text-sm text-gray-400">Raggiungi i tuoi goal</p>
+              <h3 className="text-[#EEBA2B] text-xs font-semibold">Obiettivi</h3>
+              <p className="text-[#8A8A96] text-[10px] mt-1">Raggiungi i tuoi goal</p>
             </div>
-            <div className="bg-gray-800 border border-gray-600 rounded-xl p-4 text-center">
+            <div className="bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
               <div className="text-2xl mb-2">📊</div>
-              <h3 className="font-semibold text-[#EEBA2B] mb-1">Progressi</h3>
-              <p className="text-sm text-gray-400">Monitora i risultati</p>
+              <h3 className="text-[#EEBA2B] text-xs font-semibold">Progressi</h3>
+              <p className="text-[#8A8A96] text-[10px] mt-1">Monitora i risultati</p>
+            </div>
+            <div className="bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
+              <div className="text-2xl mb-2">🥗</div>
+              <h3 className="text-[#EEBA2B] text-xs font-semibold">Nutrizione</h3>
+              <p className="text-[#8A8A96] text-[10px] mt-1">Piani alimentari</p>
             </div>
           </div>
         </div>
@@ -2583,22 +2598,68 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         <div ref={scrollRef} className="flex-1 overflow-y-auto">
           <div className="px-4 py-16 space-y-4">
             {msgs.map(m => (
-              <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
-                <div className={`px-4 py-3 rounded-2xl ${
-                  m.role === 'user' 
-                    ? 'bg-[#EEBA2B] text-black'
-                    : (m as Msg).isDisclaimer 
-                      ? 'bg-red-900 text-red-100 border border-red-600 text-sm font-semibold'
-                      : 'bg-gray-800 text-white border border-gray-600'
-                }`}>
+              <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto w-fit' : 'flex items-end gap-2 mr-auto'}`}>
+                {m.role !== 'user' && (
+                  <div style={{
+                    width: 28,
+                    height: 28,
+                    background: '#EEBA2B',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    marginBottom: 4
+                  }}>
+                    <svg className="text-black" fill="currentColor" viewBox="0 0 24 24" style={{ width: 16, height: 16 }}>
+                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                  </div>
+                )}
+                <div
+                  className={`px-4 py-3 ${
+                    m.role === 'user' 
+                      ? 'bg-[#EEBA2B] text-black'
+                      : (m as Msg).isDisclaimer 
+                        ? 'bg-[#1a0808] border border-red-500/40 rounded-xl p-3 cursor-pointer'
+                        : 'text-white'
+                  }`}
+                  style={m.role === 'user' ? { borderRadius: '16px 0 4px 16px' } : !(m as Msg).isDisclaimer ? { borderRadius: '0 16px 16px 4px', borderLeft: '2px solid #EEBA2B', background: '#16161A' } : undefined}
+                >
                   {(m as Msg).isDisclaimer && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <span>⚠️ AVVISO IMPORTANTE</span>
+                    <>
+                      <div
+                        onClick={() => setDisclaimerCollapsed(c => !c)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: disclaimerCollapsed ? 0 : 6
+                        }}
+                      >
+                        <span style={{ fontSize: 10, fontWeight: 600, color: '#ef4444', letterSpacing: '0.5px' }}>
+                          Avviso importante
+                        </span>
+                        <span style={{ fontSize: 10, color: '#ef4444' }}>
+                          {disclaimerCollapsed ? '▼' : '▲'}
+                        </span>
+                      </div>
+                      {!disclaimerCollapsed && (
+                        <div style={{
+                          color: '#8A8A96',
+                          lineHeight: 1.6,
+                          fontSize: 14
+                        }}>
+                          {renderFormattedMessage(m.text)}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {!(m as Msg).isDisclaimer && (
+                    <div className="whitespace-pre-wrap">
+                      {renderFormattedMessage(m.text)}
                     </div>
                   )}
-                  <div className="whitespace-pre-wrap">
-                    {renderFormattedMessage(m.text)}
-                  </div>
                   
                   {/* Bottone di navigazione per messaggi bot */}
                   {m.role === 'bot' && m.navigation && (
@@ -2737,14 +2798,34 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             )}
             
             {loading && (
-              <div className="mr-auto px-4 py-3 rounded-2xl bg-gray-800 text-white border border-gray-600">
-                <div className="flex items-center space-x-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="flex items-end gap-2 mr-auto max-w-[85%]">
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  background: '#EEBA2B',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  marginBottom: 4
+                }}>
+                  <svg className="text-black" fill="currentColor" viewBox="0 0 24 24" style={{ width: 16, height: 16 }}>
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                </div>
+                <div
+                  className="px-4 py-3 text-white"
+                  style={{ borderRadius: '0 16px 16px 4px', borderLeft: '2px solid #EEBA2B', background: '#16161A' }}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                    <span>PrimeBot sta scrivendo…</span>
                   </div>
-                  <span>PrimeBot sta scrivendo…</span>
                 </div>
               </div>
             )}
@@ -2767,12 +2848,12 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
               )}
             </button>
             {quickRepliesVisible && (
-              <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="flex flex-nowrap overflow-x-auto gap-2 px-4 pb-2 scrollbar-none">
                 {questionsToShow.map(q => (
                   <button
                     key={q}
                     onClick={() => { setInput(q); send(q); }}
-                    className="border border-[#DAA520] hover:bg-[#EEBA2B]/10 bg-gray-800 text-white text-sm px-3 py-2 rounded-xl transition-colors"
+                    className="flex-shrink-0 bg-[#16161A] border border-[#2a2a2e] hover:border-[#EEBA2B] text-[#EEBA2B] rounded-full px-3 py-2 text-[11px] font-medium transition-colors whitespace-nowrap"
                   >
                     {q}
                   </button>
@@ -2818,27 +2899,68 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       >
         <div className="space-y-4">
           {msgs.map(m => (
-            <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
+            <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto w-fit' : 'flex items-end gap-2 mr-auto'}`}>
+              {m.role !== 'user' && (
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  background: '#EEBA2B',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  marginBottom: 4
+                }}>
+                  <svg className="text-black" fill="currentColor" viewBox="0 0 24 24" style={{ width: 16, height: 16 }}>
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                </div>
+              )}
               <div
-                className={`px-4 py-3 rounded-2xl ${
+                className={`px-4 py-3 ${
                   m.role === 'user' 
                     ? 'bg-[#EEBA2B] text-black' // Giallo per utente
                     : (m as Msg).isDisclaimer 
-                      ? 'bg-red-900 text-red-100 border border-red-600 text-sm font-semibold' // Rosso per disclaimer
-                      : 'bg-gray-800 text-white border border-gray-600' // Grigio scuro per bot
+                      ? 'bg-[#1a0808] border border-red-500/40 rounded-xl p-3 cursor-pointer' // Disclaimer collassabile
+                      : 'text-white' // Bubble bot
                 }`}
+                style={m.role === 'user' ? { borderRadius: '16px 0 4px 16px' } : !(m as Msg).isDisclaimer ? { borderRadius: '0 16px 16px 4px', borderLeft: '2px solid #EEBA2B', background: '#16161A' } : undefined}
               >
-                <div className="whitespace-pre-wrap">
-                  {(m as Msg).isDisclaimer && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-red-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-red-200 font-bold">⚠️ AVVISO IMPORTANTE</span>
+                {(m as Msg).isDisclaimer && (
+                  <>
+                    <div
+                      onClick={() => setDisclaimerCollapsed(c => !c)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: disclaimerCollapsed ? 0 : 6
+                      }}
+                    >
+                      <span style={{ fontSize: 10, fontWeight: 600, color: '#ef4444', letterSpacing: '0.5px' }}>
+                        Avviso importante
+                      </span>
+                      <span style={{ fontSize: 10, color: '#ef4444' }}>
+                        {disclaimerCollapsed ? '▼' : '▲'}
+                      </span>
                     </div>
-                  )}
-                  {renderFormattedMessage(m.text)}
-                </div>
+                    {!disclaimerCollapsed && (
+                      <div style={{
+                        color: '#8A8A96',
+                        lineHeight: 1.6,
+                        fontSize: 14
+                      }}>
+                        {renderFormattedMessage(m.text)}
+                      </div>
+                    )}
+                  </>
+                )}
+                {!(m as Msg).isDisclaimer && (
+                  <div className="whitespace-pre-wrap">
+                    {renderFormattedMessage(m.text)}
+                  </div>
+                )}
                 
                 {/* Timestamp sotto ogni messaggio */}
                 <div className={`text-xs mt-2 ${
@@ -2862,14 +2984,34 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             </div>
           ))}
           {loading && (
-            <div className="mr-auto px-4 py-3 rounded-2xl animate-pulse bg-gray-800 text-white border border-gray-600">
-              <div className="flex items-center space-x-2">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="flex items-end gap-2 mr-auto max-w-[85%]">
+              <div style={{
+                width: 28,
+                height: 28,
+                background: '#EEBA2B',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                marginBottom: 4
+              }}>
+                <svg className="text-black" fill="currentColor" viewBox="0 0 24 24" style={{ width: 16, height: 16 }}>
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <div
+                className="px-4 py-3 text-white animate-pulse"
+                style={{ borderRadius: '0 16px 16px 4px', borderLeft: '2px solid #EEBA2B', background: '#16161A' }}
+              >
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span>PrimeBot sta scrivendo…</span>
                 </div>
-                <span>PrimeBot sta scrivendo…</span>
               </div>
             </div>
           )}
@@ -2877,7 +3019,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       </div>
 
       <div className="p-6 border-t border-[#DAA520]">
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="flex flex-nowrap overflow-x-auto gap-2 px-4 pb-2 scrollbar-none">
           {questionsToShow.map(q => (
             <button
               key={q}
@@ -2885,7 +3027,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                 setInput(q);
                 send(q);
               }}
-              className="border border-[#DAA520] hover:bg-[#EEBA2B]/10 bg-gray-800 text-white text-sm px-4 py-3 rounded-2xl transition-colors"
+              className="flex-shrink-0 bg-[#16161A] border border-[#2a2a2e] hover:border-[#EEBA2B] text-[#EEBA2B] rounded-full px-3 py-2 text-[11px] font-medium transition-colors whitespace-nowrap"
             >
               {q}
             </button>
