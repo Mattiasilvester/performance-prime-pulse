@@ -32,7 +32,7 @@ export function WorkoutDetailsModal({ entry, open, onOpenChange }: WorkoutDetail
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto [&>button]:flex [&>button]:items-center [&>button]:justify-center">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-[#16161A] border border-[#2a2a2e] rounded-t-3xl [&>button]:flex [&>button]:items-center [&>button]:justify-center [&>button]:bg-[#0A0A0C] [&>button]:border [&>button]:border-[#2a2a2e] [&>button]:rounded-lg [&>button]:text-[#8A8A96] [&>button]:transition-colors [&>button:hover]:text-white">
         <DialogHeader>
           <DialogTitle className="text-xl">📊 Dettagli Allenamento</DialogTitle>
         </DialogHeader>
@@ -71,14 +71,14 @@ export function WorkoutDetailsModal({ entry, open, onOpenChange }: WorkoutDetail
               {entry.exercises && (entry.exercises as { name?: string; duration?: number; rest?: number; completed?: boolean }[]).map((exercise, index) => (
                 <div 
                   key={index}
-                  className="flex items-start gap-3 p-3 bg-muted rounded-md border border-[#EEBA2B]/10"
+                  className="flex items-start gap-3 p-3 bg-[#0A0A0C] rounded-xl border border-[#2a2a2e]"
                 >
                   <span className="font-bold text-[#EEBA2B] min-w-[24px]">
                     {index + 1}.
                   </span>
                   <div className="flex-1">
-                    <p className="font-medium">{exercise.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="font-medium text-white">{exercise.name}</p>
+                    <p className="text-xs text-[#8A8A96] mt-1">
                       {exercise.duration}s lavoro • {exercise.rest || 0}s riposo
                     </p>
                   </div>

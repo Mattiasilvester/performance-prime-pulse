@@ -170,7 +170,6 @@ export const completeWorkout = async (
     .single();
 
   console.log('📤 Supabase INSERT data (after):', data);
-  console.log('❌ Supabase INSERT error:', error);
 
   if (error) throw error;
 
@@ -342,8 +341,6 @@ export const updateWorkoutMetrics = async (
     .upsert(metricsData, {
       onConflict: 'user_id'
     });
-
-  console.log('❌ Metrics upsert error:', error);
 
   if (error) throw error;
 };

@@ -12,7 +12,7 @@ import { WorkoutCard } from "@/components/diary/WorkoutCard";
 import { NotesModal } from "@/components/diary/NotesModal";
 import { WorkoutDetailsModal } from "@/components/diary/WorkoutDetailsModal";
 import { DiaryFilters } from "@/components/diary/DiaryFilters";
-import { StatsWidget } from "@/components/diary/StatsWidget";
+import { useStatsData } from "@/hooks/useStatsData";
 
 // Service
 import {
@@ -28,6 +28,7 @@ type FilterType = 'all' | 'saved' | 'completed';
 const DiaryPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { metrics, weeklyStats, loading: statsLoading } = useStatsData();
 
   // State
   const [filter, setFilter] = useState<FilterType>('all');
@@ -92,11 +93,11 @@ const DiaryPage = () => {
 
       let label: string;
       if (isSameDay(date, today)) {
-        label = `📅 Oggi - ${format(date, 'd MMMM yyyy', { locale: it })}`;
+        label = `Oggi - ${format(date, 'd MMMM yyyy', { locale: it })}`;
       } else if (isSameDay(date, yesterday)) {
-        label = `📅 Ieri - ${format(date, 'd MMMM yyyy', { locale: it })}`;
+        label = `Ieri - ${format(date, 'd MMMM yyyy', { locale: it })}`;
       } else {
-        label = `📅 ${format(date, 'd MMMM yyyy', { locale: it })}`;
+        label = format(date, 'd MMMM yyyy', { locale: it });
       }
 
       if (!groups[label]) {
@@ -222,28 +223,18 @@ const DiaryPage = () => {
     }
   };
 
-  const handleDetails = async (id: string) => {
-    try {
-      // Carica entry completa con exercises
-      const entry = await getDiaryEntry(id);
-      if (!entry) {
-        toast({
-          title: "Errore",
-          description: "Impossibile caricare i dettagli",
-          variant: "destructive",
-        });
-        return;
-      }
-      setSelectedEntryForDetails(entry);
-      setDetailsModalOpen(true);
-    } catch (error) {
-      console.error('Error loading details:', error);
+  const handleDetails = (id: string) => {
+    const entry = entries.find(e => e.id === id);
+    if (!entry) {
       toast({
         title: "Errore",
         description: "Impossibile caricare i dettagli",
         variant: "destructive",
       });
+      return;
     }
+    setSelectedEntryForDetails(entry);
+    setDetailsModalOpen(true);
   };
 
   const handleShare = (id: string) => {
@@ -275,18 +266,56 @@ const DiaryPage = () => {
   return (
     <div className="min-h-screen bg-background pt-24 pb-20">
       {/* Header */}
-      <div className="border-b border-border bg-card/50 backdrop-blur-sm">
+      <div className="bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-            📔 Il Mio Diario
-          </h1>
-          <p className="text-muted-foreground mt-2">Track your fitness journey</p>
+          <p className="text-muted-foreground">Traccia il tuo percorso fitness</p>
         </div>
       </div>
 
-      {/* Stats Widget */}
-      <div className="container mx-auto px-4 py-6">
-        <StatsWidget />
+      {/* KPI pill */}
+      <div className="container mx-auto px-4">
+        <div className="flex gap-3 mb-4">
+          <div className="flex-1 bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
+            {statsLoading ? (
+              <div className="h-5 w-8 bg-[#2a2a2e] rounded animate-pulse mx-auto mb-1" />
+            ) : (
+              <span className="block text-xl font-bold text-[#EEBA2B]">
+                {weeklyStats?.count ?? 0}
+              </span>
+            )}
+            <span className="block text-xs text-[#8A8A96] mt-1">
+              Questa sett.
+            </span>
+          </div>
+          <div className="flex-1 bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
+            {statsLoading ? (
+              <div className="h-5 w-8 bg-[#2a2a2e] rounded animate-pulse mx-auto mb-1" />
+            ) : (
+              <span className="block text-xl font-bold text-[#EEBA2B]">
+                {weeklyStats?.totalTime != null
+                  ? weeklyStats.totalTime >= 60
+                    ? `${Math.floor(weeklyStats.totalTime / 60)}h`
+                    : `${weeklyStats.totalTime}m`
+                  : "0m"}
+              </span>
+            )}
+            <span className="block text-xs text-[#8A8A96] mt-1">
+              Tempo sett.
+            </span>
+          </div>
+          <div className="flex-1 bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
+            {statsLoading ? (
+              <div className="h-5 w-8 bg-[#2a2a2e] rounded animate-pulse mx-auto mb-1" />
+            ) : (
+              <span className="block text-xl font-bold text-[#EEBA2B]">
+                {metrics?.current_streak_days ?? 0} 🔥
+              </span>
+            )}
+            <span className="block text-xs text-[#8A8A96] mt-1">
+              Streak
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
@@ -328,9 +357,12 @@ const DiaryPage = () => {
           <div className="space-y-8">
             {Object.entries(groupedEntries).map(([date, dayEntries]) => (
               <div key={date} className="space-y-4">
-                <h2 className="text-lg font-semibold text-foreground sticky top-[140px] bg-background py-2 z-5">
-                  {date}
-                </h2>
+                <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+                  <span className="text-sm font-semibold text-[#8A8A96] whitespace-nowrap">
+                    {date}
+                  </span>
+                  <div className="flex-1 h-px bg-[#1e1e24]" />
+                </div>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {dayEntries.map(entry => (
                     <WorkoutCard

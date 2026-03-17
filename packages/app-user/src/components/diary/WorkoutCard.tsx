@@ -1,9 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Clock, Dumbbell, Play, FileText, Trash2, Repeat, Share2, BarChart3 } from "lucide-react";
-import { formatDuration, formatDateShort } from "@/services/diaryService";
+import { formatDuration } from "@/services/diaryService";
 import { WorkoutIcon } from "@/components/workouts/WorkoutIcon";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface WorkoutDiary {
   id: string;
@@ -41,8 +46,8 @@ export const WorkoutCard = ({
   const isSaved = entry.status === 'saved';
 
   return (
-    <Card className="bg-card border-border hover:border-primary/50 transition-all hover:shadow-lg">
-      <CardContent className="p-6 space-y-4">
+    <Card className="bg-[#16161A] border border-[#2a2a2e] rounded-2xl p-4 transition-all hover:shadow-lg hover:border-[#2a2a2e]">
+      <CardContent className="p-0 space-y-4">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3 flex-1">
@@ -73,117 +78,107 @@ export const WorkoutCard = ({
           </div>
 
           {/* Badge Status */}
-          <Badge
-            variant={isCompleted ? 'default' : 'secondary'}
-            className={isCompleted ? 'bg-green-600 text-white' : 'bg-[#FFD700]/20 text-[#FFD700]'}
-          >
-            {isCompleted ? '✅ Completato' : '💾 Salvato'}
-          </Badge>
-        </div>
-
-        {/* Timestamp */}
-        <div className="text-xs text-muted-foreground">
-          {isCompleted && entry.completed_at && (
-            <span>Completato il {formatDateShort(entry.completed_at)}</span>
-          )}
-          {isSaved && (
-            <span>Salvato per dopo</span>
+          {isCompleted ? (
+            <div className="flex items-center gap-1.5 bg-green-500/15 border border-green-500/30 rounded-full px-2.5 py-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="text-[10px] font-semibold text-green-500">Completato</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 bg-blue-500/15 border border-blue-500/30 rounded-full px-2.5 py-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+              <span className="text-[10px] font-semibold text-blue-400">Salvato</span>
+            </div>
           )}
         </div>
 
         {/* Notes Preview */}
         {entry.notes && (
-          <div className="bg-muted/30 rounded-lg p-3 text-sm text-muted-foreground italic border-l-2 border-[#FFD700]">
+          <div className="border-l-2 border-[#EEBA2B] bg-[#0A0A0C] rounded-r-lg px-3 py-2 text-sm text-[#8A8A96] italic">
             "{entry.notes.length > 100 ? `${entry.notes.slice(0, 100)}...` : entry.notes}"
           </div>
         )}
 
         {/* Actions */}
-        <div className="space-y-2 pt-2">
+        <div className="flex items-center gap-2 border-t border-[#1e1e24] pt-3 mt-2">
           {isSaved ? (
             <>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() => onStart?.(entry.id)}
-                  size="sm"
-                  className="gap-2 bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-semibold"
-                >
-                  <Play className="w-4 h-4" />
-                  Inizia
-                </Button>
-                <Button
-                  onClick={() => onNotes?.(entry.id)}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 border-border text-foreground hover:bg-muted"
-                >
-                  <FileText className="w-4 h-4" />
-                  Note
-                </Button>
-                <Button
-                  onClick={() => onRemove?.(entry.id)}
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Rimuovi
-                </Button>
-              </div>
+              <Button
+                onClick={() => onStart?.(entry.id)}
+                size="sm"
+                className="gap-1.5 bg-[#EEBA2B] hover:bg-[#EEBA2B]/90 text-black font-semibold rounded-lg px-3 py-1.5 text-[11px]"
+              >
+                <Play className="w-4 h-4" />
+                Inizia
+              </Button>
+              <button
+                onClick={() => onNotes?.(entry.id)}
+                className="flex items-center gap-1.5 bg-[#0A0A0C] border border-[#2a2a2e] hover:border-[#EEBA2B]/50 text-[#8A8A96] hover:text-white rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Note
+              </button>
+              <Button
+                onClick={() => onRemove?.(entry.id)}
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg px-3 py-1.5 text-[11px] font-medium"
+              >
+                <Trash2 className="w-4 h-4" />
+                Rimuovi
+              </Button>
             </>
           ) : (
             <>
-              {/* Prima riga: Ripeti, Note, Dettagli, Elimina */}
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() => onRepeat?.(entry.id)}
-                  size="sm"
-                  variant="outline"
-                  className="gap-2 border-border text-foreground hover:bg-muted"
+              <button
+                onClick={() => onRepeat?.(entry.id)}
+                className="flex items-center gap-1.5 bg-[#0A0A0C] border border-[#2a2a2e] hover:border-[#EEBA2B] text-[#EEBA2B] rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors"
+              >
+                <Repeat className="w-4 h-4" />
+                Ripeti
+              </button>
+              <button
+                onClick={() => onNotes?.(entry.id)}
+                className="flex items-center gap-1.5 bg-[#0A0A0C] border border-[#2a2a2e] hover:border-[#EEBA2B]/50 text-[#8A8A96] hover:text-white rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Note
+              </button>
+              <button
+                onClick={() => onDetails?.(entry.id)}
+                className="flex items-center gap-1.5 bg-[#0A0A0C] border border-[#2a2a2e] hover:border-[#EEBA2B]/50 text-[#8A8A96] hover:text-white rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Dettagli
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="ml-auto bg-[#0A0A0C] border border-[#2a2a2e] rounded-lg w-8 h-8 flex items-center justify-center text-[#8A8A96] hover:text-white transition-colors"
+                  >
+                    ···
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="bg-[#16161A] border border-[#2a2a2e] rounded-xl"
                 >
-                  <Repeat className="w-4 h-4" />
-                  Ripeti
-                </Button>
-                <Button
-                  onClick={() => onNotes?.(entry.id)}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 border-border text-foreground hover:bg-muted"
-                >
-                  <FileText className="w-4 h-4" />
-                  Note
-                </Button>
-                <Button
-                  onClick={() => onDetails?.(entry.id)}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 border-border text-foreground hover:bg-muted"
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  Dettagli
-                </Button>
-                <Button
-                  onClick={() => onRemove?.(entry.id)}
-                  variant="default"
-                  size="sm"
-                  className="gap-2 bg-destructive hover:bg-destructive/90 text-white"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span className="hidden md:inline">Elimina</span>
-                </Button>
-              </div>
-              {/* Seconda riga: Condividi */}
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => onShare?.(entry.id)}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 border-border text-foreground hover:bg-muted"
-                >
-                  <Share2 className="w-4 h-4" />
-                  Condividi
-                </Button>
-              </div>
+                  <DropdownMenuItem
+                    onClick={() => onShare?.(entry.id)}
+                    className="text-[#8A8A96] text-sm cursor-pointer"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Condividi
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onRemove?.(entry.id)}
+                    className="text-red-400 text-sm cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Elimina
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
         </div>
