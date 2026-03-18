@@ -164,3 +164,32 @@ export async function getPrimebotNotes(userId: string): Promise<DiaryNote[]> {
   if (error) throw error;
   return (data ?? []).map((row) => rowToDiaryNote(row as Parameters<typeof rowToDiaryNote>[0]));
 }
+
+/**
+ * Costruisce il blocco testo delle note da iniettare nel system prompt di PrimeBot.
+ * Restituisce stringa vuota se non ci sono note visibili o in caso di errore.
+ */
+export async function buildPrimebotNotesBlock(userId: string): Promise<string> {
+  try {
+    const notes = await getPrimebotNotes(userId);
+    if (!notes || notes.length === 0) return '';
+
+    const lines = notes.map(note => {
+      const date = new Date(note.created_at).toISOString().split('T')[0];
+      const content = note.content.length > 300
+        ? note.content.slice(0, 300) + '...'
+        : note.content;
+      return `- [${note.category} | ${date}] ${content}`;
+    });
+
+    return `
+
+NOTE DELL'UTENTE (condivise con PrimeBot, più recenti prima):
+Usale come preferenze e abitudini dichiarate. Non sostituiscono il profilo medico verificato.
+Se una nota contraddice il profilo salvato, dai priorità al profilo.
+
+${lines.join('\n')}`;
+  } catch {
+    return '';
+  }
+}
