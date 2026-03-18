@@ -332,7 +332,7 @@ export default function EsecuzioneWorkout() {
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'instant' });
       navigate('/diary', {
-        state: { justCompleted: true, workoutName: plan.name },
+        state: { justCompleted: true, workoutName: plan.name ?? '' },
       });
     }, 800);
   };

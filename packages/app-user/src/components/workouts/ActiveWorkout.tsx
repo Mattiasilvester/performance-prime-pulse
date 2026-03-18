@@ -506,7 +506,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
     toast.success('🏆 Allenamento completato! Ottimo lavoro!');
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'instant' });
-      navigate('/diary', { state: { justCompleted: true, workoutName: workoutTitle || workoutTitleForSave } });
+      navigate('/diary', { state: { justCompleted: true, workoutName: (workoutTitle || workoutTitleForSave) ?? '' } });
     }, 800);
     setIsSaving(false);
   }, [user, currentWorkout, customWorkout, generatedWorkout, workoutTitle, workoutType, workoutId, completedExercises, isSaving, recordWorkoutCompletion, navigate, medalSystem, addEarnedMedals]);
