@@ -5,6 +5,8 @@ import { getProfessionalById, Professional, getCategoryLabel, getCategoryIcon } 
 import { useBlockedPeriods } from '@/hooks/useBlockedPeriods';
 import { availabilityOverrideService, type AvailabilityOverride } from '@/services/availabilityOverrideService';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { notifyNewBooking } from '@/services/notificationService';
 import { getReviewsByProfessional, Review, getAvailableBookingsForReview, hasUserReviewedProfessional } from '@/services/reviewsService';
 import { useAuth } from '@/hooks/useAuth';
 import ReviewForm from '@/components/user/ReviewForm';
@@ -56,6 +58,7 @@ const ProfessionalDetail: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [bookingStep, setBookingStep] = useState<'calendar' | 'time' | 'confirm'>('calendar');
   const [blockedSlotsForDate, setBlockedSlotsForDate] = useState<AvailabilityOverride[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Calcola range date per il mese corrente (per ottimizzare fetch blocchi)
   const monthDateRange = useMemo(() => {
@@ -299,16 +302,85 @@ const ProfessionalDetail: React.FC = () => {
     setBookingStep('confirm');
   };
 
-  // Conferma prenotazione
-  const handleConfirmBooking = () => {
-    // Per ora mostra solo un alert, in futuro salverà nel database
-    alert(`Prenotazione confermata!\n\n📅 ${selectedDate?.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}\n⏰ ${selectedTime}\n👤 ${professional.first_name} ${professional.last_name}`);
-    
-    // Reset e chiudi
-    setShowBookingModal(false);
-    setSelectedDate(null);
-    setSelectedTime(null);
-    setBookingStep('calendar');
+  // Conferma prenotazione (insert reale + notifica professionista)
+  const handleConfirmBooking = async () => {
+    if (!selectedDate || !selectedTime) {
+      toast.error('Seleziona data e orario.');
+      return;
+    }
+    if (!user?.id) {
+      toast.error('Accedi per prenotare.');
+      return;
+    }
+
+    const bookingDateStr = formatDateToString(selectedDate);
+    const bookingTimeStr =
+      selectedTime.length === 5 && selectedTime.split(':').length === 2
+        ? `${selectedTime}:00`
+        : selectedTime;
+
+    const bookingModalita =
+      professional.modalita === 'online' ? 'online' : 'presenza';
+
+    setIsSubmitting(true);
+    try {
+      let clientName: string | null = null;
+      const { data: profileRow } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, full_name')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (profileRow) {
+        const full = profileRow.full_name?.trim();
+        const joined = [profileRow.first_name, profileRow.last_name]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
+        clientName = full || joined || null;
+      }
+
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert({
+          professional_id: professional.id,
+          user_id: user.id,
+          booking_date: bookingDateStr,
+          booking_time: bookingTimeStr,
+          duration_minutes: 60,
+          status: 'pending',
+          modalita: bookingModalita,
+          client_name: clientName,
+          service_id: null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error(error);
+        toast.error('Errore durante la prenotazione. Riprova.');
+        return;
+      }
+
+      const displayName = clientName?.trim() || 'Utente';
+      try {
+        await notifyNewBooking(professional.id, {
+          id: data.id,
+          clientName: displayName,
+          bookingDate: bookingDateStr,
+          bookingTime: selectedTime,
+        });
+      } catch (notifErr) {
+        console.error('Errore notifica professionista:', notifErr);
+      }
+
+      toast.success('Prenotazione inviata! Il professionista ti contatterà a breve.');
+      setShowBookingModal(false);
+      setSelectedDate(null);
+      setSelectedTime(null);
+      setBookingStep('calendar');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Reset booking modal
@@ -846,11 +918,14 @@ const ProfessionalDetail: React.FC = () => {
 
                 {/* Bottone conferma */}
                 <button
-                  onClick={handleConfirmBooking}
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => void handleConfirmBooking()}
                   className="w-full bg-[#EEBA2B] text-black font-bold py-4 px-6 rounded-xl 
-                           hover:bg-yellow-400 transition-all hover:shadow-[0_0_20px_rgba(238,186,43,0.4)]"
+                           hover:bg-yellow-400 transition-all hover:shadow-[0_0_20px_rgba(238,186,43,0.4)]
+                           disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  ✅ Conferma prenotazione
+                  {isSubmitting ? 'Invio in corso…' : '✅ Conferma prenotazione'}
                 </button>
 
                 <p className="text-gray-500 text-sm text-center mt-4">
