@@ -37,19 +37,15 @@ export async function createNotification({
       return;
     }
 
-    // Crea la notifica
-    const { data: insertedData, error } = await supabase
-      .from('professional_notifications')
-      .insert({
-        professional_id: professionalId,
-        type,
-        title,
-        message,
-        data,
-        is_read: false
-      })
-      .select()
-      .single();
+    // Crea la notifica (no .select(): il client B2C non ha RLS SELECT su questa tabella)
+    const { error } = await supabase.from('professional_notifications').insert({
+      professional_id: professionalId,
+      type,
+      title,
+      message,
+      data,
+      is_read: false,
+    });
 
     if (error) {
       console.error('[CREATE NOTIFICATION] Errore creazione notifica:', error);
@@ -57,12 +53,9 @@ export async function createNotification({
       throw error;
     }
 
-    console.log('[CREATE NOTIFICATION] Notifica creata con successo:', insertedData?.id);
+    console.log('[CREATE NOTIFICATION] Notifica creata con successo');
 
     // Push non implementata per app-user (atleti). TODO: riattivare quando push per user_id sarà implementata.
-    // if (insertedData?.id) {
-    //   sendPushNotificationAsync(professionalId, insertedData.id).catch(() => {});
-    // }
   } catch (err: unknown) {
     console.error('[CREATE NOTIFICATION] Errore in createNotification:', err);
     console.error('[CREATE NOTIFICATION] Stack trace:', err instanceof Error ? err.stack : 'N/A');
