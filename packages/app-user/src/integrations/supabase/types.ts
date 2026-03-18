@@ -419,25 +419,37 @@ export type Database = {
       }
       notes: {
         Row: {
+          category: string | null
           content: string
           created_at: string
           id: string
+          is_highlighted: boolean
+          is_pinned: boolean
+          primebot_visible: boolean
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          category?: string | null
           content?: string
           created_at?: string
           id?: string
+          is_highlighted?: boolean
+          is_pinned?: boolean
+          primebot_visible?: boolean
           title?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          category?: string | null
           content?: string
           created_at?: string
           id?: string
+          is_highlighted?: boolean
+          is_pinned?: boolean
+          primebot_visible?: boolean
           title?: string
           updated_at?: string
           user_id?: string

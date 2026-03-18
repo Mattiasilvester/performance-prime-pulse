@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { NoteCategory } from '@/services/notesService';
+import type { DiaryNote, NoteCategory } from '@/services/notesService';
 
 const CATEGORY_META: Record<
   NoteCategory,
@@ -69,8 +69,9 @@ function PrimebotToggle({
   );
 }
 
-export interface CreateNoteModalProps {
+export interface EditNoteModalProps {
   open: boolean;
+  note: DiaryNote | null;
   onClose: () => void;
   onSave: (data: {
     content: string;
@@ -79,19 +80,19 @@ export interface CreateNoteModalProps {
   }) => Promise<void>;
 }
 
-export function CreateNoteModal({ open, onClose, onSave }: CreateNoteModalProps) {
+export function EditNoteModal({ open, note, onClose, onSave }: EditNoteModalProps) {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState<NoteCategory>('generale');
   const [primebotVisible, setPrimebotVisible] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      setContent('');
-      setCategory('generale');
-      setPrimebotVisible(false);
+    if (open && note) {
+      setContent(note.content);
+      setCategory(note.category);
+      setPrimebotVisible(note.primebot_visible);
     }
-  }, [open]);
+  }, [open, note]);
 
   useEffect(() => {
     if (!open) return;
@@ -117,7 +118,7 @@ export function CreateNoteModal({ open, onClose, onSave }: CreateNoteModalProps)
 
   return createPortal(
     <AnimatePresence>
-      {open && (
+      {open && note && (
         <>
           <motion.div
             className="fixed inset-0 z-[100]"
@@ -139,7 +140,7 @@ export function CreateNoteModal({ open, onClose, onSave }: CreateNoteModalProps)
               transition={{ type: 'spring', damping: 28, stiffness: 320 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-base font-semibold text-white mb-4">Nuova nota</h2>
+              <h2 className="text-base font-semibold text-white mb-4">Modifica nota</h2>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value.slice(0, 500))}
