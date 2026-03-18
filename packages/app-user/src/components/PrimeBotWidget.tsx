@@ -29,14 +29,26 @@ const BUBBLE_ACTIONS = [
   { action: 'tour' as const, icon: Info, color: '#EEBA2B', bg: 'rgba(238,186,43,0.08)', label: "Fai il tour dell'app", sub: 'Ti guido in 5 step', gold: true },
 ];
 
+const NOTE_EDITOR_MODAL_EVENT = 'pp-note-editor-modal';
+
 export default function PrimeBotWidget() {
   const [bubbleOpen, setBubbleOpen] = useState(false);
   const [widgetVisible, setWidgetVisible] = useState(false);
   const [miniVisible, setMiniVisible] = useState(false);
   const [miniBubbleOpen, setMiniBubbleOpen] = useState(false);
+  const [noteEditorModalDepth, setNoteEditorModalDepth] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const { startTour } = useTour();
+
+  useEffect(() => {
+    const onNoteEditorModal = (e: Event) => {
+      const d = (e as CustomEvent<number>).detail;
+      setNoteEditorModalDepth((c) => Math.max(0, c + (typeof d === 'number' ? d : 0)));
+    };
+    window.addEventListener(NOTE_EDITOR_MODAL_EVENT, onNoteEditorModal);
+    return () => window.removeEventListener(NOTE_EDITOR_MODAL_EVENT, onNoteEditorModal);
+  }, []);
 
   useEffect(() => {
     const seen = safeLocalStorage.getItem(STORAGE_KEY);
@@ -61,6 +73,8 @@ export default function PrimeBotWidget() {
   if (EXCLUDED_PATHS.some((p) => location.pathname === p || location.pathname.startsWith('/auth'))) {
     return null;
   }
+
+  if (noteEditorModalDepth > 0) return null;
 
   if (!widgetVisible && !miniVisible) return null;
 
