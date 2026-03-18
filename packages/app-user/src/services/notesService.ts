@@ -151,7 +151,7 @@ export async function bulkSetPrimebotVisible(userId: string, visible: boolean): 
   if (error) throw error;
 }
 
-/** Note condivise con PrimeBot (max 15, più recenti per updated_at) */
+/** Note condivise con PrimeBot (max 5, più recenti per updated_at) */
 export async function getPrimebotNotes(userId: string): Promise<DiaryNote[]> {
   const { data, error } = await supabase
     .from('notes')
@@ -159,7 +159,7 @@ export async function getPrimebotNotes(userId: string): Promise<DiaryNote[]> {
     .eq('user_id', userId)
     .eq('primebot_visible', true)
     .order('updated_at', { ascending: false })
-    .limit(15);
+    .limit(5);
 
   if (error) throw error;
   return (data ?? []).map((row) => rowToDiaryNote(row as Parameters<typeof rowToDiaryNote>[0]));
@@ -184,9 +184,20 @@ export async function buildPrimebotNotesBlock(userId: string): Promise<string> {
 
     return `
 
-NOTE DELL'UTENTE (condivise con PrimeBot, più recenti prima):
-Usale come preferenze e abitudini dichiarate. Non sostituiscono il profilo medico verificato.
-Se una nota contraddice il profilo salvato, dai priorità al profilo.
+NOTE DELL'UTENTE (ultime 5 condivise con PrimeBot):
+Gerarchia contesto da rispettare sempre:
+1) Profilo PrimeBot (limitazioni fisiche, obiettivi dichiarati) — priorità assoluta
+2) Profilo utente (dati onboarding, obiettivo fitness) — base del piano
+3) Note (preferenze temporanee, sensazioni, annotazioni) — complemento
+
+Usa le note silenziosamente per personalizzare il piano.
+Non chiedere spiegazioni all'utente sulle note — agisci direttamente.
+
+Regola esercizi:
+- Se l'utente non vuole un esercizio fondamentale per il suo obiettivo,
+  sostituiscilo con uno complementare che allena lo stesso pattern motorio.
+- Se è accessorio, rimuovilo senza spiegazioni.
+- Non eliminare mai un gruppo muscolare solo per preferenza dell'utente.
 
 ${lines.join('\n')}`;
   } catch {
