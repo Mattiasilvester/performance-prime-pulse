@@ -1,8 +1,14 @@
-import { Bell, Lock, Globe, HelpCircle, User, Shield, ChevronRight, ClipboardList } from 'lucide-react';
+import { Bell, Lock, Globe, HelpCircle, User, Shield, ChevronRight, ClipboardList, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
 const settingsItems = [
+  {
+    icon: FileText,
+    label: 'I miei documenti',
+    description: 'PDF e schede',
+    action: '/i-miei-piani?tab=documenti',
+  },
   { icon: User, label: 'Informazioni personali', action: '/settings/personal-info' },
   { icon: Lock, label: 'Password e sicurezza', action: '/settings/security' },
   { icon: Bell, label: 'Notifiche', action: '/settings/notifications' },
