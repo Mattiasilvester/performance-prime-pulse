@@ -71,24 +71,33 @@ interface PrimeChatProps {
 
 /** Frasi che escludono la classificazione come richiesta di piano (domande/negazioni) */
 const PLAN_REQUEST_EXCLUSIONS = [
-  'non ',
-  ' non',
-  'senza ',
-  ' cos\'è',
-  'cos\'è ',
-  'cos\'è',
-  ' cosa è',
-  'cosa è ',
-  ' che cos\'è',
-  'che cos\'è ',
+  'cos e',
+  'che cos e',
   'come funziona',
   'mi spieghi',
   'spiegami',
   'informazioni su',
+  'cosa significa',
+  'non voglio',
+  'non mi interessa',
+  'non ho bisogno',
+  'non voglio un piano',
+  'non voglio allenarmi',
 ];
 
+function normalizeIntentText(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[’`]/g, "'")
+    .replace(/'/g, ' ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function containsPlanExclusion(text: string): boolean {
-  const lower = text.toLowerCase();
+  const lower = normalizeIntentText(text);
   return PLAN_REQUEST_EXCLUSIONS.some((ex) => lower.includes(ex));
 }
 
@@ -96,7 +105,8 @@ function containsPlanExclusion(text: string): boolean {
  * Rileva se la richiesta è per un piano di allenamento
  */
 function isWorkoutPlanRequest(text: string): boolean {
-  if (containsPlanExclusion(text)) return false;
+  const normalized = normalizeIntentText(text);
+  if (containsPlanExclusion(normalized)) return false;
   const keywords = [
     'piano',
     'programma',
@@ -113,17 +123,17 @@ function isWorkoutPlanRequest(text: string): boolean {
     'voglio un piano',
     'allenarmi',
   ];
-  const textLower = text.toLowerCase();
-  return keywords.some((keyword) => textLower.includes(keyword));
+  return keywords.some((keyword) => normalized.includes(keyword));
 }
 
 function isWorkoutPlanRequestExplicit(text: string): boolean {
-  if (containsPlanExclusion(text)) return false;
+  const normalized = normalizeIntentText(text);
+  if (containsPlanExclusion(normalized)) return false;
   const NUTRITION_SIGNALS = [
     'nutrizionale', 'nutrizione', 'alimentare',
     'alimentazione', 'dieta', 'pasti', 'mangiare',
   ];
-  if (NUTRITION_SIGNALS.some((n) => text.toLowerCase().includes(n))) return false;
+  if (NUTRITION_SIGNALS.some((n) => normalized.includes(n))) return false;
   const keywords = [
     'piano di allenamento',
     'piano allenamento',
@@ -156,12 +166,28 @@ function isWorkoutPlanRequestExplicit(text: string): boolean {
     'dammi un piano',
     'dammi un programma',
     'una scheda',
+    'puoi farmi',
+    'potresti farmi',
+    'puoi crearmi',
+    'potresti crearmi',
+    'ho bisogno di allenarmi',
+    'ho bisogno di muovermi',
+    'voglio ricominciare ad allenarmi',
+    'devo allenarmi',
+    'devo iniziare ad allenarmi',
+    'aiutami ad allenarmi',
+    'come mi alleno',
+    'da dove inizio',
+    'da dove comincio',
+    'voglio mettermi in forma',
+    'voglio rimettermi in forma',
   ];
-  return keywords.some((k) => text.toLowerCase().includes(k));
+  return keywords.some((k) => normalized.includes(k));
 }
 
 function isNutritionPlanRequest(text: string): boolean {
-  if (containsPlanExclusion(text)) return false;
+  const normalized = normalizeIntentText(text);
+  if (containsPlanExclusion(normalized)) return false;
   const keywords = [
     'piano alimentare',
     'piano nutrizionale',
@@ -193,14 +219,37 @@ function isNutritionPlanRequest(text: string): boolean {
     'ho bisogno di un piano alimentare',
     'cosa devo mangiare',
     'come devo mangiare',
+    'cosa mangio',
+    'come mangio',
+    'aiutami a mangiare',
+    'voglio mangiare meglio',
+    'voglio migliorare la mia alimentazione',
+    'devo seguire una dieta',
+    'puoi farmi una dieta',
+    'potresti farmi una dieta',
+    'cosa dovrei mangiare',
+    'come dovrei mangiare',
+    'mi aiuti con l alimentazione',
+    'voglio perdere peso mangiando',
+    'voglio dimagrire con la dieta',
   ];
-  return keywords.some((k) => text.toLowerCase().includes(k));
+  return keywords.some((k) => normalized.includes(k));
 }
 
 function isGenericPlanRequest(text: string): boolean {
+  const normalized = normalizeIntentText(text);
   if (isWorkoutPlanRequestExplicit(text)) return false;
   if (isNutritionPlanRequest(text)) return false;
-  return isWorkoutPlanRequest(text);
+  const ambiguousKeywords = [
+    'voglio dimagrire',
+    'voglio perdere peso',
+    'voglio aumentare la massa',
+    'voglio mettere su massa',
+    'voglio tonificarmi',
+    'voglio tonificare',
+  ];
+  if (ambiguousKeywords.some((k) => normalized.includes(k))) return true;
+  return isWorkoutPlanRequest(normalized);
 }
 
 function parseAllergiesFromText(text: string): string[] {
