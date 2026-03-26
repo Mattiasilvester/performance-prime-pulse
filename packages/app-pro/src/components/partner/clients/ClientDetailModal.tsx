@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import * as ptAssignedDocumentsService from '@/services/ptAssignedDocumentsService';
+import type { PtAssignedDocument } from '@/services/ptAssignedDocumentsService';
 import { 
   X, Mail, Phone, MessageCircle, Calendar, 
-  User, FileText, FolderOpen, Edit, Trash2,
+  User, FileText, FolderOpen, Edit, Trash2, AlertCircle, ClipboardList,
   Plus, Clock, CheckCircle, PauseCircle
 } from 'lucide-react';
 import EditClientModal from './EditClientModal';
@@ -66,7 +68,7 @@ interface ClientDetailModalProps {
   onDelete: (clientId: string) => void;
 }
 
-type TabType = 'details' | 'bookings' | 'projects' | 'notes';
+type TabType = 'details' | 'bookings' | 'projects' | 'notes' | 'schede';
 
 export default function ClientDetailModal({ 
   client, 
@@ -93,6 +95,12 @@ export default function ClientDetailModal({
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [assignedDocs, setAssignedDocs] = useState<PtAssignedDocument[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [docName, setDocName] = useState('');
+  const [showAssignForm, setShowAssignForm] = useState(false);
 
   // Fetch bookings e projects quando cambia tab
   useEffect(() => {
@@ -103,6 +111,13 @@ export default function ClientDetailModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch only when tab/client changes
   }, [activeTab, client.id]);
+
+  useEffect(() => {
+    if (activeTab === 'schede' && professionalId && client.id) {
+      fetchAssignedDocs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch only when schede tab/client changes
+  }, [activeTab, professionalId, client.id]);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -288,6 +303,73 @@ export default function ClientDetailModal({
     }
   };
 
+  const fetchAssignedDocs = async () => {
+    setLoadingDocs(true);
+    try {
+      const docs = await ptAssignedDocumentsService.getAssignedDocuments(professionalId, client.id);
+      setAssignedDocs(docs);
+    } catch (err) {
+      console.error('Errore caricamento schede assegnate:', err);
+      toast.error('Errore nel caricamento delle schede');
+      setAssignedDocs([]);
+    } finally {
+      setLoadingDocs(false);
+    }
+  };
+
+  const resetAssignForm = () => {
+    setSelectedFile(null);
+    setDocName('');
+    setShowAssignForm(false);
+  };
+
+  const handleAssignDocument = async () => {
+    if (!selectedFile) {
+      toast.error('Seleziona un file da caricare');
+      return;
+    }
+
+    if (!docName.trim()) {
+      toast.error('Inserisci un nome documento');
+      return;
+    }
+
+    setUploadingDoc(true);
+    try {
+      const result = await ptAssignedDocumentsService.uploadAndAssign({
+        professionalId,
+        clientId: client.id,
+        file: selectedFile,
+        documentName: docName.trim(),
+      });
+
+      if (!result.success) {
+        toast.error(result.error || 'Errore durante l\'assegnazione della scheda');
+        return;
+      }
+
+      toast.success('Scheda assegnata con successo');
+      await fetchAssignedDocs();
+      resetAssignForm();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Errore durante l\'assegnazione della scheda';
+      toast.error(message);
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  const handleDeleteAssignedDocument = async (doc: PtAssignedDocument) => {
+    try {
+      await ptAssignedDocumentsService.deleteAssignedDocument(doc.id, doc.file_path);
+      toast.success('Scheda rimossa');
+      await fetchAssignedDocs();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Errore durante la rimozione della scheda';
+      toast.error(message);
+    }
+  };
+
   const handleDelete = async () => {
     try {
       const { error } = await supabase
@@ -353,11 +435,19 @@ export default function ClientDetailModal({
     return `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
   };
 
+  const formatAssignmentDate = (value: string) =>
+    new Date(value).toLocaleDateString('it-IT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+
   const tabs = [
     { id: 'details', label: 'Dettagli', icon: User },
     { id: 'bookings', label: 'Prenotazioni', icon: Calendar },
     { id: 'projects', label: 'Progetti', icon: FolderOpen },
     { id: 'notes', label: 'Note', icon: FileText },
+    { id: 'schede', label: 'Schede', icon: ClipboardList },
   ];
 
   return (
@@ -706,6 +796,115 @@ export default function ClientDetailModal({
                     })()}
                   </button>
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB: Schede */}
+          {activeTab === 'schede' && (
+            <div className="space-y-3">
+              {!client.user_id ? (
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">Cliente senza account Performance Prime</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Questo cliente non ha ancora un account PP. Puoi assegnare schede solo a clienti registrati sull&apos;app.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    disabled
+                    className="mt-3 w-full py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-400 cursor-not-allowed"
+                  >
+                    Assegna scheda
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-900">Schede assegnate</h3>
+                    <button
+                      onClick={() => setShowAssignForm(prev => !prev)}
+                      className="px-3 py-1.5 border border-[#EEBA2B] text-[#EEBA2B] rounded-xl text-sm font-medium hover:bg-[#EEBA2B]/10 transition-colors"
+                    >
+                      Assegna scheda
+                    </button>
+                  </div>
+
+                  {showAssignForm && (
+                    <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                      <input
+                        type="text"
+                        value={docName}
+                        onChange={(e) => setDocName(e.target.value)}
+                        placeholder="es. Scheda petto marzo"
+                        className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EEBA2B] focus:border-transparent"
+                      />
+                      <input
+                        type="file"
+                        accept="application/pdf,image/jpeg,image/png"
+                        onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+                        className="w-full p-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700"
+                      />
+                      <p className="text-xs text-gray-500">Formati ammessi: PDF, JPEG, PNG. Max 10MB.</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleAssignDocument}
+                          disabled={uploadingDoc}
+                          className="flex-1 py-2 bg-[#EEBA2B] text-white rounded-xl font-medium hover:bg-[#d4a826] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {uploadingDoc ? 'Caricamento...' : 'Carica'}
+                        </button>
+                        <button
+                          onClick={resetAssignForm}
+                          disabled={uploadingDoc}
+                          className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          Annulla
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {loadingDocs ? (
+                    <div className="space-y-2">
+                      <div className="bg-gray-50 rounded-xl p-4 animate-pulse h-20" />
+                      <div className="bg-gray-50 rounded-xl p-4 animate-pulse h-20" />
+                    </div>
+                  ) : assignedDocs.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 rounded-xl">
+                      <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500">Nessuna scheda assegnata ancora</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {assignedDocs.map((doc) => (
+                        <div key={doc.id} className="p-3 bg-gray-50 rounded-xl">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2 min-w-0">
+                              <FileText className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              <div className="min-w-0">
+                                <p className="font-medium text-gray-900 truncate">{doc.name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {ptAssignedDocumentsService.formatFileSize(doc.file_size)} • Assegnata il {formatAssignmentDate(doc.created_at)}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleDeleteAssignedDocument(doc)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Rimuovi scheda"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
