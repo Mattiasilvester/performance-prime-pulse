@@ -215,10 +215,10 @@ export default function PartnerDashboard() {
         
         {/* Main content con margin-left su desktop */}
         <main
-          className="flex-1 min-h-screen bg-gray-50 partner-dashboard-main"
+          className="flex-1 min-w-0 min-h-screen bg-gray-50 partner-dashboard-main overflow-x-hidden"
         >
           <TrialExpiredGate subscription={subscription} loading={loading}>
-            <div className="p-4 md:p-8">
+            <div className="p-4 md:p-8 w-full max-w-full">
               <Outlet />
             </div>
           </TrialExpiredGate>

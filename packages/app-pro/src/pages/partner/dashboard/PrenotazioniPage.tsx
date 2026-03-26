@@ -122,6 +122,7 @@ export default function PrenotazioniPage() {
 
   // Helper per retrocompatibilità (ora usa colonne dirette)
   const parseBookingNotes = (booking: Booking) => {
+    if (!booking) return null;
     // Priorità 1: Usa colonne dirette (nuovo sistema)
     if (booking.client_name || booking.client_email || booking.service_type) {
       return {
@@ -293,7 +294,7 @@ export default function PrenotazioniPage() {
           return {
             ...booking,
             client,
-            parsedNotes: parseBookingNotes(booking.notes) || undefined,
+            parsedNotes: parseBookingNotes(booking) || undefined,
             service: normalizedService
           };
         });
@@ -351,7 +352,6 @@ export default function PrenotazioniPage() {
       });
 
       // Stats week - ultimi 7 giorni (include tutti gli stati)
-      // DEBUG: Facciamo anche una query per vedere le date effettive
       const { data: weekBookings, count: weekCount, error: weekError } = await supabase
         .from('bookings')
         .select('id, booking_date, status', { count: 'exact' })
@@ -743,7 +743,7 @@ export default function PrenotazioniPage() {
   // }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8 overflow-x-hidden w-full max-w-full">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Prenotazioni</h1>
@@ -941,7 +941,7 @@ export default function PrenotazioniPage() {
       </div>
 
       {/* Lista prenotazioni */}
-      <div className="space-y-3">
+      <div className="space-y-3 overflow-hidden">
         {filteredBookings.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
             <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
@@ -1036,12 +1036,12 @@ export default function PrenotazioniPage() {
 
                   {/* Bottoni - VISIBILI su mobile e desktop */}
                   {booking.status !== 'cancelled' && booking.status !== 'completed' && (
-                    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-center gap-2 mt-4 sm:mt-0">
+                    <div className="flex flex-col sm:flex-row w-full sm:w-auto items-stretch sm:items-center justify-center gap-2 mt-4 sm:mt-0">
                       {/* Bottone Conferma - SOLO per prenotazioni in attesa */}
                       {booking.status === 'pending' && (
                         <button
                           onClick={() => handleConfirm(booking.id)}
-                          className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex-1 sm:flex-none sm:min-w-[120px] text-sm font-medium"
+                          className="w-full sm:w-auto sm:min-w-[120px] flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
                         >
                           <Check className="w-4 h-4" />
                           <span>Conferma</span>
@@ -1050,14 +1050,14 @@ export default function PrenotazioniPage() {
                       
                       <button
                         onClick={() => handleEdit(booking.id)}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-[#EEBA2B] text-white rounded-xl font-medium hover:bg-[#D4A826] transition-colors text-sm flex-1 sm:flex-none sm:min-w-[120px]"
+                        className="w-full sm:w-auto sm:min-w-[120px] flex items-center justify-center gap-2 px-4 py-2 bg-[#EEBA2B] text-white rounded-xl font-medium hover:bg-[#D4A826] transition-colors text-sm"
                       >
                         <Edit2 className="w-4 h-4" />
                         <span>Modifica</span>
                       </button>
                       <button
                         onClick={() => handleDelete(booking.id)}
-                        className="flex items-center justify-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-xl font-medium hover:bg-red-50 transition-colors text-sm flex-1 sm:flex-none sm:min-w-[120px]"
+                        className="w-full sm:w-auto sm:min-w-[120px] flex items-center justify-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-xl font-medium hover:bg-red-50 transition-colors text-sm"
                       >
                         <Trash2 className="w-4 h-4" />
                         <span>Cancella</span>
