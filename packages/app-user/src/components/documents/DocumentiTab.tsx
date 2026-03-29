@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FileText,
   FileImage,
@@ -8,6 +9,7 @@ import {
   Pencil,
   Trash2,
   Loader2,
+  Play,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -28,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
 import {
   userDocumentsService,
   type DocumentCategory,
@@ -61,7 +64,10 @@ function formatDate(value: string): string {
   });
 }
 
+type ParsedWorkoutJson = NonNullable<UserDocument['workout_json']>;
+
 export default function DocumentiTab() {
+  const navigate = useNavigate();
   const [documents, setDocuments] = useState<UserDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -77,6 +83,10 @@ export default function DocumentiTab() {
 
   const [deleteTarget, setDeleteTarget] = useState<UserDocument | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [parsingDocId, setParsingDocId] = useState<string | null>(null);
+  const [parsedWorkout, setParsedWorkout] = useState<ParsedWorkoutJson | null>(null);
+  const [showDaysModal, setShowDaysModal] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState<UserDocument | null>(null);
 
   const canSubmitUpload = useMemo(() => {
     return uploadName.trim().length > 0 && uploadCategory && uploadFile;
@@ -86,6 +96,11 @@ export default function DocumentiTab() {
     setIsLoading(true);
     try {
       const data = await userDocumentsService.getDocuments();
+      data.sort((a, b) => {
+        if (a.source === 'pt' && b.source !== 'pt') return -1;
+        if (a.source !== 'pt' && b.source === 'pt') return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
       setDocuments(data);
     } catch (error) {
       console.error('Error loading documents:', error);
@@ -189,6 +204,109 @@ export default function DocumentiTab() {
     }
   };
 
+  const handleSelectDay = (dayIndex: number) => {
+    if (!parsedWorkout || !selectedDoc) return;
+    setShowDaysModal(false);
+
+    const syntheticPlan = {
+      id: `pt-doc-${selectedDoc.id}`,
+      name: selectedDoc.name,
+      workouts: parsedWorkout.giorni.map((giorno) => ({
+        name: giorno.nome,
+        esercizi: giorno.esercizi.map((ex) => ({
+          nome: ex.nome,
+          serie: ex.serie,
+          ripetizioni: ex.ripetizioni,
+          rest: ex.recupero ?? '60s',
+          note: ex.note,
+        })),
+      })),
+    };
+
+    navigate('/esecuzione-workout', {
+      state: { plan: syntheticPlan, dayIndex },
+    });
+  };
+
+  const handleStartWorkout = async (doc: UserDocument) => {
+    if (doc.workout_json && doc.parsing_status === 'done') {
+      setParsedWorkout(doc.workout_json);
+      setSelectedDoc(doc);
+      setShowDaysModal(true);
+      return;
+    }
+
+    setParsingDocId(doc.id);
+    try {
+      if (doc.parsing_status === 'error') {
+        await userDocumentsService.resetParsingStatus(doc.id);
+      }
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        toast.error('Sessione non valida. Effettua di nuovo il login.');
+        return;
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/parse-workout-pdf`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ document_id: doc.id }),
+      });
+
+      const result = (await response.json().catch(() => null)) as
+        | {
+            success?: boolean;
+            cached?: boolean;
+            status?: 'processing';
+            workout_json?: ParsedWorkoutJson;
+            error?: { message?: string };
+          }
+        | null;
+
+      if (result?.status === 'processing') {
+        toast.info('Analisi in corso, riprova tra qualche secondo');
+        return;
+      }
+
+      if (!result?.success) {
+        const message = result?.error?.message ?? 'Errore durante analisi scheda';
+        toast.error(message);
+        return;
+      }
+
+      const workoutJson = result.workout_json;
+      if (!workoutJson || !Array.isArray(workoutJson.giorni) || workoutJson.giorni.length === 0) {
+        toast.error('Impossibile estrarre esercizi dal PDF');
+        return;
+      }
+
+      setDocuments((prev) =>
+        prev.map((item) =>
+          item.id === doc.id
+            ? { ...item, workout_json: workoutJson, parsing_status: 'done', parse_error: null }
+            : item
+        )
+      );
+
+      setParsedWorkout(workoutJson);
+      setSelectedDoc({ ...doc, workout_json: workoutJson, parsing_status: 'done', parse_error: null });
+      setShowDaysModal(true);
+    } catch (error) {
+      console.error('Error parsing workout PDF:', error);
+      toast.error('Errore durante analisi scheda');
+    } finally {
+      setParsingDocId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -245,12 +363,44 @@ export default function DocumentiTab() {
                     >
                       {DOCUMENT_CATEGORY_LABELS[doc.category]}
                     </span>
+                    {doc.source === 'pt' && (
+                      <span
+                        className="rounded-full px-2 py-0.5 text-[10px]"
+                        style={{ backgroundColor: 'rgba(55, 138, 221, 0.15)', color: '#378ADD' }}
+                      >
+                        Dal tuo PT
+                      </span>
+                    )}
                     <span className="text-xs text-[#8A8A96]">
                       {userDocumentsService.formatFileSize(doc.file_size)}
                     </span>
                     <span className="text-xs text-[#8A8A96]">•</span>
                     <span className="text-xs text-[#8A8A96]">{formatDate(doc.created_at)}</span>
                   </div>
+                  {doc.category === 'scheda_pt' && (
+                    <Button
+                      type="button"
+                      onClick={() => void handleStartWorkout(doc)}
+                      disabled={parsingDocId === doc.id}
+                      className={`mt-2 w-fit rounded-lg px-3 py-1 text-xs font-medium flex items-center gap-1.5 ${
+                        parsingDocId === doc.id
+                          ? 'border border-[#EEBA2B]/50 text-[#EEBA2B]/50 bg-transparent hover:bg-transparent'
+                          : 'border border-[#EEBA2B] text-[#EEBA2B] bg-transparent hover:bg-[#EEBA2B]/10'
+                      }`}
+                    >
+                      {parsingDocId === doc.id ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Analisi...
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3 h-3" />
+                          Inizia allenamento
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -263,14 +413,16 @@ export default function DocumentiTab() {
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleOpenRename(doc)}
-                  className="text-[#8A8A96] hover:text-[#F0EDE8] hover:bg-white/10"
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                {doc.source !== 'pt' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleOpenRename(doc)}
+                    className="text-[#8A8A96] hover:text-[#F0EDE8] hover:bg-white/10"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -383,6 +535,28 @@ export default function DocumentiTab() {
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDaysModal} onOpenChange={setShowDaysModal}>
+        <DialogContent className="mx-auto w-[calc(100%-2rem)] bg-[#16161A] border border-white/10">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0EDE8]">Scegli il giorno</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            {parsedWorkout?.giorni.map((giorno, index) => (
+              <button
+                key={index}
+                onClick={() => handleSelectDay(index)}
+                className="w-full text-left p-4 rounded-xl bg-[#16161A] border border-white/10 hover:border-[#EEBA2B]/50 transition-colors"
+              >
+                <div className="text-sm font-medium text-white">{giorno.nome}</div>
+                <div className="text-xs text-[#8A8A96] mt-1">
+                  {giorno.esercizi.length} esercizi
+                </div>
+              </button>
+            ))}
+          </div>
         </DialogContent>
       </Dialog>
 

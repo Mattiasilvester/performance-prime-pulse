@@ -21,6 +21,22 @@ export interface UserDocument {
   file_size: number;
   file_type: string;
   category: DocumentCategory;
+  source?: 'user' | 'pt';
+  workout_json?: {
+    giorni: Array<{
+      nome: string;
+      esercizi: Array<{
+        nome: string;
+        serie: number;
+        ripetizioni: string;
+        recupero: string;
+        note?: string;
+      }>;
+    }>;
+  } | null;
+  parsed_at?: string | null;
+  parsing_status?: 'pending' | 'processing' | 'done' | 'error' | null;
+  parse_error?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -116,6 +132,19 @@ export const userDocumentsService = {
     const { error } = await supabase
       .from('user_documents')
       .update({ name: name.trim(), updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  async resetParsingStatus(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_documents')
+      .update({
+        parsing_status: 'pending',
+        parse_error: null,
+        workout_json: null,
+        parsed_at: null,
+      })
       .eq('id', id);
     if (error) throw error;
   },
