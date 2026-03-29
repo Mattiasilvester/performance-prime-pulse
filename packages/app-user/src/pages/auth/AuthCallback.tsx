@@ -10,9 +10,66 @@ export default function AuthCallback() {
   const handledRef = useRef(false)
 
   useEffect(() => {
-    // detectSessionInUrl: true nel client Supabase gestisce già il token dall'URL.
-    // Non chiamiamo exchangeCodeForSession manualmente per evitare double-consume.
-    // Aspettiamo la sessione tramite onAuthStateChange.
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    const error = params.get('error')
+    const errorDescription = params.get('error_description')
+
+    if (error) {
+      setStatus('error')
+      setTimeout(() => navigate('/auth/login', { replace: true }), 2500)
+      return
+    }
+
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code)
+        .then(async ({ data, error: exchError }) => {
+          if (exchError || !data.session) {
+            setStatus('error')
+            setTimeout(() => navigate('/auth/login', { replace: true }), 2500)
+            return
+          }
+          const session = data.session
+          setStatus('success')
+
+          const { data: { user: freshUser } } = await supabase.auth.getUser()
+
+          const { data: onboardingData, error: onboardingError } = await supabase
+            .from('user_onboarding_responses')
+            .select('user_id')
+            .eq('user_id', session.user.id)
+            .maybeSingle()
+
+          if (onboardingError) {
+            console.error('Errore check onboarding:', onboardingError)
+            navigate('/dashboard', { replace: true })
+            return
+          }
+
+          if (!onboardingData) {
+            const userToCheck = freshUser ?? session.user
+            const isGoogleUser = !!(
+              userToCheck.app_metadata?.provider === 'google' ||
+              userToCheck.identities?.some((id: { provider?: string }) => id.provider === 'google')
+            )
+            if (isGoogleUser) {
+              navigate('/onboarding/google-welcome', { replace: true })
+            } else {
+              navigate('/onboarding?step=0', { replace: true })
+            }
+          } else {
+            navigate('/dashboard', { replace: true })
+          }
+        })
+        .catch(() => {
+          setStatus('error')
+          setTimeout(() => navigate('/auth/login', { replace: true }), 2500)
+        })
+      return
+    }
+
+    // detectSessionInUrl: true nel client Supabase gestisce già il token dall'URL (hash).
+    // Aspettiamo la sessione tramite onAuthStateChange (OAuth Google / conferma email con hash).
 
     let timeout: ReturnType<typeof setTimeout>
 

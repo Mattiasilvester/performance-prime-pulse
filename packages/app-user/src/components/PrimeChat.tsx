@@ -34,6 +34,7 @@ import { type StructuredWorkoutPlan, type StructuredExercise } from '@/services/
 import type { StructuredNutritionPlan } from '@/types/nutritionPlan';
 import { HealthDisclaimer } from '@/components/primebot/HealthDisclaimer';
 import { NutritionPlanCard } from '@/components/primebot/NutritionPlanCard';
+import WorkoutPlanCard from '@/components/primebot/WorkoutPlanCard';
 import { ExerciseGifLink } from '@/components/workouts/ExerciseGifLink';
 import { downloadWorkoutPlanPDF } from '@/utils/pdfExport';
 // ⭐ FIX BUG 3: Import per analisi dolore nel messaggio corrente
@@ -61,6 +62,7 @@ type Msg = {
   workoutPlan?: StructuredWorkoutPlan;
   nutritionPlan?: StructuredNutritionPlan;
   nutritionPlanId?: string;
+  workoutPlanId?: string;
 };
 
 interface PrimeChatProps {
@@ -69,24 +71,33 @@ interface PrimeChatProps {
 
 /** Frasi che escludono la classificazione come richiesta di piano (domande/negazioni) */
 const PLAN_REQUEST_EXCLUSIONS = [
-  'non ',
-  ' non',
-  'senza ',
-  ' cos\'è',
-  'cos\'è ',
-  'cos\'è',
-  ' cosa è',
-  'cosa è ',
-  ' che cos\'è',
-  'che cos\'è ',
+  'cos e',
+  'che cos e',
   'come funziona',
   'mi spieghi',
   'spiegami',
   'informazioni su',
+  'cosa significa',
+  'non voglio',
+  'non mi interessa',
+  'non ho bisogno',
+  'non voglio un piano',
+  'non voglio allenarmi',
 ];
 
+function normalizeIntentText(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[’`]/g, "'")
+    .replace(/'/g, ' ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function containsPlanExclusion(text: string): boolean {
-  const lower = text.toLowerCase();
+  const lower = normalizeIntentText(text);
   return PLAN_REQUEST_EXCLUSIONS.some((ex) => lower.includes(ex));
 }
 
@@ -94,7 +105,8 @@ function containsPlanExclusion(text: string): boolean {
  * Rileva se la richiesta è per un piano di allenamento
  */
 function isWorkoutPlanRequest(text: string): boolean {
-  if (containsPlanExclusion(text)) return false;
+  const normalized = normalizeIntentText(text);
+  if (containsPlanExclusion(normalized)) return false;
   const keywords = [
     'piano',
     'programma',
@@ -111,17 +123,17 @@ function isWorkoutPlanRequest(text: string): boolean {
     'voglio un piano',
     'allenarmi',
   ];
-  const textLower = text.toLowerCase();
-  return keywords.some((keyword) => textLower.includes(keyword));
+  return keywords.some((keyword) => normalized.includes(keyword));
 }
 
 function isWorkoutPlanRequestExplicit(text: string): boolean {
-  if (containsPlanExclusion(text)) return false;
+  const normalized = normalizeIntentText(text);
+  if (containsPlanExclusion(normalized)) return false;
   const NUTRITION_SIGNALS = [
     'nutrizionale', 'nutrizione', 'alimentare',
     'alimentazione', 'dieta', 'pasti', 'mangiare',
   ];
-  if (NUTRITION_SIGNALS.some((n) => text.toLowerCase().includes(n))) return false;
+  if (NUTRITION_SIGNALS.some((n) => normalized.includes(n))) return false;
   const keywords = [
     'piano di allenamento',
     'piano allenamento',
@@ -154,12 +166,28 @@ function isWorkoutPlanRequestExplicit(text: string): boolean {
     'dammi un piano',
     'dammi un programma',
     'una scheda',
+    'puoi farmi',
+    'potresti farmi',
+    'puoi crearmi',
+    'potresti crearmi',
+    'ho bisogno di allenarmi',
+    'ho bisogno di muovermi',
+    'voglio ricominciare ad allenarmi',
+    'devo allenarmi',
+    'devo iniziare ad allenarmi',
+    'aiutami ad allenarmi',
+    'come mi alleno',
+    'da dove inizio',
+    'da dove comincio',
+    'voglio mettermi in forma',
+    'voglio rimettermi in forma',
   ];
-  return keywords.some((k) => text.toLowerCase().includes(k));
+  return keywords.some((k) => normalized.includes(k));
 }
 
 function isNutritionPlanRequest(text: string): boolean {
-  if (containsPlanExclusion(text)) return false;
+  const normalized = normalizeIntentText(text);
+  if (containsPlanExclusion(normalized)) return false;
   const keywords = [
     'piano alimentare',
     'piano nutrizionale',
@@ -191,14 +219,37 @@ function isNutritionPlanRequest(text: string): boolean {
     'ho bisogno di un piano alimentare',
     'cosa devo mangiare',
     'come devo mangiare',
+    'cosa mangio',
+    'come mangio',
+    'aiutami a mangiare',
+    'voglio mangiare meglio',
+    'voglio migliorare la mia alimentazione',
+    'devo seguire una dieta',
+    'puoi farmi una dieta',
+    'potresti farmi una dieta',
+    'cosa dovrei mangiare',
+    'come dovrei mangiare',
+    'mi aiuti con l alimentazione',
+    'voglio perdere peso mangiando',
+    'voglio dimagrire con la dieta',
   ];
-  return keywords.some((k) => text.toLowerCase().includes(k));
+  return keywords.some((k) => normalized.includes(k));
 }
 
 function isGenericPlanRequest(text: string): boolean {
+  const normalized = normalizeIntentText(text);
   if (isWorkoutPlanRequestExplicit(text)) return false;
   if (isNutritionPlanRequest(text)) return false;
-  return isWorkoutPlanRequest(text);
+  const ambiguousKeywords = [
+    'voglio dimagrire',
+    'voglio perdere peso',
+    'voglio aumentare la massa',
+    'voglio mettere su massa',
+    'voglio tonificarmi',
+    'voglio tonificare',
+  ];
+  if (ambiguousKeywords.some((k) => normalized.includes(k))) return true;
+  return isWorkoutPlanRequest(normalized);
 }
 
 function parseAllergiesFromText(text: string): string[] {
@@ -325,6 +376,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
     plan?: StructuredWorkoutPlan;
     nutritionPlan?: StructuredNutritionPlan;
     nutritionPlanId?: string;
+    workoutPlanId?: string;
     planType: 'workout' | 'nutrition';
     hasExistingLimitations?: boolean;
     hasAnsweredBefore?: boolean;
@@ -374,6 +426,7 @@ export default function PrimeChat({ isModal = false }: PrimeChatProps) {
   const [waitingForPainDetails, setWaitingForPainDetails] = useState(false);
   const [tempPainBodyPart, setTempPainBodyPart] = useState<string | null>(null);
   const [quickRepliesVisible, setQuickRepliesVisible] = useState(true);
+  const [disclaimerCollapsed, setDisclaimerCollapsed] = useState(false);
 
   // P14: Cooldown pain check — zone già controllate in questa sessione (no repeat)
   const [painZonesCheckedInSession, setPainZonesCheckedInSession] = useState<Set<string>>(new Set());
@@ -2354,10 +2407,22 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
               })),
               duration: planResponse.plan.duration_minutes,
             };
+            const msgId = crypto.randomUUID();
             if (userId) {
-              saveWorkoutPlan(userId, savePayload).catch(() => {
-                toast.error('Salvataggio piano fallito. Usa "Salva questo piano" per riprovare.');
-              });
+              saveWorkoutPlan(userId, savePayload)
+                .then(result => {
+                  const planId = (result.data as { id: string } | undefined)?.id;
+                  if (planId) {
+                    setMsgs(prev => prev.map(msg =>
+                      msg.id === msgId
+                        ? { ...msg, workoutPlanId: planId }
+                        : msg
+                    ));
+                  }
+                })
+                .catch(() => {
+                  toast.error('Errore nel salvataggio del piano');
+                });
             }
             const goToMyPlansAction: ParsedAction = {
               type: 'navigate' as const,
@@ -2365,7 +2430,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
               payload: { path: '/i-miei-piani' },
             };
             const botMessage: Msg = {
-              id: crypto.randomUUID(),
+              id: msgId,
               role: 'bot' as const,
               text: `Ecco il tuo piano di allenamento personalizzato! 💪`,
               workoutPlan: planResponse.plan,
@@ -2459,9 +2524,18 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       <div className={`w-full h-full flex flex-col rounded-2xl border border-[#DAA520] bg-black text-white ${hasStartedChat ? 'min-h-[700px]' : 'min-h-[600px] mb-4 pb-2'}`}>
         {/* Landing Page */}
         <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-8">
-          {/* Icona fulmine gialla in cerchio */}
-          <div className="w-24 h-24 bg-[#EEBA2B] rounded-full flex items-center justify-center">
-            <svg className="w-12 h-12 text-black" fill="currentColor" viewBox="0 0 24 24">
+          {/* Icona fulmine in cerchio giallo */}
+          <div style={{
+            width: 112,
+            height: 112,
+            background: '#EEBA2B',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px'
+          }}>
+            <svg className="text-black" fill="currentColor" viewBox="0 0 24 24" style={{ width: 56, height: 56 }}>
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
             </svg>
           </div>
@@ -2517,22 +2591,27 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             Inizia Chat con PrimeBot
           </button>
           
-          {/* 3 Card Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl">
-            <div className="bg-gray-800 border border-gray-600 rounded-xl p-4 text-center">
+          {/* 4 Card Features */}
+          <div className="grid grid-cols-2 gap-3 w-full max-w-2xl">
+            <div className="bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
               <div className="text-2xl mb-2">💪</div>
-              <h3 className="font-semibold text-[#EEBA2B] mb-1">Allenamenti</h3>
-              <p className="text-sm text-gray-400">Workout personalizzati</p>
+              <h3 className="text-[#EEBA2B] text-xs font-semibold">Allenamenti</h3>
+              <p className="text-[#8A8A96] text-[10px] mt-1">Workout personalizzati</p>
             </div>
-            <div className="bg-gray-800 border border-gray-600 rounded-xl p-4 text-center">
+            <div className="bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
               <div className="text-2xl mb-2">🎯</div>
-              <h3 className="font-semibold text-[#EEBA2B] mb-1">Obiettivi</h3>
-              <p className="text-sm text-gray-400">Raggiungi i tuoi goal</p>
+              <h3 className="text-[#EEBA2B] text-xs font-semibold">Obiettivi</h3>
+              <p className="text-[#8A8A96] text-[10px] mt-1">Raggiungi i tuoi goal</p>
             </div>
-            <div className="bg-gray-800 border border-gray-600 rounded-xl p-4 text-center">
+            <div className="bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
               <div className="text-2xl mb-2">📊</div>
-              <h3 className="font-semibold text-[#EEBA2B] mb-1">Progressi</h3>
-              <p className="text-sm text-gray-400">Monitora i risultati</p>
+              <h3 className="text-[#EEBA2B] text-xs font-semibold">Progressi</h3>
+              <p className="text-[#8A8A96] text-[10px] mt-1">Monitora i risultati</p>
+            </div>
+            <div className="bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
+              <div className="text-2xl mb-2">🥗</div>
+              <h3 className="text-[#EEBA2B] text-xs font-semibold">Nutrizione</h3>
+              <p className="text-[#8A8A96] text-[10px] mt-1">Piani alimentari</p>
             </div>
           </div>
         </div>
@@ -2568,22 +2647,68 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
         <div ref={scrollRef} className="flex-1 overflow-y-auto">
           <div className="px-4 py-16 space-y-4">
             {msgs.map(m => (
-              <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
-                <div className={`px-4 py-3 rounded-2xl ${
-                  m.role === 'user' 
-                    ? 'bg-[#EEBA2B] text-black'
-                    : (m as Msg).isDisclaimer 
-                      ? 'bg-red-900 text-red-100 border border-red-600 text-sm font-semibold'
-                      : 'bg-gray-800 text-white border border-gray-600'
-                }`}>
+              <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto w-fit' : 'flex items-end gap-2 mr-auto'}`}>
+                {m.role !== 'user' && (
+                  <div style={{
+                    width: 28,
+                    height: 28,
+                    background: '#EEBA2B',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    marginBottom: 4
+                  }}>
+                    <svg className="text-black" fill="currentColor" viewBox="0 0 24 24" style={{ width: 16, height: 16 }}>
+                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                  </div>
+                )}
+                <div
+                  className={`px-4 py-3 ${
+                    m.role === 'user' 
+                      ? 'bg-[#EEBA2B] text-black'
+                      : (m as Msg).isDisclaimer 
+                        ? 'bg-[#1a0808] border border-red-500/40 rounded-xl p-3 cursor-pointer'
+                        : 'text-white'
+                  }`}
+                  style={m.role === 'user' ? { borderRadius: '16px 0 4px 16px' } : !(m as Msg).isDisclaimer ? { borderRadius: '0 16px 16px 4px', borderLeft: '2px solid #EEBA2B', background: '#16161A' } : undefined}
+                >
                   {(m as Msg).isDisclaimer && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <span>⚠️ AVVISO IMPORTANTE</span>
+                    <>
+                      <div
+                        onClick={() => setDisclaimerCollapsed(c => !c)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: disclaimerCollapsed ? 0 : 6
+                        }}
+                      >
+                        <span style={{ fontSize: 10, fontWeight: 600, color: '#ef4444', letterSpacing: '0.5px' }}>
+                          Avviso importante
+                        </span>
+                        <span style={{ fontSize: 10, color: '#ef4444' }}>
+                          {disclaimerCollapsed ? '▼' : '▲'}
+                        </span>
+                      </div>
+                      {!disclaimerCollapsed && (
+                        <div style={{
+                          color: '#8A8A96',
+                          lineHeight: 1.6,
+                          fontSize: 14
+                        }}>
+                          {renderFormattedMessage(m.text)}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {!(m as Msg).isDisclaimer && (
+                    <div className="whitespace-pre-wrap">
+                      {renderFormattedMessage(m.text)}
                     </div>
                   )}
-                  <div className="whitespace-pre-wrap">
-                    {renderFormattedMessage(m.text)}
-                  </div>
                   
                   {/* Bottone di navigazione per messaggi bot */}
                   {m.role === 'bot' && m.navigation && (
@@ -2598,99 +2723,11 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                   
                   {/* Card Piano Allenamento */}
                   {m.role === 'bot' && m.workoutPlan && (
-                    <div className="mt-4 bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-[#EEBA2B] rounded-xl p-4">
-                      <h3 className="text-xl font-bold text-[#EEBA2B] mb-2">
-                        {m.workoutPlan.name}
-                      </h3>
-                      {m.workoutPlan.description && (
-                        <p className="text-gray-300 text-sm mb-3">{m.workoutPlan.description}</p>
-                      )}
-                      
-                      {/* Consigli Terapeutici - Mostra PRIMA degli esercizi se presenti */}
-                      {m.workoutPlan.therapeuticAdvice && m.workoutPlan.therapeuticAdvice.length > 0 && (
-                        <div className="bg-amber-900/30 border border-amber-500/50 rounded-lg p-4 mb-4">
-                          <h4 className="text-amber-400 font-semibold mb-2 flex items-center gap-2">
-                            💡 Consigli per il tuo dolore
-                          </h4>
-                          <ul className="space-y-2 text-sm text-gray-300">
-                            {m.workoutPlan.therapeuticAdvice.map((advice: string, index: number) => (
-                              <li key={index} className="flex items-start gap-2">
-                                <span className="text-amber-400 mt-0.5">•</span>
-                                <span>{advice}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {/* Note di Sicurezza */}
-                      {m.workoutPlan.safetyNotes && (
-                        <div className="bg-blue-900/30 border border-blue-500/50 rounded-lg p-3 mb-4">
-                          <p className="text-blue-300 text-sm">
-                            <span className="font-semibold">ℹ️ Nota di sicurezza:</span> {m.workoutPlan.safetyNotes}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {/* Info Piano */}
-                      <div className="flex gap-4 mb-4 text-sm text-gray-400">
-                        <span>⏱️ {m.workoutPlan.duration_minutes} min</span>
-                        <span>💪 {m.workoutPlan.exercises.length} esercizi</span>
-                        <span>📊 {m.workoutPlan.difficulty}</span>
-                      </div>
-                      
-                      {/* Lista Esercizi */}
-                      <div className="space-y-2 mb-4">
-                        {m.workoutPlan.exercises.map((ex, idx) => (
-                          <div key={idx} className="bg-gray-700/50 rounded-lg p-3 flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-white font-medium">{ex.name}</span>
-                              </div>
-                              <div className="text-gray-300 text-sm">
-                                <span className="font-semibold text-[#EEBA2B]">{ex.sets}x{ex.reps}</span>
-                                {' • '}
-                                <span>Recupero: {ex.rest_seconds}s</span>
-                              </div>
-                              {ex.notes && (
-                                <p className="text-gray-400 text-xs mt-1 italic">{ex.notes}</p>
-                              )}
-                            </div>
-                            {/* Bottone GIF a destra */}
-                            <div className="ml-3 flex-shrink-0">
-                              <ExerciseGifLink exerciseName={ex.name} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Warmup e Cooldown */}
-                      {(m.workoutPlan.warmup || m.workoutPlan.cooldown) && (
-                        <div className="space-y-2 mb-4 text-sm">
-                          {m.workoutPlan.warmup && (
-                            <div className="bg-blue-900/30 rounded-lg p-2">
-                              <span className="text-blue-300 font-semibold">🔥 Warmup:</span>
-                              <p className="text-gray-300 mt-1">{m.workoutPlan.warmup}</p>
-                            </div>
-                          )}
-                          {m.workoutPlan.cooldown && (
-                            <div className="bg-green-900/30 rounded-lg p-2">
-                              <span className="text-green-300 font-semibold">🧘 Cooldown:</span>
-                              <p className="text-gray-300 mt-1">{m.workoutPlan.cooldown}</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      <div className="mt-4 pt-4 border-t border-gray-600">
-                        <button
-                          type="button"
-                          onClick={() => downloadWorkoutPlanPDF(m.workoutPlan!)}
-                          className="flex items-center gap-2 rounded-lg bg-[#EEBA2B] px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-yellow-400"
-                        >
-                          📥 Scarica PDF
-                        </button>
-                      </div>
-                    </div>
+                    <WorkoutPlanCard
+                      plan={m.workoutPlan}
+                      planId={m.workoutPlanId}
+                      userId={userId ?? ''}
+                    />
                   )}
 
                   {/* Card Piano Nutrizionale */}
@@ -2753,9 +2790,10 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                   disclaimerType={pendingPlan.planType === 'nutrition' ? 'nutrition_plan' : 'workout_plan'}
                   onAccept={async () => {
                     setShowPlanDisclaimer(false);
+                    let saveResult: Awaited<ReturnType<typeof saveWorkoutPlan>> | undefined;
                     if (pendingPlan.planType === 'workout' && pendingPlan.plan && userId) {
                       try {
-                        await saveWorkoutPlan(userId, {
+                        saveResult = await saveWorkoutPlan(userId, {
                           name: pendingPlan.plan.name,
                           workout_type: pendingPlan.plan.workout_type,
                           exercises: pendingPlan.plan.exercises.map((ex: StructuredExercise) => ({
@@ -2790,6 +2828,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                           role: 'bot' as const,
                           text: 'Ecco il tuo piano di allenamento personalizzato! 💪',
                           workoutPlan: pendingPlan.plan,
+                          workoutPlanId: (saveResult?.data as { id: string } | undefined)?.id,
                           actions: [...(pendingPlan.actions ?? []), goToMyPlansAction],
                         };
                     setMsgs(m => [...m, botMessage]);
@@ -2808,14 +2847,34 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             )}
             
             {loading && (
-              <div className="mr-auto px-4 py-3 rounded-2xl bg-gray-800 text-white border border-gray-600">
-                <div className="flex items-center space-x-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="flex items-end gap-2 mr-auto max-w-[85%]">
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  background: '#EEBA2B',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  marginBottom: 4
+                }}>
+                  <svg className="text-black" fill="currentColor" viewBox="0 0 24 24" style={{ width: 16, height: 16 }}>
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                </div>
+                <div
+                  className="px-4 py-3 text-white"
+                  style={{ borderRadius: '0 16px 16px 4px', borderLeft: '2px solid #EEBA2B', background: '#16161A' }}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                    <span>PrimeBot sta scrivendo…</span>
                   </div>
-                  <span>PrimeBot sta scrivendo…</span>
                 </div>
               </div>
             )}
@@ -2838,12 +2897,12 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
               )}
             </button>
             {quickRepliesVisible && (
-              <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="flex flex-nowrap overflow-x-auto gap-2 px-4 pb-2 scrollbar-none">
                 {questionsToShow.map(q => (
                   <button
                     key={q}
                     onClick={() => { setInput(q); send(q); }}
-                    className="border border-[#DAA520] hover:bg-[#EEBA2B]/10 bg-gray-800 text-white text-sm px-3 py-2 rounded-xl transition-colors"
+                    className="flex-shrink-0 bg-[#16161A] border border-[#2a2a2e] hover:border-[#EEBA2B] text-[#EEBA2B] rounded-full px-3 py-2 text-[11px] font-medium transition-colors whitespace-nowrap"
                   >
                     {q}
                   </button>
@@ -2889,27 +2948,68 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       >
         <div className="space-y-4">
           {msgs.map(m => (
-            <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
+            <div key={m.id} className={`max-w-[85%] ${m.role === 'user' ? 'ml-auto w-fit' : 'flex items-end gap-2 mr-auto'}`}>
+              {m.role !== 'user' && (
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  background: '#EEBA2B',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  marginBottom: 4
+                }}>
+                  <svg className="text-black" fill="currentColor" viewBox="0 0 24 24" style={{ width: 16, height: 16 }}>
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                </div>
+              )}
               <div
-                className={`px-4 py-3 rounded-2xl ${
+                className={`px-4 py-3 ${
                   m.role === 'user' 
                     ? 'bg-[#EEBA2B] text-black' // Giallo per utente
                     : (m as Msg).isDisclaimer 
-                      ? 'bg-red-900 text-red-100 border border-red-600 text-sm font-semibold' // Rosso per disclaimer
-                      : 'bg-gray-800 text-white border border-gray-600' // Grigio scuro per bot
+                      ? 'bg-[#1a0808] border border-red-500/40 rounded-xl p-3 cursor-pointer' // Disclaimer collassabile
+                      : 'text-white' // Bubble bot
                 }`}
+                style={m.role === 'user' ? { borderRadius: '16px 0 4px 16px' } : !(m as Msg).isDisclaimer ? { borderRadius: '0 16px 16px 4px', borderLeft: '2px solid #EEBA2B', background: '#16161A' } : undefined}
               >
-                <div className="whitespace-pre-wrap">
-                  {(m as Msg).isDisclaimer && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-red-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-red-200 font-bold">⚠️ AVVISO IMPORTANTE</span>
+                {(m as Msg).isDisclaimer && (
+                  <>
+                    <div
+                      onClick={() => setDisclaimerCollapsed(c => !c)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: disclaimerCollapsed ? 0 : 6
+                      }}
+                    >
+                      <span style={{ fontSize: 10, fontWeight: 600, color: '#ef4444', letterSpacing: '0.5px' }}>
+                        Avviso importante
+                      </span>
+                      <span style={{ fontSize: 10, color: '#ef4444' }}>
+                        {disclaimerCollapsed ? '▼' : '▲'}
+                      </span>
                     </div>
-                  )}
-                  {renderFormattedMessage(m.text)}
-                </div>
+                    {!disclaimerCollapsed && (
+                      <div style={{
+                        color: '#8A8A96',
+                        lineHeight: 1.6,
+                        fontSize: 14
+                      }}>
+                        {renderFormattedMessage(m.text)}
+                      </div>
+                    )}
+                  </>
+                )}
+                {!(m as Msg).isDisclaimer && (
+                  <div className="whitespace-pre-wrap">
+                    {renderFormattedMessage(m.text)}
+                  </div>
+                )}
                 
                 {/* Timestamp sotto ogni messaggio */}
                 <div className={`text-xs mt-2 ${
@@ -2933,14 +3033,34 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
             </div>
           ))}
           {loading && (
-            <div className="mr-auto px-4 py-3 rounded-2xl animate-pulse bg-gray-800 text-white border border-gray-600">
-              <div className="flex items-center space-x-2">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="flex items-end gap-2 mr-auto max-w-[85%]">
+              <div style={{
+                width: 28,
+                height: 28,
+                background: '#EEBA2B',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                marginBottom: 4
+              }}>
+                <svg className="text-black" fill="currentColor" viewBox="0 0 24 24" style={{ width: 16, height: 16 }}>
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <div
+                className="px-4 py-3 text-white animate-pulse"
+                style={{ borderRadius: '0 16px 16px 4px', borderLeft: '2px solid #EEBA2B', background: '#16161A' }}
+              >
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-[#EEBA2B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span>PrimeBot sta scrivendo…</span>
                 </div>
-                <span>PrimeBot sta scrivendo…</span>
               </div>
             </div>
           )}
@@ -2948,7 +3068,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
       </div>
 
       <div className="p-6 border-t border-[#DAA520]">
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="flex flex-nowrap overflow-x-auto gap-2 px-4 pb-2 scrollbar-none">
           {questionsToShow.map(q => (
             <button
               key={q}
@@ -2956,7 +3076,7 @@ Oppure dimmi **"procedi"** se vuoi generare il piano con le preferenze attuali.`
                 setInput(q);
                 send(q);
               }}
-              className="border border-[#DAA520] hover:bg-[#EEBA2B]/10 bg-gray-800 text-white text-sm px-4 py-3 rounded-2xl transition-colors"
+              className="flex-shrink-0 bg-[#16161A] border border-[#2a2a2e] hover:border-[#EEBA2B] text-[#EEBA2B] rounded-full px-3 py-2 text-[11px] font-medium transition-colors whitespace-nowrap"
             >
               {q}
             </button>

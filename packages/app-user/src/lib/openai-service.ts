@@ -26,6 +26,7 @@ import {
   detectBodyPartFromMessage
 } from '@/data/bodyPartExclusions';
 import { getUserPains } from '@/services/painTrackingService';
+import { buildPrimebotNotesBlock } from '@/services/notesService';
 
 /** Risposta API OpenAI (successo) */
 interface OpenAIResponse {
@@ -120,6 +121,14 @@ export const getAIResponse = async (
       await updatePrimeBotPreferences(userId, userContext);
     } catch (contextError) {
       console.warn('⚠️ Errore recupero contesto utente (continuo senza personalizzazione):', contextError);
+    }
+
+    // Carica note visibili a PrimeBot (silent fail)
+    let primebotNotesBlock = '';
+    try {
+      primebotNotesBlock = await buildPrimebotNotesBlock(userId);
+    } catch {
+      primebotNotesBlock = '';
     }
 
     // Recupera la cronologia conversazione se abbiamo un sessionId
@@ -278,6 +287,10 @@ ${nomeUtente ? `- Chiama l'utente per nome (${nomeUtente}) quando è naturale fa
     // Aggiungi contesto utente al system prompt se disponibile
     if (userContextString) {
       systemPrompt += `\n\nCONTESTO UTENTE:\n${userContextString}\n\nIMPORTANTE: Personalizza le tue risposte in base ai dati dell'utente sopra. Usa il suo nome quando appropriato e adatta consigli/allenamenti al suo livello, obiettivi e attrezzatura disponibile.`;
+    }
+
+    if (primebotNotesBlock) {
+      systemPrompt += primebotNotesBlock;
     }
 
     const onboardingCompleted = userContext?.onboarding_completed ?? false;
@@ -582,6 +595,14 @@ REGOLE OBBLIGATORIE:
       ? `Nota di sicurezza: Piano adattato per: ${limitationsCheck.medicalConditions}. Consulta sempre il tuo medico prima di iniziare qualsiasi programma di allenamento.`
       : null;
 
+    // Carica note visibili a PrimeBot (silent fail)
+    let primebotNotesBlock = '';
+    try {
+      primebotNotesBlock = await buildPrimebotNotesBlock(userId);
+    } catch {
+      primebotNotesBlock = '';
+    }
+
     // System Prompt SPECIFICO per piani strutturati con VARIAZIONE OBBLIGATORIA
     const workoutPlanSystemPrompt = `IMPORTANTE: Rispondi SEMPRE e SOLO in italiano. Mai usare inglese. Tutti i nomi degli esercizi devono essere in italiano. Il JSON deve contenere solo testo italiano.
 
@@ -748,6 +769,8 @@ ${limitationsCheck.hasExistingLimitations && therapeuticAdvice.length > 0 ? `
 IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli terapeutici e "safetyNotes" con una nota di sicurezza.
 ` : ''}
 
+${primebotNotesBlock}
+
 ⚠️ IMPORTANTE: Se non rispondi con JSON valido, la risposta verrà scartata.`;
 
     // Log finale per debug
@@ -787,6 +810,7 @@ IMPORTANTE: Il JSON DEVE includere il campo "therapeuticAdvice" con i consigli t
         body: JSON.stringify({
           messages,
           model: 'gpt-4o-mini',
+          max_tokens: 2000,
         }),
       });
       
@@ -872,6 +896,7 @@ ${workoutPlanSystemPrompt}
             body: JSON.stringify({
               messages: retryMessages,
               model: 'gpt-4o-mini',
+              max_tokens: 2000,
             }),
           });
           
@@ -1186,6 +1211,14 @@ Non usare markdown, asterischi o caratteri speciali.
 `;
   }
 
+  // Carica note visibili a PrimeBot (silent fail)
+  let primebotNotesBlock = '';
+  try {
+    primebotNotesBlock = await buildPrimebotNotesBlock(userId);
+  } catch {
+    primebotNotesBlock = '';
+  }
+
   const nutritionSystemPrompt = `Sei PrimeBot, esperto nutrizionista AI di Performance Prime.
 L'utente ha richiesto un piano alimentare personalizzato.
 
@@ -1245,7 +1278,9 @@ FORMATO RISPOSTA — rispondi SOLO con JSON valido, nessun testo prima o dopo:
   ],
   "consigli_generali": ["...", "...", "..."],
   "note_finali": "Consulta un nutrizionista..."
-}`;
+}
+
+${primebotNotesBlock}`;
 
   const maxTokens = durationDays <= 3 ? 3000 : 4500;
 

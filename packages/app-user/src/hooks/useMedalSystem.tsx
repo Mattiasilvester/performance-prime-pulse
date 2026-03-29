@@ -24,6 +24,12 @@ export const useMedalSystem = () => {
     target: 0
   });
 
+  const [pendingUnlocks, setPendingUnlocks] = useState<Medal[]>([]);
+
+  const dismissCurrentMedal = useCallback(() => {
+    setPendingUnlocks(prev => prev.slice(1));
+  }, []);
+
   // Sblocco automatico medaglie da totalWorkouts (first_step, iron_will, century_club)
   const syncEarnedMedalsFromWorkouts = useCallback((system: MedalSystem): MedalSystem | null => {
     const rawWorkouts = localStorage.getItem('pp_total_workouts');
@@ -290,6 +296,7 @@ export const useMedalSystem = () => {
       const existingIds = new Set(prev.earnedMedals.map(m => m.id));
       const toAdd = medals.filter(m => !existingIds.has(m.id));
       if (toAdd.length === 0) return prev;
+      setPendingUnlocks(p => [...p, ...toAdd]);
       const updated = {
         ...prev,
         earnedMedals: [...prev.earnedMedals, ...toAdd],
@@ -309,5 +316,7 @@ export const useMedalSystem = () => {
     recordWorkoutCompletion,
     closeChallengeModal,
     addEarnedMedals,
+    pendingUnlocks,
+    dismissCurrentMedal,
   };
 };

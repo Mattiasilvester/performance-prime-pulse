@@ -5,12 +5,17 @@ import {
   useMemo,
   type ReactNode,
 } from 'react';
+import type { Medal } from '@/types/medalSystem';
 import { useMedalSystem } from '@/hooks/useMedalSystem';
 import { computeUserRank, type UserRank } from '@/hooks/useUserRank';
 import { useAuth } from '@/hooks/useAuth';
 import { checkAndUnlockMedals } from '@/services/medalCheckService';
 
-type MedalSystemContextValue = ReturnType<typeof useMedalSystem> & { rank: UserRank };
+type MedalSystemContextValue = ReturnType<typeof useMedalSystem> & {
+  rank: UserRank;
+  pendingUnlocks: Medal[];
+  dismissCurrentMedal: () => void;
+};
 
 const MedalSystemContext = createContext<MedalSystemContextValue | null>(null);
 
@@ -38,7 +43,12 @@ export function MedalSystemProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<MedalSystemContextValue>(
-    () => ({ ...medalSystemValue, rank }),
+    () => ({
+      ...medalSystemValue,
+      rank,
+      pendingUnlocks: medalSystemValue.pendingUnlocks,
+      dismissCurrentMedal: medalSystemValue.dismissCurrentMedal,
+    }),
     [medalSystemValue, rank]
   );
 

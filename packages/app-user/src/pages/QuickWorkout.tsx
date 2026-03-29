@@ -13,7 +13,7 @@ import { ExerciseGifLink } from '@/components/workouts/ExerciseGifLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { completeWorkout as saveWorkoutToDiary } from '@/services/diaryService';
+import { completeWorkout as saveWorkoutToDiary, getUserHasLimitations } from '@/services/diaryService';
 
 // Struttura dati del circuito workout (invariata)
 interface Exercise {
@@ -402,6 +402,8 @@ const QuickWorkout = () => {
     const totalSeconds = exercises.reduce((acc, ex) => acc + ex.duration + ex.rest, 0);
     const durationMinutes = Math.max(1, Math.floor(totalSeconds / 60));
 
+    const hasLimitations = await getUserHasLimitations(user.id);
+
     const workoutDataForDiary = {
       workout_id: null,
       workout_source: 'quick' as const,
@@ -418,6 +420,7 @@ const QuickWorkout = () => {
       })),
       completed_at: new Date().toISOString(),
       saved_at: new Date().toISOString(),
+      has_limitations: hasLimitations,
     };
 
     try {

@@ -9,7 +9,7 @@ import { useMedalSystemContext } from '@/contexts/MedalSystemContext';
 import { checkAndUnlockMedals } from '@/services/medalCheckService';
 import { trackWorkoutForChallenge } from '@/utils/challengeTracking';
 import { updateWorkoutStats } from '@/services/workoutStatsService';
-import { completeWorkout as saveWorkoutToDiary } from '@/services/diaryService';
+import { completeWorkout as saveWorkoutToDiary, getUserHasLimitations } from '@/services/diaryService';
 import { toast } from 'sonner';
 import { parseTimeToSeconds, parseRestTime } from '@/utils/workoutUtils';
 import { ChallengeNotification } from '@/components/ui/ChallengeNotification';
@@ -436,6 +436,8 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
     if (customWorkout) workoutSource = 'custom_workouts';
     else if (generatedWorkout) workoutSource = 'workout_plans';
 
+    const hasLimitations = await getUserHasLimitations(user.id);
+
     try {
       await saveWorkoutToDiary({
         workout_id: null,
@@ -453,6 +455,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
         })),
         completed_at: new Date().toISOString(),
         saved_at: new Date().toISOString(),
+        has_limitations: hasLimitations,
       });
     } catch (err) {
       console.error('Errore salvataggio diary:', err);
@@ -503,7 +506,7 @@ export const ActiveWorkout = ({ workoutId, generatedWorkout, customWorkout, onCl
     toast.success('🏆 Allenamento completato! Ottimo lavoro!');
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'instant' });
-      navigate('/diary', { state: { justCompleted: true, workoutName: workoutTitle || workoutTitleForSave } });
+      navigate('/diary', { state: { justCompleted: true, workoutName: (workoutTitle || workoutTitleForSave) ?? '' } });
     }, 800);
     setIsSaving(false);
   }, [user, currentWorkout, customWorkout, generatedWorkout, workoutTitle, workoutType, workoutId, completedExercises, isSaving, recordWorkoutCompletion, navigate, medalSystem, addEarnedMedals]);

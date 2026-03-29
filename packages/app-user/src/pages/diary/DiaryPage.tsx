@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps -- tipi entry diary; loadEntries stabile */
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +12,9 @@ import { WorkoutCard } from "@/components/diary/WorkoutCard";
 import { NotesModal } from "@/components/diary/NotesModal";
 import { WorkoutDetailsModal } from "@/components/diary/WorkoutDetailsModal";
 import { DiaryFilters } from "@/components/diary/DiaryFilters";
-import { StatsWidget } from "@/components/diary/StatsWidget";
+import { useStatsData } from "@/hooks/useStatsData";
+import { useAuth } from "@/hooks/useAuth";
+import { createNote } from "@/services/notesService";
 
 // Service
 import {
@@ -27,7 +29,20 @@ type FilterType = 'all' | 'saved' | 'completed';
 
 const DiaryPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { metrics, weeklyStats, loading: statsLoading } = useStatsData();
+  const { user } = useAuth();
+
+  const justCompleted =
+    (location.state as { justCompleted?: boolean; workoutName?: string } | null)?.justCompleted ?? false;
+  const completedWorkoutName =
+    (location.state as { justCompleted?: boolean; workoutName?: string } | null)?.workoutName ?? "";
+
+  const [showQuickNote, setShowQuickNote] = useState(justCompleted);
+  const [quickNoteContent, setQuickNoteContent] = useState("");
+  const [quickNotePrimebot, setQuickNotePrimebot] = useState(false);
+  const [quickNoteSaving, setQuickNoteSaving] = useState(false);
 
   // State
   const [filter, setFilter] = useState<FilterType>('all');
@@ -92,11 +107,11 @@ const DiaryPage = () => {
 
       let label: string;
       if (isSameDay(date, today)) {
-        label = `📅 Oggi - ${format(date, 'd MMMM yyyy', { locale: it })}`;
+        label = `Oggi - ${format(date, 'd MMMM yyyy', { locale: it })}`;
       } else if (isSameDay(date, yesterday)) {
-        label = `📅 Ieri - ${format(date, 'd MMMM yyyy', { locale: it })}`;
+        label = `Ieri - ${format(date, 'd MMMM yyyy', { locale: it })}`;
       } else {
-        label = `📅 ${format(date, 'd MMMM yyyy', { locale: it })}`;
+        label = format(date, 'd MMMM yyyy', { locale: it });
       }
 
       if (!groups[label]) {
@@ -222,28 +237,18 @@ const DiaryPage = () => {
     }
   };
 
-  const handleDetails = async (id: string) => {
-    try {
-      // Carica entry completa con exercises
-      const entry = await getDiaryEntry(id);
-      if (!entry) {
-        toast({
-          title: "Errore",
-          description: "Impossibile caricare i dettagli",
-          variant: "destructive",
-        });
-        return;
-      }
-      setSelectedEntryForDetails(entry);
-      setDetailsModalOpen(true);
-    } catch (error) {
-      console.error('Error loading details:', error);
+  const handleDetails = (id: string) => {
+    const entry = entries.find(e => e.id === id);
+    if (!entry) {
       toast({
         title: "Errore",
         description: "Impossibile caricare i dettagli",
         variant: "destructive",
       });
+      return;
     }
+    setSelectedEntryForDetails(entry);
+    setDetailsModalOpen(true);
   };
 
   const handleShare = (id: string) => {
@@ -251,6 +256,35 @@ const DiaryPage = () => {
       title: "Condividi",
       description: "Funzionalità in arrivo!",
     });
+  };
+
+  const resetDiaryLocationState = () => {
+    navigate(location.pathname, { replace: true, state: {} });
+  };
+
+  const handleSaveQuickNote = async () => {
+    if (!user?.id || quickNoteContent.trim().length < 3) return;
+    setQuickNoteSaving(true);
+    try {
+      await createNote(user.id, {
+        content: quickNoteContent.trim(),
+        category: "allenamento",
+        primebot_visible: quickNotePrimebot,
+      });
+      toast({
+        title: "Nota salvata!",
+      });
+      setShowQuickNote(false);
+      setQuickNoteContent("");
+      resetDiaryLocationState();
+    } catch {
+      toast({
+        title: "Errore nel salvataggio della nota",
+        variant: "destructive",
+      });
+    } finally {
+      setQuickNoteSaving(false);
+    }
   };
 
   // Loading state
@@ -275,19 +309,242 @@ const DiaryPage = () => {
   return (
     <div className="min-h-screen bg-background pt-24 pb-20">
       {/* Header */}
-      <div className="border-b border-border bg-card/50 backdrop-blur-sm">
+      <div className="bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-            📔 Il Mio Diario
-          </h1>
-          <p className="text-muted-foreground mt-2">Track your fitness journey</p>
+          <p className="text-muted-foreground">Traccia il tuo percorso fitness</p>
         </div>
       </div>
 
-      {/* Stats Widget */}
-      <div className="container mx-auto px-4 py-6">
-        <StatsWidget />
+      {/* KPI pill */}
+      <div className="container mx-auto px-4">
+        <div className="flex gap-3 mb-4">
+          <div className="flex-1 bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
+            {statsLoading ? (
+              <div className="h-5 w-8 bg-[#2a2a2e] rounded animate-pulse mx-auto mb-1" />
+            ) : (
+              <span className="block text-xl font-bold text-[#EEBA2B]">
+                {weeklyStats?.count ?? 0}
+              </span>
+            )}
+            <span className="block text-xs text-[#8A8A96] mt-1">
+              Questa sett.
+            </span>
+          </div>
+          <div className="flex-1 bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
+            {statsLoading ? (
+              <div className="h-5 w-8 bg-[#2a2a2e] rounded animate-pulse mx-auto mb-1" />
+            ) : (
+              <span className="block text-xl font-bold text-[#EEBA2B]">
+                {weeklyStats?.totalTime != null
+                  ? weeklyStats.totalTime >= 60
+                    ? `${Math.floor(weeklyStats.totalTime / 60)}h`
+                    : `${weeklyStats.totalTime}m`
+                  : "0m"}
+              </span>
+            )}
+            <span className="block text-xs text-[#8A8A96] mt-1">
+              Tempo sett.
+            </span>
+          </div>
+          <div className="flex-1 bg-[#16161A] border border-[#2a2a2e] rounded-xl p-3 text-center">
+            {statsLoading ? (
+              <div className="h-5 w-8 bg-[#2a2a2e] rounded animate-pulse mx-auto mb-1" />
+            ) : (
+              <span className="block text-xl font-bold text-[#EEBA2B]">
+                {metrics?.current_streak_days ?? 0} 🔥
+              </span>
+            )}
+            <span className="block text-xs text-[#8A8A96] mt-1">
+              Streak
+            </span>
+          </div>
+        </div>
       </div>
+
+      {showQuickNote && (
+        <div className="container mx-auto px-4 mb-4">
+          <div
+            style={{
+              background: "#16161A",
+              border: "1px solid #EEBA2B44",
+              borderRadius: "16px",
+              padding: "16px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "12px",
+              }}
+            >
+              <div>
+                <p style={{ color: "#FFFFFF", fontSize: "15px", fontWeight: 600, margin: 0 }}>
+                  🏋️ Ottimo lavoro!
+                </p>
+                <p style={{ color: "#8A8A96", fontSize: "12px", margin: "2px 0 0" }}>
+                  {completedWorkoutName
+                    ? `Come ti sei sentito durante "${completedWorkoutName}"?`
+                    : "Come ti sei sentito durante l'allenamento?"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowQuickNote(false);
+                  resetDiaryLocationState();
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#8A8A96",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  padding: "4px",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <textarea
+              value={quickNoteContent}
+              onChange={(e) => setQuickNoteContent(e.target.value.slice(0, 500))}
+              placeholder="Scrivi una nota su questo allenamento... (max 500 caratteri)"
+              maxLength={500}
+              rows={3}
+              style={{
+                width: "100%",
+                background: "#0A0A0C",
+                border: "1px solid #2a2a2e",
+                borderRadius: "10px",
+                padding: "10px 12px",
+                color: "#FFFFFF",
+                fontSize: "13px",
+                resize: "none",
+                outline: "none",
+                fontFamily: "inherit",
+                lineHeight: 1.5,
+                boxSizing: "border-box",
+              }}
+            />
+            <p
+              style={{
+                color: "#8A8A96",
+                fontSize: "11px",
+                textAlign: "right",
+                margin: "4px 0 12px",
+              }}
+            >
+              {quickNoteContent.length}/500
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div
+                  style={{
+                    position: "relative",
+                    display: "inline-block",
+                    width: "36px",
+                    height: "20px",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={quickNotePrimebot}
+                    onChange={(e) => setQuickNotePrimebot(e.target.checked)}
+                    style={{
+                      position: "absolute",
+                      opacity: 0,
+                      width: "100%",
+                      height: "100%",
+                      margin: 0,
+                      cursor: "pointer",
+                      zIndex: 1,
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: quickNotePrimebot ? "#EEBA2B22" : "#2a2a2e",
+                      border: quickNotePrimebot ? "1px solid #EEBA2B66" : "1px solid #3a3a3e",
+                      borderRadius: "10px",
+                      transition: "background 0.2s",
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: "absolute",
+                        width: "14px",
+                        height: "14px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        left: quickNotePrimebot ? "19px" : "3px",
+                        background: quickNotePrimebot ? "#EEBA2B" : "#8A8A96",
+                        borderRadius: "50%",
+                        transition: "left 0.2s, background 0.2s",
+                      }}
+                    />
+                  </div>
+                </div>
+                <span style={{ color: "#8A8A96", fontSize: "12px" }}>Visibile a PrimeBot</span>
+              </div>
+
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQuickNote(false);
+                    resetDiaryLocationState();
+                  }}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid #2a2a2e",
+                    borderRadius: "10px",
+                    padding: "8px 14px",
+                    color: "#8A8A96",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Salta
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleSaveQuickNote()}
+                  disabled={quickNoteSaving || quickNoteContent.trim().length < 3}
+                  style={{
+                    background:
+                      quickNoteSaving || quickNoteContent.trim().length < 3 ? "#2a2a2e" : "#EEBA2B",
+                    border: "none",
+                    borderRadius: "10px",
+                    padding: "8px 14px",
+                    color:
+                      quickNoteSaving || quickNoteContent.trim().length < 3 ? "#8A8A96" : "#000",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    cursor:
+                      quickNoteSaving || quickNoteContent.trim().length < 3
+                        ? "not-allowed"
+                        : "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {quickNoteSaving ? "Salvo..." : "Salva nota"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="sticky top-16 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -328,9 +585,12 @@ const DiaryPage = () => {
           <div className="space-y-8">
             {Object.entries(groupedEntries).map(([date, dayEntries]) => (
               <div key={date} className="space-y-4">
-                <h2 className="text-lg font-semibold text-foreground sticky top-[140px] bg-background py-2 z-5">
-                  {date}
-                </h2>
+                <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+                  <span className="text-sm font-semibold text-[#8A8A96] whitespace-nowrap">
+                    {date}
+                  </span>
+                  <div className="flex-1 h-px bg-[#1e1e24]" />
+                </div>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {dayEntries.map(entry => (
                     <WorkoutCard

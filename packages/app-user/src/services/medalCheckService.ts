@@ -61,7 +61,7 @@ export async function checkAndUnlockMedals(
     // ── QUERY 2: workout_diary (una sola query) ───────────
     const { data: diary } = await supabase
       .from('workout_diary')
-      .select('completed_at, duration_minutes, workout_type')
+      .select('completed_at, duration_minutes, workout_type, has_limitations')
       .eq('user_id', userId)
       .eq('status', 'completed')
       .not('completed_at', 'is', null);
@@ -179,6 +179,54 @@ export async function checkAndUnlockMedals(
           '📅', 'legendary'
         ));
       }
+
+      // pain_fighter — almeno 1 workout con limitazioni fisiche attive
+      if (!earned.has('pain_fighter') &&
+          diary.some((d: { has_limitations?: boolean | null }) => d.has_limitations === true)) {
+        newMedals.push(makeMedal(
+          'pain_fighter', 'Pain Fighter',
+          'Allenamento con limitazione fisica attiva',
+          '🦾', 'rare'
+        ));
+      }
+
+      // no_limits — >= 5 workout con limitazioni fisiche attive
+      if (!earned.has('no_limits') &&
+          diary.filter((d: { has_limitations?: boolean | null }) => d.has_limitations === true).length >= 5) {
+        newMedals.push(makeMedal(
+          'no_limits', 'No Limits',
+          '5 workout con limitazioni fisiche attive',
+          '🦅', 'epic'
+        ));
+      }
+    }
+
+    // ── QUERY: bookings (client completed) ─────────────────
+    const { data: bookingsData } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('status', 'completed');
+
+    const bookingsCount = bookingsData?.length ?? 0;
+
+    if (!earned.has('booked_pro') && bookingsCount >= 1) {
+      newMedals.push(makeMedal(
+        'booked_pro',
+        'Booked Pro',
+        'Prima prenotazione con un professionista',
+        '📅',
+        'rare'
+      ));
+    }
+    if (!earned.has('pro_partner') && bookingsCount >= 10) {
+      newMedals.push(makeMedal(
+        'pro_partner',
+        'Pro Partner',
+        '10 prenotazioni con professionisti',
+        '🤝',
+        'epic'
+      ));
     }
 
     // ── QUERY 3: nutrition_plans ──────────────────────────

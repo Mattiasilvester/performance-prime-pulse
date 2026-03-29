@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-
 export type FilterType = 'all' | 'saved' | 'completed';
 
 interface DiaryFiltersProps {
@@ -9,43 +7,40 @@ interface DiaryFiltersProps {
 
 export const DiaryFilters = ({ activeFilter, onFilterChange }: DiaryFiltersProps) => {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2">
-      <Button
-        variant={activeFilter === 'all' ? 'default' : 'outline'}
+    <div className="flex justify-center gap-2 py-3 px-4">
+      <button
+        type="button"
         onClick={() => onFilterChange('all')}
-        size="sm"
-        className={`whitespace-nowrap ${
-          activeFilter === 'all' 
-            ? 'bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-semibold' 
-            : 'border-border text-foreground hover:bg-muted'
+        className={`whitespace-nowrap rounded-full px-4 py-1.5 text-[11px] font-medium cursor-pointer transition-colors ${
+          activeFilter === 'all'
+            ? 'bg-[#EEBA2B] border border-[#EEBA2B] text-black font-semibold'
+            : 'bg-[#16161A] border border-[#2a2a2e] text-[#8A8A96] hover:border-[#EEBA2B]/50'
         }`}
       >
         Tutti
-      </Button>
-      <Button
-        variant={activeFilter === 'saved' ? 'default' : 'outline'}
+      </button>
+      <button
+        type="button"
         onClick={() => onFilterChange('saved')}
-        size="sm"
-        className={`whitespace-nowrap ${
-          activeFilter === 'saved' 
-            ? 'bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-semibold' 
-            : 'border-border text-foreground hover:bg-muted'
+        className={`whitespace-nowrap rounded-full px-4 py-1.5 text-[11px] font-medium cursor-pointer transition-colors ${
+          activeFilter === 'saved'
+            ? 'bg-[#EEBA2B] border border-[#EEBA2B] text-black font-semibold'
+            : 'bg-[#16161A] border border-[#2a2a2e] text-[#8A8A96] hover:border-[#EEBA2B]/50'
         }`}
       >
-        💾 Salvati
-      </Button>
-      <Button
-        variant={activeFilter === 'completed' ? 'default' : 'outline'}
+        Salvati
+      </button>
+      <button
+        type="button"
         onClick={() => onFilterChange('completed')}
-        size="sm"
-        className={`whitespace-nowrap ${
-          activeFilter === 'completed' 
-            ? 'bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-semibold' 
-            : 'border-border text-foreground hover:bg-muted'
+        className={`whitespace-nowrap rounded-full px-4 py-1.5 text-[11px] font-medium cursor-pointer transition-colors ${
+          activeFilter === 'completed'
+            ? 'bg-[#EEBA2B] border border-[#EEBA2B] text-black font-semibold'
+            : 'bg-[#16161A] border border-[#2a2a2e] text-[#8A8A96] hover:border-[#EEBA2B]/50'
         }`}
       >
-        ✅ Completati
-      </Button>
+        Completati
+      </button>
     </div>
   );
 };

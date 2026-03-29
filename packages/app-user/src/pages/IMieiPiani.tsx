@@ -5,23 +5,37 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { fetchUserPlans } from '@/services/planService';
 import { fetchUserNutritionPlans } from '@/services/nutritionPlanService';
+import { getFeedbackByUser } from '@/services/planFeedbackService';
+import type { Vote } from '@/services/planFeedbackService';
 import type { WorkoutPlan } from '@/types/plan';
 import type { NutritionPlanRecord } from '@/types/nutritionPlan';
 import { WorkoutPlanCard } from '@/components/plans/WorkoutPlanCard';
 import { NutritionPlanCard } from '@/components/plans/NutritionPlanCard';
+import DocumentiTab from '@/components/documents/DocumentiTab';
 
-type TabKind = 'workout' | 'nutrition';
+type TabKind = 'workout' | 'nutrition' | 'documenti';
 
 export default function IMieiPiani() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<TabKind>('workout');
+  const [activeTab, setActiveTab] = useState<TabKind>(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('tab') === 'documenti' ? 'documenti' : 'workout';
+  });
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [nutritionPlans, setNutritionPlans] = useState<NutritionPlanRecord[]>([]);
   const [loadingWorkout, setLoadingWorkout] = useState(true);
   const [loadingNutrition, setLoadingNutrition] = useState(true);
+  const [feedbackMap, setFeedbackMap] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!user?.id) return;
+    getFeedbackByUser(user.id)
+      .then((map) => setFeedbackMap(map))
+      .catch(() => {});
+  }, [user?.id]);
 
   useEffect(() => {
     if (location.pathname !== '/i-miei-piani') return;
@@ -123,7 +137,6 @@ export default function IMieiPiani() {
                   : { background: 'transparent', color: '#8A8A96' }
               }
             >
-              <span aria-hidden>💪</span>
               Allenamento
               <span className="opacity-80">| {workoutPlans.length}</span>
             </button>
@@ -137,9 +150,20 @@ export default function IMieiPiani() {
                   : { background: 'transparent', color: '#8A8A96' }
               }
             >
-              <span aria-hidden>🥗</span>
               Nutrizione
               <span className="opacity-80">| {nutritionPlans.length}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange('documenti')}
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-[11px] py-2.5 text-sm font-medium transition-colors"
+              style={
+                activeTab === 'documenti'
+                  ? { background: '#EEBA2B', color: '#000' }
+                  : { background: 'transparent', color: '#8A8A96' }
+              }
+            >
+              Documenti
             </button>
           </div>
         </div>
@@ -197,60 +221,66 @@ export default function IMieiPiani() {
                       plan={plan}
                       onDelete={handleWorkoutDelete}
                       onUpdate={handleWorkoutUpdate}
+                      initialVote={(feedbackMap[`${plan.id}:workout`] as Vote) ?? null}
                     />
                   </motion.div>
                 ))}
               </AnimatePresence>
             </div>
           )
-        ) : nutritionPlans.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div
-              className="mb-4 flex h-16 w-16 items-center justify-center rounded-[18px] border text-[26px]"
-              style={{
-                background: 'rgba(238,186,43,0.12)',
-                borderColor: 'rgba(238,186,43,0.25)',
-              }}
-            >
-              🥗
+        ) : activeTab === 'nutrition' ? (
+          nutritionPlans.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div
+                className="mb-4 flex h-16 w-16 items-center justify-center rounded-[18px] border text-[26px]"
+                style={{
+                  background: 'rgba(238,186,43,0.12)',
+                  borderColor: 'rgba(238,186,43,0.25)',
+                }}
+              >
+                🥗
+              </div>
+              <h3 className="mb-2 text-base font-semibold text-white">
+                Nessun piano ancora
+              </h3>
+              <p className="mb-6 max-w-[220px] text-center text-sm text-[#8A8A96]">
+                Chiedi a PrimeBot di crearti un piano personalizzato
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/ai-coach')}
+                className="rounded-[11px] px-5 py-3 text-sm font-bold text-black transition-opacity hover:opacity-90"
+                style={{ background: '#EEBA2B' }}
+              >
+                💬 Apri PrimeBot
+              </button>
             </div>
-            <h3 className="mb-2 text-base font-semibold text-white">
-              Nessun piano ancora
-            </h3>
-            <p className="mb-6 max-w-[220px] text-center text-sm text-[#8A8A96]">
-              Chiedi a PrimeBot di crearti un piano personalizzato
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate('/ai-coach')}
-              className="rounded-[11px] px-5 py-3 text-sm font-bold text-black transition-opacity hover:opacity-90"
-              style={{ background: '#EEBA2B' }}
-            >
-              💬 Apri PrimeBot
-            </button>
-          </div>
-        ) : user?.id ? (
-          <div className="space-y-0">
-            <AnimatePresence>
-              {nutritionPlans.map((plan, index) => (
-                <motion.div
-                  key={plan.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ delay: index * 0.07, duration: 0.25 }}
-                >
-                  <NutritionPlanCard
-                    plan={plan}
-                    userId={user.id}
-                    onDelete={handleNutritionDelete}
-                    onUpdate={handleNutritionUpdate}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        ) : null}
+          ) : user?.id ? (
+            <div className="space-y-0">
+              <AnimatePresence>
+                {nutritionPlans.map((plan, index) => (
+                  <motion.div
+                    key={plan.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ delay: index * 0.07, duration: 0.25 }}
+                  >
+                    <NutritionPlanCard
+                      plan={plan}
+                      userId={user.id}
+                      onDelete={handleNutritionDelete}
+                      onUpdate={handleNutritionUpdate}
+                      initialVote={(feedbackMap[`${plan.id}:nutrition`] as Vote) ?? null}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          ) : null
+        ) : (
+          <DocumentiTab />
+        )}
       </main>
     </div>
   );

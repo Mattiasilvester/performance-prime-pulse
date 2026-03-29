@@ -4,7 +4,10 @@ import { ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { WorkoutPlan } from '@/types/plan';
 import { updatePlan, deletePlan } from '@/services/planService';
+import { toast } from 'sonner';
 import { downloadWorkoutPlanPDF } from '@/utils/pdfExport';
+import PlanFeedbackButtons from '@/components/plans/PlanFeedbackButtons';
+import { deleteFeedback, type Vote } from '@/services/planFeedbackService';
 import { getDayExercises, parseRestTime } from '@/utils/workoutUtils';
 import type { StructuredWorkoutPlan } from '@/services/workoutPlanGenerator';
 
@@ -12,6 +15,7 @@ interface WorkoutPlanCardProps {
   plan: WorkoutPlan;
   onDelete?: (id: string) => void;
   onUpdate?: (updated: WorkoutPlan) => void;
+  initialVote?: Vote | null;
 }
 
 function workoutPlanDayToStructuredPlan(
@@ -39,13 +43,23 @@ function workoutPlanDayToStructuredPlan(
   };
 }
 
-export function WorkoutPlanCard({ plan, onDelete, onUpdate }: WorkoutPlanCardProps) {
+export function WorkoutPlanCard({ plan, onDelete, onUpdate, initialVote }: WorkoutPlanCardProps) {
   const navigate = useNavigate();
+  const [feedbackVote, setFeedbackVote] = useState<Vote | null>(initialVote ?? null);
   const [expandedDay, setExpandedDay] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(plan.name);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+
+  const handleResetVote = async () => {
+    try {
+      await deleteFeedback(plan.id, plan.user_id);
+      setFeedbackVote(null);
+    } catch {
+      toast.error('Errore nel reset del voto');
+    }
+  };
 
   const daysCount = plan.workouts?.length ?? 0;
   const durationLabel = daysCount === 1 ? '1 giorno' : `${daysCount} giorni`;
@@ -339,6 +353,31 @@ export function WorkoutPlanCard({ plan, onDelete, onUpdate }: WorkoutPlanCardPro
                   : ''}
               </p>
               <div className="flex items-center gap-2">
+                {feedbackVote !== null && (
+                  <button
+                    type="button"
+                    onClick={handleResetVote}
+                    title="Cambia voto"
+                    aria-label={
+                      feedbackVote === 1
+                        ? 'Hai trovato utile questo piano. Clicca per cambiare voto'
+                        : 'Hai trovato questo piano da migliorare. Clicca per cambiare voto'
+                    }
+                    style={{
+                      background: '#1e1e24',
+                      border: '1px solid #2a2a2e',
+                      borderRadius: 10,
+                      padding: '8px 10px',
+                      fontSize: 16,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {feedbackVote === 1 ? '👍' : '👎'}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleDownloadPDF}
@@ -408,6 +447,31 @@ export function WorkoutPlanCard({ plan, onDelete, onUpdate }: WorkoutPlanCardPro
               : ''}
           </p>
           <div className="flex items-center gap-2">
+            {feedbackVote !== null && (
+              <button
+                type="button"
+                onClick={handleResetVote}
+                title="Cambia voto"
+                aria-label={
+                  feedbackVote === 1
+                    ? 'Hai trovato utile questo piano. Clicca per cambiare voto'
+                    : 'Hai trovato questo piano da migliorare. Clicca per cambiare voto'
+                }
+                style={{
+                  background: '#1e1e24',
+                  border: '1px solid #2a2a2e',
+                  borderRadius: 10,
+                  padding: '8px 10px',
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {feedbackVote === 1 ? '👍' : '👎'}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleDownloadPDF}
@@ -458,6 +522,16 @@ export function WorkoutPlanCard({ plan, onDelete, onUpdate }: WorkoutPlanCardPro
             </button>
           </div>
         </div>
+      )}
+
+      {feedbackVote === null && (
+        <PlanFeedbackButtons
+          planId={plan.id}
+          userId={plan.user_id}
+          planType="workout"
+          initialVote={null}
+          onVote={(vote) => setFeedbackVote(vote)}
+        />
       )}
     </div>
   );

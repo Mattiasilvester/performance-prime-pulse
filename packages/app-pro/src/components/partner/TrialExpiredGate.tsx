@@ -28,11 +28,7 @@ export function TrialExpiredGate({ subscription, loading, children }: TrialExpir
   const isOnAbbonamentoPage = location.pathname === ABBONAMENTO_PATH;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[40vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#EEBA2B] border-t-transparent" />
-      </div>
-    );
+    return <>{children}</>;
   }
 
   if (
