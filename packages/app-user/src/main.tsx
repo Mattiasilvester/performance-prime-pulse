@@ -4,6 +4,7 @@ import App from './App'
 import './index.css'
 import './styles/mobile-fix.css'
 import { safeGetElement } from '@/utils/domHelpers'
+import { initPostHog } from './lib/posthog'
 
 // Bonifica PWA: mantieni solo sw.js per notifiche push
 if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
@@ -43,6 +44,7 @@ const initApp = () => {
 }
 
 const renderApp = (element: HTMLElement) => {
+  initPostHog()
   const root = ReactDOM.createRoot(element)
   root.render(
     <React.StrictMode>

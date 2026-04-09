@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { inject } from '@vercel/analytics';
+import { initPostHog } from './lib/posthog';
 import './index.css';
 import App from './App';
 
+initPostHog();
 inject();
 
 const rootEl = document.getElementById('root');
